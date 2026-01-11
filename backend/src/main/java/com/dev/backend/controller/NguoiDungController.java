@@ -1,19 +1,18 @@
 package com.dev.backend.controller;
 
+import com.dev.backend.dto.request.RegisterRequest;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.entities.NguoiDung;
 import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.NguoiDungMapper;
 import com.dev.backend.services.impl.entities.NguoiDungService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -45,5 +44,11 @@ public class NguoiDungController {
                         .error(null)
                         .build()
         );
+    }
+
+
+    @PostMapping("/register")
+    public ResponseEntity<ResponseData<String>> register(@Valid @RequestBody RegisterRequest registerRequest){
+        return nguoiDungService.register(registerRequest);
     }
 }
