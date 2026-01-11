@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -49,6 +51,7 @@ public class ChiTietPhieuXuatKho {
     private String ghiChu;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
+    @Generated(event = EventType.INSERT)
     @Column(name = "ngay_tao")
     private Instant ngayTao;
 

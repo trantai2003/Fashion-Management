@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 
@@ -37,6 +39,7 @@ public class ChiTietDonMuaHang {
 
     @ColumnDefault("0.000")
     @Column(name = "so_luong_da_nhan", precision = 15, scale = 3)
+    @Generated(event = EventType.INSERT)
     private BigDecimal soLuongDaNhan;
 
     @NotNull
@@ -45,6 +48,7 @@ public class ChiTietDonMuaHang {
 
     @ColumnDefault("(`so_luong_dat` * `don_gia`)")
     @Column(name = "thanh_tien", precision = 15, scale = 2)
+    @Generated(event = EventType.INSERT)
     private BigDecimal thanhTien;
 
     @Lob

@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
 
 import java.time.Instant;
 
@@ -29,11 +31,13 @@ public class Size {
     private String tenSize;
 
     @ColumnDefault("'chu'")
+    @Generated(event = EventType.INSERT)
     @Lob
     @Column(name = "loai_size")
     private String loaiSize;
 
     @ColumnDefault("0")
+    @Generated(event = EventType.INSERT)
     @Column(name = "thu_tu_sap_xep")
     private Integer thuTuSapXep;
 
@@ -42,6 +46,7 @@ public class Size {
     private String moTa;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
+    @Generated(event = EventType.INSERT)
     @Column(name = "ngay_tao")
     private Instant ngayTao;
 

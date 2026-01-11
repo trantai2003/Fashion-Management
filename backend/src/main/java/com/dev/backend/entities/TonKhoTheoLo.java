@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -31,14 +33,17 @@ public class TonKhoTheoLo {
     private Kho kho;
 
     @ColumnDefault("0.000")
+    @Generated(event = EventType.INSERT)
     @Column(name = "so_luong_ton", precision = 15, scale = 3)
     private BigDecimal soLuongTon;
 
     @ColumnDefault("0.000")
+    @Generated(event = EventType.INSERT)
     @Column(name = "so_luong_da_dat", precision = 15, scale = 3)
     private BigDecimal soLuongDaDat;
 
     @ColumnDefault("(`so_luong_ton` - `so_luong_da_dat`)")
+    @Generated(event = EventType.INSERT)
     @Column(name = "so_luong_kha_dung", precision = 15, scale = 3)
     private BigDecimal soLuongKhaDung;
 
@@ -49,6 +54,7 @@ public class TonKhoTheoLo {
     private LocalDate ngayXuatGanNhat;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
+    @Generated(event = EventType.INSERT)
     @Column(name = "lan_cap_nhat_cuoi")
     private Instant lanCapNhatCuoi;
 

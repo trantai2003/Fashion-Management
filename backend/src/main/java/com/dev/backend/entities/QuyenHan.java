@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
 
 import java.time.Instant;
 
@@ -39,6 +41,7 @@ public class QuyenHan {
     private String nhomQuyen;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
+    @Generated(event = EventType.INSERT)
     @Column(name = "ngay_tao")
     private Instant ngayTao;
 

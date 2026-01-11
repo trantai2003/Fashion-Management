@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -47,6 +49,7 @@ public class ChiTietPhieuNhapKho {
 
     @ColumnDefault("(`so_luong_nhap` * `don_gia`)")
     @Column(name = "thanh_tien", precision = 15, scale = 2)
+    @Generated(event = EventType.INSERT)
     private BigDecimal thanhTien;
 
     @Lob
@@ -55,6 +58,7 @@ public class ChiTietPhieuNhapKho {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_tao")
+    @Generated(event = EventType.INSERT)
     private Instant ngayTao;
 
 

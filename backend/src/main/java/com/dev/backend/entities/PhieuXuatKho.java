@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -39,6 +41,7 @@ public class PhieuXuatKho {
     private LocalDate ngayXuat;
 
     @ColumnDefault("'ban_hang'")
+    @Generated(event = EventType.INSERT)
     @Lob
     @Column(name = "loai_xuat")
     private String loaiXuat;
@@ -48,6 +51,7 @@ public class PhieuXuatKho {
     private Kho khoChuyenDen;
 
     @ColumnDefault("0")
+    @Generated(event = EventType.INSERT)
     @Column(name = "trang_thai")
     private Integer trangThai;
 
@@ -64,10 +68,12 @@ public class PhieuXuatKho {
     private NguoiDung nguoiDuyet;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
+    @Generated(event = EventType.INSERT)
     @Column(name = "ngay_tao")
     private Instant ngayTao;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
+    @Generated(event = EventType.INSERT)
     @Column(name = "ngay_cap_nhat")
     private Instant ngayCapNhat;
 
