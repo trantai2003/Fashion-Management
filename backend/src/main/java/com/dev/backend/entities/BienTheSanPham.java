@@ -52,10 +52,12 @@ public class BienTheSanPham {
     private String maVachSku;
 
     @ColumnDefault("0.00")
+    @Generated(event = EventType.INSERT)
     @Column(name = "gia_von", precision = 15, scale = 2)
     private BigDecimal giaVon;
 
     @ColumnDefault("0.00")
+    @Generated(event = EventType.INSERT)
     @Column(name = "gia_ban", precision = 15, scale = 2)
     private BigDecimal giaBan;
 

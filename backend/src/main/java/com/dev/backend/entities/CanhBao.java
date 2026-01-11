@@ -52,6 +52,7 @@ public class CanhBao {
     private Instant ngayCanhBao;
 
     @ColumnDefault("0")
+    @Generated(event = EventType.INSERT)
     @Column(name = "trang_thai")
     private Integer trangThai;
 
