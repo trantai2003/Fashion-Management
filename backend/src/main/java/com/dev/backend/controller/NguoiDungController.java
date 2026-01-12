@@ -1,7 +1,9 @@
 package com.dev.backend.controller;
 
 import com.dev.backend.dto.request.BaseFilterRequest;
+import com.dev.backend.dto.request.LoginRequest;
 import com.dev.backend.dto.request.RegisterRequest;
+import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.entities.NguoiDung;
@@ -52,6 +54,12 @@ public class NguoiDungController {
     @PostMapping("/register")
     public ResponseEntity<ResponseData<String>> register(@Valid @RequestBody RegisterRequest registerRequest){
         return nguoiDungService.register(registerRequest);
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<ResponseData<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest){
+        return nguoiDungService.login(loginRequest);
     }
 
     @PostMapping("/filter")
