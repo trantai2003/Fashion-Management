@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react';
 
 export default function FashionFlowHomepage() {
+    const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const features = [
@@ -148,7 +150,7 @@ export default function FashionFlowHomepage() {
                             <a href="#pricing" className="text-gray-700 hover:text-purple-600 font-medium transition">Bảng giá</a>
                             <a href="#testimonials" className="text-gray-700 hover:text-purple-600 font-medium transition">Đánh giá</a>
                             <a href="#contact" className="text-gray-700 hover:text-purple-600 font-medium transition">Liên hệ</a>
-                            <Button variant="outline" className="border-purple-600 text-purple-600 hover:bg-purple-50">
+                            <Button variant="outline" className="border-purple-600 text-purple-600 hover:bg-purple-50" onClick={() => navigate('/login')}>
                                 Đăng nhập
                             </Button>
                             <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
@@ -174,7 +176,7 @@ export default function FashionFlowHomepage() {
                             <a href="#pricing" className="block text-gray-700 hover:text-purple-600 font-medium">Bảng giá</a>
                             <a href="#testimonials" className="block text-gray-700 hover:text-purple-600 font-medium">Đánh giá</a>
                             <a href="#contact" className="block text-gray-700 hover:text-purple-600 font-medium">Liên hệ</a>
-                            <Button variant="outline" className="w-full border-purple-600 text-purple-600">
+                            <Button variant="outline" className="w-full border-purple-600 text-purple-600" onClick={() => navigate('/login')}>
                                 Đăng nhập
                             </Button>
                             <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600">

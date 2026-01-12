@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { nguoiDungService } from '../services/nguoiDungService';
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -60,17 +62,68 @@ export default function AuthPage() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleLogin = (e) => {
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleLogin = async (e) => {
         e.preventDefault();
-        console.log('Đăng nhập:', loginData);
-        // TODO: Nối API đăng nhập
+        setIsLoading(true);
+        setErrors({});
+        try {
+            // Map email to userName as per service requirement (assuming email is used as username or backend accepts email in userName field)
+            const payload = {
+                userName: loginData.email,
+                password: loginData.matKhau
+            };
+            const response = await nguoiDungService.login(payload);
+
+            if (response && response.status === 200) {
+                // Login success
+                // Token is already saved in nguoiDungService.login
+                navigate('/'); // Navigate to home or dashboard
+            } else {
+                setErrors({ general: response.message || 'Đăng nhập thất bại' });
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi đăng nhập';
+            setErrors({ general: errorMessage });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         if (validateRegister()) {
-            console.log('Đăng ký:', registerData);
-            // TODO: Nối API đăng ký
+            setIsLoading(true);
+            try {
+                // Prepare payload
+                const payload = {
+                    tenDangNhap: registerData.tenDangNhap,
+                    matKhau: registerData.matKhau,
+                    hoTen: registerData.hoTen,
+                    email: registerData.email,
+                    soDienThoai: registerData.soDienThoai
+                    // Add other fields if necessary
+                };
+
+                const response = await nguoiDungService.register(payload);
+
+                if (response && response.status === 200) {
+                    // Register success, maybe switch to login or auto login
+                    alert("Đăng ký thành công! Vui lòng đăng nhập.");
+                    setIsLogin(true); // Switch to login view
+                } else {
+                    setErrors({ general: response.message || 'Đăng ký thất bại' });
+                }
+            } catch (error) {
+                console.error("Register error:", error);
+                const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký';
+                setErrors({ general: errorMessage });
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -195,6 +248,14 @@ export default function AuthPage() {
                                         </div>
                                     </div>
 
+                                    {/* Error Message */}
+                                    {errors.general && (
+                                        <Alert variant="destructive" className="mb-4">
+                                            <AlertCircle className="h-4 w-4" />
+                                            <AlertDescription className="text-sm">{errors.general}</AlertDescription>
+                                        </Alert>
+                                    )}
+
                                     {/* Email Input */}
                                     <div className="space-y-2">
                                         <Label htmlFor="email" className="text-gray-700 font-medium">E-mail</Label>
@@ -257,9 +318,10 @@ export default function AuthPage() {
                                     {/* Login Button */}
                                     <Button
                                         onClick={handleLogin}
+                                        disabled={isLoading}
                                         className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold"
                                     >
-                                        Login
+                                        {isLoading ? 'Processing...' : 'Login'}
                                     </Button>
 
                                     {/* Register Link */}
@@ -397,9 +459,10 @@ export default function AuthPage() {
 
                                     <Button
                                         onClick={handleRegister}
+                                        disabled={isLoading}
                                         className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                                     >
-                                        Đăng ký
+                                        {isLoading ? 'Đang xử lý...' : 'Đăng ký'}
                                     </Button>
 
                                     <p className="text-center text-sm text-gray-600">
