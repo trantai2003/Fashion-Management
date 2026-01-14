@@ -3,8 +3,10 @@ package com.dev.backend.services.impl.entities;
 import com.dev.backend.constant.enums.RoleType;
 import com.dev.backend.dto.request.LoginRequest;
 import com.dev.backend.dto.request.RegisterRequest;
+import com.dev.backend.dto.request.UpdateNguoiDungRequest;
 import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.entities.NguoiDung;
 import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.NguoiDungMapper;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -38,6 +41,8 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private RestClient.Builder builder;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -115,5 +120,34 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                         .build()
         );
     }
+
+    @Transactional
+    public ResponseEntity<ResponseData<NguoiDungDto>> update(Integer id, UpdateNguoiDungRequest request) {
+        NguoiDung nguoiDung = nguoiDungRepository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng id: " + id));
+        if (request.getTenDangNhap() != null && !request.getTenDangNhap().isBlank()) {
+            nguoiDung.setTenDangNhap(request.getTenDangNhap());
+        }
+        if (request.getHoTen() != null && !request.getHoTen().isBlank()) {
+            nguoiDung.setHoTen(request.getHoTen());
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            nguoiDung.setEmail(request.getEmail());
+        }
+        if (request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()) {
+            nguoiDung.setSoDienThoai(request.getSoDienThoai());
+        }
+        nguoiDung = nguoiDungRepository.save(nguoiDung);
+        return ResponseEntity.ok(
+                ResponseData.<NguoiDungDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(nguoiDungMapper.toDto(nguoiDung))
+                        .message("Cập nhật thông tin người dùng thành công")
+                        .error(null)
+                        .build()
+        );
+    }
+
 }
+
 

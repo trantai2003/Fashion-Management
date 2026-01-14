@@ -3,6 +3,7 @@ package com.dev.backend.controller;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.LoginRequest;
 import com.dev.backend.dto.request.RegisterRequest;
+import com.dev.backend.dto.request.UpdateNguoiDungRequest;
 import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
@@ -52,18 +53,23 @@ public class NguoiDungController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseData<String>> register(@Valid @RequestBody RegisterRequest registerRequest){
+    public ResponseEntity<ResponseData<String>> register(@Valid @RequestBody RegisterRequest registerRequest) {
         return nguoiDungService.register(registerRequest);
     }
 
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseData<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest){
+    public ResponseEntity<ResponseData<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
         return nguoiDungService.login(loginRequest);
     }
 
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ResponseData<NguoiDungDto>> update(@PathVariable Integer id, @Valid @RequestBody UpdateNguoiDungRequest request) {
+        return nguoiDungService.update(id, request);
+    }
+
     @PostMapping("/filter")
-    public ResponseEntity<ResponseData<Page<NguoiDungDto>>> filter(@RequestBody BaseFilterRequest filter){
+    public ResponseEntity<ResponseData<Page<NguoiDungDto>>> filter(@RequestBody BaseFilterRequest filter) {
         return ResponseEntity.ok(
                 ResponseData.<Page<NguoiDungDto>>builder()
                         .status(HttpStatus.OK.value())
