@@ -39,6 +39,15 @@ export const nguoiDungService = {
         return res.data; // ResponseData<Page<NguoiDungDto>>
     },
 
+    async update(id, payload) {
+        // payload: UpdateNguoiDungRequest
+        const res = await apiClient.put(
+            `/api/v1/nguoi-dung/update/${id}`,
+            payload
+        );
+        return res.data; // ResponseData<NguoiDungDto>
+    },
+
     logout() {
         localStorage.removeItem("access_token");
     },
