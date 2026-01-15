@@ -246,9 +246,6 @@ export default function UserDetail() {
                         </Button>
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">Chi tiết người dùng</h1>
-                            <p className="text-gray-600">Xe
-
-                                tin người dùng</p>
                         </div>
                     </div>
 
