@@ -16,6 +16,8 @@ import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.checkerframework.checker.units.qual.N;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,6 +46,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     @Autowired
     private RestClient.Builder builder;
 
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -54,6 +57,12 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     private NguoiDungRepository nguoiDungRepository = (NguoiDungRepository) super.getRepository();
+
+
+    public Page<NguoiDung> getUserList(Pageable pageable) {
+        return nguoiDungRepository.findAll(pageable);
+    }
+
 
     @Transactional
     public ResponseEntity<ResponseData<String>> register(RegisterRequest registerRequest) {
