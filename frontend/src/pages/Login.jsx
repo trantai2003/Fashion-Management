@@ -125,9 +125,8 @@ export default function AuthPage() {
                 const response = await nguoiDungService.register(payload);
 
                 if (response && response.status === 200) {
-                    // Register success, maybe switch to login or auto login
-                    alert("Đăng ký thành công! Vui lòng đăng nhập.");
-                    setIsLogin(true); // Switch to login view
+                    // Register success, redirect to verify email page
+                    navigate(`/verify-email?email=${encodeURIComponent(registerData.email)}`);
                 } else {
                     setErrors({ general: response.message || 'Đăng ký thất bại' });
                 }

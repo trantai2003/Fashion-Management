@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useNavigate } from 'react-router-dom';
+import { nguoiDungService } from '../services/nguoiDungService';
+import { Card, CardContent } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
+import { Alert, AlertDescription } from '../components/ui/alert';
 import {
     Mail,
     ArrowLeft,
@@ -14,6 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
+    const navigate = useNavigate();
     const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password, 4: Success
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -38,11 +41,21 @@ export default function ForgotPasswordPage() {
         }
 
         setIsLoading(true);
-        // TODO: Call API to send OTP
-        setTimeout(() => {
+        try {
+            const response = await nguoiDungService.sendForgotPasswordOTP(email);
+
+            if (response && response.status === 200) {
+                setStep(2);
+            } else {
+                setErrors({ email: response.message || 'Gửi OTP thất bại' });
+            }
+        } catch (error) {
+            console.error('Send OTP error:', error);
+            const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi gửi OTP';
+            setErrors({ email: errorMessage });
+        } finally {
             setIsLoading(false);
-            setStep(2);
-        }, 1500);
+        }
     };
 
     const handleVerifyOTP = async (e) => {
@@ -56,11 +69,26 @@ export default function ForgotPasswordPage() {
         }
 
         setIsLoading(true);
-        // TODO: Call API to verify OTP
-        setTimeout(() => {
+        try {
+            const payload = {
+                email: email,
+                otp: otpValue
+            };
+
+            const response = await nguoiDungService.verifyForgotPasswordOTP(payload);
+
+            if (response && response.status === 200) {
+                setStep(3);
+            } else {
+                setErrors({ otp: response.message || 'Mã OTP không chính xác' });
+            }
+        } catch (error) {
+            console.error('Verify OTP error:', error);
+            const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi xác thực OTP';
+            setErrors({ otp: errorMessage });
+        } finally {
             setIsLoading(false);
-            setStep(3);
-        }, 1500);
+        }
     };
 
     const handleResetPassword = async (e) => {
@@ -83,11 +111,27 @@ export default function ForgotPasswordPage() {
         }
 
         setIsLoading(true);
-        // TODO: Call API to reset password
-        setTimeout(() => {
+        try {
+            const payload = {
+                email: email,
+                otp: otp.join(''),
+                newPassword: newPassword
+            };
+
+            const response = await nguoiDungService.resetPassword(payload);
+
+            if (response && response.status === 200) {
+                setStep(4);
+            } else {
+                setErrors({ general: response.message || 'Đặt lại mật khẩu thất bại' });
+            }
+        } catch (error) {
+            console.error('Reset password error:', error);
+            const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi đặt lại mật khẩu';
+            setErrors({ general: errorMessage });
+        } finally {
             setIsLoading(false);
-            setStep(4);
-        }, 1500);
+        }
     };
 
     const handleOtpChange = (index, value) => {
@@ -117,11 +161,24 @@ export default function ForgotPasswordPage() {
         }
     };
 
-    const handleResendOTP = () => {
+    const handleResendOTP = async () => {
         setOtp(['', '', '', '', '', '']);
-        // TODO: Call API to resend OTP
-        setErrors({ success: 'Mã OTP đã được gửi lại' });
-        setTimeout(() => setErrors({}), 3000);
+        setErrors({});
+
+        try {
+            const response = await nguoiDungService.sendForgotPasswordOTP(email);
+
+            if (response && response.status === 200) {
+                setErrors({ success: 'Mã OTP đã được gửi lại' });
+                setTimeout(() => setErrors({}), 3000);
+            } else {
+                setErrors({ general: response.message || 'Gửi lại OTP thất bại' });
+            }
+        } catch (error) {
+            console.error('Resend OTP error:', error);
+            const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi gửi lại OTP';
+            setErrors({ general: errorMessage });
+        }
     };
 
     return (
@@ -193,7 +250,7 @@ export default function ForgotPasswordPage() {
                             <div className="text-center mb-8">
                                 {step !== 4 && (
                                     <button
-                                        onClick={() => window.history.back()}
+                                        onClick={() => navigate('/login')}
                                         className="flex items-center text-gray-600 hover:text-purple-600 mb-4 transition-colors"
                                     >
                                         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -321,6 +378,13 @@ export default function ForgotPasswordPage() {
                             {/* Step 3: New Password */}
                             {step === 3 && (
                                 <div className="space-y-6">
+                                    {errors.general && (
+                                        <Alert variant="destructive">
+                                            <AlertCircle className="h-4 w-4" />
+                                            <AlertDescription className="text-sm">{errors.general}</AlertDescription>
+                                        </Alert>
+                                    )}
+
                                     {errors.newPassword && (
                                         <Alert variant="destructive">
                                             <AlertCircle className="h-4 w-4" />
@@ -392,7 +456,7 @@ export default function ForgotPasswordPage() {
                                     </div>
 
                                     <Button
-                                        onClick={() => window.location.href = '/login'}
+                                        onClick={() => navigate('/login')}
                                         className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold"
                                     >
                                         Đăng nhập ngay
@@ -408,8 +472,8 @@ export default function ForgotPasswordPage() {
                                             <div
                                                 key={s}
                                                 className={`flex-1 h-2 rounded-full mx-1 transition-colors ${s <= step
-                                                        ? 'bg-gradient-to-r from-purple-600 to-blue-600'
-                                                        : 'bg-gray-200'
+                                                    ? 'bg-gradient-to-r from-purple-600 to-blue-600'
+                                                    : 'bg-gray-200'
                                                     }`}
                                             />
                                         ))}

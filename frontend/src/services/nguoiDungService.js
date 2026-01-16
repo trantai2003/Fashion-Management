@@ -48,6 +48,35 @@ export const nguoiDungService = {
         return res.data; // ResponseData<NguoiDungDto>
     },
 
+    async verifyAccount(payload) {
+        const res = await apiClient.post("/api/v1/nguoi-dung/active-account", payload);
+        return res.data;
+    },
+
+    async resendOTP(email) {
+        const res = await apiClient.post("/api/v1/nguoi-dung/resend-otp", { email });
+        return res.data;
+    },
+
+    async sendForgotPasswordOTP(email) {
+        const res = await apiClient.post("/api/v1/nguoi-dung/forgot-password", { email });
+        return res.data;
+    },
+
+    async verifyForgotPasswordOTP(payload) {
+        // payload: { email, otp }
+        // Dùng chung API active-account để verify OTP theo yêu cầu
+        // Lưu ý: Backend cần đảm bảo không lỗi nếu user đã active và không xóa OTP ngay nếu cần dùng cho bước resetPass
+        const res = await apiClient.post("/api/v1/nguoi-dung/active-account", payload);
+        return res.data;
+    },
+
+    async resetPassword(payload) {
+        // payload: { email, otp, newPassword }
+        const res = await apiClient.post("/api/v1/nguoi-dung/reset-password", payload);
+        return res.data;
+    },
+
     logout() {
         localStorage.removeItem("access_token");
     },
