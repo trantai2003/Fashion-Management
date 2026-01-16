@@ -69,9 +69,7 @@ export default function VerifyEmail() {
                 otp: otpValue
             };
 
-            console.log('Sending verify payload:', payload);
             const response = await nguoiDungService.verifyAccount(payload);
-            console.log('Verify response:', response);
 
             if (response && response.status === 200) {
                 setSuccess(true);
@@ -83,8 +81,7 @@ export default function VerifyEmail() {
             }
         } catch (error) {
             console.error('Verify error:', error);
-            console.error('Error response:', error.response);
-            const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Có lỗi xảy ra khi xác thực';
+            const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi xác thực';
             setErrors({ general: errorMessage });
         } finally {
             setIsLoading(false);
@@ -242,12 +239,6 @@ export default function VerifyEmail() {
                                         >
                                             {isLoading ? 'Đang xác thực...' : 'Xác nhận'}
                                         </Button>
-
-                                        {/* Debug Info - Remove in production */}
-                                        <div className="text-xs text-gray-500 text-center p-2 bg-gray-50 rounded">
-                                            <p>Debug: Email = {email}</p>
-                                            <p>Debug: OTP = {otp.join('')}</p>
-                                        </div>
 
                                         <div className="text-center">
                                             <p className="text-sm text-gray-600">
