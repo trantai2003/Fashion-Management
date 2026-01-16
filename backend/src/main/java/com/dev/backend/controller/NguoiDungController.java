@@ -54,7 +54,7 @@ public class NguoiDungController {
         return nguoiDungService.register(registerRequest);
     }
 
-    @PostMapping("/verify-account")
+    @PostMapping("/active-account")
     public ResponseEntity<ResponseData<String>> verifyAccount(@RequestBody VerifyAccount verifyDto) {
         return nguoiDungService.activeAccount(verifyDto);
     }

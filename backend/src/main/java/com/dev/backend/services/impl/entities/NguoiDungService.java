@@ -87,6 +87,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         GlobalCache.OTP_SCHEDULE_OBJS.add(
                 OtpScheduleObj.builder()
                         .email(registerRequest.getEmail())
+                        .otp(otp)
                         .createdAt(nguoiDung.getNgayTao())
                         .type(OtpType.ACCOUNT_ACTIVATION)
                         .build()
