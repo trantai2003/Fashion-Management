@@ -1,9 +1,13 @@
 package com.dev.backend.services.impl.entities;
 
+import com.dev.backend.constant.GlobalCache;
+import com.dev.backend.constant.enums.OtpType;
 import com.dev.backend.constant.enums.RoleType;
+import com.dev.backend.dto.OtpScheduleObj;
 import com.dev.backend.dto.request.LoginRequest;
 import com.dev.backend.dto.request.RegisterRequest;
 import com.dev.backend.dto.request.UpdateNguoiDungRequest;
+import com.dev.backend.dto.request.VerifyAccount;
 import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
@@ -11,6 +15,8 @@ import com.dev.backend.entities.NguoiDung;
 import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.NguoiDungMapper;
 import com.dev.backend.repository.NguoiDungRepository;
+import com.dev.backend.services.CalcService;
+import com.dev.backend.services.EmailService;
 import com.dev.backend.services.JwtService;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
@@ -25,9 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 
 @Service
 public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
@@ -44,7 +49,9 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     @Autowired
     private JwtService jwtService;
     @Autowired
-    private RestClient.Builder builder;
+    private CalcService calcService;
+    @Autowired
+    private EmailService emailService;
 
 
     @Override
@@ -82,12 +89,70 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         nguoiDung.setHoTen(registerRequest.getHoTen());
         nguoiDung.setSoDienThoai(registerRequest.getSoDienThoai());
         nguoiDung.setVaiTro(RoleType.khach_hang.toString());
+        nguoiDung.setTrangThai(0);
         nguoiDung = create(nguoiDung);
+
+        String otp = calcService.getRandomActiveCode(6L);
+        GlobalCache.OTP_SCHEDULE_OBJS.add(
+                OtpScheduleObj.builder()
+                        .email(registerRequest.getEmail())
+                        .otp(otp)
+                        .createdAt(nguoiDung.getNgayTao())
+                        .type(OtpType.ACCOUNT_ACTIVATION)
+                        .build()
+        );
+
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("userName", registerRequest.getHoTen());
+        params.put("otp", otp);
+        params.put("expiryTime", "5 phút");
+
+        emailService.sendHtmlEmailFromTemplate(registerRequest.getEmail(), "Kích hoạt tài khoản", "activation.html", params);
+
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
-                        .data("Đăng ký tài" + nguoiDung.getVaiTro() + " khoản thành công")
-                        .message("Đăng ký tài khoản thành công")
+                        .data("Đăng ký tài khoản " + nguoiDung.getVaiTro() + " thành công")
+                        .message("Đăng ký tài khoản " + nguoiDung.getVaiTro() + " thành công")
+                        .error(null)
+                        .build()
+        );
+    }
+
+    @Transactional
+    public ResponseEntity<ResponseData<String>> activeAccount(VerifyAccount verifyDto) {
+        OtpScheduleObj findingRegisterOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
+                otpScheduleObj.getEmail().equals(verifyDto.getEmail())).findFirst().orElse(null);
+
+        if (findingRegisterOtp == null) {
+            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
+        }
+
+
+        if (!findingRegisterOtp.getOtp().equals(verifyDto.getOtp())) {
+            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
+        }
+
+        Instant now = Instant.now();
+        if (now.isAfter(findingRegisterOtp.getCreatedAt().plusSeconds(300))) {
+            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
+        }
+
+        Optional<NguoiDung> findingNguoiDung = nguoiDungRepository.findByEmail(findingRegisterOtp.getEmail());
+
+        if (findingNguoiDung.isEmpty()) {
+            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
+        }
+        NguoiDung nguoiDung = findingNguoiDung.get();
+        nguoiDung.setTrangThai(1);
+        update(nguoiDung.getId(), nguoiDung);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .data("Xác nhận tài khoản thành công vui lòng đăng nhập")
+                        .message("Xác nhận tài khoản thành công vui lòng đăng nhập")
                         .error(null)
                         .build()
         );
@@ -155,6 +220,10 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                         .error(null)
                         .build()
         );
+    }
+
+    public Optional<NguoiDung> findByEmail(String email) {
+        return nguoiDungRepository.findByEmail(email);
     }
 
 }
