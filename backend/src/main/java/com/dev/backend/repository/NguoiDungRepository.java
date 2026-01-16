@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface NguoiDungRepository extends JpaRepository<NguoiDung, Integer>, JpaSpecificationExecutor<NguoiDung> {
 
     Optional<NguoiDung> findByTenDangNhapOrEmailOrSoDienThoai(String tenDangNhap, String email, String soDienThoai);
+
+    Optional<NguoiDung> findByEmail(String email);
 }
