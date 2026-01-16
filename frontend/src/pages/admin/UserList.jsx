@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {Select, SelectTrigger, SelectValue, SelectContent, SelectItem,} from "@/components/ui/select";
-import {Table, TableHeader, TableBody, TableRow, TableHead, TableCell,} from "@/components/ui/table";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "@/components/ui/select";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { nguoiDungService } from "@/services/nguoiDungService";
-
+import { Check } from "lucide-react";
 export default function UserList() {
     // ===== STATE =====
     const [users, setUsers] = useState([]);
@@ -20,12 +20,30 @@ export default function UserList() {
         size: 10,
     });
 
+    const ROLE_OPTIONS = [
+        { value: "ALL", label: "Tất cả" },
+        { value: "quan_tri_vien", label: "Quản trị viên" },
+        { value: "quan_ly_kho", label: "Quản lý kho" },
+        { value: "nhan_vien_kho", label: "Nhân viên kho" },
+        { value: "nhan_vien_ban_hang", label: "Nhân viên bán hàng" },
+        { value: "nhan_vien_mua_hang", label: "Nhân viên mua hàng" },
+        { value: "khach_hang", label: "Khách hàng" },
+    ];
+
+    const STATUS_OPTIONS = [
+        { value: "ALL", label: "Tất cả" },
+        { value: "1", label: "Active" },
+        { value: "0", label: "Banned" },
+    ];
+
+
     // ===== FETCH DATA =====
     useEffect(() => {
         fetchUsers();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filters.page]);
+    }, [filters.page, filters.size, filters.keyword, filters.vaiTro, filters.trangThai, fetchUsers]);
 
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     async function fetchUsers() {
         try {
             const payload = {
@@ -69,15 +87,13 @@ export default function UserList() {
     const totalPages = Math.ceil(total / filters.size);
 
     return (
-        <div className="h-full bg-gray-50">
-            {/* MAIN CONTAINER – CHỈ 1 CÁI DUY NHẤT */}
-            <div className="max-w-300 mx-auto px-4 py-4 space-y-4">
+        <div className="h-screen w-full bg-gray-50 flex flex-col min-h-0">
 
-                {/* ===== Filter ===== */}
+            {/* ===== FILTER (KHÔNG SCROLL) ===== */}
+            <div className="px-6 py-4 flex-none">
                 <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
                     <CardContent className="p-4 space-y-3">
                         <div className="grid md:grid-cols-4 gap-4">
-
                             {/* Search */}
                             <div className="col-span-2 space-y-1.5">
                                 <Label className="text-[13px] text-gray-600 block leading-none">
@@ -85,72 +101,126 @@ export default function UserList() {
                                 </Label>
                                 <Input
                                     value={filters.keyword}
-                                    onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
+                                    onChange={(e) =>
+                                        setFilters({ ...filters, keyword: e.target.value })
+                                    }
                                     placeholder="VD: Nguyễn Văn A / nv_kho_01 / a@gmail.com"
-                                    className="w-full h-10 px-3 text-sm border-gray-300 rounded-md focus-visible:ring-purple-500 shadow-none"
+                                    className="w-full h-10 px-3 text-sm 
+            focus:ring-0
+            focus-visible:ring-0
+            focus-visible:outline-none"
                                 />
                             </div>
 
                             {/* Role */}
-                            <div className="col-span-1 space-y-1.5">
+                            <div className="space-y-1.5">
                                 <Label className="text-[13px] text-gray-600 block leading-none">
-                                    Lọc vai trò
+                                    Lọc Vai trò
                                 </Label>
+
                                 <Select
                                     value={filters.vaiTro}
                                     onValueChange={(v) =>
-                                        setFilters({ ...filters, vaiTro: v })
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            vaiTro: v,
+                                            page: 0,
+                                        }))
                                     }
                                 >
-                                    <SelectTrigger
-                                        className="mt-1 w-full h-11 px-3 rounded-md border border-gray-300
-                       bg-white flex items-center text-sm
-                       focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    >
-                                        <SelectValue placeholder="Tất cả" className="leading-none" />
+                                    <SelectTrigger className="w-full h-10 px-3 text-sm">
+                                        <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ALL">Tất cả</SelectItem>
-                                        <SelectItem value="quan_tri_vien">quan_tri_vien</SelectItem>
-                                        <SelectItem value="quan_ly_kho">quan_ly_kho</SelectItem>
-                                        <SelectItem value="nhan_vien_kho">nhan_vien_kho</SelectItem>
-                                        <SelectItem value="nhan_vien_ban_hang">nhan_vien_ban_hang</SelectItem>
-                                        <SelectItem value="nhan_vien_mua_hang">nhan_vien_mua_hang</SelectItem>
+
+                                    <SelectContent
+                                        position="popper"
+                                        side="bottom"
+                                        align="start"
+                                        sideOffset={4}
+                                        className="bg-white z-50"
+                                    >
+                                        {ROLE_OPTIONS.map((r) => {
+                                            const active = filters.vaiTro === r.value;
+
+                                            return (
+                                                <SelectItem
+                                                    key={r.value}
+                                                    value={r.value}
+                                                    className={
+                                                        active
+                                                            ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
+                                                            : "focus:bg-gray-100"
+                                                    }
+                                                >
+                                                    {r.label}
+                                                </SelectItem>
+                                            );
+                                        })}
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             {/* Status */}
-                            <div className="col-span-1 space-y-1.5">
+                            <div className="space-y-1.5">
                                 <Label className="text-[13px] text-gray-600 block leading-none">
                                     Trạng thái
                                 </Label>
+
                                 <Select
                                     value={filters.trangThai}
                                     onValueChange={(v) =>
-                                        setFilters({ ...filters, trangThai: v })
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            trangThai: v,
+                                            page: 0,
+                                        }))
                                     }
                                 >
-                                    <SelectTrigger
-                                        className="mt-1 w-full h-11 px-3 rounded-md border border-gray-300
-                       bg-white flex items-center text-sm
-                       focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    >
-                                        <SelectValue placeholder="Tất cả" className="leading-none" />
+                                    <SelectTrigger className="w-full h-10 px-3 text-sm">
+                                        <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ALL">Tất cả</SelectItem>
-                                        <SelectItem value="1">Active</SelectItem>
-                                        <SelectItem value="0">Banned</SelectItem>
+
+                                    <SelectContent
+                                        position="popper"
+                                        side="bottom"
+                                        align="start"
+                                        sideOffset={4}
+                                        className="z-50
+                                        bg-white
+                                        border border-gray-200
+                                        shadow-lg
+                                        rounded-md
+                                              "
+                                    >
+                                        {STATUS_OPTIONS.map((s) => {
+                                            const active = filters.trangThai === s.value;
+
+                                            return (
+                                                <SelectItem
+                                                    key={s.value}
+                                                    value={s.value}
+                                                    className={
+                                                        active
+                                                            ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
+                                                            : "focus:bg-gray-100"
+                                                    }
+                                                >
+                                                    {s.label}
+                                                </SelectItem>
+                                            );
+                                        })}
                                     </SelectContent>
                                 </Select>
                             </div>
+
+
                         </div>
 
                         <div className="flex items-center justify-between">
-      <span className="text-xs text-gray-500">
-        Columns: id, ten_dang_nhap, ho_ten, email, so_dien_thoai, vai_tro, trang_thai_hoat_dong, ngay_tao
-      </span>
+                            <span className="text-xs text-gray-500">
+                                Columns: id, ten_dang_nhap, ho_ten, email, so_dien_thoai, vai_tro,
+                                trang_thai_hoat_dong, ngay_tao
+                            </span>
 
                             <div className="flex gap-2">
                                 <Button variant="outline" size="sm" onClick={handleReset}>
@@ -158,7 +228,7 @@ export default function UserList() {
                                 </Button>
                                 <Button
                                     size="sm"
-                                    className="bg-purple-600 text-white hover:bg-purple-700"
+                                    className="bg-purple-600 text-white"
                                     onClick={handleSearch}
                                 >
                                     Search
@@ -167,15 +237,16 @@ export default function UserList() {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
 
-                {/* ===== Table ===== */}
-                <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
-                    <CardContent className="p-0 flex flex-col">
+            {/* ===== TABLE (ĂN PHẦN CÒN LẠI) ===== */}
+            <div className="px-6 pb-4 flex-1 min-h-0">
+                <Card className="bg-white border border-gray-200 rounded-xl shadow-sm h-full min-h-0">
+                    <CardContent className="p-0 flex flex-col h-full min-h-0">
 
-                        {/* Table Header */}
-                        <div className="p-4 flex items-center justify-between border-b">
+                        {/* Header bảng */}
+                        <div className="p-4 border-b flex-none flex items-center justify-between">
                             <div className="text-sm font-semibold">Danh sách Users</div>
-
                             <div className="flex items-center gap-3">
                                 <span className="text-xs text-gray-500">Tổng: {total}</span>
                                 <Button size="sm" className="bg-purple-600 text-white hover:bg-purple-700">
@@ -184,8 +255,9 @@ export default function UserList() {
                             </div>
                         </div>
 
-                        <div className="max-h-105 overflow-auto">
-                            <Table className="min-w-275">
+                        {/* TABLE SCROLL */}
+                        <div className="flex-1 overflow-y-auto min-h-0">
+                            <Table className="w-full">
 
                                 <TableHeader>
                                     <TableRow className="bg-gray-50 text-xs text-gray-500">
@@ -197,7 +269,7 @@ export default function UserList() {
                                         <TableHead className="px-4 py-3">Vai trò</TableHead>
                                         <TableHead className="px-4 py-3">Trạng thái</TableHead>
                                         <TableHead className="px-4 py-3">Ngày tạo</TableHead>
-                                        <TableHead className="px-4 py-3 text-right">Actions</TableHead>
+                                        <TableHead className="px-4 py-3">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
 
@@ -213,11 +285,15 @@ export default function UserList() {
                                     {users.map((u) => (
                                         <TableRow key={u.id} className="border-b hover:bg-gray-50">
                                             <TableCell className="px-4 py-3">{u.id}</TableCell>
+
                                             <TableCell className="px-4 py-3 font-semibold">
                                                 {u.tenDangNhap}
                                             </TableCell>
+
                                             <TableCell className="px-4 py-3">{u.hoTen}</TableCell>
+
                                             <TableCell className="px-4 py-3">{u.email}</TableCell>
+
                                             <TableCell className="px-4 py-3">{u.soDienThoai}</TableCell>
 
                                             <TableCell className="px-4 py-3">
@@ -260,34 +336,151 @@ export default function UserList() {
                             </Table>
                         </div>
 
+                        {/* PAGINATION – LUÔN HIỆN */}
+                        <div className="p-4 border-t flex-none bg-white">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-500">
+                                    Showing {users.length} / {total}
+                                </span>
 
-                        {/* Pagination */}
-                        <div className="p-4 border-t flex items-center justify-between">
-                            <span className="text-xs text-gray-500">
-                                Showing {users.length} / {total}
-                            </span>
+                                <div className="flex items-center gap-4">
+                                    {/* Page size */}
+                                    <div className="flex items-center gap-2">
+                                        <Label className="text-xs text-gray-500">Rows:</Label>
 
-                            <div className="flex gap-2">
-                                <Button variant="outline" size="sm" disabled={filters.page === 0}
-                                    onClick={() => setFilters(p => ({ ...p, page: p.page - 1 }))}>
-                                    Prev
-                                </Button>
+                                        <Select
+                                            value={String(filters.size)}
+                                            onValueChange={(value) =>
+                                                setFilters((prev) => ({
+                                                    ...prev,
+                                                    size: Number(value),
+                                                    page: 0,
+                                                }))
+                                            }
+                                        >
+                                            <SelectTrigger className="h-8 w-[80px] px-2 text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
 
-                                <Button size="sm" className="bg-gray-900 text-white">
-                                    {filters.page + 1}
-                                </Button>
+                                            <SelectContent
+                                                position="popper"
+                                                side="bottom"
+                                                align="start"
+                                                sideOffset={4}
+                                                className="
+                z-50
+                bg-white
+                border border-gray-200
+                shadow-lg
+                rounded-md
+            "
+                                            >
+                                                {[10, 20, 30, 40, 50].map((s) => {
+                                                    const active = String(filters.size) === String(s);
 
-                                <Button variant="outline" size="sm"
-                                    disabled={filters.page + 1 >= totalPages}
-                                    onClick={() => setFilters(p => ({ ...p, page: p.page + 1 }))}>
-                                    Next
-                                </Button>
+                                                    return (
+                                                        <SelectItem
+                                                            key={s}
+                                                            value={String(s)}
+                                                            className={
+                                                                active
+                                                                    ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
+                                                                    : "focus:bg-gray-100"
+                                                            }
+                                                        >
+                                                            {s}
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+
+                                    {/* Pagination */}
+                                    <div className="flex items-center gap-2">
+                                        {/* Prev */}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={filters.page === 0}
+                                            onClick={() =>
+                                                setFilters((p) => ({ ...p, page: p.page - 1 }))
+                                            }
+                                        >
+                                            Prev
+                                        </Button>
+
+                                        {/* Pages */}
+                                        {[1, 2, 3].map((p) => {
+                                            if (p > totalPages) return null;
+
+                                            const active = filters.page + 1 === p;
+
+                                            return (
+                                                <Button
+                                                    key={p}
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        setFilters((prev) => ({ ...prev, page: p - 1 }))
+                                                    }
+                                                    className={
+                                                        active
+                                                            ? "bg-purple-600 text-white hover:bg-purple-600"
+                                                            : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-100"
+                                                    }
+                                                >
+                                                    {p}
+                                                </Button>
+                                            );
+                                        })}
+
+                                        {/* ... */}
+                                        {totalPages > 4 && (
+                                            <span className="px-2 text-gray-500">...</span>
+                                        )}
+
+                                        {/* Last page */}
+                                        {totalPages > 3 && (() => {
+                                            const active = filters.page + 1 === totalPages;
+
+                                            return (
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        setFilters((prev) => ({ ...prev, page: totalPages - 1 }))
+                                                    }
+                                                    className={
+                                                        active
+                                                            ? "bg-purple-600 text-white hover:bg-purple-600"
+                                                            : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-100"
+                                                    }
+                                                >
+                                                    {totalPages}
+                                                </Button>
+                                            );
+                                        })()}
+
+                                        {/* Next */}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={filters.page + 1 >= totalPages}
+                                            onClick={() =>
+                                                setFilters((p) => ({ ...p, page: p.page + 1 }))
+                                            }
+                                        >
+                                            Next
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+
                     </CardContent>
                 </Card>
             </div>
         </div>
-
     );
 }

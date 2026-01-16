@@ -5,7 +5,6 @@ import AdminHeader from "./AdminHeader";
 export default function AdminLayout() {
     const location = useLocation();
 
-    // Map route → title (sau này mở rộng)
     const pageTitleMap = {
         "/admin/users": {
             title: "User List",
@@ -16,24 +15,23 @@ export default function AdminLayout() {
     const pageMeta = pageTitleMap[location.pathname];
 
     return (
-        <div className="h-screen flex overflow-hidden bg-gray-50">
+        <div className="h-screen flex bg-gray-50 overflow-hidden">
             {/* Sidebar */}
             <AdminSidebar />
 
             {/* Main */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0">
                 {/* Header */}
                 <AdminHeader
                     title={pageMeta?.title}
                     subtitle={pageMeta?.subtitle}
                 />
 
-                {/* Content */}
-                <main className="flex-1 overflow-hidden">
+                {/* CONTENT – CHỈ CHỖ NÀY ĐƯỢC SCROLL */}
+                <main className="flex-1 overflow-y-auto min-h-0">
                     <Outlet />
                 </main>
             </div>
         </div>
     );
 }
-
