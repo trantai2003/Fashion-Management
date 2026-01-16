@@ -14,6 +14,7 @@ import com.dev.backend.services.impl.entities.NguoiDungService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -80,4 +81,30 @@ public class NguoiDungController {
                         .build()
         );
     }
+
+    @GetMapping("/admin/userlist")
+    public ResponseEntity<ResponseData<Page<NguoiDungDto>>> getUserList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<NguoiDung> nguoiDungPage =
+                nguoiDungService.getUserList(PageRequest.of(page, size));
+
+        return ResponseEntity.ok(
+                ResponseData.<Page<NguoiDungDto>>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(
+                                nguoiDungMapper.toDtoPage(nguoiDungPage)
+                        )
+                        .message("Lấy danh sách người dùng thành công")
+                        .error(null)
+                        .build()
+        );
+    }
 }
+
+
+
+
+
+
