@@ -51,7 +51,6 @@ public class NguoiDung {
 
     @ColumnDefault("0")
     @Column(name = "trang_thai")
-    @Generated(event = EventType.INSERT)
     private Integer trangThai;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
@@ -61,7 +60,7 @@ public class NguoiDung {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_cap_nhat")
-    @Generated(event = EventType.INSERT)
+    @Generated(event = EventType.UPDATE)
     private Instant ngayCapNhat;
 
 
