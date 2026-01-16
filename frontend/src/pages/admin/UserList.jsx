@@ -6,7 +6,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { nguoiDungService } from "@/services/nguoiDungService";
-import { Check } from "lucide-react";
+
 export default function UserList() {
     // ===== STATE =====
     const [users, setUsers] = useState([]);
@@ -39,11 +39,11 @@ export default function UserList() {
 
     // ===== FETCH DATA =====
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/immutability
         fetchUsers();
-    }, [filters.page, filters.size, filters.keyword, filters.vaiTro, filters.trangThai, fetchUsers]);
+    }, [filters.page, filters.size, filters.keyword, filters.vaiTro, filters.trangThai]);
 
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     async function fetchUsers() {
         try {
             const payload = {
@@ -358,7 +358,7 @@ export default function UserList() {
                                                 }))
                                             }
                                         >
-                                            <SelectTrigger className="h-8 w-[80px] px-2 text-xs">
+                                            <SelectTrigger className="h-8 w-20 px-2 text-xs">
                                                 <SelectValue />
                                             </SelectTrigger>
 
