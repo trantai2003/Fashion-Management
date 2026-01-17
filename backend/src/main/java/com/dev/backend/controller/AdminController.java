@@ -15,22 +15,20 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/admin/")
-public class adminController {
+public class AdminController {
     private final NguoiDungService nguoiDungService;
 
     private final NguoiDungMapper nguoiDungMapper;
 
-    public adminController(NguoiDungService nguoiDungService, NguoiDungMapper nguoiDungMapper) {
+    public AdminController(NguoiDungService nguoiDungService, NguoiDungMapper nguoiDungMapper) {
         this.nguoiDungService = nguoiDungService;
         this.nguoiDungMapper = nguoiDungMapper;
     }
 
     @PostMapping("/filter")
-    @RequireAuth(
-            roles = {IRoleType.quan_tri_vien}
-    )
 
     public ResponseEntity<ResponseData<Page<NguoiDungDto>>> filter(
+            @RequestHeader("Authorization") String authHeader,
             @RequestBody BaseFilterRequest filter) {
 
         return ResponseEntity.ok(
@@ -47,12 +45,15 @@ public class adminController {
     }
 
     @GetMapping("/user-list")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien}
+    )
     public ResponseEntity<ResponseData<Page<NguoiDungDto>>> getUserList(
+            @RequestHeader("Authorization") String authHeader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-
-        return ResponseEntity.ok(
+            return ResponseEntity.ok(
                 ResponseData.<Page<NguoiDungDto>>builder()
                         .status(HttpStatus.OK.value())
                         .data(
@@ -72,6 +73,7 @@ public class adminController {
             roles = {IRoleType.quan_tri_vien}
     )
     public ResponseEntity<ResponseData<NguoiDungDto>> getUserDetail(
+            @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer id
     ) {
         return ResponseEntity.ok(
