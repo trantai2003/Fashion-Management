@@ -10,8 +10,8 @@ import apiClient from "./apiClient";
  */
 
 export const adminService = {
-    getUserListAdmin: (params) => {
-        return apiClient.get("/api/v1/admin/user-list", { params });
+    getUserListAdmin: (payload) => {
+        return apiClient.get("/api/v1/admin/user-list", payload);
     },
 
     async getById(id) {

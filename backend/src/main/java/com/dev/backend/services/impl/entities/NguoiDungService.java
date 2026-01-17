@@ -77,14 +77,9 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         return nguoiDungRepository.findAll(pageable);
     }
 
-    public NguoiDungDto getDetail(Integer id) {
-        NguoiDung entity = nguoiDungRepository.findById(id)
-                .orElseThrow(() -> new CommonException(
-                        HttpStatus.valueOf("Không tìm thấy người dùng"),
-                        HttpStatus.NOT_FOUND
-                ));
-
-        return nguoiDungMapper.toDto(entity);
+    public NguoiDung getDetail(Integer id) {
+        return nguoiDungRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
     }
 
 

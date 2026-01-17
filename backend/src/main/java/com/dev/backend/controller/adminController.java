@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequireAuth(roles = {IRoleType.quan_tri_vien})
 @RequestMapping("/api/v1/admin/")
 public class adminController {
     private final NguoiDungService nguoiDungService;
@@ -27,6 +26,10 @@ public class adminController {
     }
 
     @PostMapping("/filter")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien}
+    )
+
     public ResponseEntity<ResponseData<Page<NguoiDungDto>>> filter(
             @RequestBody BaseFilterRequest filter) {
 
@@ -65,6 +68,9 @@ public class adminController {
     }
 
     @GetMapping("/users/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien}
+    )
     public ResponseEntity<ResponseData<NguoiDungDto>> getUserDetail(
             @PathVariable Integer id
     ) {
@@ -72,7 +78,9 @@ public class adminController {
                 ResponseData.<NguoiDungDto>builder()
                         .status(HttpStatus.OK.value())
                         .data(
-                                nguoiDungService.getDetail(id)
+                                nguoiDungMapper.toDto(
+                                        nguoiDungService.getDetail(id)
+                                )
                         )
                         .message("Lấy chi tiết người dùng thành công")
                         .build()
