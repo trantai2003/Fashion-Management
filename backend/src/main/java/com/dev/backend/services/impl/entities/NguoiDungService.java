@@ -15,6 +15,7 @@ import com.dev.backend.entities.NguoiDung;
 import com.dev.backend.entities.PhanQuyenNguoiDungKho;
 import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.NguoiDungMapper;
+import com.dev.backend.mapper.PhanQuyenNguoiDungKhoMapper;
 import com.dev.backend.repository.NguoiDungRepository;
 import com.dev.backend.services.CalcService;
 import com.dev.backend.services.EmailService;
@@ -53,6 +54,9 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private PhanQuyenNguoiDungKhoMapper  pqndkMapper;
 
 
     @Override
@@ -167,15 +171,24 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
             throw new CommonException("Mật khẩu không chính xác");
         }
 
+
         List<PhanQuyenNguoiDungKho> phanQuyenNguoiDungKhos = phanQuyenNguoiDungKhoService.findByNguoiDungIdAndActive(nguoiDung.getId());
 
-        Set<String> roles = new HashSet<>();
-        roles.add(nguoiDung.getVaiTro());
-        String token = jwtService.generateToken(
-                nguoiDung.getId() + "",
+
+        Set<String> vaiTros = new HashSet<>();
+        vaiTros.add(nguoiDung.getVaiTro());
+        String token = jwtService.generateTokenWithPermissions(
+                nguoiDung.getId(),
+                nguoiDung.getTenDangNhap(),
+                nguoiDung.getHoTen(),
                 nguoiDung.getEmail(),
-                roles,
-                ""
+                nguoiDung.getSoDienThoai(),
+                vaiTros,
+                nguoiDung.getTrangThai(),
+                nguoiDung.getNgayTao(),
+                nguoiDung.getNgayCapNhat(),
+                pqndkMapper.toDtoList(phanQuyenNguoiDungKhos),
+                "Google"
         );
         return ResponseEntity.ok(
                 ResponseData.<LoginResponse>builder()
@@ -191,6 +204,8 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                         .build()
         );
     }
+
+
 
     @Transactional
     public ResponseEntity<ResponseData<NguoiDungDto>> update(UpdateNguoiDungRequest request) {
