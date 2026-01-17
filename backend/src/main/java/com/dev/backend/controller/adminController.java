@@ -1,11 +1,12 @@
 package com.dev.backend.controller;
 
+import com.dev.backend.constant.variables.IRoleType;
+import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.mapper.NguoiDungMapper;
 import com.dev.backend.services.impl.entities.NguoiDungService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequireAuth(roles = {IRoleType.quan_tri_vien})
 @RequestMapping("/api/v1/admin/")
 public class adminController {
     private final NguoiDungService nguoiDungService;
@@ -61,5 +63,21 @@ public class adminController {
                         .build()
         );
     }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<ResponseData<NguoiDungDto>> getUserDetail(
+            @PathVariable Integer id
+    ) {
+        return ResponseEntity.ok(
+                ResponseData.<NguoiDungDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(
+                                nguoiDungService.getDetail(id)
+                        )
+                        .message("Lấy chi tiết người dùng thành công")
+                        .build()
+        );
+    }
+
 }
 

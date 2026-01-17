@@ -73,6 +73,17 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         return nguoiDungRepository.findAll(pageable);
     }
 
+    public NguoiDungDto getDetail(Integer id) {
+        NguoiDung entity = nguoiDungRepository.findById(id)
+                .orElseThrow(() -> new CommonException(
+                        HttpStatus.valueOf("Không tìm thấy người dùng"),
+                        HttpStatus.NOT_FOUND
+                ));
+
+        return nguoiDungMapper.toDto(entity);
+    }
+
+
 
     @Transactional
     public ResponseEntity<ResponseData<String>> register(RegisterRequest registerRequest) {
