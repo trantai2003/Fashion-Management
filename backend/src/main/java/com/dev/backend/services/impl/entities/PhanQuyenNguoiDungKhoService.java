@@ -8,9 +8,6 @@ import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-
 @Service
 public class PhanQuyenNguoiDungKhoService extends BaseServiceImpl<PhanQuyenNguoiDungKho, Integer> {
     @Autowired
@@ -23,15 +20,5 @@ public class PhanQuyenNguoiDungKhoService extends BaseServiceImpl<PhanQuyenNguoi
 
     public PhanQuyenNguoiDungKhoService(PhanQuyenNguoiDungKhoRepository repository) {
         super(repository);
-    }
-
-    private PhanQuyenNguoiDungKhoRepository phanQuyenNguoiDungKhoRepository = (PhanQuyenNguoiDungKhoRepository) getRepository();
-
-    public List<PhanQuyenNguoiDungKho> findByNguoiDungIdAndActive(Integer id) {
-        return phanQuyenNguoiDungKhoRepository.findByNguoiDungIdAndActive(id);
-    }
-
-    public Optional<PhanQuyenNguoiDungKho> findByNguoiDungIdAndKhoId(Integer nguoiDungId, Integer khoId) {
-        return phanQuyenNguoiDungKhoRepository.findByNguoiDungIdAndKhoId(nguoiDungId, khoId);
     }
 }

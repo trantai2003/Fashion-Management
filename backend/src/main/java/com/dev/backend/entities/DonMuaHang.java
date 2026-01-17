@@ -40,10 +40,10 @@ public class DonMuaHang {
 
     @NotNull
     @Column(name = "ngay_dat_hang", nullable = false)
-    private Instant ngayDatHang;
+    private LocalDate ngayDatHang;
 
     @Column(name = "ngay_giao_du_kien")
-    private Instant ngayGiaoDuKien;
+    private LocalDate ngayGiaoDuKien;
 
     @ColumnDefault("0")
     @Generated(event = EventType.INSERT)

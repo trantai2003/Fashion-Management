@@ -44,7 +44,7 @@ public class PhieuNhapKho {
 
     @NotNull
     @Column(name = "ngay_nhap", nullable = false)
-    private Instant ngayNhap;
+    private LocalDate ngayNhap;
 
     @ColumnDefault("0")
     @Generated(event = EventType.INSERT)

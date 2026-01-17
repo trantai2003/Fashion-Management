@@ -48,10 +48,10 @@ public class TonKhoTheoLo {
     private BigDecimal soLuongKhaDung;
 
     @Column(name = "ngay_nhap_gan_nhat")
-    private Instant ngayNhapGanNhat;
+    private LocalDate ngayNhapGanNhat;
 
     @Column(name = "ngay_xuat_gan_nhat")
-    private Instant ngayXuatGanNhat;
+    private LocalDate ngayXuatGanNhat;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Generated(event = EventType.INSERT)

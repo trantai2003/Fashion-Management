@@ -38,7 +38,7 @@ public class PhieuXuatKho {
 
     @NotNull
     @Column(name = "ngay_xuat", nullable = false)
-    private Instant ngayXuat;
+    private LocalDate ngayXuat;
 
     @ColumnDefault("'ban_hang'")
     @Generated(event = EventType.INSERT)

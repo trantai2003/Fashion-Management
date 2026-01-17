@@ -35,8 +35,9 @@ public class ChiTietQuyenKho {
     private QuyenHan quyenHan;
 
     @ColumnDefault("1")
-    @Column(name = "trang_thai")
-    private Integer trangThai;
+    @Generated(event = EventType.INSERT)
+    @Column(name = "duoc_phep")
+    private Boolean duocPhep;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Generated(event = EventType.INSERT)

@@ -1,4 +1,4 @@
-package com.dev.backend.constant.variables;
+package com.dev.backend.constant;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,4 +12,3 @@ public class ConstantVariables {
         SIGNER_KEY = signerKey;
     }
 }
-
