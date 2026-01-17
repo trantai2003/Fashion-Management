@@ -8,6 +8,54 @@ import { Card, CardContent } from "@/components/ui/card";
 import { adminService } from "@/services/adminService.js";
 import { Link } from "react-router-dom";
 
+function buildUserFilterPayload(filters) {
+    const filterList = [];
+
+    // 🔍 Keyword: hoTen OR tenDangNhap OR email
+    if (filters.keyword?.trim()) {
+        ["hoTen", "tenDangNhap", "email"].forEach((field) => {
+            filterList.push({
+                fieldName: field,
+                operation: "ILIKE",
+                value: filters.keyword.trim(),
+                logicType: "OR",
+            });
+        });
+    }
+
+    // 🎭 Vai trò
+    if (filters.vaiTro && filters.vaiTro !== "ALL") {
+        filterList.push({
+            fieldName: "vaiTro",
+            operation: "EQUALS",
+            value: filters.vaiTro,
+            logicType: "AND",
+        });
+    }
+
+    // 🚦 Trạng thái
+    if (filters.trangThai && filters.trangThai !== "ALL") {
+        filterList.push({
+            fieldName: "trangThai",
+            operation: "EQUALS",
+            value: Number(filters.trangThai),
+            logicType: "AND",
+        });
+    }
+
+    return {
+        page: filters.page,
+        size: filters.size,
+        filters: filterList,
+        sorts: [
+            {
+                fieldName: "ngayTao",
+                direction: "DESC",
+            },
+        ],
+    };
+}
+
 export default function UserList() {
     // ===== STATE =====
     const [users, setUsers] = useState([]);
@@ -47,14 +95,12 @@ export default function UserList() {
 
     async function fetchUsers() {
         try {
-            const res = await adminService.getUserListAdmin({
-                page: filters.page,
-                size: filters.size
-            });
+            const payload = buildUserFilterPayload(filters);
 
-            // Kiểm tra xem res.data (Axios) và res.data.data (ResponseData) có tồn tại không
+            const res = await adminService.filterUsers(payload);
+
             const serverResponse = res.data;
-            if (serverResponse && serverResponse.status === 200) {
+            if (serverResponse?.status === 200) {
                 const pageData = serverResponse.data;
                 setUsers(pageData.content || []);
                 setTotal(pageData.totalElements || 0);
@@ -65,10 +111,6 @@ export default function UserList() {
     }
 
     // ===== HANDLERS =====
-    const handleSearch = () => {
-        setFilters((prev) => ({ ...prev, page: 0 }));
-        fetchUsers();
-    };
 
     const handleReset = () => {
         setFilters({
@@ -221,13 +263,6 @@ export default function UserList() {
                             <div className="flex gap-2">
                                 <Button variant="outline" size="sm" onClick={handleReset}>
                                     Reset
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    className="bg-purple-600 text-white"
-                                    onClick={handleSearch}
-                                >
-                                    Search
                                 </Button>
                             </div>
                         </div>
