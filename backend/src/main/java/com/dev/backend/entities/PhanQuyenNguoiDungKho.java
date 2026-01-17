@@ -12,6 +12,7 @@ import org.hibernate.generator.EventType;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -36,20 +37,18 @@ public class PhanQuyenNguoiDungKho {
     private Kho kho;
 
     @ColumnDefault("0")
-    @Generated(event = EventType.INSERT)
     @Column(name = "la_quan_ly_kho")
-    private Boolean laQuanLyKho;
+    private Integer laQuanLyKho;
 
     @ColumnDefault("0")
-    @Generated(event = EventType.INSERT)
     @Column(name = "trang_thai")
     private Integer trangThai;
 
     @Column(name = "ngay_bat_dau")
-    private LocalDate ngayBatDau;
+    private Instant ngayBatDau;
 
     @Column(name = "ngay_ket_thuc")
-    private LocalDate ngayKetThuc;
+    private Instant ngayKetThuc;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nguoi_cap_quyen_id")
@@ -65,9 +64,12 @@ public class PhanQuyenNguoiDungKho {
     private Instant ngayTao;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
-    @Generated(event = EventType.INSERT)
+    @Generated(event = EventType.UPDATE)
     @Column(name = "ngay_cap_nhat")
     private Instant ngayCapNhat;
 
+    // join với chi tiết quyền hạn của kho
+    @OneToMany(mappedBy = "phanQuyenNguoiDungKho", fetch = FetchType.LAZY)
+    private Set<ChiTietQuyenKho> chiTietQuyenKhos;
 
 }

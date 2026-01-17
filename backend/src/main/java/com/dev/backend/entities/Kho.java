@@ -40,7 +40,6 @@ public class Kho {
     private NguoiDung quanLy;
 
     @ColumnDefault("0")
-    @Generated(event = EventType.INSERT)
     @Column(name = "trang_thai")
     private Integer trangThai;
 

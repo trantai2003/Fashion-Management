@@ -34,7 +34,7 @@ public class LoHang {
     private String maLo;
 
     @Column(name = "ngay_san_xuat")
-    private LocalDate ngaySanXuat;
+    private Instant ngaySanXuat;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nha_cung_cap_id")
