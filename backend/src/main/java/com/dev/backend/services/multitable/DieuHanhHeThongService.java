@@ -1,4 +1,4 @@
-package com.dev.backend.services.impl.multiable;
+package com.dev.backend.services.multitable;
 
 import com.dev.backend.dto.request.PhanQuyenNguoiDungKhoCreating;
 import com.dev.backend.dto.response.ResponseData;
