@@ -261,7 +261,11 @@ export default function UserList() {
                             </span>
 
                             <div className="flex gap-2">
-                                <Button variant="outline" size="sm" onClick={handleReset}>
+                                <Button variant="outline" 
+                                size="sm" 
+                                onClick={handleReset}
+                                className="flex items-center gap-2 transition-all duration-300 hover:bg-black hover:text-white border-gray-300"
+                                >
                                     Reset
                                 </Button>
                             </div>
