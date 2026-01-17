@@ -4,10 +4,7 @@ import com.dev.backend.constant.GlobalCache;
 import com.dev.backend.constant.enums.OtpType;
 import com.dev.backend.constant.enums.RoleType;
 import com.dev.backend.dto.OtpScheduleObj;
-import com.dev.backend.dto.request.LoginRequest;
-import com.dev.backend.dto.request.RegisterRequest;
-import com.dev.backend.dto.request.UpdateNguoiDungRequest;
-import com.dev.backend.dto.request.VerifyAccount;
+import com.dev.backend.dto.request.*;
 import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
@@ -72,7 +69,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     private final NguoiDungRepository nguoiDungRepository = (NguoiDungRepository) super.getRepository();
 
-
     public Page<NguoiDung> getUserList(Pageable pageable) {
         return nguoiDungRepository.findAll(pageable);
     }
@@ -82,7 +78,37 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
     }
 
+    @Transactional
+    public NguoiDung createInternalUser(NguoiDungCreating request) {
 
+        Optional<NguoiDung> findingNguoiDung =
+                nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
+                        request.getTenDangNhap(),
+                        request.getEmail(),
+                        request.getSoDienThoai()
+                );
+
+        if (findingNguoiDung.isPresent()) {
+            throw new CommonException("Tên đăng nhập / Email / SĐT đã tồn tại");
+        }
+
+        NguoiDung nguoiDung = new NguoiDung();
+        nguoiDung.setTenDangNhap(request.getTenDangNhap());
+        nguoiDung.setEmail(request.getEmail());
+        nguoiDung.setHoTen(request.getHoTen());
+        nguoiDung.setSoDienThoai(request.getSoDienThoai());
+
+        // role do ADMIN chon
+        nguoiDung.setVaiTro(request.getVaiTro().toString());
+
+        // tai khoan noi bo --> active
+        nguoiDung.setTrangThai(1);
+
+        // encode password
+        nguoiDung.setMatKhauHash(passwordEncoder.encode(request.getMatKhau()));
+
+        return create(nguoiDung);
+    }
 
     @Transactional
     public ResponseEntity<ResponseData<String>> register(RegisterRequest registerRequest) {

@@ -3,6 +3,7 @@ package com.dev.backend.controller;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
+import com.dev.backend.dto.request.NguoiDungCreating;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.mapper.NguoiDungMapper;
@@ -85,6 +86,27 @@ public class AdminController {
                                 )
                         )
                         .message("Lấy chi tiết người dùng thành công")
+                        .build()
+        );
+    }
+
+    @PostMapping("/add-user")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien}
+    )
+    public ResponseEntity<ResponseData<NguoiDungDto>> createUser(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody NguoiDungCreating request
+    ) {
+        return ResponseEntity.ok(
+                ResponseData.<NguoiDungDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(
+                                nguoiDungMapper.toDto(
+                                        nguoiDungService.createInternalUser(request)
+                                )
+                        )
+                        .message("Tạo tài khoản người dùng thành công")
                         .build()
         );
     }
