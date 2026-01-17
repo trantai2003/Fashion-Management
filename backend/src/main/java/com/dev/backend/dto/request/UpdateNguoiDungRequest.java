@@ -11,8 +11,10 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @ToString
 public class UpdateNguoiDungRequest {
+    Integer id;
     String tenDangNhap;
     String hoTen;
     String email;
     String soDienThoai;
 }
+

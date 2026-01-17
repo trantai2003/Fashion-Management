@@ -12,6 +12,7 @@ import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.entities.NguoiDung;
+import com.dev.backend.entities.PhanQuyenNguoiDungKho;
 import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.NguoiDungMapper;
 import com.dev.backend.repository.NguoiDungRepository;
@@ -20,14 +21,12 @@ import com.dev.backend.services.EmailService;
 import com.dev.backend.services.JwtService;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
-import org.checkerframework.checker.units.qual.N;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 
 import java.time.Instant;
 import java.util.*;
@@ -37,19 +36,24 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     @Autowired
     private EntityManager entityManager;
 
-
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private PhanQuyenNguoiDungKhoService phanQuyenNguoiDungKhoService;
 
     @Autowired
     private NguoiDungMapper nguoiDungMapper;
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private JwtService jwtService;
+
     @Autowired
     private CalcService calcService;
+
     @Autowired
     private EmailService emailService;
+
 
     @Override
     protected EntityManager getEntityManager() {
@@ -60,7 +64,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         super(repository);
     }
 
-    private NguoiDungRepository nguoiDungRepository = (NguoiDungRepository) super.getRepository();
+    private final NguoiDungRepository nguoiDungRepository = (NguoiDungRepository) super.getRepository();
 
     @Transactional
     public ResponseEntity<ResponseData<String>> register(RegisterRequest registerRequest) {
@@ -163,6 +167,8 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
             throw new CommonException("Mật khẩu không chính xác");
         }
 
+        List<PhanQuyenNguoiDungKho> phanQuyenNguoiDungKhos = phanQuyenNguoiDungKhoService.findByNguoiDungIdAndActive(nguoiDung.getId());
+
         Set<String> roles = new HashSet<>();
         roles.add(nguoiDung.getVaiTro());
         String token = jwtService.generateToken(
@@ -187,9 +193,9 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     @Transactional
-    public ResponseEntity<ResponseData<NguoiDungDto>> update(Integer id, UpdateNguoiDungRequest request) {
-        NguoiDung nguoiDung = nguoiDungRepository.findById(id)
-                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng id: " + id));
+    public ResponseEntity<ResponseData<NguoiDungDto>> update(UpdateNguoiDungRequest request) {
+        NguoiDung nguoiDung = nguoiDungRepository.findById(request.getId())
+                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng id: " + request.getId()));
         if (request.getTenDangNhap() != null && !request.getTenDangNhap().isBlank()) {
             nguoiDung.setTenDangNhap(request.getTenDangNhap());
         }

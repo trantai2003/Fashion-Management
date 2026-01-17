@@ -1,5 +1,7 @@
 package com.dev.backend.controller;
 
+import com.dev.backend.constant.variables.IRoleType;
+import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.*;
 import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
@@ -55,18 +57,20 @@ public class NguoiDungController {
     }
 
     @PostMapping("/active-account")
-    public ResponseEntity<ResponseData<String>> verifyAccount(@RequestBody VerifyAccount verifyDto) {
+    public ResponseEntity<ResponseData<String>> activeAccount(@RequestBody VerifyAccount verifyDto) {
         return nguoiDungService.activeAccount(verifyDto);
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<ResponseData<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
         return nguoiDungService.login(loginRequest);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ResponseData<NguoiDungDto>> update(@PathVariable Integer id, @Valid @RequestBody UpdateNguoiDungRequest request) {
-        return nguoiDungService.update(id, request);
+    @PutMapping("/update")
+    @RequireAuth(roles = {IRoleType.all})
+    public ResponseEntity<ResponseData<NguoiDungDto>> update(@Valid @RequestBody UpdateNguoiDungRequest request) {
+        return nguoiDungService.update(request);
     }
 
     @PostMapping("/filter")
