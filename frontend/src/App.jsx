@@ -7,6 +7,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 
 import UserList from "./pages/admin/UserList";
+import UserDetailAdmin from "@/pages/admin/UserDetailAdmin.jsx";
 export default function App() {
   return (
     <BrowserRouter>
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/user/:id" element={<UserDetail />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="users" element={<UserList />} />
+          <Route path="users/:id" element={<UserDetailAdmin />} />
         </Route>
       </Routes>
     </BrowserRouter>

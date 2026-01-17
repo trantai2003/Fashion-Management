@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "@/components/ui/select";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { nguoiDungService } from "@/services/nguoiDungService";
+import { adminService } from "@/services/adminService.js";
+import { Link } from "react-router-dom";
 
 export default function UserList() {
     // ===== STATE =====
@@ -46,25 +47,20 @@ export default function UserList() {
 
     async function fetchUsers() {
         try {
-            const payload = {
-                keyword: filters.keyword || null,
-                vaiTro: filters.vaiTro === "ALL" ? null : filters.vaiTro,
-                trangThaiHoatDong:
-                    filters.trangThai === "ALL"
-                        ? null
-                        : Number(filters.trangThai),
+            const res = await adminService.getUserListAdmin({
                 page: filters.page,
-                size: filters.size,
-            };
+                size: filters.size
+            });
 
-            const res = await nguoiDungService.filter(payload);
-
-            setUsers(res?.data?.content || []);
-            setTotal(res?.data?.totalElements || 0);
+            // Kiểm tra xem res.data (Axios) và res.data.data (ResponseData) có tồn tại không
+            const serverResponse = res.data;
+            if (serverResponse && serverResponse.status === 200) {
+                const pageData = serverResponse.data;
+                setUsers(pageData.content || []);
+                setTotal(pageData.totalElements || 0);
+            }
         } catch (error) {
-            console.error("Fetch user list error:", error);
-            setUsers([]);
-            setTotal(0);
+            console.error("Lỗi chi tiết:", error.response?.data || error.message);
         }
     }
 
@@ -303,7 +299,7 @@ export default function UserList() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3">
-                                                {u.trangThaiHoatDong === 1 ? (
+                                                {u.trangThai === 1 ? (
                                                     <span className="px-2 py-1 text-xs rounded bg-green-50 text-green-700">
                                                         Active
                                                     </span>
@@ -315,16 +311,23 @@ export default function UserList() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3">
-                                                {u.ngayTao}
+                                                {u.ngayTao
+                                                    ? new Date(u.ngayTao).toLocaleDateString("vi-VN")
+                                                    : "-"}
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-                                                <button className="text-sm font-semibold text-purple-600 hover:underline">
+                                                <Link
+                                                    to={`/admin/users/${u.id}`}
+                                                    className="text-sm font-semibold text-purple-600 hover:underline"
+                                                >
                                                     View
-                                                </button>
+                                                </Link>
+
                                                 <button className="text-sm font-semibold text-gray-700 hover:underline">
                                                     Role
                                                 </button>
+
                                                 <button className="text-sm font-semibold text-red-600 hover:underline">
                                                     Reset
                                                 </button>

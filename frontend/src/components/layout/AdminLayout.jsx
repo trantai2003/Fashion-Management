@@ -4,34 +4,36 @@ import AdminHeader from "./AdminHeader";
 
 export default function AdminLayout() {
     const location = useLocation();
+    const pathname = location.pathname;
 
-    const pageTitleMap = {
-        "/admin/users": {
+    let pageMeta = null;
+
+    if (pathname === "/admin/users") {
+        pageMeta = {
             title: "User List",
             subtitle: "Xem danh sách nhân viên / khách hàng",
-        },
-    };
-
-    const pageMeta = pageTitleMap[location.pathname];
+        };
+    } else if (pathname.startsWith("/admin/users/")) {
+        pageMeta = {
+            title: "User Detail",
+            subtitle: "Thông tin chi tiết",
+        };
+    }
 
     return (
-        <div className="h-screen flex bg-gray-50 overflow-hidden">
-            {/* Sidebar */}
-            <AdminSidebar />
+        <AdminSidebar>
+            <div className="flex flex-col w-full min-h-0 h-full">
+                <div className="shrink-0">
+                    <AdminHeader
+                        title={pageMeta?.title}
+                        subtitle={pageMeta?.subtitle}
+                    />
+                </div>
 
-            {/* Main */}
-            <div className="flex-1 flex flex-col min-w-0">
-                {/* Header */}
-                <AdminHeader
-                    title={pageMeta?.title}
-                    subtitle={pageMeta?.subtitle}
-                />
-
-                {/* CONTENT – CHỈ CHỖ NÀY ĐƯỢC SCROLL */}
-                <main className="flex-1 overflow-y-auto min-h-0">
+                <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-gray-50">
                     <Outlet />
                 </main>
             </div>
-        </div>
+        </AdminSidebar>
     );
 }
