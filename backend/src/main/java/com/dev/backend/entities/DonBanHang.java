@@ -40,10 +40,10 @@ public class DonBanHang {
 
     @NotNull
     @Column(name = "ngay_dat_hang", nullable = false)
-    private LocalDate ngayDatHang;
+    private Instant ngayDatHang;
 
     @Column(name = "ngay_giao_hang")
-    private LocalDate ngayGiaoHang;
+    private Instant ngayGiaoHang;
 
     @ColumnDefault("0")
     @Column(name = "trang_thai")
