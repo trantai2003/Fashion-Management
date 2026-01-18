@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +6,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { adminService } from "@/services/adminService.js";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 function buildUserFilterPayload(filters) {
     const filterList = [];
@@ -69,6 +70,10 @@ export default function UserList() {
         size: 10,
     });
 
+    const location = useLocation();
+    const toastShownRef = useRef(false);
+    const navigate = useNavigate();
+
     const ROLE_OPTIONS = [
         { value: "ALL", label: "Tất cả" },
         { value: "quan_tri_vien", label: "Quản trị viên" },
@@ -88,9 +93,23 @@ export default function UserList() {
 
     // ===== FETCH DATA =====
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/immutability
         fetchUsers();
     }, [filters.page, filters.size, filters.keyword, filters.vaiTro, filters.trangThai]);
+
+    useEffect(() => {
+        if (!location.state?.success) return;
+        if (toastShownRef.current) return; // 🔥 chặn lần 2
+
+        toastShownRef.current = true;
+
+        toast.success(
+            location.state.message || "Tạo người dùng thành công"
+        );
+
+        navigate(location.pathname, { replace: true });
+    }, []);
+
+
 
 
     async function fetchUsers() {
@@ -261,10 +280,10 @@ export default function UserList() {
                             </span>
 
                             <div className="flex gap-2">
-                                <Button variant="outline" 
-                                size="sm" 
-                                onClick={handleReset}
-                                className="flex items-center gap-2 transition-all duration-300 hover:bg-black hover:text-white border-gray-300"
+                                <Button variant="outline"
+                                    size="sm"
+                                    onClick={handleReset}
+                                    className="flex items-center gap-2 transition-all duration-300 hover:bg-black hover:text-white border-gray-300"
                                 >
                                     Reset
                                 </Button>
@@ -284,9 +303,11 @@ export default function UserList() {
                             <div className="text-sm font-semibold">Danh sách Users</div>
                             <div className="flex items-center gap-3">
                                 <span className="text-xs text-gray-500">Tổng: {total}</span>
-                                <Button size="sm" className="bg-purple-600 text-white hover:bg-purple-700">
-                                    + Add New User
-                                </Button>
+                                <Link to="/admin/users/add">
+                                    <Button size="sm" className="bg-purple-600 text-white hover:bg-purple-700">
+                                        + Add New User
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
 

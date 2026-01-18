@@ -25,4 +25,7 @@ export const adminService = {
         const res = await apiClient.get(`/api/v1/admin/users/${id}`);
         return res.data;
     },
+    createUser(data) {
+    return apiClient.post("/api/v1/admin/add-user", data);
+  },
 }
