@@ -85,22 +85,35 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     @Transactional
     public NguoiDung createInternalUser(NguoiDungCreating request) {
 
-        Optional<NguoiDung> findingNguoiDung =
-                nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
-                        request.getTenDangNhap(),
-                        request.getEmail(),
-                        request.getSoDienThoai()
-                );
+        if (nguoiDungRepository.existsByTenDangNhap(request.getTenDangNhap())) {
+            throw new CommonException("Tên đăng nhập đã tồn tại");
+        }
 
-        if (findingNguoiDung.isPresent()) {
-            throw new CommonException("Tên đăng nhập / Email / SĐT đã tồn tại");
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            if (nguoiDungRepository.existsByEmail(request.getEmail())) {
+                throw new CommonException("Email đã tồn tại");
+            }
+        }
+
+        if (request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()) {
+            if (nguoiDungRepository.existsBySoDienThoai(request.getSoDienThoai())) {
+                throw new CommonException("Số điện thoại đã tồn tại");
+            }
         }
 
         NguoiDung nguoiDung = new NguoiDung();
         nguoiDung.setTenDangNhap(request.getTenDangNhap());
-        nguoiDung.setEmail(request.getEmail());
+        nguoiDung.setEmail(
+                request.getEmail() != null && !request.getEmail().isBlank()
+                        ? request.getEmail()
+                        : null
+        );
         nguoiDung.setHoTen(request.getHoTen());
-        nguoiDung.setSoDienThoai(request.getSoDienThoai());
+        nguoiDung.setSoDienThoai(
+                request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()
+                        ? request.getSoDienThoai()
+                        : null
+        );
         nguoiDung.setVaiTro(request.getVaiTro().toString());
         nguoiDung.setTrangThai(1);
         nguoiDung.setMatKhauHash(passwordEncoder.encode(request.getMatKhau()));
