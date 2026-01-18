@@ -127,7 +127,7 @@ export default function AddUser() {
                         </div>
 
                         {/* Role */}
-                        <div>
+                        <div className="space-y-1.5">
                             <Label className="text-sm font-semibold text-gray-800">
                                 Vai trò (vai_tro)
                             </Label>
@@ -138,22 +138,40 @@ export default function AddUser() {
                                     setForm({ ...form, vaiTro: v })
                                 }
                             >
-                                <SelectTrigger className="mt-2 h-10 rounded-lg">
+                                <SelectTrigger className="w-full h-10 px-3 text-sm rounded-lg">
                                     <SelectValue />
                                 </SelectTrigger>
 
-                                <SelectContent>
-                                    <SelectItem value="nhan_vien_kho">Nhân viên kho</SelectItem>
-                                    <SelectItem value="quan_ly_kho">Quản lý kho</SelectItem>
-                                    <SelectItem value="nhan_vien_ban_hang">
-                                        Nhân viên bán hàng
-                                    </SelectItem>
-                                    <SelectItem value="nhan_vien_mua_hang">
-                                        Nhân viên mua hàng
-                                    </SelectItem>
-                                    <SelectItem value="quan_tri_vien">
-                                        Quản trị viên
-                                    </SelectItem>
+                                <SelectContent
+                                    position="popper"
+                                    side="bottom"
+                                    align="start"
+                                    sideOffset={4}
+                                    className="bg-white z-50"
+                                >
+                                    {[
+                                        { value: "nhan_vien_kho", label: "Nhân viên kho" },
+                                        { value: "quan_ly_kho", label: "Quản lý kho" },
+                                        { value: "nhan_vien_ban_hang", label: "Nhân viên bán hàng" },
+                                        { value: "nhan_vien_mua_hang", label: "Nhân viên mua hàng" },
+                                        { value: "quan_tri_vien", label: "Quản trị viên" },
+                                    ].map((r) => {
+                                        const active = form.vaiTro === r.value;
+
+                                        return (
+                                            <SelectItem
+                                                key={r.value}
+                                                value={r.value}
+                                                className={
+                                                    active
+                                                        ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
+                                                        : "focus:bg-gray-100"
+                                                }
+                                            >
+                                                {r.label}
+                                            </SelectItem>
+                                        );
+                                    })}
                                 </SelectContent>
                             </Select>
                         </div>
