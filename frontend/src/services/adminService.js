@@ -26,6 +26,9 @@ export const adminService = {
         return res.data;
     },
     createUser(data) {
-    return apiClient.post("/api/v1/admin/add-user", data);
-  },
+        return apiClient.post("/api/v1/admin/add-user", data);
+    },
+    resetUserPassword(userId, payload) {
+        return apiClient.post(`/api/v1/admin/users/${userId}/reset-password`,payload);
+    },
 }

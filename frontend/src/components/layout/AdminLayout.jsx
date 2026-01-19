@@ -1,30 +1,43 @@
-import { Outlet, useLocation, useParams} from "react-router-dom";
+import { Outlet, useLocation, useParams } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
 import { Toaster } from "@/components/ui/sonner";
 
 export default function AdminLayout() {
-    const location = useLocation();
-    const pathname = location.pathname;
-    const { id } = useParams();
-    let pageMeta = null;
+    const { pathname } = useLocation();
 
-    if (pathname === "/admin/users") {
-        pageMeta = {
-            title: "User List",
-            subtitle: "Xem danh sách nhân viên / khách hàng",
-        };
-    } else if (id) {
-        pageMeta = {
-            title: "User Detail",
-            subtitle: "Thông tin chi tiết",
-        };
-    } else if (pathname.startsWith("/admin/users/add")) {
-        pageMeta = {
+    const PAGE_META_CONFIG = [
+        {
+            key: "RESET_PASSWORD",
+            match: (path) => path.endsWith("/reset-password"),
+            title: "Reset User Password",
+            subtitle: "Admin đặt lại mật khẩu cho người dùng",
+        },
+        {
+            key: "ADD_USER",
+            match: (path) => path === "/admin/users/add",
             title: "Add User",
             subtitle: "Thêm người dùng mới",
-        };
-    }
+        },
+        {
+            key: "USER_DETAIL",
+            match: (path) =>
+                /^\/admin\/users\/\d+$/.test(path),
+            title: "User Detail",
+            subtitle: "Thông tin chi tiết",
+        },
+        {
+            key: "USER_LIST",
+            match: (path) => path === "/admin/users",
+            title: "User List",
+            subtitle: "Xem danh sách nhân viên / khách hàng",
+        },
+    ];
+
+    const pageMeta = PAGE_META_CONFIG.find((item) =>
+        item.match(pathname)
+    );
+
 
     return (
         <AdminSidebar>

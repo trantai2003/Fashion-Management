@@ -387,10 +387,12 @@ export default function UserList() {
                                                 <button className="text-sm font-semibold text-gray-700 hover:underline">
                                                     Role
                                                 </button>
-
-                                                <button className="text-sm font-semibold text-red-600 hover:underline">
+                                                <Link
+                                                    to={`/admin/users/${u.id}/reset-password`}
+                                                    className="text-sm font-semibold text-red-600 hover:underline"
+                                                >
                                                     Reset
-                                                </button>
+                                                </Link>
                                             </TableCell>
                                         </TableRow>
                                     ))}
