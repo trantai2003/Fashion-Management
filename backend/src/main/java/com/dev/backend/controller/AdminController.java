@@ -4,6 +4,7 @@ import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.NguoiDungCreating;
+import com.dev.backend.dto.request.ResetPasswordRequest;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.mapper.NguoiDungMapper;
@@ -107,6 +108,27 @@ public class AdminController {
                                 )
                         )
                         .message("Tạo tài khoản người dùng thành công")
+                        .build()
+        );
+    }
+
+    @PostMapping("/users/{id}/reset-password")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien}
+    )
+    public ResponseEntity<ResponseData<Void>> resetUserPassword(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer id,
+            @RequestBody ResetPasswordRequest request
+    ) {
+
+        nguoiDungService.resetPassword(id, request.getNewPassword());
+
+        return ResponseEntity.ok(
+                ResponseData.<Void>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Admin reset mật khẩu cho người dùng thành công")
+                        .error(null)
                         .build()
         );
     }

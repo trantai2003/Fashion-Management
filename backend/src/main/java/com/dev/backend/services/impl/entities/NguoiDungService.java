@@ -83,6 +83,18 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     @Transactional
+    public void resetPassword(Integer userId, String newPassword) {
+
+        NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
+                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
+
+        nguoiDung.setMatKhauHash(passwordEncoder.encode(newPassword));
+        nguoiDung.setNgayCapNhat(Instant.now());
+
+        nguoiDungRepository.save(nguoiDung);
+    }
+
+    @Transactional
     public NguoiDung createInternalUser(NguoiDungCreating request) {
 
         if (nguoiDungRepository.existsByTenDangNhap(request.getTenDangNhap())) {
