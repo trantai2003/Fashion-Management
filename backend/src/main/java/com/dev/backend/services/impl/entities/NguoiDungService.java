@@ -31,6 +31,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
 import java.util.*;
@@ -81,6 +84,46 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         return nguoiDungRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
     }
+
+    @Transactional
+    public NguoiDung toggleStatus(Integer userId) {
+
+        // ===== LẤY ID USER ĐANG LOGIN =====
+        Integer currentUserId = null;
+
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            Object userIdClaim = jwt.getClaim("id");
+            if (userIdClaim != null) {
+                currentUserId = Integer.valueOf(userIdClaim.toString());
+            }
+        }
+
+        // ===== LẤY USER BỊ THAO TÁC =====
+        NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
+                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
+
+        // ===== CHẶN TỰ KHÓA =====
+        if (nguoiDung.getId().equals(currentUserId)) {
+            throw new CommonException("Không thể tự khóa tài khoản của chính mình");
+        }
+
+        // ===== TOGGLE TRẠNG THÁI =====
+        if (nguoiDung.getTrangThai() != null && nguoiDung.getTrangThai() == 1) {
+            nguoiDung.setTrangThai(0);
+        } else {
+            nguoiDung.setTrangThai(1);
+        }
+
+        nguoiDung.setNgayCapNhat(Instant.now());
+
+        return nguoiDungRepository.save(nguoiDung);
+    }
+
+
 
     @Transactional
     public void resetPassword(Integer userId, String newPassword) {

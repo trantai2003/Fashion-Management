@@ -13,10 +13,34 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { toast } from "sonner";
 
 export default function UserDetailAdmin() {
     const { id } = useParams();
     const [user, setUser] = useState(null);
+    const [loadingToggle, setLoadingToggle] = useState(false);
+
+    const handleToggleStatus = async () => {
+        try {
+            setLoadingToggle(true);
+
+            await adminService.toggleUserStatus(id);
+
+            // reload lại detail sau khi toggle
+            const refreshed = await adminService.getById(id);
+            setUser(refreshed.data);
+
+            toast.success("Cập nhật trạng thái tài khoản thành công");
+
+        } catch (err) {
+            toast.error(
+                err?.response?.data?.message ||
+                "Không thể cập nhật trạng thái tài khoản"
+            );
+        } finally {
+            setLoadingToggle(false);
+        }
+    };
 
     useEffect(() => {
         adminService.getById(id)
@@ -50,10 +74,20 @@ export default function UserDetailAdmin() {
                 <div className="flex gap-2">
                     <Button variant="outline">Chỉnh sửa quyền</Button>
                     <Button
-                        variant="destructive"
-                        className="bg-red-600 text-white hover:bg-red-700"
+                        variant={user.trangThai === 1 ? "destructive" : "outline"}
+                        className={
+                            user.trangThai === 1
+                                ? "bg-red-600 text-white hover:bg-red-700"
+                                : "bg-green-600 text-white hover:bg-green-700 border-green-600"
+                        }
+                        disabled={loadingToggle}
+                        onClick={handleToggleStatus}
                     >
-                        Khóa tài khoản
+                        {loadingToggle
+                            ? "Đang xử lý..."
+                            : user.trangThai === 1
+                                ? "Khóa tài khoản"
+                                : "Mở khóa tài khoản"}
                     </Button>
                 </div>
             </div>

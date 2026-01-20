@@ -133,5 +133,23 @@ public class AdminController {
         );
     }
 
+    @PostMapping("/users/{id}/toggle-status")
+    @RequireAuth(roles = {IRoleType.quan_tri_vien})
+    public ResponseEntity<ResponseData<NguoiDungDto>> toggleUserStatus(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer id
+    ) {
+        return ResponseEntity.ok(
+                ResponseData.<NguoiDungDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(nguoiDungMapper.toDto(
+                                nguoiDungService.toggleStatus(id)
+                        ))
+                        .message("Cập nhật trạng thái tài khoản thành công")
+                        .build()
+        );
+    }
+
+
 }
 

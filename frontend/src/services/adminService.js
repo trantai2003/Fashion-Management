@@ -29,6 +29,9 @@ export const adminService = {
         return apiClient.post("/api/v1/admin/add-user", data);
     },
     resetUserPassword(userId, payload) {
-        return apiClient.post(`/api/v1/admin/users/${userId}/reset-password`,payload);
+        return apiClient.post(`/api/v1/admin/users/${userId}/reset-password`, payload);
     },
+    toggleUserStatus(userId) {
+        return apiClient.post(`/api/v1/admin/users/${userId}/toggle-status`);
+    }
 }
