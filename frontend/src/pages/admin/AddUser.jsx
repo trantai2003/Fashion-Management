@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { adminService } from "@/services/adminService";
+import { adminService } from "@/services/AdminService";
 
 export default function AddUser() {
     const navigate = useNavigate();

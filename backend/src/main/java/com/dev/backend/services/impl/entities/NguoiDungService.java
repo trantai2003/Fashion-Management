@@ -88,7 +88,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     @Transactional
     public NguoiDung toggleStatus(Integer userId) {
 
-        // ===== LẤY ID USER ĐANG LOGIN =====
+        //lay current id
         Integer currentUserId = null;
 
         Authentication authentication = SecurityContextHolder
@@ -102,16 +102,16 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
             }
         }
 
-        // ===== LẤY USER BỊ THAO TÁC =====
+        //lay id bi thao tac
         NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
                 .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
 
-        // ===== CHẶN TỰ KHÓA =====
+        //chan tu khoa
         if (nguoiDung.getId().equals(currentUserId)) {
             throw new CommonException("Không thể tự khóa tài khoản của chính mình");
         }
 
-        // ===== TOGGLE TRẠNG THÁI =====
+        //toggle trang thai
         if (nguoiDung.getTrangThai() != null && nguoiDung.getTrangThai() == 1) {
             nguoiDung.setTrangThai(0);
         } else {

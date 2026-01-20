@@ -11,6 +11,7 @@ import AddUser from "@/pages/admin/AddUser.jsx";
 import UserList from "./pages/admin/UserList";
 import UserDetailAdmin from "@/pages/admin/UserDetailAdmin.jsx";
 import ResetUserPassword from "@/pages/admin/ResetUserPassword.jsx";
+import UserPermissionEdit from "@/pages/admin/EditUserRole.jsx";
 export default function App() {
   return (
     <BrowserRouter>
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="users/:id" element={<UserDetailAdmin />} />
           <Route path="users/add" element={<AddUser />} />
           <Route path="users/:id/reset-password" element={<ResetUserPassword />}/>
+          <Route path="users/:id/edit-role" element={<UserPermissionEdit />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -8,6 +8,12 @@ export default function AdminLayout() {
 
     const PAGE_META_CONFIG = [
         {
+            key: "EDIT_USER_ROLE",
+            match: (path) => path.endsWith("/edit-role"),
+            title: "Edit User Role",
+            subtitle: "Cập nhật quyền hạn cho người dùng dựa trên chức vụ",
+        },
+        {
             key: "RESET_PASSWORD",
             match: (path) => path.endsWith("/reset-password"),
             title: "Reset User Password",
