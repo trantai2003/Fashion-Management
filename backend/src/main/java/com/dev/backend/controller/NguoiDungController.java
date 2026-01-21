@@ -73,6 +73,16 @@ public class NguoiDungController {
         return nguoiDungService.update(request);
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ResponseData<String >> forgotPassword(@RequestBody ForgotPasswordRequest fpRequest) {
+        return nguoiDungService.forgotPassword(fpRequest);
+    }
+
+    @PostMapping("reset-password")
+    public ResponseEntity<ResponseData<String >> resetPassword(@RequestBody ResetPasswordRequest rpRequest){
+        return nguoiDungService.resetPassword(rpRequest);
+    }
+
     @PostMapping("/filter")
     public ResponseEntity<ResponseData<Page<NguoiDungDto>>> filter(@RequestBody BaseFilterRequest filter) {
         return ResponseEntity.ok(
