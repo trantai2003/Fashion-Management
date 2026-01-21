@@ -259,7 +259,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         params.put("expiryTime", "5 phút");
 
         emailService.sendHtmlEmailFromTemplate(nguoiDung.getEmail(), "Lấy lại mật khẩu", "activation.html", params);
-
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
@@ -271,6 +270,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     public ResponseEntity<ResponseData<String>> resetPassword(ResetPasswordRequest rpRequest) {
+
         NguoiDung nguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
                 rpRequest.getUsername(),
                 rpRequest.getUsername(),
