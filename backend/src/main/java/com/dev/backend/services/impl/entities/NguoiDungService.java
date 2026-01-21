@@ -4,11 +4,7 @@ import com.dev.backend.constant.GlobalCache;
 import com.dev.backend.constant.enums.OtpType;
 import com.dev.backend.constant.enums.RoleType;
 import com.dev.backend.dto.OtpScheduleObj;
-import com.dev.backend.dto.request.LoginRequest;
-import com.dev.backend.dto.request.RegisterRequest;
-import com.dev.backend.dto.request.UpdateNguoiDungRequest;
-import com.dev.backend.dto.request.VerifyAccount;
-import com.dev.backend.dto.request.NguoiDungCreating;
+import com.dev.backend.dto.request.*;
 import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
@@ -126,16 +122,22 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
 
     @Transactional
-    public void resetPassword(Integer userId, String newPassword) {
+    public void updateUserByAdmin(Integer userId, AdminUpdateRequest request) {
 
         NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
                 .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
 
-        nguoiDung.setMatKhauHash(passwordEncoder.encode(newPassword));
-        nguoiDung.setNgayCapNhat(Instant.now());
+        // reset password
+        if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
+            nguoiDung.setMatKhauHash(
+                    passwordEncoder.encode(request.getNewPassword())
+            );
+        }
 
+        nguoiDung.setNgayCapNhat(Instant.now());
         nguoiDungRepository.save(nguoiDung);
     }
+
 
     @Transactional
     public NguoiDung createInternalUser(NguoiDungCreating request) {

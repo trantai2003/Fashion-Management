@@ -2,6 +2,7 @@ package com.dev.backend.controller;
 
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
+import com.dev.backend.dto.request.AdminUpdateRequest;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.NguoiDungCreating;
 import com.dev.backend.dto.request.ResetPasswordRequest;
@@ -119,10 +120,10 @@ public class AdminController {
     public ResponseEntity<ResponseData<Void>> resetUserPassword(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer id,
-            @RequestBody ResetPasswordRequest request
+            @RequestBody AdminUpdateRequest request
     ) {
 
-        nguoiDungService.resetPassword(id, request.getNewPassword());
+        nguoiDungService.updateUserByAdmin(id, request);
 
         return ResponseEntity.ok(
                 ResponseData.<Void>builder()

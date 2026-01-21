@@ -149,22 +149,25 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-        public NguoiDungAuthInfo getNguoiDungAuthInfoFromToken(String token) {
+    public NguoiDungAuthInfo getNguoiDungAuthInfoFromToken(String token) {
         try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(ConstantVariables.SIGNER_KEY.getBytes()) // Nên dùng getBytes() để khớp với lúc tạo
-                    .parseClaimsJws(token)
-                    .getBody();
-            String scope = claims.get("scope", String.class);
+            JWSObject jwsObject = JWSObject.parse(token);
+            JWSVerifier verifier = new MACVerifier(ConstantVariables.SIGNER_KEY.getBytes());
 
-            // Lấy chuỗi JSON từ claim
-            String warehousePermissionsJson = claims.get("warehousePermissions", String.class);
+            if (!jwsObject.verify(verifier)) {
+                throw new RuntimeException("Invalid token signature");
+            }
 
-            // Sử dụng readValue để giải mã chuỗi JSON thành List DTO
+            JWTClaimsSet claims = JWTClaimsSet.parse(jwsObject.getPayload().toJSONObject());
+
+            String scope = claims.getStringClaim("scope");
+            String warehousePermissionsJson = claims.getStringClaim("warehousePermissions");
+
             List<PhanQuyenNguoiDungKhoDto> phanQuyenNguoiDungKhoDtos =
                     objectMapper.readValue(
                             warehousePermissionsJson,
-                            new TypeReference<List<PhanQuyenNguoiDungKhoDto>>() {}
+                            new TypeReference<List<PhanQuyenNguoiDungKhoDto>>() {
+                            }
                     );
 
             return NguoiDungAuthInfo.builder()
@@ -176,8 +179,8 @@ public class JwtServiceImpl implements JwtService {
                     .trangThai(claims.getIntegerClaim("trangThai"))
                     .phanQuyenNguoiDungKhos(phanQuyenNguoiDungKhoDtos)
                     .build();
-        } catch (Exception e) { // Nên catch Exception chung để bắt cả lỗi Parse và JSON
-            throw new RuntimeException("Lỗi xác thực Token: " + e.getMessage());
+        } catch (JOSEException | ParseException | JsonProcessingException e) {
+            throw new RuntimeException("Error parsing token " + e.getMessage(), e);
         }
     }
 
@@ -245,4 +248,3 @@ public class JwtServiceImpl implements JwtService {
         return false;
     }
 }
-
