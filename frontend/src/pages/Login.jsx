@@ -114,8 +114,8 @@ export default function AuthPage() {
                         console.log("LOGIN SUCCESS - Detected Role:", role);
 
                         if (role === 'quan_tri_vien') {
-                            console.log("Redirecting to /admin/users");
-                            navigate('/admin/users'); // Redirect to user list or dashboard
+                            console.log("Redirecting to /admin/dashboard");
+                            navigate('/admin/dashboard'); // Redirect to dashboard
                         } else if (role === 'quan_ly_kho' || role === 'nhan_vien_kho') {
                             console.log("Redirecting to /warehouse");
                             navigate('/warehouse');
