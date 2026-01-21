@@ -9,8 +9,8 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-@ToString
-public class LoginRequest {
+public class ResetPasswordRequest {
     String username;
+    String otp;
     String password;
 }

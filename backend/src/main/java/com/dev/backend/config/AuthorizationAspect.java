@@ -5,6 +5,7 @@ import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
 import com.dev.backend.services.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -23,6 +24,8 @@ public class AuthorizationAspect {
 
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private HttpServletRequest request;
 
 
     @Around("@annotation(requireAuth)")
@@ -33,7 +36,7 @@ public class AuthorizationAspect {
         String[] requiredRoles = requireAuth.roles();
 
         for (String role : requiredRoles) {
-            if(role.equals(IRoleType.all)){
+            if (role.equals(IRoleType.all)) {
                 return joinPoint.proceed();
             }
         }
@@ -51,13 +54,18 @@ public class AuthorizationAspect {
                     : jwtService.hasAllRoles(nguoiDungAuthInfo, requiredRoles); // Có tất cả roles
 
             if (!hasAccess) {
-                throw new AccessDeniedException("Vai trò đủ");
+                throw new AccessDeniedException("Vai trò không đủ");
             }
         }
 
         if (requireAuth.inWarehouse()) {
+            Integer warehouseId = getWarehouseId(joinPoint);
+
+            if (!jwtService.inWorkspace(warehouseId, nguoiDungAuthInfo)) {
+                throw new AccessDeniedException("Người dùng id: " + nguoiDungAuthInfo.getId() + " không nằm trong kho id: " + warehouseId);
+            }
+
             if (requireAuth.permissions().length > 0) {
-                Integer warehouseId = getWarehouseId(joinPoint);
                 boolean hasAccess = requireAuth.permissionsLogic() == RequireAuth.LogicType.OR
                         ? jwtService.hasAnyPermissionInWorkSpace(warehouseId, nguoiDungAuthInfo, requireAuth.permissions()) // Có ít nhất 1 permission
                         : jwtService.hasAllPermissionsInWorkSpace(warehouseId, nguoiDungAuthInfo, requireAuth.permissions()); // Có tất cả permissions
@@ -72,6 +80,7 @@ public class AuthorizationAspect {
     }
 
     private String getAuthHeader(ProceedingJoinPoint joinPoint) {
+        // Thử lấy từ method parameter trước
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Parameter[] parameters = method.getParameters();
@@ -86,10 +95,17 @@ public class AuthorizationAspect {
             }
         }
 
+        // Nếu không có trong parameter, lấy từ HttpServletRequest
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && !authHeader.isEmpty()) {
+            return authHeader;
+        }
+
         throw new AccessDeniedException("Không tìm thấy header Authorization");
     }
 
     public Integer getWarehouseId(ProceedingJoinPoint joinPoint) {
+        // Tương tự, có thể thêm fallback từ request
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Parameter[] parameters = method.getParameters();
@@ -103,6 +119,17 @@ public class AuthorizationAspect {
                 }
             }
         }
+
+        // Fallback: lấy từ request
+        String khoIdStr = request.getHeader("kho_id");
+        if (khoIdStr != null) {
+            try {
+                return Integer.parseInt(khoIdStr);
+            } catch (NumberFormatException e) {
+                throw new AccessDeniedException("Header kho_id không hợp lệ");
+            }
+        }
+
         throw new AccessDeniedException("Không tìm thấy header kho_id");
     }
 }

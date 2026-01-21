@@ -44,6 +44,7 @@ public interface JwtService {
     NguoiDungAuthInfo getNguoiDungAuthInfoFromToken(String token);
     public boolean hasAnyRole(NguoiDungAuthInfo nguoiDungAuthInfo, String... roles);
     public boolean hasAllRoles(NguoiDungAuthInfo nguoiDungAuthInfo, String... roles);
+    public boolean inWorkspace(Integer workspaceId, NguoiDungAuthInfo nguoiDungAuthInfo);
     public boolean hasAnyPermissionInWorkSpace(Integer workspaceId, NguoiDungAuthInfo nguoiDungAuthInfo, String... permissions);
     public boolean hasAllPermissionsInWorkSpace(Integer workspaceId, NguoiDungAuthInfo nguoiDungAuthInfo, String... permissions);
 }
