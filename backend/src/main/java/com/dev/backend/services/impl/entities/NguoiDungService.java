@@ -157,9 +157,9 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     @Transactional
     public ResponseEntity<ResponseData<LoginResponse>> login(LoginRequest loginRequest) {
         Optional<NguoiDung> findingNguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
-                loginRequest.getUserName(),
-                loginRequest.getUserName(),
-                loginRequest.getUserName());
+                loginRequest.getUsername(),
+                loginRequest.getUsername(),
+                loginRequest.getUsername());
         if (findingNguoiDung.isEmpty()) {
             throw new CommonException("Tên đăng nhập không hợp lệ");
         }
