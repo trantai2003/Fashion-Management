@@ -3,8 +3,7 @@ package com.dev.backend.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
@@ -12,6 +11,9 @@ import org.hibernate.generator.EventType;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -52,29 +54,28 @@ public class BienTheSanPham {
     private String maVachSku;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "gia_von", precision = 15, scale = 2)
     private BigDecimal giaVon;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "gia_ban", precision = 15, scale = 2)
     private BigDecimal giaBan;
 
     @ColumnDefault("0")
     @Column(name = "trang_thai")
-    @Generated(event = EventType.INSERT)
     private Integer trangThai;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_tao")
-    @Generated(event = EventType.INSERT)
     private Instant ngayTao;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_cap_nhat")
     @Generated(event = EventType.INSERT)
     private Instant ngayCapNhat;
+
+    @OneToOne(mappedBy = "bienThe")
+    private AnhBienThe anhBienThe;
 
 
 }

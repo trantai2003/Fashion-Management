@@ -7,9 +7,10 @@ import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Set;
 
 /**
- * DTO for {@link com.dev.backend.entities.Kho}
+ * DTO for {@link com.dev.backend.entities.DanhMucQuanAo}
  */
 @AllArgsConstructor
 @Getter
@@ -18,12 +19,12 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @EqualsAndHashCode(of = {"id"})
-public class KhoDto implements Serializable {
+public class DanhMucQuanAoDto implements Serializable {
     Integer id;
-    String maKho;
-    String tenKho;
-    String diaChi;
-    NguoiDungDto quanLy;
+    String maDanhMuc;
+    String tenDanhMuc;
+    String moTa;
     Integer trangThai;
     Instant ngayTao;
+    Set<DanhMucQuanAoDto> danhMucCons;
 }

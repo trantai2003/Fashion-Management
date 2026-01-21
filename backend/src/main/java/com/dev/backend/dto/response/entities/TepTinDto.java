@@ -1,7 +1,5 @@
 package com.dev.backend.dto.response.entities;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -9,7 +7,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * DTO for {@link com.dev.backend.entities.Kho}
+ * DTO for {@link com.dev.backend.entities.TepTin}
  */
 @AllArgsConstructor
 @Getter
@@ -18,12 +16,17 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @EqualsAndHashCode(of = {"id"})
-public class KhoDto implements Serializable {
+public class TepTinDto implements Serializable {
     Integer id;
-    String maKho;
-    String tenKho;
-    String diaChi;
-    NguoiDungDto quanLy;
-    Integer trangThai;
+    String tenTepGoc;
+    String tenTaiLen;
+    String tenLuuTru;
+    String duongDan;
+    String loaiTepTin;
+    String duoiTep;
+    Integer kichCo;
+    String moTa;
     Instant ngayTao;
+    Instant ngayCapNhat;
+    Integer trangThai;
 }

@@ -2,40 +2,38 @@ package com.dev.backend.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Generated;
-import org.hibernate.generator.EventType;
 
 import java.time.Instant;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Getter
 @Setter
 @Entity
-@Table(name = "lich_su_thay_doi_quyen")
-public class LichSuThayDoiQuyen {
+@Table(name = "lich_su_thay_doi")
+public class LichSuThayDoi {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "nguoi_dung_id", nullable = false)
-    private NguoiDung nguoiDung;
+    @Size(max = 50)
+    @Column(name = "loai_tham_chieu", length = 50)
+    private String loaiThamChieu;
+
+    @Column(name = "id_tham_chieu")
+    private Integer idThamChieu;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "kho_id")
     private Kho kho;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quyen_han_id")
-    private QuyenHan quyenHan;
-
-    @NotNull
-    @Lob
-    @Column(name = "hanh_dong", nullable = false)
+    @Size(max = 50)
+    @Column(name = "hanh_dong", length = 50)
     private String hanhDong;
 
     @Lob
@@ -52,7 +50,6 @@ public class LichSuThayDoiQuyen {
     private NguoiDung nguoiThucHien;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
-    @Generated(event = EventType.INSERT)
     @Column(name = "ngay_thuc_hien")
     private Instant ngayThucHien;
 

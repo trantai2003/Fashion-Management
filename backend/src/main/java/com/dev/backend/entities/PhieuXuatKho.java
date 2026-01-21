@@ -10,7 +10,7 @@ import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Getter
 @Setter
