@@ -1,5 +1,6 @@
 package com.dev.backend.dto.response;
 
+import com.dev.backend.config.SecurityContextHolder;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -19,7 +20,8 @@ public class ResponseData<T> implements Serializable {
     String message;
     @Builder.Default
     Date timestamp = new Date();
-    String path;
+    @Builder.Default
+    String path = SecurityContextHolder.getPath();
 
     public ResponseData(int status, T data, String error, String message) {
         this.status = status;
