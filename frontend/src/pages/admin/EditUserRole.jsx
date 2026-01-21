@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { ROLES } from "@/constants/backend/role";
 import PermissionMatrix from "@/components/admin/PermissionMatrix";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { khoService } from "@/services/khoService";
 
 export default function UserPermissionEdit() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [loadingKho, setLoadingKho] = useState(true);
   const [form, setForm] = useState({
     role: "quan_ly_kho",
@@ -256,11 +257,19 @@ export default function UserPermissionEdit() {
           {/* ===== ACTION ===== */}
           <div className="flex justify-end gap-3 pt-6 border-t">
             <button
+              type="button"
+              onClick={() => navigate("/admin/users")}
+              className="px-6 py-2.5 text-sm font-semibold text-gray-600
+               hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Hủy Thay Đổi
+            </button>
+            <button
               type="submit"
               className="px-8 py-2.5 text-sm font-bold text-white bg-purple-600
                          hover:bg-purple-700 rounded-lg shadow-md active:scale-95"
             >
-              Lưu thiết lập
+              Lưu Thiết Lập
             </button>
           </div>
         </form>

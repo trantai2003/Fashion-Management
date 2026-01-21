@@ -383,10 +383,13 @@ export default function UserList() {
                                                 >
                                                     View
                                                 </Link>
-
-                                                <button className="text-sm font-semibold text-gray-700 hover:underline">
+                                                <Link
+                                                    to={`/admin/users/${u.id}/edit-role`}
+                                                    className="text-sm font-semibold text-gray-700 hover:underline"
+                                                >
                                                     Role
-                                                </button>
+                                                </Link>
+
                                                 <Link
                                                     to={`/admin/users/${u.id}/reset-password`}
                                                     className="text-sm font-semibold text-red-600 hover:underline"
