@@ -30,7 +30,7 @@ class DieuHanhHeThongController {
 
 
     //Lấy danh sách quyền hạn trong hệ thống
-    @GetMapping("/all")
+    @GetMapping("/quyen-han/all")
     public ResponseEntity<ResponseData<List<QuyenHanDto>>> getAll() {
         return ResponseEntity.ok(
                 ResponseData.<List<QuyenHanDto>>builder()
@@ -42,16 +42,18 @@ class DieuHanhHeThongController {
     }
 
     // Gán quyền cho một user trong hệ thống vào một kho nào đó
-    @PostMapping("/gan-quyen")
+    @PostMapping("/quyen-han/gan-quyen")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
             permissions = {IPermissionType.cap_quyen_nhan_vien},
             inWarehouse = true,
-            permissionsLogic = RequireAuth.LogicType.AND
+            permissionsLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<String>> ganQuyenNhanVienKho(
             @RequestBody PhanQuyenNguoiDungKhoCreating pqndkCreating) {
 
         return dieuHanhHeThongService.ganQuyenNhanVienKho(pqndkCreating);
     }
+
+
 }
