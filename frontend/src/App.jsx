@@ -5,18 +5,23 @@ import UserDetail from "./pages/UserDetail";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Warehouse from "./pages/warehouse/Warehouse";
+import ChatLieuList from "./pages/material/ChatLieuList";       // ← thêm
+import ChatLieuDetail from "./pages/material/ChatLieuDetail";   // ← thêm
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/" element={<HomePage />} />
-        <Route path="/user/:id" element={<UserDetail />} />
-        <Route path="/warehouse" element={<Warehouse />} />
-      </Routes>
-    </BrowserRouter>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/user/:id" element={<UserDetail />} />
+          <Route path="/warehouse" element={<Warehouse />} />
+          <Route path="/material" element={<ChatLieuList />} />
+          <Route path="/material/:id" element={<ChatLieuDetail />} />     {/* edit */}
+          <Route path="/material/new" element={<ChatLieuDetail />} />     {/* create */}
+        </Routes>
+      </BrowserRouter>
   );
 }
