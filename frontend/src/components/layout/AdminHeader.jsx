@@ -9,10 +9,26 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 export default function AdminHeader({
   title,
   subtitle,
 }) {
+  const token = localStorage.getItem("access_token");
+
+  let userId = null;
+  let username = "Admin";
+
+  if (token) {
+    try {
+      const payload = jwtDecode(token);
+      userId = payload.userId || payload.id || payload.sub;
+      username = payload.tenDangNhap || payload.username || "Admin";
+    } catch (e) {
+      console.error("Invalid token", e);
+    }
+  }
   return (
     <header className="sticky top-0 z-40 bg-white border-b">
       <div className="h-16 px-6 flex items-center justify-between">
@@ -53,7 +69,7 @@ export default function AdminHeader({
                 </Avatar>
 
                 <span className="text-sm font-medium text-gray-700">
-                  Admin
+                  {username}
                 </span>
 
                 <ChevronDown className="h-4 w-4 text-gray-500" />
@@ -74,10 +90,16 @@ export default function AdminHeader({
     "
             >
               <DropdownMenuItem
-                className="text-sm px-3 py-2 rounded-sm focus:bg-gray-100 cursor-pointer"
+                asChild disabled={!userId}
               >
-                Hồ sơ
+                <Link
+                  to={`/user/${userId}`}
+                  className="text-sm px-3 py-2 rounded-sm focus:bg-gray-100 cursor-pointer"
+                >
+                  Hồ sơ
+                </Link>
               </DropdownMenuItem>
+
 
               <DropdownMenuItem
                 className="text-sm px-3 py-2 rounded-sm focus:bg-gray-100 cursor-pointer"
