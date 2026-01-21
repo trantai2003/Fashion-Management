@@ -11,6 +11,6 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @ToString
 public class LoginRequest {
-    String userName;
+    String username;
     String password;
 }
