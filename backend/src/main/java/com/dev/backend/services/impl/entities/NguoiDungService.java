@@ -4,10 +4,7 @@ import com.dev.backend.constant.GlobalCache;
 import com.dev.backend.constant.enums.OtpType;
 import com.dev.backend.constant.enums.RoleType;
 import com.dev.backend.dto.OtpScheduleObj;
-import com.dev.backend.dto.request.LoginRequest;
-import com.dev.backend.dto.request.RegisterRequest;
-import com.dev.backend.dto.request.UpdateNguoiDungRequest;
-import com.dev.backend.dto.request.VerifyAccount;
+import com.dev.backend.dto.request.*;
 import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
@@ -236,6 +233,69 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     public Optional<NguoiDung> findByEmail(String email) {
         return nguoiDungRepository.findByEmail(email);
+    }
+
+    public ResponseEntity<ResponseData<String>> forgotPassword(ForgotPasswordRequest fpRequest) {
+        NguoiDung nguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
+                fpRequest.getUsername(),
+                fpRequest.getUsername(),
+                fpRequest.getUsername()).orElseThrow(
+                () -> new CommonException("Không tìm thấy tài khoản")
+        );
+        String otp = calcService.getRandomActiveCode(6L);
+        GlobalCache.OTP_SCHEDULE_OBJS.add(
+                OtpScheduleObj.builder()
+                        .email(nguoiDung.getEmail())
+                        .otp(otp)
+                        .createdAt(nguoiDung.getNgayTao())
+                        .type(OtpType.RESET_PASSWORD)
+                        .build()
+        );
+
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("userName", nguoiDung.getHoTen());
+        params.put("otp", otp);
+        params.put("expiryTime", "5 phút");
+
+        emailService.sendHtmlEmailFromTemplate(nguoiDung.getEmail(), "Lấy lại mật khẩu", "activation.html", params);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .data("Success")
+                        .message("Success")
+                        .build()
+
+        );
+    }
+
+    public ResponseEntity<ResponseData<String>> resetPassword(ResetPasswordRequest rpRequest) {
+        NguoiDung nguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
+                rpRequest.getUsername(),
+                rpRequest.getUsername(),
+                rpRequest.getUsername()).orElseThrow(
+                () -> new CommonException("Không tìm thấy tài khoản")
+        );
+        OtpScheduleObj findingRegisterOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
+                otpScheduleObj.getEmail().equals(nguoiDung.getEmail())).findFirst().orElseThrow(
+                () -> new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn")
+        );
+
+        if (!findingRegisterOtp.getOtp().equals(rpRequest.getOtp())) {
+            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
+        }
+
+        nguoiDung.setMatKhauHash(passwordEncoder.encode(rpRequest.getPassword()));
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .data("Success")
+                        .message("Success")
+                        .build()
+
+        );
     }
 
 }
