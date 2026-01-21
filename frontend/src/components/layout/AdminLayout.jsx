@@ -8,6 +8,12 @@ export default function AdminLayout() {
 
     const PAGE_META_CONFIG = [
         {
+            key: "DASHBOARD",
+            match: (path) => path === "/admin/dashboard",
+            title: "Admin Dashboard",
+            subtitle: "Tổng quan hoạt động quản trị",
+        },
+        {
             key: "EDIT_USER_ROLE",
             match: (path) => path.endsWith("/edit-role"),
             title: "Edit User Role",
