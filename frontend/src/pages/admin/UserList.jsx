@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "@/components/ui/select";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { adminService } from "@/services/AdminService.js";
+import { adminService } from "@/services/adminService.js";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
