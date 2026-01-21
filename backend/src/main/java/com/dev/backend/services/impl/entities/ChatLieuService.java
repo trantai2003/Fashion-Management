@@ -22,6 +22,7 @@ public class ChatLieuService extends BaseServiceImpl<ChatLieu, Integer> {
     private final ChatLieuMapper mapper;
     private final EntityManager entityManager;
 
+    // Constructor injection thủ công (không dùng @RequiredArgsConstructor để tránh xung đột)
     @Autowired
     public ChatLieuService(ChatLieuRepository repository,
                            ChatLieuMapper mapper,
@@ -37,6 +38,7 @@ public class ChatLieuService extends BaseServiceImpl<ChatLieu, Integer> {
         return entityManager;
     }
 
+    // Lấy tất cả + search
     public List<ChatLieuDto> findAll(String searchKeyword) {
         if (searchKeyword == null || searchKeyword.trim().isEmpty()) {
             return repository.findAll().stream()
@@ -49,24 +51,22 @@ public class ChatLieuService extends BaseServiceImpl<ChatLieu, Integer> {
         return mapper.toDtoList(entities);
     }
 
+    // Lấy chi tiết DTO
     public ChatLieuDto findByIdDto(Integer id) {
         ChatLieu entity = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chất liệu với ID: " + id));
         return mapper.toDto(entity);
     }
 
+    // Tạo mới
     @Transactional
     public ChatLieuDto create(ChatLieuCreating creating) {
-        // Kiểm tra trùng mã chất liệu
-        if (repository.existsByMaChatLieu(creating.getMaChatLieu())) {
-            throw new IllegalArgumentException("Mã chất liệu '" + creating.getMaChatLieu() + "' đã tồn tại. Vui lòng chọn mã khác.");
-        }
-
         ChatLieu entity = mapper.toEntity(creating);
         entity = repository.save(entity);
         return mapper.toDto(entity);
     }
 
+    // Cập nhật
     @Transactional
     public ChatLieuDto update(Integer id, ChatLieuUpdating updating) {
         ChatLieu entity = repository.findById(id)
@@ -77,6 +77,7 @@ public class ChatLieuService extends BaseServiceImpl<ChatLieu, Integer> {
         return mapper.toDto(entity);
     }
 
+    // Xóa
     @Transactional
     public void delete(Integer id) {
         if (!repository.existsById(id)) {
