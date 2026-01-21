@@ -15,7 +15,7 @@ export default function AuthPage() {
     const [rememberMe, setRememberMe] = useState(false);
 
     const [loginData, setLoginData] = useState({
-        email: '',
+        username: '',
         matKhau: ''
     });
 
@@ -84,9 +84,15 @@ export default function AuthPage() {
         setIsLoading(true);
         setErrors({});
         try {
-            // Map email to userName as per service requirement (assuming email is used as username or backend accepts email in userName field)
+            if (!loginData.username || !loginData.matKhau) {
+                setErrors({ general: 'Vui lòng điền đầy đủ thông tin đăng nhập' });
+                setIsLoading(false);
+                return;
+            }
+
+            // Map username to username as per service requirement
             const payload = {
-                userName: loginData.email,
+                username: loginData.username,
                 password: loginData.matKhau
             };
             const response = await nguoiDungService.login(payload);
@@ -224,18 +230,18 @@ export default function AuthPage() {
                                         </Alert>
                                     )}
 
-                                    {/* Email Input */}
+                                    {/* Username/Email/Phone Input */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="email" className="text-gray-700 font-medium">E-mail</Label>
+                                        <Label htmlFor="username" className="text-gray-700 font-medium">Tên đăng nhập / Email / SĐT</Label>
                                         <div className="relative">
-                                            <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                                            <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                                             <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="example@gmail.com"
+                                                id="username"
+                                                type="text"
+                                                placeholder="Nhập tên đăng nhập, email hoặc SĐT"
                                                 className="pl-10 h-12 border-gray-300"
-                                                value={loginData.email}
-                                                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                                                value={loginData.username}
+                                                onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
                                             />
                                         </div>
                                     </div>
