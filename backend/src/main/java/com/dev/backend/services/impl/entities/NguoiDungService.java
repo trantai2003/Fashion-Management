@@ -287,7 +287,10 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         }
 
         nguoiDung.setMatKhauHash(passwordEncoder.encode(rpRequest.getPassword()));
-
+        nguoiDungRepository.save(nguoiDung);
+        GlobalCache.OTP_SCHEDULE_OBJS.removeIf(o ->
+                o.getEmail().equals(nguoiDung.getEmail()) && o.getType() == OtpType.RESET_PASSWORD
+        );
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
