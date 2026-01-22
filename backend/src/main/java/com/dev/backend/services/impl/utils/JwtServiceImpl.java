@@ -9,10 +9,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -74,10 +73,11 @@ public class JwtServiceImpl implements JwtService {
             List<PhanQuyenNguoiDungKhoDto> phanQuyenNguoiDungKhos,
             String userAgent) {
         try {
-
             JWSHeader jwtHeader = new JWSHeader(JWSAlgorithm.HS256);
 
+
             String phanQuyenNguoiDungKhosJson = objectMapper.writeValueAsString(phanQuyenNguoiDungKhos);
+
 
             JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                     .subject(email)
@@ -155,6 +155,17 @@ public class JwtServiceImpl implements JwtService {
                     .setSigningKey(ConstantVariables.SIGNER_KEY.getBytes()) // Nên dùng getBytes() để khớp với lúc tạo
                     .parseClaimsJws(token)
                     .getBody();
+            JWSObject jwsObject = JWSObject.parse(token);
+            JWSVerifier verifier = new MACVerifier(ConstantVariables.SIGNER_KEY.getBytes());
+
+            if (!jwsObject.verify(verifier)) {
+                throw new RuntimeException("Invalid token signature");
+            }
+
+            JWTClaimsSet claims = JWTClaimsSet.parse(jwsObject.getPayload().toJSONObject());
+
+            String scope = claims.getStringClaim("scope");
+            String warehousePermissionsJson = claims.getStringClaim("warehousePermissions");
 
             String scope = claims.get("scope", String.class);
             // Lấy chuỗi JSON từ claim
@@ -167,16 +178,16 @@ public class JwtServiceImpl implements JwtService {
                     );
 
             return NguoiDungAuthInfo.builder()
-                    .id(claims.get("id", Integer.class))
+                    .id(claims.getIntegerClaim("id"))
                     .email(claims.getSubject())
                     .vaiTro(Set.of(scope.split(" ")))
-                    .hoTen(claims.get("hoTen", String.class))
-                    .soDienThoai(claims.get("soDienThoai", String.class))
-                    .trangThai(claims.get("trangThai", Integer.class))
+                    .hoTen(claims.getStringClaim("hoTen"))
+                    .soDienThoai(claims.getStringClaim("soDienThoai"))
+                    .trangThai(claims.getIntegerClaim("trangThai"))
                     .phanQuyenNguoiDungKhos(phanQuyenNguoiDungKhoDtos)
                     .build();
-        } catch (Exception e) { // Nên catch Exception chung để bắt cả lỗi Parse và JSON
-            throw new RuntimeException("Lỗi xác thực Token: " + e.getMessage());
+        } catch (JOSEException | ParseException | JsonProcessingException e) {
+            throw new RuntimeException("Error parsing token " + e.getMessage(), e);
         }
     }
 
@@ -206,10 +217,21 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
+    public boolean inWorkspace(Integer workspaceId, NguoiDungAuthInfo nguoiDungAuthInfo) {
+
+        for (PhanQuyenNguoiDungKhoDto phanQuyenNguoiDungKhoDto : nguoiDungAuthInfo.getPhanQuyenNguoiDungKhos()) {
+            if (phanQuyenNguoiDungKhoDto.getKho().getId().equals(workspaceId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean hasAnyPermissionInWorkSpace(Integer workspaceId, NguoiDungAuthInfo nguoiDungAuthInfo, String... permissions) {
         for (String permission : permissions) {
-            for(PhanQuyenNguoiDungKhoDto phanQuyenNguoiDungKhoDto : nguoiDungAuthInfo.getPhanQuyenNguoiDungKhos()){
-                if(phanQuyenNguoiDungKhoDto.getKho().getId().equals(workspaceId) ){
+            for (PhanQuyenNguoiDungKhoDto phanQuyenNguoiDungKhoDto : nguoiDungAuthInfo.getPhanQuyenNguoiDungKhos()) {
+                if (phanQuyenNguoiDungKhoDto.getKho().getId().equals(workspaceId)) {
                     return phanQuyenNguoiDungKhoDto.getChiTietQuyenKhos().stream().anyMatch(
                             chiTietQuyenKho ->
                                     chiTietQuyenKho.getQuyenHan().getMaQuyen().equals(permission));
@@ -222,8 +244,8 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public boolean hasAllPermissionsInWorkSpace(Integer workspaceId, NguoiDungAuthInfo nguoiDungAuthInfo, String... permissions) {
         for (String permission : permissions) {
-            for(PhanQuyenNguoiDungKhoDto phanQuyenNguoiDungKhoDto : nguoiDungAuthInfo.getPhanQuyenNguoiDungKhos()){
-                if(phanQuyenNguoiDungKhoDto.getKho().getId().equals(workspaceId) ){
+            for (PhanQuyenNguoiDungKhoDto phanQuyenNguoiDungKhoDto : nguoiDungAuthInfo.getPhanQuyenNguoiDungKhos()) {
+                if (phanQuyenNguoiDungKhoDto.getKho().getId().equals(workspaceId)) {
                     return phanQuyenNguoiDungKhoDto.getChiTietQuyenKhos().stream().allMatch(
                             chiTietQuyenKho ->
                                     chiTietQuyenKho.getQuyenHan().getMaQuyen().equals(permission));
@@ -233,4 +255,3 @@ public class JwtServiceImpl implements JwtService {
         return false;
     }
 }
-

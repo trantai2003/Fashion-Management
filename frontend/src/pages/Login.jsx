@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { jwtDecode } from "jwt-decode";
 import { useNavigate } from 'react-router-dom';
 import { nguoiDungService } from '../services/nguoiDungService';
 import { Card, CardContent } from "../components/ui/card";
@@ -15,7 +16,7 @@ export default function AuthPage() {
     const [rememberMe, setRememberMe] = useState(false);
 
     const [loginData, setLoginData] = useState({
-        email: '',
+        username: '',
         matKhau: ''
     });
 
@@ -84,17 +85,51 @@ export default function AuthPage() {
         setIsLoading(true);
         setErrors({});
         try {
-            // Map email to userName as per service requirement (assuming email is used as username or backend accepts email in userName field)
+            if (!loginData.username || !loginData.matKhau) {
+                setErrors({ general: 'Vui lòng điền đầy đủ thông tin đăng nhập' });
+                setIsLoading(false);
+                return;
+            }
+
+            // Map username to username as per service requirement
             const payload = {
-                userName: loginData.email,
+                username: loginData.username,
                 password: loginData.matKhau
             };
             const response = await nguoiDungService.login(payload);
 
             if (response && response.status === 200) {
-                // Login success
-                // Token is already saved in nguoiDungService.login
-                navigate('/'); // Navigate to home or dashboard
+                // Login success - Token is already saved in nguoiDungService.login
+
+                // Get token and decode to check role
+                const token = localStorage.getItem('access_token');
+                if (token) {
+                    try {
+                        // Decode JWT to get user info
+                        const decoded = jwtDecode(token);
+                        console.log("LOGIN SUCCESS - Decoded Token:", decoded);
+
+                        // Check role and navigate accordingly
+                        const role = decoded.scope || decoded.vaiTro || decoded.role || decoded.authorities;
+                        console.log("LOGIN SUCCESS - Detected Role:", role);
+
+                        if (role === 'quan_tri_vien') {
+                            console.log("Redirecting to /admin/dashboard");
+                            navigate('/admin/dashboard'); // Redirect to dashboard
+                        } else if (role === 'quan_ly_kho' || role === 'nhan_vien_kho') {
+                            console.log("Redirecting to /warehouse");
+                            navigate('/warehouse');
+                        } else {
+                            console.log("Redirecting to /");
+                            navigate('/');
+                        }
+                    } catch (decodeError) {
+                        console.error('Token decode error:', decodeError);
+                        navigate('/'); // Default to home if decode fails
+                    }
+                } else {
+                    navigate('/'); // Default to home if no token
+                }
             } else {
                 setErrors({ general: response.message || 'Đăng nhập thất bại' });
             }
@@ -224,18 +259,18 @@ export default function AuthPage() {
                                         </Alert>
                                     )}
 
-                                    {/* Email Input */}
+                                    {/* Username/Email/Phone Input */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="email" className="text-gray-700 font-medium">E-mail</Label>
+                                        <Label htmlFor="username" className="text-gray-700 font-medium">Tên đăng nhập / Email / SĐT</Label>
                                         <div className="relative">
-                                            <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                                            <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                                             <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="example@gmail.com"
+                                                id="username"
+                                                type="text"
+                                                placeholder="Nhập tên đăng nhập, email hoặc SĐT"
                                                 className="pl-10 h-12 border-gray-300"
-                                                value={loginData.email}
-                                                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                                                value={loginData.username}
+                                                onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
                                             />
                                         </div>
                                     </div>
