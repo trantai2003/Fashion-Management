@@ -11,7 +11,6 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.generator.EventType;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Set;
 
 @Getter

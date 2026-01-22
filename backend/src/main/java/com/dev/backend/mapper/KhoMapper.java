@@ -21,4 +21,3 @@ public interface KhoMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     Kho partialUpdate(KhoDto khoDto, @MappingTarget Kho kho);
 }
-
