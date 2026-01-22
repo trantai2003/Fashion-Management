@@ -39,6 +39,8 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     @Autowired
     private NguoiDungMapper nguoiDungMapper;
+    @Autowired
+    private PhanQuyenNguoiDungKhoMapper pqndkMapper;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -51,9 +53,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     @Autowired
     private EmailService emailService;
-
-    @Autowired
-    private PhanQuyenNguoiDungKhoMapper  pqndkMapper;
 
 
     @Override
@@ -119,11 +118,9 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     @Transactional
     public ResponseEntity<ResponseData<String>> activeAccount(VerifyAccount verifyDto) {
         OtpScheduleObj findingRegisterOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
-                otpScheduleObj.getEmail().equals(verifyDto.getEmail())).findFirst().orElse(null);
-
-        if (findingRegisterOtp == null) {
-            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
-        }
+                otpScheduleObj.getEmail().equals(verifyDto.getEmail())).findFirst().orElseThrow(
+                () -> new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn")
+        );
 
 
         if (!findingRegisterOtp.getOtp().equals(verifyDto.getOtp())) {
@@ -168,9 +165,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
             throw new CommonException("Mật khẩu không chính xác");
         }
 
-
         List<PhanQuyenNguoiDungKho> phanQuyenNguoiDungKhos = phanQuyenNguoiDungKhoService.findByNguoiDungIdAndActive(nguoiDung.getId());
-
 
         Set<String> vaiTros = new HashSet<>();
         vaiTros.add(nguoiDung.getVaiTro());
@@ -201,8 +196,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                         .build()
         );
     }
-
-
 
     @Transactional
     public ResponseEntity<ResponseData<NguoiDungDto>> update(UpdateNguoiDungRequest request) {
@@ -259,6 +252,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         params.put("expiryTime", "5 phút");
 
         emailService.sendHtmlEmailFromTemplate(nguoiDung.getEmail(), "Lấy lại mật khẩu", "activation.html", params);
+
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
@@ -270,7 +264,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     public ResponseEntity<ResponseData<String>> resetPassword(ResetPasswordRequest rpRequest) {
-
         NguoiDung nguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
                 rpRequest.getUsername(),
                 rpRequest.getUsername(),
@@ -297,7 +290,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
         );
     }
-
 }
 
 
