@@ -5,11 +5,12 @@ import com.dev.backend.repository.BienTheSanPhamRepository;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
-public class BienTheSanPhamService extends BaseServiceImpl<BienTheSanPham,Integer> {
+public class BienTheSanPhamService extends BaseServiceImpl<BienTheSanPham, Integer> {
 
     //Khởi tạo quản lý vòng đời entities
     @Autowired
@@ -23,6 +24,19 @@ public class BienTheSanPhamService extends BaseServiceImpl<BienTheSanPham,Intege
 
     public BienTheSanPhamService(BienTheSanPhamRepository repository) {
         super(repository);
+    }
+
+    public BienTheSanPhamRepository bienTheSanPhamRepository = (BienTheSanPhamRepository) getRepository();
+
+
+    public Optional<BienTheSanPham> checkExist(
+            Integer sanPhamId,
+            Integer mauSacId,
+            Integer sizeId,
+            String maSku,
+            String maVachSku
+    ) {
+        return bienTheSanPhamRepository.checkExist(sanPhamId, mauSacId, sizeId, maSku, maVachSku);
     }
 
 
