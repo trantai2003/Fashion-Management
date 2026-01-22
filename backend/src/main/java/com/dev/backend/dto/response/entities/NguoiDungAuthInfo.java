@@ -24,4 +24,3 @@ public class NguoiDungAuthInfo {
     List<PhanQuyenNguoiDungKhoDto> phanQuyenNguoiDungKhos; // Quyền theo từng kho
 
 }
-
