@@ -11,6 +11,8 @@ import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +39,7 @@ public class ChatLieuService extends BaseServiceImpl<ChatLieu, Integer> {
         return entityManager;
     }
 
+    // Lấy danh sách chất liệu, có hỗ trợ tìm kiếm theo mã hoặc tên
     public List<ChatLieuDto> findAll(String searchKeyword) {
         if (searchKeyword == null || searchKeyword.trim().isEmpty()) {
             return repository.findAll().stream()
@@ -44,39 +47,65 @@ public class ChatLieuService extends BaseServiceImpl<ChatLieu, Integer> {
                     .collect(Collectors.toList());
         }
 
-        List<ChatLieu> entities = repository.findByMaChatLieuContainingIgnoreCaseOrTenChatLieuContainingIgnoreCase(
-                searchKeyword, searchKeyword);
+        List<ChatLieu> entities =
+                repository.findByMaChatLieuContainingIgnoreCaseOrTenChatLieuContainingIgnoreCase(
+                        searchKeyword, searchKeyword);
+
         return mapper.toDtoList(entities);
     }
 
+    // Lấy chi tiết chất liệu theo ID
     public ChatLieuDto findByIdDto(Integer id) {
         ChatLieu entity = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chất liệu với ID: " + id));
         return mapper.toDto(entity);
     }
 
+    // Tạo mới chất liệu (KHÔNG kiểm tra trùng ở đây theo yêu cầu)
     @Transactional
     public ChatLieuDto create(ChatLieuCreating creating) {
-        // Kiểm tra trùng mã chất liệu trước khi tạo
-        if (repository.existsByMaChatLieu(creating.getMaChatLieu())) {
-            throw new IllegalArgumentException("Mã chất liệu '" + creating.getMaChatLieu() + "' đã tồn tại. Vui lòng chọn mã khác.");
-        }
 
+        // Map DTO -> Entity
         ChatLieu entity = mapper.toEntity(creating);
+
+        // Lưu vào DB (nếu trùng unique thì DB tự ném lỗi)
         entity = repository.save(entity);
+
+        // Trả về DTO
         return mapper.toDto(entity);
     }
 
+    // Cập nhật chất liệu
     @Transactional
     public ChatLieuDto update(Integer id, ChatLieuUpdating updating) {
+
+        // 1. Tìm entity theo ID
         ChatLieu entity = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chất liệu với ID: " + id));
 
+        // 2. Nếu có sửa mã thì kiểm tra trùng
+        if (updating.getMaChatLieu() != null
+                && repository.existsByMaChatLieu(updating.getMaChatLieu())
+                && !updating.getMaChatLieu().equals(entity.getMaChatLieu())) {
+
+            // Trả về lỗi nghiệp vụ: trùng mã khi edit
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Chất liệu đã tồn tại"
+            );
+        }
+
+        // 3. Cập nhật từng field (MapStruct partialUpdate)
         mapper.partialUpdate(updating, entity);
+
+        // 4. Lưu lại DB
         entity = repository.save(entity);
+
+        // 5. Trả về DTO
         return mapper.toDto(entity);
     }
 
+    // Xóa chất liệu
     @Transactional
     public void delete(Integer id) {
         if (!repository.existsById(id)) {

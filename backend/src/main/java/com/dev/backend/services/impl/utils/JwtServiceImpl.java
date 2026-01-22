@@ -151,10 +151,6 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public NguoiDungAuthInfo getNguoiDungAuthInfoFromToken(String token) {
         try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(ConstantVariables.SIGNER_KEY.getBytes()) // Nên dùng getBytes() để khớp với lúc tạo
-                    .parseClaimsJws(token)
-                    .getBody();
             JWSObject jwsObject = JWSObject.parse(token);
             JWSVerifier verifier = new MACVerifier(ConstantVariables.SIGNER_KEY.getBytes());
 
@@ -167,14 +163,11 @@ public class JwtServiceImpl implements JwtService {
             String scope = claims.getStringClaim("scope");
             String warehousePermissionsJson = claims.getStringClaim("warehousePermissions");
 
-            String scope = claims.get("scope", String.class);
-            // Lấy chuỗi JSON từ claim
-            String warehousePermissionsJson = claims.get("warehousePermissions", String.class);
-            // Sử dụng readValue để giải mã chuỗi JSON thành List DTO
             List<PhanQuyenNguoiDungKhoDto> phanQuyenNguoiDungKhoDtos =
                     objectMapper.readValue(
                             warehousePermissionsJson,
-                            new TypeReference<List<PhanQuyenNguoiDungKhoDto>>() {}
+                            new TypeReference<List<PhanQuyenNguoiDungKhoDto>>() {
+                            }
                     );
 
             return NguoiDungAuthInfo.builder()

@@ -14,7 +14,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/chat-lieu")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(
+        origins = "http://localhost:5173",
+        allowedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS}
+)
 public class ChatLieuController {
 
     private final ChatLieuService service;
@@ -23,7 +27,9 @@ public class ChatLieuController {
     public ResponseEntity<ResponseData> getAll(
             @RequestHeader("Authorization") String authHeader,
             @RequestParam(required = false) String search) {
+
         List<ChatLieuDto> dtos = service.findAll(search);
+
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dtos)
@@ -35,7 +41,9 @@ public class ChatLieuController {
     public ResponseEntity<ResponseData> getById(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer id) {
+
         ChatLieuDto dto = service.findByIdDto(id);
+
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dto)
@@ -47,7 +55,9 @@ public class ChatLieuController {
     public ResponseEntity<ResponseData> create(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody ChatLieuCreating creating) {
+
         ChatLieuDto dto = service.create(creating);
+
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dto)
@@ -60,7 +70,9 @@ public class ChatLieuController {
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer id,
             @RequestBody ChatLieuUpdating updating) {
+
         ChatLieuDto dto = service.update(id, updating);
+
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dto)
@@ -72,7 +84,9 @@ public class ChatLieuController {
     public ResponseEntity<ResponseData> delete(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer id) {
+
         service.delete(id);
+
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .message("Xóa chất liệu thành công")
