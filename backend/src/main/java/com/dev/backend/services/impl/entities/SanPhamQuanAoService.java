@@ -16,6 +16,8 @@ import com.dev.backend.services.MinioService;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +67,8 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
     //Mapper
     @Autowired
     private SanPhamQuanAoMapper sanPhamQuanAoMapper;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -109,38 +112,41 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
         sanPhamQuanAo = create(sanPhamQuanAo);
         Date now = new Date();
 
-        try {
-            int i = 0;
-            for (MultipartFile file : anhSanPhams) {
-                String objectName = minioService.upload(file, ITable.san_pham_quan_ao + "_" + sanPhamQuanAo.getMaSanPham() + "_" + now.getTime() + "_" + i++);
-                TepTin tepTin = tepTinService.create(
-                        TepTin.builder()
-                                .tenTepGoc(objectName)
-                                .tenTaiLen(objectName)
-                                .tenLuuTru(objectName)
-                                .duongDan(minioService.getPublicUrl(objectName))
-                                .loaiTepTin(FileType.IMAGE.toString())
-                                .duoiTep(minioService.getObjectInfo(objectName).getUserMetadata().get("file-extension"))
-                                .trangThai(1)
-                                .ngayTao(instantNow)
-                                .build()
-                );
+        if (anhSanPhams != null && !anhSanPhams.isEmpty()) {
+            try {
+                int i = 0;
+                for (MultipartFile file : anhSanPhams) {
+                    String objectName = minioService.upload(file, ITable.san_pham_quan_ao + "_" + sanPhamQuanAo.getMaSanPham() + "_" + now.getTime() + "_" + i++);
+                    TepTin tepTin = tepTinService.create(
+                            TepTin.builder()
+                                    .tenTepGoc(objectName)
+                                    .tenTaiLen(objectName)
+                                    .tenLuuTru(objectName)
+                                    .duongDan(minioService.getPublicUrl(objectName))
+                                    .loaiTepTin(FileType.IMAGE.toString())
+                                    .duoiTep(minioService.getObjectInfo(objectName).getUserMetadata().get("file-extension"))
+                                    .trangThai(1)
+                                    .ngayTao(instantNow)
+                                    .build()
+                    );
 
-                anhQuanAoService.create(
-                        AnhQuanAo.builder()
-                                .quanAo(sanPhamQuanAo)
-                                .tepTin(tepTin)
-                                .anhChinh(i == 0 ? 1 : 0)
-                                .trangThai(1)
-                                .ngayTao(instantNow)
-                                .build()
-                );
+                    anhQuanAoService.create(
+                            AnhQuanAo.builder()
+                                    .quanAo(sanPhamQuanAo)
+                                    .tepTin(tepTin)
+                                    .anhChinh(i == 0 ? 1 : 0)
+                                    .trangThai(1)
+                                    .ngayTao(instantNow)
+                                    .build()
+                    );
 
+                }
+            } catch (Exception e) {
+                log.error("Lỗi tạo tệp tin cho quần áo: {}", creating.getTenSanPham(), e);
+                throw new RuntimeException("Lỗi tạo tệp tin cho quần áo: " + creating.getTenSanPham(), e);
             }
-        } catch (Exception e) {
-            log.error("Lỗi tạo tệp tin cho quần áo: {}", creating.getTenSanPham(), e);
-            throw new RuntimeException("Lỗi tạo tệp tin cho quần áo: " + creating.getTenSanPham(), e);
         }
+
 
         int imageCount = 0;
         for (BienTheSanPhamCreating btspCreating : creating.getBienTheSanPhams()) {
@@ -161,40 +167,44 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
             bienTheSanPham.setMauSac(mauSacService.getOne(btspCreating.getMauSacId()).orElseThrow(
                     () -> new CommonException("Không tìm thấy màu id: " + btspCreating.getMauSacId())
             ));
-            bienTheSanPham.setSize(sizeService.getOne(bienTheSanPham.getSize().getId()).orElseThrow(
+            bienTheSanPham.setSize(sizeService.getOne(btspCreating.getSizeId()).orElseThrow(
                     () -> new CommonException("Không tìm thấy size id: " + btspCreating.getSizeId())
             ));
-            bienTheSanPham.setChatLieu(chatLieuService.getOne(bienTheSanPham.getChatLieu().getId()).orElseThrow(
+            bienTheSanPham.setChatLieu(chatLieuService.getOne(btspCreating.getChatLieuId()).orElseThrow(
                     () -> new CommonException("Không tìm thấy chat lieu id: " + btspCreating.getChatLieuId())
             ));
             bienTheSanPhamService.create(bienTheSanPham);
-            try {
-                String objectName = minioService.upload(anhBienThes.get(imageCount), ITable.bien_the_san_pham + "_" + sanPhamQuanAo.getMaSanPham() + "_" + now.getTime() + "_" + imageCount++);
-                TepTin tepTin = tepTinService.create(
-                        TepTin.builder()
-                                .tenTepGoc(objectName)
-                                .tenTaiLen(objectName)
-                                .tenLuuTru(objectName)
-                                .duongDan(minioService.getPublicUrl(objectName))
-                                .loaiTepTin(FileType.IMAGE.toString())
-                                .duoiTep(minioService.getObjectInfo(objectName).getUserMetadata().get("file-extension"))
-                                .trangThai(1)
-                                .ngayTao(instantNow)
-                                .build()
-                );
 
-                anhBienTheService.create(
-                        AnhBienThe.builder()
-                                .bienThe(bienTheSanPham)
-                                .tepTin(tepTin)
-                                .trangThai(btspCreating.getTrangThai())
-                                .ngayTao(instantNow)
-                                .build()
-                );
-            } catch (Exception e) {
-                log.error("Lỗi tạo tệp tin cho biến thể quần áo: {}", btspCreating.getMaSku(), e);
-                throw new RuntimeException("Lỗi tạo tệp tin cho quần áo: " + btspCreating.getMaSku(), e);
+            if (anhBienThes != null && !anhBienThes.isEmpty()) {
+                try {
+                    String objectName = minioService.upload(anhBienThes.get(imageCount), ITable.bien_the_san_pham + "_" + sanPhamQuanAo.getMaSanPham() + "_" + now.getTime() + "_" + imageCount++);
+                    TepTin tepTin = tepTinService.create(
+                            TepTin.builder()
+                                    .tenTepGoc(objectName)
+                                    .tenTaiLen(objectName)
+                                    .tenLuuTru(objectName)
+                                    .duongDan(minioService.getPublicUrl(objectName))
+                                    .loaiTepTin(FileType.IMAGE.toString())
+                                    .duoiTep(minioService.getObjectInfo(objectName).getUserMetadata().get("file-extension"))
+                                    .trangThai(1)
+                                    .ngayTao(instantNow)
+                                    .build()
+                    );
+
+                    anhBienTheService.create(
+                            AnhBienThe.builder()
+                                    .bienThe(bienTheSanPham)
+                                    .tepTin(tepTin)
+                                    .trangThai(btspCreating.getTrangThai())
+                                    .ngayTao(instantNow)
+                                    .build()
+                    );
+                } catch (Exception e) {
+                    log.error("Lỗi tạo tệp tin cho biến thể quần áo: {}", btspCreating.getMaSku(), e);
+                    throw new RuntimeException("Lỗi tạo tệp tin cho quần áo: " + btspCreating.getMaSku(), e);
+                }
             }
+
         }
 
         sanPhamQuanAo = getOne(sanPhamQuanAo.getId()).orElseThrow(
@@ -204,7 +214,9 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
         String giaTriMoiJson;
 
         try {
-            giaTriMoiJson = objectMapper.writeValueAsString(sanPhamQuanAo);
+            objectMapper.registerModule(new JavaTimeModule());
+            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            giaTriMoiJson = objectMapper.writeValueAsString(creating);
         } catch (JsonProcessingException e) {
             giaTriMoiJson = "error when parse";
         }

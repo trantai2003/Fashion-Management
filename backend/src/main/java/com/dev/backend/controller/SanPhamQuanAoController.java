@@ -35,8 +35,8 @@ public class SanPhamQuanAoController {
     )
     public ResponseEntity<ResponseData<SanPhamQuanAoDto>> create(
             @RequestPart("creating") SanPhamQuanAoCreating creating,
-            @RequestPart("anhSanPhams") List<MultipartFile> anhSanPhams,
-            @RequestPart("anhBienThes") List<MultipartFile> anhBienThes) {
+            @RequestPart(value = "anhSanPhams", required = false) List<MultipartFile> anhSanPhams,
+            @RequestPart(value = "anhBienThes", required = false) List<MultipartFile> anhBienThes) {
         return sanPhamQuanAoService.create(creating, anhSanPhams, anhBienThes);
 
     }
