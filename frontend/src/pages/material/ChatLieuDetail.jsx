@@ -80,7 +80,7 @@ export default function ChatLieuDetail() {
     const onSubmit = async (values) => {
         setLoading(true);
         try {
-            console.log("Bắt đầu submit:", values); // Log để debug
+            console.log("Bắt đầu submit:", values);
 
             let result;
             if (isEdit) {
@@ -106,12 +106,10 @@ export default function ChatLieuDetail() {
             let errorMsg = "Có lỗi xảy ra khi lưu. Vui lòng thử lại!";
 
             if (error.response) {
-                // Lỗi từ backend (HTTP error)
                 const res = error.response;
                 console.log("Response từ backend:", res);
                 errorMsg = res.data?.message || res.data?.error || `Lỗi ${res.status}: ${res.statusText || "Không xác định"}`;
             } else if (error.message) {
-                // Lỗi JS hoặc network
                 errorMsg = error.message;
             }
 
@@ -192,7 +190,7 @@ export default function ChatLieuDetail() {
                                             </FormItem>
                                         )}
                                     />
-                                    {/* Switch trạng thái - chỉ hiển thị, không gửi lên backend */}
+                                    {/* Switch trạng thái */}
                                     <FormItem className="flex flex-col space-y-3">
                                         <FormLabel className="text-purple-800 font-medium">Trạng thái chất liệu</FormLabel>
                                         <div className="flex items-center space-x-4">
@@ -221,7 +219,8 @@ export default function ChatLieuDetail() {
                             <Button type="button" variant="outline" className="border-purple-300 text-purple-600" onClick={() => navigate("/material")}>
                                 Hủy
                             </Button>
-                            <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700">
+                            {/* Button "Thêm mới" / "Cập nhật" - chữ trắng */}
+                            <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white">
                                 <Save className="mr-2 h-4 w-4" />
                                 {loading ? "Đang lưu..." : isEdit ? "Cập nhật" : "Thêm mới"}
                             </Button>

@@ -17,8 +17,13 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
-import { toast } from "react-hot-toast";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     Dialog,
     DialogContent,
@@ -28,6 +33,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { toast } from "react-hot-toast";
 import {
     getAllChatLieu,
     deleteChatLieu,
@@ -39,7 +46,7 @@ export default function ChatLieuList() {
     const [loading, setLoading] = useState(true);
     const [deleteId, setDeleteId] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const navigate = useNavigate();
 
     const fetchChatLieus = useCallback(async () => {
@@ -82,14 +89,22 @@ export default function ChatLieuList() {
     return (
         <div className="container mx-auto py-10">
             <Card className="border-0 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-white">
+                {/* Header box màu tím - chữ tiêu đề quay về phong cách cũ */}
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-purple-100 p-6 rounded-t-2xl">
-                    <CardTitle className="text-2xl font-bold text-purple-800">Danh sách Chất liệu</CardTitle>
-                    <Button onClick={() => navigate("/material/new")} className="bg-purple-600 hover:bg-purple-700">
+                    <CardTitle className="text-2xl font-bold text-purple-800">
+                        Danh sách Chất liệu
+                    </CardTitle>
+                    {/* Button Thêm chất liệu - chữ trắng */}
+                    <Button
+                        onClick={() => navigate("/material/new")}
+                        className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+                    >
                         <Plus className="mr-2 h-4 w-4" /> Thêm chất liệu
                     </Button>
                 </CardHeader>
 
                 <CardContent className="p-6">
+                    {/* Search */}
                     <div className="flex items-center py-4">
                         <div className="relative w-full max-w-sm">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -103,6 +118,7 @@ export default function ChatLieuList() {
                         </div>
                     </div>
 
+                    {/* Table */}
                     {loading ? (
                         <div className="text-center py-8 text-purple-600">Đang tải...</div>
                     ) : currentItems.length === 0 ? (
@@ -180,7 +196,7 @@ export default function ChatLieuList() {
                                                             </Button>
                                                             <Button
                                                                 variant="destructive"
-                                                                className="bg-red-600 hover:bg-red-700"
+                                                                className="bg-red-600 hover:bg-red-700 text-white"
                                                                 onClick={handleDelete}
                                                                 disabled={loading}
                                                             >
@@ -197,26 +213,54 @@ export default function ChatLieuList() {
                         </div>
                     )}
 
-                    {/* Phân trang */}
-                    {chatLieus.length > itemsPerPage && (
-                        <div className="flex items-center justify-between mt-6">
-                            <Button
-                                variant="outline"
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage(currentPage - 1)}
-                            >
-                                Trước
-                            </Button>
-                            <div className="text-sm text-gray-600">
-                                Trang {currentPage} / {totalPages}
+                    {/* Phân trang - bên phải */}
+                    {chatLieus.length > 0 && (
+                        <div className="flex items-center justify-end mt-6 gap-4">
+                            {/* Rows dropdown */}
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-600">Rows</span>
+                                <Select
+                                    value={String(itemsPerPage)}
+                                    onValueChange={(value) => {
+                                        setItemsPerPage(Number(value));
+                                        setCurrentPage(1);
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[100px] bg-white border border-purple-300 shadow-sm">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white border border-purple-300 shadow-lg">
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="20">20</SelectItem>
+                                        <SelectItem value="30">30</SelectItem>
+                                        <SelectItem value="40">40</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
-                            <Button
-                                variant="outline"
-                                disabled={currentPage === totalPages}
-                                onClick={() => setCurrentPage(currentPage + 1)}
-                            >
-                                Sau
-                            </Button>
+
+                            {/* Prev - Current Page - Next */}
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <Button className="bg-purple-600 text-white cursor-default shadow-md">
+                                    {currentPage}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </CardContent>
