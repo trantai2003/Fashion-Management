@@ -1,5 +1,7 @@
 package com.dev.backend.controller;
 
+import com.dev.backend.constant.variables.IRoleType;
+import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.ChatLieuCreating;
 import com.dev.backend.dto.request.ChatLieuUpdating;
 import com.dev.backend.dto.response.entities.ChatLieuDto;
@@ -12,24 +14,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/chat-lieu")
+@RequestMapping("/api/material")  // Đổi path nếu cần (ví dụ /api/chat-lieu)
 @RequiredArgsConstructor
-@CrossOrigin(
-        origins = "http://localhost:5173",
-        allowedHeaders = "*",
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS}
-)
+@CrossOrigin(origins = "http://localhost:5173")
 public class ChatLieuController {
 
     private final ChatLieuService service;
 
+    // Material List - GET /api/material
     @GetMapping
-    public ResponseEntity<ResponseData> getAll(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestParam(required = false) String search) {
-
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> getAll(@RequestParam(required = false) String search) {
         List<ChatLieuDto> dtos = service.findAll(search);
-
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dtos)
@@ -37,13 +35,13 @@ public class ChatLieuController {
                 .build());
     }
 
+    // Material Detail - GET /api/material/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseData> getById(
-            @RequestHeader("Authorization") String authHeader,
-            @PathVariable Integer id) {
-
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> getById(@PathVariable Integer id) {
         ChatLieuDto dto = service.findByIdDto(id);
-
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dto)
@@ -51,13 +49,13 @@ public class ChatLieuController {
                 .build());
     }
 
+    // Add Material - POST /api/material
     @PostMapping
-    public ResponseEntity<ResponseData> create(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody ChatLieuCreating creating) {
-
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> create(@RequestBody ChatLieuCreating creating) {
         ChatLieuDto dto = service.create(creating);
-
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dto)
@@ -65,14 +63,13 @@ public class ChatLieuController {
                 .build());
     }
 
+    // Edit Material - PUT /api/material/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseData> update(
-            @RequestHeader("Authorization") String authHeader,
-            @PathVariable Integer id,
-            @RequestBody ChatLieuUpdating updating) {
-
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> update(@PathVariable Integer id, @RequestBody ChatLieuUpdating updating) {
         ChatLieuDto dto = service.update(id, updating);
-
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dto)
@@ -80,13 +77,13 @@ public class ChatLieuController {
                 .build());
     }
 
+    // Delete Material - DELETE /api/material/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseData> delete(
-            @RequestHeader("Authorization") String authHeader,
-            @PathVariable Integer id) {
-
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> delete(@PathVariable Integer id) {
         service.delete(id);
-
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .message("Xóa chất liệu thành công")

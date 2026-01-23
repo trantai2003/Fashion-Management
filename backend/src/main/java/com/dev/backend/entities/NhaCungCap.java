@@ -47,8 +47,7 @@ public class NhaCungCap {
     @Column(name = "dia_chi")
     private String diaChi;
 
-    @ColumnDefault("0")
-    @Generated(event = EventType.INSERT)
+    @ColumnDefault("1")
     @Column(name = "trang_thai")
     private Integer trangThai;
 

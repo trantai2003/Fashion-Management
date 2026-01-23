@@ -1,5 +1,7 @@
 package com.dev.backend.controller;
 
+import com.dev.backend.constant.variables.IRoleType;
+import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.NhaCungCapCreating;
 import com.dev.backend.dto.request.NhaCungCapUpdating;
 import com.dev.backend.dto.response.entities.NhaCungCapDto;
@@ -14,12 +16,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/supplier")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173") // Cho phép frontend gọi
+@CrossOrigin(origins = "http://localhost:5173")
 public class NhaCungCapController {
 
     private final NhaCungCapService service;
 
+    // Supplier List - GET /api/supplier
     @GetMapping
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
+    )
     public ResponseEntity<ResponseData> getAll(@RequestParam(required = false) String search) {
         List<NhaCungCapDto> dtos = service.findAll(search);
         return ResponseEntity.ok(ResponseData.builder()
@@ -29,7 +35,11 @@ public class NhaCungCapController {
                 .build());
     }
 
+    // Supplier Detail - GET /api/supplier/{id}
     @GetMapping("/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
+    )
     public ResponseEntity<ResponseData> getById(@PathVariable Integer id) {
         NhaCungCapDto dto = service.findByIdDto(id);
         return ResponseEntity.ok(ResponseData.builder()
@@ -39,7 +49,11 @@ public class NhaCungCapController {
                 .build());
     }
 
+    // Add Supplier - POST /api/supplier
     @PostMapping
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+    )
     public ResponseEntity<ResponseData> create(@RequestBody NhaCungCapCreating creating) {
         NhaCungCapDto dto = service.create(creating);
         return ResponseEntity.ok(ResponseData.builder()
@@ -49,7 +63,11 @@ public class NhaCungCapController {
                 .build());
     }
 
+    // Edit Supplier - PUT /api/supplier/{id}
     @PutMapping("/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+    )
     public ResponseEntity<ResponseData> update(@PathVariable Integer id, @RequestBody NhaCungCapUpdating updating) {
         NhaCungCapDto dto = service.update(id, updating);
         return ResponseEntity.ok(ResponseData.builder()
@@ -59,7 +77,11 @@ public class NhaCungCapController {
                 .build());
     }
 
+    // Delete Supplier - DELETE /api/supplier/{id}
     @DeleteMapping("/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+    )
     public ResponseEntity<ResponseData> delete(@PathVariable Integer id) {
         service.delete(id);
         return ResponseEntity.ok(ResponseData.builder()

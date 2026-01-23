@@ -8,6 +8,8 @@ import VerifyEmail from "./pages/VerifyEmail";
 import Warehouse from "./pages/warehouse/Warehouse";
 import ChatLieuList from "./pages/material/ChatLieuList";       // ← thêm
 import ChatLieuDetail from "./pages/material/ChatLieuDetail";   // ← thêm
+import SupplierList from './pages/supplier/SupplierList';
+import SupplierDetail from './pages/supplier/SupplierDetail';
 import { Toaster } from "react-hot-toast"; // Dùng để hiển thị thông báo toast toàn hệ thống
 
 import AddUser from "@/pages/admin/AddUser.jsx";
@@ -37,6 +39,9 @@ export default function App() {
         <Route path="/material" element={<ChatLieuList />} />
         <Route path="/material/:id" element={<ChatLieuDetail />} />     {/* edit */}
         <Route path="/material/new" element={<ChatLieuDetail />} />     {/* create */}
+          <Route path="/supplier" element={<SupplierList />} />
+          <Route path="/supplier/new" element={<SupplierDetail />} />
+          <Route path="/supplier/:id" element={<SupplierDetail />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="users" element={<UserList />} />
           <Route path="users/:id" element={<UserDetailAdmin />} />
