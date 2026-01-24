@@ -38,8 +38,7 @@ public class MauSacController {
                         .status(HttpStatus.OK.value())
                         .data(mauSacMapper.toDto(finding.get()))
                         .message("Success")
-                        .build()
-        );
+                        .build());
     }
 
     @PostMapping("/filter")
@@ -49,18 +48,33 @@ public class MauSacController {
                         .status(HttpStatus.OK.value())
                         .data(mauSacMapper.toDtoPage(mauSacService.filter(filter)))
                         .message("Success")
-                        .build()
-        );
+                        .build());
     }
 
     @PostMapping("/create")
     public ResponseEntity<ResponseData<MauSacDto>> create(@RequestBody MauSacCreating creating) {
-        return mauSacService.create(creating);
+        // Chuyển DTO sang Entity trước khi gọi service
+        MauSac entity = mauSacMapper.toEntity(creating);
+        MauSac saved = mauSacService.create(entity);
+        return ResponseEntity.ok(
+                ResponseData.<MauSacDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(mauSacMapper.toDto(saved))
+                        .message("Success")
+                        .build());
     }
 
     @PostMapping("/update")
     public ResponseEntity<ResponseData<MauSacDto>> update(@RequestBody MauSacUpdating updating) {
-        return mauSacService.update(updating);
+        // Chuyển DTO sang Entity và gọi service với (ID, Entity)
+        MauSac entity = mauSacMapper.toEntity(updating);
+        MauSac updated = mauSacService.update(updating.getId(), entity);
+        return ResponseEntity.ok(
+                ResponseData.<MauSacDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(mauSacMapper.toDto(updated))
+                        .message("Success")
+                        .build());
     }
 
     @DeleteMapping("/delete/{id}")
@@ -75,8 +89,6 @@ public class MauSacController {
                         .status(HttpStatus.OK.value())
                         .data("Success")
                         .message("Success")
-                        .build()
-        );
+                        .build());
     }
 }
-

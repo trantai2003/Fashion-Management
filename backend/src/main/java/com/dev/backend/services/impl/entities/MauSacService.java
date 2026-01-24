@@ -1,21 +1,10 @@
 package com.dev.backend.services.impl.entities;
 
-<<<<<<< HEAD
 import com.dev.backend.entities.MauSac;
-=======
-import com.dev.backend.dto.request.MauSacCreating;
-import com.dev.backend.dto.request.MauSacUpdating;
-import com.dev.backend.dto.response.ResponseData;
-import com.dev.backend.dto.response.entities.MauSacDto;
-import com.dev.backend.entities.MauSac;
-import com.dev.backend.exception.customize.CommonException;
-import com.dev.backend.mapper.MauSacMapper;
->>>>>>> 233a830ef9af045888f8bb98f7f67dfda98a9879
 import com.dev.backend.repository.MauSacRepository;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
-<<<<<<< HEAD
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,26 +12,6 @@ public class MauSacService extends BaseServiceImpl<MauSac,Integer> {
     @Autowired
     private EntityManager entityManager;
 
-=======
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
-
-@Service
-public class MauSacService extends BaseServiceImpl<MauSac, Integer> {
-    @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
-    private MauSacRepository mauSacRepository;
-
-    @Autowired
-    private MauSacMapper mauSacMapper;
-
->>>>>>> 233a830ef9af045888f8bb98f7f67dfda98a9879
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -51,53 +20,4 @@ public class MauSacService extends BaseServiceImpl<MauSac, Integer> {
     public MauSacService(MauSacRepository repository) {
         super(repository);
     }
-<<<<<<< HEAD
-=======
-
-    @Transactional
-    public ResponseEntity<ResponseData<MauSacDto>> create(MauSacCreating creating) {
-        Optional<MauSac> existing = mauSacRepository.findByMaMau(creating.getMaMau());
-        if (existing.isPresent()) {
-            throw new CommonException("Mã màu đã tồn tại");
-        }
-
-        MauSac entity = new MauSac();
-        entity.setMaMau(creating.getMaMau());
-        entity.setTenMau(creating.getTenMau());
-        entity.setMaMauHex(creating.getMaMauHex());
-        entity = create(entity);
-
-        return ResponseEntity.ok(
-                ResponseData.<MauSacDto>builder()
-                        .status(HttpStatus.OK.value())
-                        .data(mauSacMapper.toDto(entity))
-                        .message("Success")
-                        .build()
-        );
-    }
-
-    @Transactional
-    public ResponseEntity<ResponseData<MauSacDto>> update(MauSacUpdating updating) {
-        Optional<MauSac> existingByCode = mauSacRepository.findByMaMau(updating.getMaMau());
-        if (existingByCode.isPresent() && !existingByCode.get().getId().equals(updating.getId())) {
-            throw new CommonException("Mã màu đã tồn tại");
-        }
-
-        MauSac entity = getOne(updating.getId())
-                .orElseThrow(() -> new CommonException("Không tìm thấy màu id: " + updating.getId()));
-
-        entity.setMaMau(updating.getMaMau());
-        entity.setTenMau(updating.getTenMau());
-        entity.setMaMauHex(updating.getMaMauHex());
-        entity = update(entity.getId(), entity);
-
-        return ResponseEntity.ok(
-                ResponseData.<MauSacDto>builder()
-                        .status(HttpStatus.OK.value())
-                        .data(mauSacMapper.toDto(entity))
-                        .message("Success")
-                        .build()
-        );
-    }
->>>>>>> 233a830ef9af045888f8bb98f7f67dfda98a9879
 }

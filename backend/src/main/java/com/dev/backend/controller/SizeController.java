@@ -38,8 +38,7 @@ public class SizeController {
                         .status(HttpStatus.OK.value())
                         .data(sizeMapper.toDto(finding.get()))
                         .message("Success")
-                        .build()
-        );
+                        .build());
     }
 
     @PostMapping("/filter")
@@ -49,18 +48,33 @@ public class SizeController {
                         .status(HttpStatus.OK.value())
                         .data(sizeMapper.toDtoPage(sizeService.filter(filter)))
                         .message("Success")
-                        .build()
-        );
+                        .build());
     }
 
     @PostMapping("/create")
     public ResponseEntity<ResponseData<SizeDto>> create(@RequestBody SizeCreating creating) {
-        return sizeService.create(creating);
+        // Chuyển DTO sang Entity trước khi gọi service
+        Size entity = sizeMapper.toEntity(creating);
+        Size saved = sizeService.create(entity);
+        return ResponseEntity.ok(
+                ResponseData.<SizeDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(sizeMapper.toDto(saved))
+                        .message("Success")
+                        .build());
     }
 
     @PostMapping("/update")
     public ResponseEntity<ResponseData<SizeDto>> update(@RequestBody SizeUpdating updating) {
-        return sizeService.update(updating);
+        // Chuyển DTO sang Entity và gọi service với (ID, Entity)
+        Size entity = sizeMapper.toEntity(updating);
+        Size updated = sizeService.update(updating.getId(), entity);
+        return ResponseEntity.ok(
+                ResponseData.<SizeDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(sizeMapper.toDto(updated))
+                        .message("Success")
+                        .build());
     }
 
     @DeleteMapping("/delete/{id}")
@@ -75,8 +89,6 @@ public class SizeController {
                         .status(HttpStatus.OK.value())
                         .data("Success")
                         .message("Success")
-                        .build()
-        );
+                        .build());
     }
 }
-
