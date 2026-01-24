@@ -77,8 +77,18 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     public NguoiDung getDetail(Integer id) {
-        return nguoiDungRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+        NguoiDung nguoiDung = nguoiDungRepository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
+
+        //Lấy danh sách phân quyền kho
+        List<PhanQuyenNguoiDungKho> dsPhanQuyen = phanQuyenNguoiDungKhoService.findByNguoiDungIdAndActive(id);
+
+        //Gán danh sách này vào trường @Transient vừa tạo
+        if (dsPhanQuyen != null) {
+            nguoiDung.setKhoPhuTrach(dsPhanQuyen);
+        }
+
+        return nguoiDung;
     }
 
     @Transactional

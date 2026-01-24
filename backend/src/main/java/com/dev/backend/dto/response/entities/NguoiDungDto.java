@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * DTO for {@link com.dev.backend.entities.NguoiDung}
@@ -35,4 +36,5 @@ public class NguoiDungDto implements Serializable {
     Integer trangThai;
     Instant ngayTao;
     Instant ngayCapNhat;
+    private List<PhanQuyenNguoiDungKhoDto> khoPhuTrach;
 }

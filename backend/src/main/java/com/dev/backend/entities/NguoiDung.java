@@ -10,6 +10,7 @@ import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -57,7 +58,8 @@ public class NguoiDung {
     @Column(name = "ngay_tao")
     @Generated(event = EventType.INSERT)
     private Instant ngayTao;
-
+    @Transient // Quan trọng: Trường này chỉ tồn tại ở code Java, không lưu xuống DB
+    private List<PhanQuyenNguoiDungKho> khoPhuTrach;
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_cap_nhat")
     @Generated(event = EventType.UPDATE)

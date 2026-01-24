@@ -98,7 +98,7 @@ export default function UserList() {
 
     useEffect(() => {
         if (!location.state?.success) return;
-        if (toastShownRef.current) return; // 🔥 chặn lần 2
+        if (toastShownRef.current) return; // chặn lần 2
 
         toastShownRef.current = true;
 
