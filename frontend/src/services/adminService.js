@@ -10,28 +10,28 @@ import apiClient from "./apiClient";
  */
 
 export const adminService = {
-    getUserListAdmin: (params) => {
+    getUserListByAdmin: (params) => {
         return apiClient.get("/api/v1/admin/user-list", {
             params,
         });
     },
 
-    filterUsers: (payload) => {
+    filterUsersByAdmin: (payload) => {
         return apiClient.post("/api/v1/admin/filter", payload);
     },
 
 
-    async getById(id) {
+    async getByIdByAdmin(id) {
         const res = await apiClient.get(`/api/v1/admin/users/${id}`);
         return res.data;
     },
-    createUser(data) {
+    createUserByAdmin(data) {
         return apiClient.post("/api/v1/admin/add-user", data);
     },
-    resetUserPassword(userId, payload) {
+    resetUserPasswordByAdmin(userId, payload) {
         return apiClient.post(`/api/v1/admin/users/${userId}/reset-password`, payload);
     },
-    toggleUserStatus(userId) {
+    toggleUserStatusByAdmin(userId) {
         return apiClient.post(`/api/v1/admin/users/${userId}/toggle-status`);
     }
 }

@@ -14,7 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { adminService } from "@/services/adminService";
 
-export default function AddUser() {
+export default function AddUserByAdmin() {
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
@@ -35,7 +35,7 @@ export default function AddUser() {
         try {
             setLoading(true);
 
-            await adminService.createUser(form);
+            await adminService.createUserByAdmin(form);
             navigate("/admin/users", {
                 state: {
                     success: true,

@@ -72,11 +72,11 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     private final NguoiDungRepository nguoiDungRepository = (NguoiDungRepository) super.getRepository();
 
-    public Page<NguoiDung> getUserList(Pageable pageable) {
+    public Page<NguoiDung> getUserListByAdmin(Pageable pageable) {
         return nguoiDungRepository.findAll(pageable);
     }
 
-    public NguoiDung getDetail(Integer id) {
+    public NguoiDung getDetailByAdmin(Integer id) {
         NguoiDung nguoiDung = nguoiDungRepository.findById(id)
                 .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
 
@@ -92,7 +92,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     @Transactional
-    public NguoiDung toggleStatus(Integer userId) {
+    public NguoiDung toggleStatusByAdmin(Integer userId) {
 
         //lay current id
         Integer currentUserId = null;
@@ -150,7 +150,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
 
     @Transactional
-    public NguoiDung createInternalUser(NguoiDungCreating request) {
+    public NguoiDung createInternalUserByAdmin(NguoiDungCreating request) {
 
         if (nguoiDungRepository.existsByTenDangNhap(request.getTenDangNhap())) {
             throw new CommonException("Tên đăng nhập đã tồn tại");

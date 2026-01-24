@@ -5,7 +5,6 @@ import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.AdminUpdateRequest;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.NguoiDungCreating;
-import com.dev.backend.dto.request.ResetPasswordRequest;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.mapper.NguoiDungMapper;
@@ -32,7 +31,7 @@ public class AdminController {
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien}
     )
-    public ResponseEntity<ResponseData<Page<NguoiDungDto>>> filter(
+    public ResponseEntity<ResponseData<Page<NguoiDungDto>>> filterByAdmin(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody BaseFilterRequest filter) {
 
@@ -53,7 +52,7 @@ public class AdminController {
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien}
     )
-    public ResponseEntity<ResponseData<Page<NguoiDungDto>>> getUserList(
+    public ResponseEntity<ResponseData<Page<NguoiDungDto>>> getUserListByAdmin(
             @RequestHeader("Authorization") String authHeader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -63,7 +62,7 @@ public class AdminController {
                         .status(HttpStatus.OK.value())
                         .data(
                                 nguoiDungMapper.toDtoPage(
-                                        nguoiDungService.getUserList(
+                                        nguoiDungService.getUserListByAdmin(
                                                 PageRequest.of(page, size)
                                         )
                                 )
@@ -77,7 +76,7 @@ public class AdminController {
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien}
     )
-    public ResponseEntity<ResponseData<NguoiDungDto>> getUserDetail(
+    public ResponseEntity<ResponseData<NguoiDungDto>> getUserDetailByAdmin(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer id
     ) {
@@ -86,7 +85,7 @@ public class AdminController {
                         .status(HttpStatus.OK.value())
                         .data(
                                 nguoiDungMapper.toDto(
-                                        nguoiDungService.getDetail(id)
+                                        nguoiDungService.getDetailByAdmin(id)
                                 )
                         )
                         .message("Lấy chi tiết người dùng thành công")
@@ -98,7 +97,7 @@ public class AdminController {
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien}
     )
-    public ResponseEntity<ResponseData<NguoiDungDto>> createUser(
+    public ResponseEntity<ResponseData<NguoiDungDto>> createUserByAdmin(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody NguoiDungCreating request
     ) {
@@ -107,7 +106,7 @@ public class AdminController {
                         .status(HttpStatus.OK.value())
                         .data(
                                 nguoiDungMapper.toDto(
-                                        nguoiDungService.createInternalUser(request)
+                                        nguoiDungService.createInternalUserByAdmin(request)
                                 )
                         )
                         .message("Tạo tài khoản người dùng thành công")
@@ -119,7 +118,7 @@ public class AdminController {
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien}
     )
-    public ResponseEntity<ResponseData<Void>> resetUserPassword(
+    public ResponseEntity<ResponseData<Void>> resetUserPasswordByAdmin(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer id,
             @RequestBody AdminUpdateRequest request
@@ -138,7 +137,7 @@ public class AdminController {
 
     @PostMapping("/users/{id}/toggle-status")
     @RequireAuth(roles = {IRoleType.quan_tri_vien})
-    public ResponseEntity<ResponseData<NguoiDungDto>> toggleUserStatus(
+    public ResponseEntity<ResponseData<NguoiDungDto>> toggleUserStatusByAdmin(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer id
     ) {
@@ -146,7 +145,7 @@ public class AdminController {
                 ResponseData.<NguoiDungDto>builder()
                         .status(HttpStatus.OK.value())
                         .data(nguoiDungMapper.toDto(
-                                nguoiDungService.toggleStatus(id)
+                                nguoiDungService.toggleStatusByAdmin(id)
                         ))
                         .message("Cập nhật trạng thái tài khoản thành công")
                         .build()
