@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Switch } from "@/components/ui/switch";
 
 import {
     ArrowLeft,
@@ -25,24 +24,8 @@ import {
     User,
     X,
     AlertCircle,
-    Warehouse,
-    MapPin,
-    KeyRound,
     Activity,
 } from "lucide-react";
-
-/**
- * Data backend bạn đang có (NguoiDungDto):
- * {
- *  id, tenDangNhap, hoTen, email, soDienThoai, vaiTro, trangThai, ngayTao, ngayCapNhat
- * }
- *
- * Update request đúng:
- * { tenDangNhap, hoTen, email, soDienThoai }
- *
- * 2 tab "Phân quyền" và "Hoạt động":
- * - Mình dựng đầy đủ UI + state + hàm fetch để bạn gắn API sau.
- */
 
 export default function UserDetail() {
     const { id } = useParams(); // string
@@ -55,11 +38,9 @@ export default function UserDetail() {
     const [showSuccess, setShowSuccess] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
 
-    // Tabs loading (for future APIs)
-    // Tabs loading (for future APIs)
     const [loadingActivities, setLoadingActivities] = useState(false);
 
-    // User data (map đúng NguoiDungDto)
+    // User data
     const [userData, setUserData] = useState({
         id: null,
         tenDangNhap: "",
@@ -74,15 +55,10 @@ export default function UserDetail() {
 
     const [editedData, setEditedData] = useState({ ...userData });
 
-
-
-    // Activity history (demo)
-    // Khi bạn có API: thay bằng data từ bảng lịch sử (vd lich_su_thay_doi_quyen, lich_su_giao_dich_kho, audit log)
-    const [activities, setActivities] = useState([
+    // demo activities
+    const [activities] = useState([
         { type: "success", title: "Cập nhật thông tin", detail: "Đổi email và số điện thoại", at: "2026-01-15T03:43:37Z" },
         { type: "info", title: "Đăng nhập hệ thống", detail: "Thiết bị: Chrome • IP: 192.168.1.100", at: "2026-01-14T10:12:00Z" },
-        { type: "success", title: "Duyệt phiếu nhập", detail: "PN-2026-001 • 50 sản phẩm", at: "2026-01-14T08:10:00Z" },
-        { type: "warning", title: "Từ chối quyền", detail: "Không có quyền tạo phiếu xuất tại Kho B", at: "2026-01-13T15:22:00Z" },
     ]);
 
     const vaiTroOptions = useMemo(
@@ -114,22 +90,21 @@ export default function UserDetail() {
         return d.toLocaleString();
     };
 
-    // ====== Fetch user ======
+    // ===== Fetch user =====
     useEffect(() => {
         const fetchUser = async () => {
             if (!id) return;
-
             setErrorMsg("");
             setLoadingUser(true);
+
             try {
                 const res = await nguoiDungService.getById(id);
-                const dto = res?.data;
+                const dto = res?.data; // ResponseData.data
                 if (!dto) throw new Error("Không nhận được data người dùng từ server");
 
                 setUserData(dto);
                 setEditedData(dto);
             } catch (err) {
-                console.error("Failed to fetch user:", err);
                 const msg = err?.response?.data?.message || err?.message || "Lỗi tải dữ liệu người dùng";
                 setErrorMsg(msg);
             } finally {
@@ -140,25 +115,17 @@ export default function UserDetail() {
         fetchUser();
     }, [id]);
 
-    // ====== Hooks for future APIs ======
-    // Khi bạn có endpoint, chỉ việc thay bằng call service thật
-
-
+    // ===== Activities (demo) =====
     const fetchActivities = async () => {
-        if (!id) return;
         setLoadingActivities(true);
         try {
-            // TODO: call API real
-            // const res = await activityService.getByUserId(id);
-            // setActivities(res.data);
-        } catch (e) {
-            console.error(e);
+            // TODO: cắm API real
         } finally {
             setLoadingActivities(false);
         }
     };
 
-    // ====== Update handlers ======
+    // ===== Edit handlers =====
     const handleEdit = () => {
         setIsEditing(true);
         setEditedData({ ...userData });
@@ -175,15 +142,17 @@ export default function UserDetail() {
         setEditedData((prev) => ({ ...prev, [field]: value }));
     };
 
+    // ✅ build body theo UpdateNguoiDungRequest (id bắt buộc)
     const buildUpdatePayload = () => ({
-        tenDangNhap: editedData.tenDangNhap?.trim() || "",
-        hoTen: editedData.hoTen?.trim() || "",
-        email: editedData.email?.trim() || "",
-        soDienThoai: editedData.soDienThoai?.trim() || "",
+        id: Number(userData.id), // hoặc Number(id)
+        tenDangNhap: editedData.tenDangNhap?.trim(),
+        hoTen: editedData.hoTen?.trim(),
+        email: editedData.email?.trim(),
+        soDienThoai: editedData.soDienThoai?.trim(),
     });
 
     const handleSave = async () => {
-        if (!id) return;
+        if (!userData?.id) return;
 
         setSaving(true);
         setErrorMsg("");
@@ -191,20 +160,12 @@ export default function UserDetail() {
         try {
             const payload = buildUpdatePayload();
 
-            // validate nhẹ FE (tuỳ bạn)
-            if (!payload.tenDangNhap) {
-                setErrorMsg("Tên đăng nhập không được để trống");
-                setSaving(false);
-                return;
-            }
-            if (!payload.hoTen) {
-                setErrorMsg("Họ tên không được để trống");
-                setSaving(false);
-                return;
-            }
+            // validate FE nhẹ
+            if (!payload.tenDangNhap) throw new Error("Tên đăng nhập không được để trống");
+            if (!payload.hoTen) throw new Error("Họ tên không được để trống");
 
-            const res = await nguoiDungService.update(id, payload); // dùng id từ URL
-            const updatedDto = res?.data;
+            const res = await nguoiDungService.updateUser(payload);
+            const updatedDto = res?.data; // ResponseData.data
             if (!updatedDto) throw new Error("Cập nhật thành công nhưng response thiếu data");
 
             setUserData(updatedDto);
@@ -214,7 +175,6 @@ export default function UserDetail() {
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 2500);
         } catch (err) {
-            console.error("Update failed:", err);
             const msg = err?.response?.data?.message || err?.message || "Cập nhật thất bại";
             setErrorMsg(msg);
         } finally {
@@ -222,7 +182,7 @@ export default function UserDetail() {
         }
     };
 
-    // ====== UI helpers ======
+    // ===== UI helpers =====
     const activityIcon = (type) => {
         if (type === "success") return <CheckCircle2 className="w-4 h-4 text-green-600" />;
         if (type === "warning") return <AlertCircle className="w-4 h-4 text-amber-600" />;
@@ -339,7 +299,6 @@ export default function UserDetail() {
                             </CardContent>
                         </Card>
 
-                        {/* Quick System Info */}
                         <Card className="mt-4">
                             <CardHeader>
                                 <CardTitle className="text-base">Thông tin hệ thống</CardTitle>
@@ -368,8 +327,6 @@ export default function UserDetail() {
                             defaultValue="info"
                             className="space-y-4"
                             onValueChange={(v) => {
-                                // load data when switching tab (nếu cần)
-                                // load data when switching tab (nếu cần)
                                 if (v === "activity") fetchActivities();
                             }}
                         >
@@ -384,9 +341,10 @@ export default function UserDetail() {
                                     <CardHeader>
                                         <CardTitle>Thông tin người dùng</CardTitle>
                                         <CardDescription>
-                                            {isEditing ? "Chỉnh sửa các trường cho phép cập nhật" : "Thông tin chi tiết từ hệ thống"}
+                                            {isEditing ? "Chỉnh sửa các trường cho phép cập nhật" : "Chế độ chỉ xem (read-only)"}
                                         </CardDescription>
                                     </CardHeader>
+
                                     <CardContent className="space-y-6">
                                         {/* tenDangNhap */}
                                         <div className="space-y-2">
@@ -461,28 +419,16 @@ export default function UserDetail() {
                                 </Card>
                             </TabsContent>
 
-
-
                             {/* Tab: Hoạt động */}
                             <TabsContent value="activity">
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Lịch sử hoạt động</CardTitle>
-                                        <CardDescription>
-                                            Các hoạt động gần đây (demo UI — cắm API sau)
-                                        </CardDescription>
+                                        <CardDescription>Demo UI — cắm API sau</CardDescription>
                                     </CardHeader>
 
                                     <CardContent className="space-y-3">
-                                        {loadingActivities && (
-                                            <div className="text-sm text-gray-600">Đang tải hoạt động...</div>
-                                        )}
-
-                                        {!loadingActivities && activities.length === 0 && (
-                                            <div className="text-sm text-gray-600">
-                                                Chưa có lịch sử hoạt động hoặc chưa có API.
-                                            </div>
-                                        )}
+                                        {loadingActivities && <div className="text-sm text-gray-600">Đang tải hoạt động...</div>}
 
                                         {!loadingActivities &&
                                             activities.map((a, idx) => (
@@ -490,9 +436,7 @@ export default function UserDetail() {
                                                     key={idx}
                                                     className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                                                 >
-                                                    <div className={`p-2 rounded-lg ${activityBg(a.type)}`}>
-                                                        {activityIcon(a.type)}
-                                                    </div>
+                                                    <div className={`p-2 rounded-lg ${activityBg(a.type)}`}>{activityIcon(a.type)}</div>
 
                                                     <div className="flex-1">
                                                         <div className="flex items-center justify-between gap-2">
@@ -505,14 +449,6 @@ export default function UserDetail() {
                                             ))}
                                     </CardContent>
                                 </Card>
-
-                                <Alert className="mt-4 bg-amber-50 border-amber-200">
-                                    <AlertCircle className="h-4 w-4 text-amber-600" />
-                                    <AlertDescription className="text-amber-800">
-                                        Muốn log “Hoạt động” chuẩn: bạn nên có 1 bảng audit/log riêng, hoặc tận dụng các bảng
-                                        như <b>lich_su_thay_doi_quyen</b>, <b>lich_su_giao_dich_kho</b>… rồi viết API trả về timeline.
-                                    </AlertDescription>
-                                </Alert>
                             </TabsContent>
                         </Tabs>
                     </div>
