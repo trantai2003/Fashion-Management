@@ -25,13 +25,15 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { ArrowLeft, Save } from "lucide-react";
-import { toast } from "react-hot-toast";
+// Thay đổi: import toast từ sonner thay vì react-hot-toast
+import { toast } from "sonner";
 import {
     getChatLieuById,
     createChatLieu,
     updateChatLieu,
 } from "@/services/chatLieuService";
 
+// Schema validation cho form
 const formSchema = z.object({
     maChatLieu: z.string().min(1, "Mã chất liệu không được để trống").max(50, "Mã tối đa 50 ký tự"),
     tenChatLieu: z.string().min(1, "Tên chất liệu không được để trống").max(100, "Tên tối đa 100 ký tự"),
@@ -41,10 +43,11 @@ const formSchema = z.object({
 export default function ChatLieuDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const isEdit = !!id;
+    const isEdit = !!id; // Kiểm tra có phải là chế độ chỉnh sửa không
     const [loading, setLoading] = useState(false);
     const [localTrangThai, setLocalTrangThai] = useState(true);
 
+    // Khởi tạo form với react-hook-form và zod validation
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -54,20 +57,25 @@ export default function ChatLieuDetail() {
         },
     });
 
+    // Load dữ liệu khi ở chế độ chỉnh sửa
+    // Pattern: GIỐNG HỆT SupplierDetail
     useEffect(() => {
         if (isEdit) {
             const fetchData = async () => {
                 setLoading(true);
                 try {
                     const data = await getChatLieuById(id);
+                    // getChatLieuById trả về response.data.data - object trực tiếp
                     form.reset({
                         maChatLieu: data.maChatLieu || "",
                         tenChatLieu: data.tenChatLieu || "",
                         moTa: data.moTa || "",
                     });
-                    setLocalTrangThai(true);
-                } catch (error) {
-                    toast.error(error.response?.data?.message || "Không thể tải thông tin chất liệu");
+                    // Set trạng thái - check giá trị boolean hoặc 1/0
+                    setLocalTrangThai(data.trangThai === 1 || data.trangThai === true);
+                } catch {
+                    // Toast lỗi đơn giản - GIỐNG supplierService
+                    toast.error("Không thể tải thông tin chất liệu");
                     navigate("/material");
                 } finally {
                     setLoading(false);
@@ -77,52 +85,30 @@ export default function ChatLieuDetail() {
         }
     }, [id, form, navigate, isEdit]);
 
+    // Xử lý submit form (thêm mới hoặc cập nhật)
+    // Pattern: GIỐNG HỆT SupplierDetail
     const onSubmit = async (values) => {
         setLoading(true);
         try {
-            console.log("Bắt đầu submit:", values);
+            // Thêm trạng thái vào payload (1 hoặc 0) - GIỐNG supplier
+            const payload = { ...values, trangThai: localTrangThai ? 1 : 0 };
 
-            let result;
             if (isEdit) {
-                result = await updateChatLieu(id, values);
-                console.log("Update thành công:", result);
-                toast.success("Cập nhật chất liệu thành công!", {
-                    duration: 4000,
-                    position: "top-center",
-                });
+                // Cập nhật chất liệu
+                await updateChatLieu(id, payload);
+                toast.success("Cập nhật chất liệu thành công");
             } else {
-                result = await createChatLieu(values);
-                console.log("Create thành công:", result);
-                toast.success("Thêm chất liệu mới thành công!", {
-                    duration: 4000,
-                    position: "top-center",
-                });
+                // Thêm mới chất liệu
+                await createChatLieu(payload);
+                toast.success("Thêm chất liệu mới thành công");
             }
 
+            // Quay về trang danh sách
             navigate("/material");
         } catch (error) {
             console.error("Lỗi khi submit:", error);
-
-            let errorMsg = "Có lỗi xảy ra khi lưu. Vui lòng thử lại!";
-
-            if (error.response) {
-                const res = error.response;
-                console.log("Response từ backend:", res);
-                errorMsg = res.data?.message || res.data?.error || `Lỗi ${res.status}: ${res.statusText || "Không xác định"}`;
-            } else if (error.message) {
-                errorMsg = error.message;
-            }
-
-            toast.error(errorMsg, {
-                duration: 6000,
-                position: "top-center",
-                style: {
-                    background: "#ef4444",
-                    color: "white",
-                    borderRadius: "8px",
-                    padding: "16px",
-                },
-            });
+            // Thông báo lỗi đơn giản - GIỐNG supplier
+            toast.error("Có lỗi xảy ra khi lưu. Vui lòng thử lại!");
         } finally {
             setLoading(false);
         }
@@ -130,6 +116,7 @@ export default function ChatLieuDetail() {
 
     return (
         <div className="container mx-auto py-10 max-w-2xl">
+            {/* Nút quay lại */}
             <Button variant="ghost" className="mb-6 text-purple-600 hover:text-purple-800" onClick={() => navigate("/material")}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại danh sách
             </Button>
@@ -151,6 +138,7 @@ export default function ChatLieuDetail() {
                                 <div className="text-center py-8 text-purple-600">Đang tải...</div>
                             ) : (
                                 <>
+                                    {/* Field Mã chất liệu */}
                                     <FormField
                                         control={form.control}
                                         name="maChatLieu"
@@ -164,6 +152,8 @@ export default function ChatLieuDetail() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Field Tên chất liệu */}
                                     <FormField
                                         control={form.control}
                                         name="tenChatLieu"
@@ -177,6 +167,8 @@ export default function ChatLieuDetail() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Field Mô tả */}
                                     <FormField
                                         control={form.control}
                                         name="moTa"
@@ -190,6 +182,7 @@ export default function ChatLieuDetail() {
                                             </FormItem>
                                         )}
                                     />
+
                                     {/* Switch trạng thái */}
                                     <FormItem className="flex flex-col space-y-3">
                                         <FormLabel className="text-purple-800 font-medium">Trạng thái chất liệu</FormLabel>
@@ -204,8 +197,8 @@ export default function ChatLieuDetail() {
                                                     localTrangThai ? "text-green-700" : "text-red-700"
                                                 }`}
                                             >
-                        {localTrangThai ? "Hoạt động" : "Ngừng hoạt động"}
-                      </span>
+                                                {localTrangThai ? "Hoạt động" : "Ngừng hoạt động"}
+                                            </span>
                                         </div>
                                         <p className="text-xs text-gray-500 italic">
                                             Bật để chất liệu này có thể sử dụng trong sản phẩm. Tắt để tạm ngừng.
@@ -215,11 +208,11 @@ export default function ChatLieuDetail() {
                             )}
                         </CardContent>
 
+                        {/* Footer với các nút hành động */}
                         <CardFooter className="flex justify-end space-x-4 p-6 bg-purple-50 rounded-b-2xl">
                             <Button type="button" variant="outline" className="border-purple-300 text-purple-600" onClick={() => navigate("/material")}>
                                 Hủy
                             </Button>
-                            {/* Button "Thêm mới" / "Cập nhật" - chữ trắng */}
                             <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white">
                                 <Save className="mr-2 h-4 w-4" />
                                 {loading ? "Đang lưu..." : isEdit ? "Cập nhật" : "Thêm mới"}

@@ -25,7 +25,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "react-hot-toast";
+// Thay đổi: import toast từ sonner thay vì react-hot-toast
+import { toast } from "sonner";
 import {
     Dialog,
     DialogContent,
@@ -41,6 +42,7 @@ import {
 } from "@/services/supplierService";
 
 export default function SupplierList() {
+    // State management
     const [suppliers, setSuppliers] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
@@ -49,36 +51,42 @@ export default function SupplierList() {
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const navigate = useNavigate();
 
+    // Fetch danh sách nhà cung cấp từ API
     const fetchSuppliers = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getAllSupplier(search);
             setSuppliers(data);
         } catch {
+            // Thay đổi: sử dụng toast.error từ sonner
             toast.error("Không thể tải danh sách nhà cung cấp");
         } finally {
             setLoading(false);
         }
     }, [search]);
 
+    // Load dữ liệu khi component mount hoặc search thay đổi
     useEffect(() => {
         fetchSuppliers();
     }, [fetchSuppliers]);
 
+    // Xử lý xóa nhà cung cấp
     const handleDelete = async () => {
         if (!deleteId) return;
         try {
             await deleteSupplier(deleteId);
+            // Thay đổi: toast.success từ sonner
             toast.success("Xóa nhà cung cấp thành công");
-            fetchSuppliers();
+            fetchSuppliers(); // Reload danh sách
         } catch {
+            // Thay đổi: toast.error từ sonner
             toast.error("Xóa thất bại");
         } finally {
-            setDeleteId(null);
+            setDeleteId(null); // Reset deleteId
         }
     };
 
-    // Phân trang
+    // Logic phân trang
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = suppliers.slice(indexOfFirstItem, indexOfLastItem);
@@ -87,6 +95,7 @@ export default function SupplierList() {
     return (
         <div className="container mx-auto py-10">
             <Card className="border-0 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-white">
+                {/* Header với tiêu đề và nút thêm mới */}
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-purple-100 p-6 rounded-t-2xl">
                     <CardTitle className="text-2xl font-bold text-purple-800">Danh sách Nhà Cung Cấp</CardTitle>
                     <Button onClick={() => navigate("/supplier/new")} className="bg-purple-600 hover:bg-purple-700 text-white">
@@ -95,7 +104,7 @@ export default function SupplierList() {
                 </CardHeader>
 
                 <CardContent className="p-6">
-                    {/* Search */}
+                    {/* Search bar */}
                     <div className="flex items-center py-4">
                         <div className="relative w-full max-w-sm">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -109,7 +118,7 @@ export default function SupplierList() {
                         </div>
                     </div>
 
-                    {/* Table */}
+                    {/* Table hiển thị danh sách */}
                     {loading ? (
                         <div className="text-center py-8 text-purple-600">Đang tải...</div>
                     ) : currentItems.length === 0 ? (
@@ -134,6 +143,7 @@ export default function SupplierList() {
                                 <TableBody>
                                     {currentItems.map((item, index) => (
                                         <TableRow key={item.id} className="hover:bg-purple-50">
+                                            {/* Số thứ tự */}
                                             <TableCell className="font-medium">
                                                 {(currentPage - 1) * itemsPerPage + index + 1}
                                             </TableCell>
@@ -142,6 +152,7 @@ export default function SupplierList() {
                                             <TableCell>{item.nguoiLienHe || "-"}</TableCell>
                                             <TableCell>{item.soDienThoai || "-"}</TableCell>
                                             <TableCell>{item.email || "-"}</TableCell>
+                                            {/* Badge trạng thái */}
                                             <TableCell>
                                                 <div
                                                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
@@ -151,7 +162,9 @@ export default function SupplierList() {
                                                     {item.trangThai === 1 ? "Hoạt động" : "Ngừng hoạt động"}
                                                 </div>
                                             </TableCell>
+                                            {/* Các nút thao tác (Edit & Delete) */}
                                             <TableCell className="text-right space-x-2">
+                                                {/* Nút Edit */}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
@@ -159,6 +172,7 @@ export default function SupplierList() {
                                                 >
                                                     <Edit className="h-4 w-4 text-purple-600" />
                                                 </Button>
+                                                {/* Dialog xác nhận xóa */}
                                                 <Dialog>
                                                     <DialogTrigger asChild>
                                                         <Button variant="ghost" size="icon" onClick={() => setDeleteId(item.id)}>
@@ -175,8 +189,8 @@ export default function SupplierList() {
                                                                 <span className="font-semibold text-gray-900">"{item.tenNhaCungCap}"</span>?
                                                                 <br />
                                                                 <span className="text-red-500 font-medium mt-1 block">
-                                  Hành động này không thể hoàn tác.
-                                </span>
+                                                                    Hành động này không thể hoàn tác.
+                                                                </span>
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <DialogFooter className="sm:justify-start gap-3 mt-6">
@@ -209,7 +223,7 @@ export default function SupplierList() {
                     {/* Phân trang - chuyển hết về bên phải */}
                     {suppliers.length > 0 && (
                         <div className="flex items-center justify-end mt-6 gap-4">
-                            {/* Rows dropdown */}
+                            {/* Dropdown chọn số dòng hiển thị */}
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-gray-600">Rows</span>
                                 <Select
@@ -232,7 +246,7 @@ export default function SupplierList() {
                                 </Select>
                             </div>
 
-                            {/* Prev - Current Page - Next */}
+                            {/* Nút Prev - Current Page - Next */}
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant="outline"

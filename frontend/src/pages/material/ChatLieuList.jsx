@@ -34,13 +34,15 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "react-hot-toast";
+// Thay đổi: import toast từ sonner thay vì react-hot-toast
+import { toast } from "sonner";
 import {
     getAllChatLieu,
     deleteChatLieu,
 } from "@/services/chatLieuService";
 
 export default function ChatLieuList() {
+    // State management
     const [chatLieus, setChatLieus] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
@@ -49,38 +51,45 @@ export default function ChatLieuList() {
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const navigate = useNavigate();
 
+    // Fetch danh sách chất liệu từ API
+    // Pattern: GIỐNG HỆT fetchSuppliers
     const fetchChatLieus = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await getAllChatLieu(search);
-            console.log("API response:", response);
-            setChatLieus(response.data || response || []);
+            const data = await getAllChatLieu(search);
+            // Set data trực tiếp - getAllChatLieu đã trả về array từ response.data.data || []
+            setChatLieus(data);
         } catch (err) {
             console.error("Fetch error:", err);
-            toast.error(err.response?.data?.message || "Không thể tải danh sách chất liệu");
+            // Thông báo lỗi đơn giản - GIỐNG supplierService
+            toast.error("Không thể tải danh sách chất liệu");
         } finally {
             setLoading(false);
         }
     }, [search]);
 
+    // Load dữ liệu khi component mount hoặc search thay đổi
     useEffect(() => {
         fetchChatLieus();
     }, [fetchChatLieus]);
 
+    // Xử lý xóa chất liệu
     const handleDelete = async () => {
         if (!deleteId) return;
         try {
             await deleteChatLieu(deleteId);
+            // Thay đổi: toast.success từ sonner
             toast.success("Xóa chất liệu thành công");
-            fetchChatLieus();
+            fetchChatLieus(); // Reload danh sách
         } catch (err) {
+            // Thay đổi: toast.error từ sonner
             toast.error(err.response?.data?.message || "Xóa thất bại");
         } finally {
-            setDeleteId(null);
+            setDeleteId(null); // Reset deleteId
         }
     };
 
-    // Phân trang
+    // Logic phân trang
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = chatLieus.slice(indexOfFirstItem, indexOfLastItem);
@@ -89,12 +98,11 @@ export default function ChatLieuList() {
     return (
         <div className="container mx-auto py-10">
             <Card className="border-0 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-white">
-                {/* Header box màu tím - chữ tiêu đề quay về phong cách cũ */}
+                {/* Header với tiêu đề và nút thêm mới */}
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-purple-100 p-6 rounded-t-2xl">
                     <CardTitle className="text-2xl font-bold text-purple-800">
                         Danh sách Chất liệu
                     </CardTitle>
-                    {/* Button Thêm chất liệu - chữ trắng */}
                     <Button
                         onClick={() => navigate("/material/new")}
                         className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
@@ -104,7 +112,7 @@ export default function ChatLieuList() {
                 </CardHeader>
 
                 <CardContent className="p-6">
-                    {/* Search */}
+                    {/* Search bar */}
                     <div className="flex items-center py-4">
                         <div className="relative w-full max-w-sm">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -118,7 +126,7 @@ export default function ChatLieuList() {
                         </div>
                     </div>
 
-                    {/* Table */}
+                    {/* Table hiển thị danh sách */}
                     {loading ? (
                         <div className="text-center py-8 text-purple-600">Đang tải...</div>
                     ) : currentItems.length === 0 ? (
@@ -141,6 +149,7 @@ export default function ChatLieuList() {
                                 <TableBody>
                                     {currentItems.map((item, index) => (
                                         <TableRow key={item.id} className="hover:bg-purple-50">
+                                            {/* Số thứ tự */}
                                             <TableCell className="font-medium">
                                                 {(currentPage - 1) * itemsPerPage + index + 1}
                                             </TableCell>
@@ -149,6 +158,7 @@ export default function ChatLieuList() {
                                             <TableCell className="text-muted-foreground">
                                                 {item.moTa || "-"}
                                             </TableCell>
+                                            {/* Badge trạng thái */}
                                             <TableCell>
                                                 <div
                                                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
@@ -158,7 +168,9 @@ export default function ChatLieuList() {
                                                     {item.trangThai ?? true ? "Hoạt động" : "Ngừng hoạt động"}
                                                 </div>
                                             </TableCell>
+                                            {/* Các nút thao tác (Edit & Delete) */}
                                             <TableCell className="text-right space-x-2">
+                                                {/* Nút Edit */}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
@@ -166,6 +178,7 @@ export default function ChatLieuList() {
                                                 >
                                                     <Edit className="h-4 w-4 text-purple-600" />
                                                 </Button>
+                                                {/* Dialog xác nhận xóa */}
                                                 <Dialog>
                                                     <DialogTrigger asChild>
                                                         <Button variant="ghost" size="icon" onClick={() => setDeleteId(item.id)}>
@@ -182,8 +195,8 @@ export default function ChatLieuList() {
                                                                 <span className="font-semibold text-gray-900">"{item.tenChatLieu}"</span>?
                                                                 <br />
                                                                 <span className="text-red-500 font-medium mt-1 block">
-                                  Hành động này không thể hoàn tác.
-                                </span>
+                                                                    Hành động này không thể hoàn tác.
+                                                                </span>
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <DialogFooter className="sm:justify-start gap-3 mt-6">
@@ -216,14 +229,14 @@ export default function ChatLieuList() {
                     {/* Phân trang - bên phải */}
                     {chatLieus.length > 0 && (
                         <div className="flex items-center justify-end mt-6 gap-4">
-                            {/* Rows dropdown */}
+                            {/* Dropdown chọn số dòng hiển thị */}
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-gray-600">Rows</span>
                                 <Select
                                     value={String(itemsPerPage)}
                                     onValueChange={(value) => {
                                         setItemsPerPage(Number(value));
-                                        setCurrentPage(1);
+                                        setCurrentPage(1); // Reset về trang 1 khi thay đổi
                                     }}
                                 >
                                     <SelectTrigger className="w-[100px] bg-white border border-purple-300 shadow-sm">
@@ -239,7 +252,7 @@ export default function ChatLieuList() {
                                 </Select>
                             </div>
 
-                            {/* Prev - Current Page - Next */}
+                            {/* Nút Prev - Current Page - Next */}
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant="outline"

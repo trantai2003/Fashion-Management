@@ -25,13 +25,15 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { ArrowLeft, Save } from "lucide-react";
-import { toast } from "react-hot-toast";
+// Thay đổi: import toast từ sonner thay vì react-hot-toast
+import { toast } from "sonner";
 import {
     getSupplierById,
     createSupplier,
     updateSupplier,
 } from "@/services/supplierService";
 
+// Schema validation cho form nhà cung cấp
 const formSchema = z.object({
     maNhaCungCap: z.string().min(1, "Mã nhà cung cấp không được để trống").max(50, "Mã tối đa 50 ký tự"),
     tenNhaCungCap: z.string().min(1, "Tên nhà cung cấp không được để trống").max(200, "Tên tối đa 200 ký tự"),
@@ -44,10 +46,11 @@ const formSchema = z.object({
 export default function SupplierDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const isEdit = !!id;
+    const isEdit = !!id; // Kiểm tra chế độ chỉnh sửa hay thêm mới
     const [loading, setLoading] = useState(false);
     const [trangThai, setTrangThai] = useState(true);
 
+    // Khởi tạo form với react-hook-form
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -60,12 +63,14 @@ export default function SupplierDetail() {
         },
     });
 
+    // Load dữ liệu khi ở chế độ chỉnh sửa
     useEffect(() => {
         if (isEdit) {
             const fetchData = async () => {
                 setLoading(true);
                 try {
                     const data = await getSupplierById(id);
+                    // Populate form với dữ liệu từ API
                     form.reset({
                         maNhaCungCap: data.maNhaCungCap || "",
                         tenNhaCungCap: data.tenNhaCungCap || "",
@@ -74,8 +79,10 @@ export default function SupplierDetail() {
                         email: data.email || "",
                         diaChi: data.diaChi || "",
                     });
+                    // Set trạng thái (1 = hoạt động, 0 = ngừng hoạt động)
                     setTrangThai(data.trangThai === 1);
                 } catch (error) {
+                    // Thay đổi: sử dụng toast.error từ sonner
                     toast.error(error.response?.data?.message || "Không thể tải thông tin nhà cung cấp");
                     navigate("/supplier");
                 } finally {
@@ -86,24 +93,34 @@ export default function SupplierDetail() {
         }
     }, [id, form, navigate, isEdit]);
 
+    // Xử lý submit form
     const onSubmit = async (values) => {
         setLoading(true);
         try {
+            // Thêm trạng thái vào payload (1 hoặc 0)
             const payload = { ...values, trangThai: trangThai ? 1 : 0 };
+
             if (isEdit) {
+                // Cập nhật nhà cung cấp
                 await updateSupplier(id, payload);
-                toast.success("Cập nhật nhà cung cấp thành công", { position: "top-right" });
+                // Thay đổi: toast.success từ sonner (không cần options)
+                toast.success("Cập nhật nhà cung cấp thành công");
             } else {
+                // Thêm mới nhà cung cấp
                 await createSupplier(payload);
-                toast.success("Thêm nhà cung cấp mới thành công", { position: "top-right" });
+                toast.success("Thêm nhà cung cấp mới thành công");
             }
+
+            // Quay về trang danh sách
             navigate("/supplier");
         } catch (error) {
+            // Xử lý thông báo lỗi
             let errorMessage = "Có lỗi xảy ra khi lưu. Vui lòng thử lại!";
             if (error.response) {
                 errorMessage = error.response.data?.message || errorMessage;
             }
-            toast.error(errorMessage, { duration: 6000, position: "top-right" });
+            // Thay đổi: toast.error từ sonner
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -111,6 +128,7 @@ export default function SupplierDetail() {
 
     return (
         <div className="container mx-auto py-10 max-w-3xl">
+            {/* Nút quay lại */}
             <Button variant="ghost" className="mb-6 text-purple-600 hover:text-purple-800" onClick={() => navigate("/supplier")}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại danh sách
             </Button>
@@ -132,6 +150,7 @@ export default function SupplierDetail() {
                                 <div className="text-center py-8 text-purple-600">Đang tải...</div>
                             ) : (
                                 <>
+                                    {/* Field Mã nhà cung cấp */}
                                     <FormField
                                         control={form.control}
                                         name="maNhaCungCap"
@@ -139,12 +158,15 @@ export default function SupplierDetail() {
                                             <FormItem>
                                                 <FormLabel className="text-purple-800">Mã nhà cung cấp</FormLabel>
                                                 <FormControl>
+                                                    {/* Disable khi edit để không cho sửa mã */}
                                                     <Input placeholder="VD: SUP001" className="border-purple-300 focus:border-purple-500" {...field} disabled={isEdit} />
                                                 </FormControl>
                                                 <FormMessage className="text-red-500" />
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Field Tên nhà cung cấp */}
                                     <FormField
                                         control={form.control}
                                         name="tenNhaCungCap"
@@ -158,6 +180,8 @@ export default function SupplierDetail() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Field Người liên hệ */}
                                     <FormField
                                         control={form.control}
                                         name="nguoiLienHe"
@@ -171,6 +195,8 @@ export default function SupplierDetail() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Field Số điện thoại */}
                                     <FormField
                                         control={form.control}
                                         name="soDienThoai"
@@ -184,6 +210,8 @@ export default function SupplierDetail() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Field Email */}
                                     <FormField
                                         control={form.control}
                                         name="email"
@@ -197,6 +225,8 @@ export default function SupplierDetail() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Field Địa chỉ */}
                                     <FormField
                                         control={form.control}
                                         name="diaChi"
@@ -210,6 +240,7 @@ export default function SupplierDetail() {
                                             </FormItem>
                                         )}
                                     />
+
                                     {/* Switch trạng thái */}
                                     <FormItem className="flex flex-col space-y-3">
                                         <FormLabel className="text-purple-800 font-medium">Trạng thái</FormLabel>
@@ -224,8 +255,8 @@ export default function SupplierDetail() {
                                                     trangThai ? "text-green-700" : "text-red-700"
                                                 }`}
                                             >
-                        {trangThai ? "Hoạt động" : "Ngừng hoạt động"}
-                      </span>
+                                                {trangThai ? "Hoạt động" : "Ngừng hoạt động"}
+                                            </span>
                                         </div>
                                         <p className="text-xs text-gray-500 italic">
                                             Bật để nhà cung cấp này hoạt động. Tắt để tạm ngừng.
@@ -235,6 +266,7 @@ export default function SupplierDetail() {
                             )}
                         </CardContent>
 
+                        {/* Footer với các nút hành động */}
                         <CardFooter className="flex justify-end space-x-4 p-6 bg-purple-50 rounded-b-2xl">
                             <Button type="button" variant="outline" className="border-purple-300 text-purple-600" onClick={() => navigate("/supplier")}>
                                 Hủy
