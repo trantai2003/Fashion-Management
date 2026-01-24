@@ -57,7 +57,7 @@ function buildUserFilterPayload(filters) {
     };
 }
 
-export default function UserList() {
+export default function ViewUserListByAdmin() {
     // ===== STATE =====
     const [users, setUsers] = useState([]);
     const [total, setTotal] = useState(0);
@@ -98,7 +98,7 @@ export default function UserList() {
 
     useEffect(() => {
         if (!location.state?.success) return;
-        if (toastShownRef.current) return; // 🔥 chặn lần 2
+        if (toastShownRef.current) return; // chặn lần 2
 
         toastShownRef.current = true;
 
@@ -116,7 +116,7 @@ export default function UserList() {
         try {
             const payload = buildUserFilterPayload(filters);
 
-            const res = await adminService.filterUsers(payload);
+            const res = await adminService.filterUsersByAdmin(payload);
 
             const serverResponse = res.data;
             if (serverResponse?.status === 200) {

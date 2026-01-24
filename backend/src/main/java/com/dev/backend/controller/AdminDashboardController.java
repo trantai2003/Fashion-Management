@@ -24,7 +24,7 @@ public class AdminDashboardController {
 
     @GetMapping
     @RequireAuth(roles = {IRoleType.quan_tri_vien})
-    public ResponseEntity<ResponseData<AdminDashboardResponse>> getDashboard(
+    public ResponseEntity<ResponseData<AdminDashboardResponse>> getDashboardByAdmin(
             @RequestHeader("Authorization") String authHeader
     ) {
 

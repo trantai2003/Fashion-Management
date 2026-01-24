@@ -4,7 +4,7 @@ import PermissionMatrix from "@/components/admin/PermissionMatrix";
 import { useParams, useNavigate } from "react-router-dom";
 import { khoService } from "@/services/khoService";
 
-export default function UserPermissionEdit() {
+export default function UserPermissionEditByAdmin() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loadingKho, setLoadingKho] = useState(true);

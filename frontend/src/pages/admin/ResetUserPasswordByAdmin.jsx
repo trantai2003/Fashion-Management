@@ -8,7 +8,7 @@ import { adminService } from "@/services/adminService";
 import { toast } from "sonner";
 import { KeyRound } from "lucide-react";
 
-export default function ResetUserPassword() {
+export default function resetUserPasswordByAdmin() {
     const [username, setUsername] = useState("");
     const [loadingUser, setLoadingUser] = useState(true);
     const { id } = useParams();
@@ -33,7 +33,7 @@ export default function ResetUserPassword() {
 
         try {
             setLoading(true);
-            await adminService.resetUserPassword(id, {
+            await adminService.resetUserPasswordByAdmin(id, {
                 newPassword: password,
             });
 
@@ -49,7 +49,7 @@ export default function ResetUserPassword() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const result = await adminService.getById(id);
+                const result = await adminService.getByIdByAdmin(id);
                 // result = { status, data, message, error }
                 setUsername(result.data.tenDangNhap);
             } catch (err) {

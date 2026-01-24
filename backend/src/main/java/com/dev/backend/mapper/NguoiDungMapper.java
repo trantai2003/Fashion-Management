@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {PhanQuyenNguoiDungKhoMapper.class})
 public interface NguoiDungMapper {
     NguoiDungDto toDto(NguoiDung entity);
     List<NguoiDungDto> toDtoList(List<NguoiDung> list);

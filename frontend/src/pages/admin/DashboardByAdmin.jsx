@@ -3,16 +3,16 @@ import { adminDashboardService } from "@/services/adminDashboardService";
 import { adminService } from "@/services/adminService";
 import { Link } from "react-router-dom";
 
-export default function AdminDashboard() {
+export default function DashboardByAdmin() {
     const [data, setData] = useState(null);
     const [latestUsers, setLatestUsers] = useState([]);
 
     useEffect(() => {
-        adminDashboardService.getDashboard().then((res) => {
+        adminDashboardService.getDashboardByAdmin().then((res) => {
             setData(res.data.data);
         });
         adminService
-            .getUserListAdmin({
+            .getUserListByAdmin({
                 page: 0,
                 size: 3,
                 sort: "ngayTao,desc",
