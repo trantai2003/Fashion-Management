@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AdminLayout from "./components/layout/AdminLayout";
+import AdminLayout from "./components/admin/adminLayout/AdminLayout";
 import Login from "./pages/Login";
 import HomePage from "./pages/HomePage";
 import UserDetail from "./pages/UserDetail";
