@@ -367,7 +367,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                 OtpScheduleObj.builder()
                         .email(nguoiDung.getEmail())
                         .otp(otp)
-                        .createdAt(nguoiDung.getNgayTao())
+                        .createdAt(Instant.now())
                         .type(OtpType.RESET_PASSWORD)
                         .build()
         );
@@ -379,6 +379,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         params.put("expiryTime", "5 phút");
 
         emailService.sendHtmlEmailFromTemplate(nguoiDung.getEmail(), "Lấy lại mật khẩu", "activation.html", params);
+
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
@@ -402,6 +403,11 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         );
 
         if (!findingResetOtp.getOtp().equals(rpRequest.getOtp())) {
+            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
+        }
+
+        Instant now = Instant.now();
+        if (now.isAfter(findingResetOtp.getCreatedAt().plusSeconds(300))) {
             throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
         }
 
