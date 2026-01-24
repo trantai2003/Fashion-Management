@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 
-export default function UserDetailAdmin() {
+export default function ViewUserDetailByAdmin() {
     const { id } = useParams();
     const [user, setUser] = useState(null);
     const [loadingToggle, setLoadingToggle] = useState(false);
@@ -24,10 +24,10 @@ export default function UserDetailAdmin() {
         try {
             setLoadingToggle(true);
 
-            await adminService.toggleUserStatus(id);
+            await adminService.toggleUserStatusByAdmin(id);
 
             // reload lại detail sau khi toggle
-            const refreshed = await adminService.getById(id);
+            const refreshed = await adminService.getByIdByAdmin(id);
             setUser(refreshed.data);
 
             toast.success("Cập nhật trạng thái tài khoản thành công");
@@ -43,7 +43,7 @@ export default function UserDetailAdmin() {
     };
 
     useEffect(() => {
-        adminService.getById(id)
+        adminService.getByIdByAdmin(id)
             .then((res) => {
                 setUser(res.data);
             })
@@ -177,19 +177,24 @@ export default function UserDetailAdmin() {
                                 </TableHeader>
 
                                 <TableBody>
-                                    {user.khoPhuTrach.map((kho, index) => (
+                                    {user.khoPhuTrach.map((item, index) => (
                                         <TableRow key={index}>
                                             <TableCell className="font-medium">
-                                                {kho.maKho}
+                                                {item.kho?.maKho || "N/A"}
                                             </TableCell>
-                                            <TableCell>{kho.tenKho}</TableCell>
+                                            <TableCell>
+                                                {item.kho?.tenKho || "N/A"}
+                                            </TableCell>
                                             <TableCell>
                                                 <Badge variant="secondary">
-                                                    {kho.vaiTroTaiKho.replaceAll("_", " ")}
+                                                    {item.vaiTroTaiKho
+                                                        ? item.vaiTroTaiKho.replaceAll("_", " ")
+                                                        : (item.laQuanLyKho === 1 ? "Quản lý" : "Nhân viên")
+                                                    }
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                {formatDate(kho.ngayCap)}
+                                                {formatDate(item.ngayTao)}
                                             </TableCell>
                                         </TableRow>
                                     ))}
