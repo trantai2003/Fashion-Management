@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 
-import AdminLayout from "./components/layout/AdminLayout";
+import AdminLayout from "./components/admin/adminLayout/AdminLayout";
 import Login from "./pages/Login";
 import HomePage from "./pages/HomePage";
 import UserDetail from "./pages/UserDetail";
@@ -13,7 +13,7 @@ import ChatLieuDetail from "./pages/material/ChatLieuDetail";
 import SupplierList from "./pages/supplier/SupplierList";
 import SupplierDetail from "./pages/supplier/SupplierDetail";
 
-import AddUserByAdmin from "./pages/admin/AddUserByAdmin"; "@/pages/admin/AddUserByAdmin.jsx";
+import AddUserByAdmin from "@/pages/admin/AddUserByAdmin.jsx";
 import ViewUserListByAdmin from "./pages/admin/ViewUserListByAdmin";
 import ViewUserDetailByAdmin from "@/pages/admin/ViewUserDetailByAdmin.jsx";
 import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx";
