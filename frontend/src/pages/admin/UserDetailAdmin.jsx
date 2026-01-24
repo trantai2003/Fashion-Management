@@ -177,19 +177,24 @@ export default function UserDetailAdmin() {
                                 </TableHeader>
 
                                 <TableBody>
-                                    {user.khoPhuTrach.map((kho, index) => (
+                                    {user.khoPhuTrach.map((item, index) => (
                                         <TableRow key={index}>
                                             <TableCell className="font-medium">
-                                                {kho.maKho}
+                                                {item.kho?.maKho || "N/A"}
                                             </TableCell>
-                                            <TableCell>{kho.tenKho}</TableCell>
+                                            <TableCell>
+                                                {item.kho?.tenKho || "N/A"}
+                                            </TableCell>
                                             <TableCell>
                                                 <Badge variant="secondary">
-                                                    {kho.vaiTroTaiKho.replaceAll("_", " ")}
+                                                    {item.vaiTroTaiKho
+                                                        ? item.vaiTroTaiKho.replaceAll("_", " ")
+                                                        : (item.laQuanLyKho === 1 ? "Quản lý" : "Nhân viên")
+                                                    }
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                {formatDate(kho.ngayCap)}
+                                                {formatDate(item.ngayTao)}
                                             </TableCell>
                                         </TableRow>
                                     ))}

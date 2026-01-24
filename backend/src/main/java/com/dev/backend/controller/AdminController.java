@@ -29,7 +29,9 @@ public class AdminController {
     }
 
     @PostMapping("/filter")
-
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien}
+    )
     public ResponseEntity<ResponseData<Page<NguoiDungDto>>> filter(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody BaseFilterRequest filter) {
