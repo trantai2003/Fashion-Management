@@ -230,11 +230,9 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     @Transactional
     public ResponseEntity<ResponseData<String>> activeAccount(VerifyAccount verifyDto) {
         OtpScheduleObj findingRegisterOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
-                otpScheduleObj.getEmail().equals(verifyDto.getEmail())).findFirst().orElse(null);
-
-        if (findingRegisterOtp == null) {
-            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
-        }
+                otpScheduleObj.getEmail().equals(verifyDto.getEmail()) && otpScheduleObj.getType().equals(OtpType.ACCOUNT_ACTIVATION)).findFirst().orElseThrow(
+                () -> new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn")
+        );
 
 
         if (!findingRegisterOtp.getOtp().equals(verifyDto.getOtp())) {
@@ -254,6 +252,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         NguoiDung nguoiDung = findingNguoiDung.get();
         nguoiDung.setTrangThai(1);
         update(nguoiDung.getId(), nguoiDung);
+        GlobalCache.OTP_SCHEDULE_OBJS.remove(findingRegisterOtp);
 
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
@@ -381,27 +380,25 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     public ResponseEntity<ResponseData<String>> resetPassword(ResetPasswordRequest rpRequest) {
-
         NguoiDung nguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
                 rpRequest.getUsername(),
                 rpRequest.getUsername(),
                 rpRequest.getUsername()).orElseThrow(
                 () -> new CommonException("Không tìm thấy tài khoản")
         );
-        OtpScheduleObj findingRegisterOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
-                otpScheduleObj.getEmail().equals(nguoiDung.getEmail())).findFirst().orElseThrow(
+        OtpScheduleObj findingResetOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
+                otpScheduleObj.getEmail().equals(nguoiDung.getEmail()) && otpScheduleObj.getType().equals(OtpType.RESET_PASSWORD)).findFirst().orElseThrow(
                 () -> new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn")
         );
 
-        if (!findingRegisterOtp.getOtp().equals(rpRequest.getOtp())) {
+        if (!findingResetOtp.getOtp().equals(rpRequest.getOtp())) {
             throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
         }
 
         nguoiDung.setMatKhauHash(passwordEncoder.encode(rpRequest.getPassword()));
-        nguoiDungRepository.save(nguoiDung);
-        GlobalCache.OTP_SCHEDULE_OBJS.removeIf(o ->
-                o.getEmail().equals(nguoiDung.getEmail()) && o.getType() == OtpType.RESET_PASSWORD
-        );
+
+        GlobalCache.OTP_SCHEDULE_OBJS.remove(findingResetOtp);
+
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
@@ -411,7 +408,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
         );
     }
-
 }
 
 
