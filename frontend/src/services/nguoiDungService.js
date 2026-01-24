@@ -1,6 +1,18 @@
 import apiClient from "./apiClient";
 
 export const nguoiDungService = {
+
+    async getById(id) {
+        const res = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${id}`);
+        return res.data; // ResponseData<NguoiDungDto>
+    },
+
+    async updateUser(payload) {
+        // payload: { id, tenDangNhap, hoTen, email, soDienThoai }
+        const res = await apiClient.put("/api/v1/nguoi-dung/update", payload);
+        return res.data; // ResponseData<NguoiDungDto>
+    },
+
     async register(payload) {
         const res = await apiClient.post("/api/v1/nguoi-dung/register", payload, { skipAuth: true });
         return res.data;
