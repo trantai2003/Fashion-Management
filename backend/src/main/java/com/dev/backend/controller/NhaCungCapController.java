@@ -16,7 +16,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/supplier")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class NhaCungCapController {
 
     private final NhaCungCapService service;

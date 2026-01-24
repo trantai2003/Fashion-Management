@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="fashion_system@171.244.142.43" uuid="37a6b574-278b-4a75-a59b-8c6d092ca479">
+    <data-source source="LOCAL" name="fashion_system@171.244.142.43" uuid="3a193fc9-dba5-4da8-b2da-77b544593802">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <imported>true</imported>
-      <remarks>$PROJECT_DIR$/backend/src/main/resources/application.properties</remarks>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://171.244.142.43:3306/fashion_system</jdbc-url>
       <jdbc-additional-properties>
