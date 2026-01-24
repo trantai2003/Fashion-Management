@@ -11,6 +11,7 @@ import com.dev.backend.mapper.NguoiDungMapper;
 import com.dev.backend.services.impl.entities.NguoiDungService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,8 +55,7 @@ public class AdminController {
     )
     public ResponseEntity<ResponseData<Page<NguoiDungDto>>> getUserListByAdmin(
             @RequestHeader("Authorization") String authHeader,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            Pageable pageable
     ) {
             return ResponseEntity.ok(
                 ResponseData.<Page<NguoiDungDto>>builder()
@@ -63,7 +63,7 @@ public class AdminController {
                         .data(
                                 nguoiDungMapper.toDtoPage(
                                         nguoiDungService.getUserListByAdmin(
-                                                PageRequest.of(page, size)
+                                                pageable
                                         )
                                 )
                         )
