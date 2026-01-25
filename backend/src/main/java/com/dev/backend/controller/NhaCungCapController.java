@@ -34,7 +34,8 @@ public class NhaCungCapController {
                 .build());
     }
 
-    // Supplier Detail - GET /api/supplier/{id}
+    // Supplier Detail (View & Edit) - GET /api/supplier/{id}
+    // Endpoint này dùng chung cho cả xem chi tiết và lấy dữ liệu để edit
     @GetMapping("/{id}")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}

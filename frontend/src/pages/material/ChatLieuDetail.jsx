@@ -43,7 +43,7 @@ const formSchema = z.object({
 export default function ChatLieuDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const isEdit = !!id; // Kiểm tra có phải là chế độ chỉnh sửa không
+    const isEdit = !!id; // ✅ Kiểm tra có ID = Edit mode, không có = Create mode
     const [loading, setLoading] = useState(false);
     const [localTrangThai, setLocalTrangThai] = useState(true);
 
@@ -73,7 +73,7 @@ export default function ChatLieuDetail() {
                     });
                     // Set trạng thái - check giá trị boolean hoặc 1/0
                     setLocalTrangThai(data.trangThai === 1 || data.trangThai === true);
-                } catch {
+                } catch (error) {
                     // Toast lỗi đơn giản - GIỐNG supplierService
                     toast.error("Không thể tải thông tin chất liệu");
                     navigate("/material");

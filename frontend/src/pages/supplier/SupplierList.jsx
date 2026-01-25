@@ -24,8 +24,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
-// Thay đổi: import toast từ sonner thay vì react-hot-toast
+import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { toast } from "sonner";
 import {
     Dialog,
@@ -58,7 +57,6 @@ export default function SupplierList() {
             const data = await getAllSupplier(search);
             setSuppliers(data);
         } catch {
-            // Thay đổi: sử dụng toast.error từ sonner
             toast.error("Không thể tải danh sách nhà cung cấp");
         } finally {
             setLoading(false);
@@ -75,11 +73,9 @@ export default function SupplierList() {
         if (!deleteId) return;
         try {
             await deleteSupplier(deleteId);
-            // Thay đổi: toast.success từ sonner
             toast.success("Xóa nhà cung cấp thành công");
             fetchSuppliers(); // Reload danh sách
         } catch {
-            // Thay đổi: toast.error từ sonner
             toast.error("Xóa thất bại");
         } finally {
             setDeleteId(null); // Reset deleteId
@@ -162,8 +158,17 @@ export default function SupplierList() {
                                                     {item.trangThai === 1 ? "Hoạt động" : "Ngừng hoạt động"}
                                                 </div>
                                             </TableCell>
-                                            {/* Các nút thao tác (Edit & Delete) */}
+                                            {/* Các nút thao tác (View, Edit & Delete) */}
                                             <TableCell className="text-right space-x-2">
+                                                {/* Nút View */}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => navigate(`/supplier/view/${item.id}`)}
+                                                >
+                                                    <Eye className="h-4 w-4 text-blue-600" />
+                                                </Button>
+
                                                 {/* Nút Edit */}
                                                 <Button
                                                     variant="ghost"
@@ -172,6 +177,7 @@ export default function SupplierList() {
                                                 >
                                                     <Edit className="h-4 w-4 text-purple-600" />
                                                 </Button>
+
                                                 {/* Dialog xác nhận xóa */}
                                                 <Dialog>
                                                     <DialogTrigger asChild>

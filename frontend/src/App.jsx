@@ -10,8 +10,10 @@ import VerifyEmail from "./pages/VerifyEmail";
 import Warehouse from "./pages/warehouse/Warehouse";
 import ChatLieuList from "./pages/material/ChatLieuList";
 import ChatLieuDetail from "./pages/material/ChatLieuDetail";
+import ChatLieuDetailView from "./pages/material/ChatLieuDetailView";
 import SupplierList from "./pages/supplier/SupplierList";
 import SupplierDetail from "./pages/supplier/SupplierDetail";
+import SupplierDetailView from "./pages/supplier/SupplierDetailView";
 
 import AddUserByAdmin from "@/pages/admin/AddUserByAdmin.jsx";
 import ViewUserListByAdmin from "./pages/admin/ViewUserListByAdmin";
@@ -40,10 +42,12 @@ export default function App() {
 
         <Route path="/material" element={<ChatLieuList />} />
         <Route path="/material/new" element={<ChatLieuDetail />} />
+        <Route path="/material/view/:id" element={<ChatLieuDetailView />} />
         <Route path="/material/:id" element={<ChatLieuDetail />} />
 
         <Route path="/supplier" element={<SupplierList />} />
         <Route path="/supplier/new" element={<SupplierDetail />} />
+        <Route path="/supplier/view/:id" element={<SupplierDetailView />} />
         <Route path="/supplier/:id" element={<SupplierDetail />} />
 
         <Route path="/admin" element={<AdminLayout />}>

@@ -33,7 +33,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 // Thay đổi: import toast từ sonner thay vì react-hot-toast
 import { toast } from "sonner";
 import {
@@ -168,13 +168,24 @@ export default function ChatLieuList() {
                                                     {item.trangThai ?? true ? "Hoạt động" : "Ngừng hoạt động"}
                                                 </div>
                                             </TableCell>
-                                            {/* Các nút thao tác (Edit & Delete) */}
+                                            {/* Các nút thao tác (View, Edit & Delete) */}
                                             <TableCell className="text-right space-x-2">
+                                                {/* Nút Xem chi tiết */}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => navigate(`/material/view/${item.id}`)}
+                                                    title="Xem chi tiết"
+                                                >
+                                                    <Eye className="h-4 w-4 text-blue-600" />
+                                                </Button>
+
                                                 {/* Nút Edit */}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    onClick={() => navigate(`/material/${item.id}`)}
+                                                    onClick={() => navigate(`/material/edit/${item.id}`)}
+                                                    title="Chỉnh sửa"
                                                 >
                                                     <Edit className="h-4 w-4 text-purple-600" />
                                                 </Button>
