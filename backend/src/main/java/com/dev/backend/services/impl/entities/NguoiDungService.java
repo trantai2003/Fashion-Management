@@ -72,121 +72,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     private final NguoiDungRepository nguoiDungRepository = (NguoiDungRepository) super.getRepository();
 
-    public Page<NguoiDung> getUserListByAdmin(Pageable pageable) {
-        return nguoiDungRepository.findAll(pageable);
-    }
 
-    public NguoiDung getDetailByAdmin(Integer id) {
-        NguoiDung nguoiDung = nguoiDungRepository.findById(id)
-                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
-
-        //Lấy danh sách phân quyền kho
-        List<PhanQuyenNguoiDungKho> dsPhanQuyen = phanQuyenNguoiDungKhoService.findByNguoiDungIdAndActive(id);
-
-        //Gán danh sách này vào trường @Transient vừa tạo
-        if (dsPhanQuyen != null) {
-            nguoiDung.setKhoPhuTrach(dsPhanQuyen);
-        }
-
-        return nguoiDung;
-    }
-
-    @Transactional
-    public NguoiDung toggleStatusByAdmin(Integer userId) {
-
-        //lay current id
-        Integer currentUserId = null;
-
-        Authentication authentication = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
-
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
-            Object userIdClaim = jwt.getClaim("id");
-            if (userIdClaim != null) {
-                currentUserId = Integer.valueOf(userIdClaim.toString());
-            }
-        }
-
-        //lay id bi thao tac
-        NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
-                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
-
-        //chan tu khoa
-        if (nguoiDung.getId().equals(currentUserId)) {
-            throw new CommonException("Không thể tự khóa tài khoản của chính mình");
-        }
-
-        //toggle trang thai
-        if (nguoiDung.getTrangThai() != null && nguoiDung.getTrangThai() == 1) {
-            nguoiDung.setTrangThai(0);
-        } else {
-            nguoiDung.setTrangThai(1);
-        }
-
-        nguoiDung.setNgayCapNhat(Instant.now());
-
-        return nguoiDungRepository.save(nguoiDung);
-    }
-
-
-
-    @Transactional
-    public void updateUserByAdmin(Integer userId, AdminUpdateRequest request) {
-
-        NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
-                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
-
-        // reset password
-        if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
-            nguoiDung.setMatKhauHash(
-                    passwordEncoder.encode(request.getNewPassword())
-            );
-        }
-
-        nguoiDung.setNgayCapNhat(Instant.now());
-        nguoiDungRepository.save(nguoiDung);
-    }
-
-
-    @Transactional
-    public NguoiDung createInternalUserByAdmin(NguoiDungCreating request) {
-
-        if (nguoiDungRepository.existsByTenDangNhap(request.getTenDangNhap())) {
-            throw new CommonException("Tên đăng nhập đã tồn tại");
-        }
-
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            if (nguoiDungRepository.existsByEmail(request.getEmail())) {
-                throw new CommonException("Email đã tồn tại");
-            }
-        }
-
-        if (request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()) {
-            if (nguoiDungRepository.existsBySoDienThoai(request.getSoDienThoai())) {
-                throw new CommonException("Số điện thoại đã tồn tại");
-            }
-        }
-
-        NguoiDung nguoiDung = new NguoiDung();
-        nguoiDung.setTenDangNhap(request.getTenDangNhap());
-        nguoiDung.setEmail(
-                request.getEmail() != null && !request.getEmail().isBlank()
-                        ? request.getEmail()
-                        : null
-        );
-        nguoiDung.setHoTen(request.getHoTen());
-        nguoiDung.setSoDienThoai(
-                request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()
-                        ? request.getSoDienThoai()
-                        : null
-        );
-        nguoiDung.setVaiTro(request.getVaiTro().toString());
-        nguoiDung.setTrangThai(1);
-        nguoiDung.setMatKhauHash(passwordEncoder.encode(request.getMatKhau()));
-
-        return create(nguoiDung);
-    }
 
     @Transactional
     public ResponseEntity<ResponseData<String>> register(RegisterRequest registerRequest) {
@@ -423,6 +309,122 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                         .build()
 
         );
+    }
+
+    public Page<NguoiDung> getUserListByAdmin(Pageable pageable) {
+        return nguoiDungRepository.findAll(pageable);
+    }
+
+    public NguoiDung getDetailByAdmin(Integer id) {
+        NguoiDung nguoiDung = nguoiDungRepository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
+
+        //Lấy danh sách phân quyền kho
+        List<PhanQuyenNguoiDungKho> dsPhanQuyen = phanQuyenNguoiDungKhoService.findByNguoiDungIdAndActive(id);
+
+        //Gán danh sách này vào trường @Transient vừa tạo
+        if (dsPhanQuyen != null) {
+            nguoiDung.setKhoPhuTrach(dsPhanQuyen);
+        }
+
+        return nguoiDung;
+    }
+
+    @Transactional
+    public NguoiDung toggleStatusByAdmin(Integer userId) {
+
+        //lay current id
+        Integer currentUserId = null;
+
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            Object userIdClaim = jwt.getClaim("id");
+            if (userIdClaim != null) {
+                currentUserId = Integer.valueOf(userIdClaim.toString());
+            }
+        }
+
+        //lay id bi thao tac
+        NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
+                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
+
+        //chan tu khoa
+        if (nguoiDung.getId().equals(currentUserId)) {
+            throw new CommonException("Không thể tự khóa tài khoản của chính mình");
+        }
+
+        //toggle trang thai
+        if (nguoiDung.getTrangThai() != null && nguoiDung.getTrangThai() == 1) {
+            nguoiDung.setTrangThai(0);
+        } else {
+            nguoiDung.setTrangThai(1);
+        }
+
+        nguoiDung.setNgayCapNhat(Instant.now());
+
+        return nguoiDungRepository.save(nguoiDung);
+    }
+
+
+
+    @Transactional
+    public void updateUserByAdmin(Integer userId, AdminUpdateRequest request) {
+
+        NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
+                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
+
+        // reset password
+        if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
+            nguoiDung.setMatKhauHash(
+                    passwordEncoder.encode(request.getNewPassword())
+            );
+        }
+
+        nguoiDung.setNgayCapNhat(Instant.now());
+        nguoiDungRepository.save(nguoiDung);
+    }
+
+
+    @Transactional
+    public NguoiDung createInternalUserByAdmin(NguoiDungCreating request) {
+
+        if (nguoiDungRepository.existsByTenDangNhap(request.getTenDangNhap())) {
+            throw new CommonException("Tên đăng nhập đã tồn tại");
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            if (nguoiDungRepository.existsByEmail(request.getEmail())) {
+                throw new CommonException("Email đã tồn tại");
+            }
+        }
+
+        if (request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()) {
+            if (nguoiDungRepository.existsBySoDienThoai(request.getSoDienThoai())) {
+                throw new CommonException("Số điện thoại đã tồn tại");
+            }
+        }
+
+        NguoiDung nguoiDung = new NguoiDung();
+        nguoiDung.setTenDangNhap(request.getTenDangNhap());
+        nguoiDung.setEmail(
+                request.getEmail() != null && !request.getEmail().isBlank()
+                        ? request.getEmail()
+                        : null
+        );
+        nguoiDung.setHoTen(request.getHoTen());
+        nguoiDung.setSoDienThoai(
+                request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()
+                        ? request.getSoDienThoai()
+                        : null
+        );
+        nguoiDung.setVaiTro(request.getVaiTro().toString());
+        nguoiDung.setTrangThai(1);
+        nguoiDung.setMatKhauHash(passwordEncoder.encode(request.getMatKhau()));
+
+        return create(nguoiDung);
     }
 }
 
