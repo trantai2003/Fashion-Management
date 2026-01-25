@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { jwtDecode } from "jwt-decode";
 import { useNavigate } from 'react-router-dom';
 import { nguoiDungService } from '../services/nguoiDungService';
 import { Card, CardContent } from "../components/ui/card";
@@ -98,9 +99,37 @@ export default function AuthPage() {
             const response = await nguoiDungService.login(payload);
 
             if (response && response.status === 200) {
-                // Login success
-                // Token is already saved in nguoiDungService.login
-                navigate('/'); // Navigate to home or dashboard
+                // Login success - Token is already saved in nguoiDungService.login
+
+                // Get token and decode to check role
+                const token = localStorage.getItem('access_token');
+                if (token) {
+                    try {
+                        // Decode JWT to get user info
+                        const decoded = jwtDecode(token);
+                        console.log("LOGIN SUCCESS - Decoded Token:", decoded);
+
+                        // Check role and navigate accordingly
+                        const role = decoded.scope || decoded.vaiTro || decoded.role || decoded.authorities;
+                        console.log("LOGIN SUCCESS - Detected Role:", role);
+
+                        if (role === 'quan_tri_vien') {
+                            console.log("Redirecting to /admin/dashboard");
+                            navigate('/admin/dashboard'); // Redirect to dashboard
+                        } else if (role === 'quan_ly_kho' || role === 'nhan_vien_kho') {
+                            console.log("Redirecting to /warehouse");
+                            navigate('/warehouse');
+                        } else {
+                            console.log("Redirecting to /");
+                            navigate('/');
+                        }
+                    } catch (decodeError) {
+                        console.error('Token decode error:', decodeError);
+                        navigate('/'); // Default to home if decode fails
+                    }
+                } else {
+                    navigate('/'); // Default to home if no token
+                }
             } else {
                 setErrors({ general: response.message || 'Đăng nhập thất bại' });
             }
