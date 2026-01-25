@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/material")  // Đổi path nếu cần (ví dụ /api/chat-lieu)
+@RequestMapping("/api/material")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173")
 public class ChatLieuController {
@@ -22,9 +22,16 @@ public class ChatLieuController {
     private final ChatLieuService service;
 
     // Material List - GET /api/material
+    // Roles: quan_ly_kho, nhan_vien_mua_hang, nhan_vien_ban_hang, quan_tri_vien, nhan_vien_kho
     @GetMapping
     @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
+            roles = {
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_mua_hang,
+                    IRoleType.nhan_vien_ban_hang,
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_kho
+            }
     )
     public ResponseEntity<ResponseData> getAll(@RequestParam(required = false) String search) {
         List<ChatLieuDto> dtos = service.findAll(search);
@@ -35,10 +42,17 @@ public class ChatLieuController {
                 .build());
     }
 
-    // Material Detail - GET /api/material/{id}
+    // Material Detail (View) - GET /api/material/{id}
+    // Roles: quan_ly_kho, nhan_vien_kho, nhan_vien_mua_hang, nhan_vien_ban_hang, quan_tri_vien
     @GetMapping("/{id}")
     @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
+            roles = {
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho,
+                    IRoleType.nhan_vien_mua_hang,
+                    IRoleType.nhan_vien_ban_hang,
+                    IRoleType.quan_tri_vien
+            }
     )
     public ResponseEntity<ResponseData> getById(@PathVariable Integer id) {
         ChatLieuDto dto = service.findByIdDto(id);
@@ -50,9 +64,13 @@ public class ChatLieuController {
     }
 
     // Add Material - POST /api/material
+    // Roles: quan_ly_kho, quan_tri_vien
     @PostMapping
     @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+            roles = {
+                    IRoleType.quan_ly_kho,
+                    IRoleType.quan_tri_vien
+            }
     )
     public ResponseEntity<ResponseData> create(@RequestBody ChatLieuCreating creating) {
         ChatLieuDto dto = service.create(creating);
@@ -64,9 +82,13 @@ public class ChatLieuController {
     }
 
     // Edit Material - PUT /api/material/{id}
+    // Roles: quan_ly_kho, quan_tri_vien
     @PutMapping("/{id}")
     @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+            roles = {
+                    IRoleType.quan_ly_kho,
+                    IRoleType.quan_tri_vien
+            }
     )
     public ResponseEntity<ResponseData> update(@PathVariable Integer id, @RequestBody ChatLieuUpdating updating) {
         ChatLieuDto dto = service.update(id, updating);
@@ -78,9 +100,13 @@ public class ChatLieuController {
     }
 
     // Delete Material - DELETE /api/material/{id}
+    // Roles: quan_ly_kho, quan_tri_vien
     @DeleteMapping("/{id}")
     @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+            roles = {
+                    IRoleType.quan_ly_kho,
+                    IRoleType.quan_tri_vien
+            }
     )
     public ResponseEntity<ResponseData> delete(@PathVariable Integer id) {
         service.delete(id);
