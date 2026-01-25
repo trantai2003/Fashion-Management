@@ -56,6 +56,7 @@ export default function App() {
           <Route path="dashboard" element={<DashboardByAdmin />} />
           <Route path="attributes" element={<ColorSizeManagement />} />
         </Route>
+        <Route path="*" element={<div className="flex items-center justify-center h-screen text-xl font-bold">404 - Page Not Found</div>} />
       </Routes>
     </BrowserRouter>
   );
