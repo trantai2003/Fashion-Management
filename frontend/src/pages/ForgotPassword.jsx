@@ -1,20 +1,22 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { nguoiDungService } from "../services/nguoiDungService";
+
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Label } from "../components/ui/label";
 import { Alert, AlertDescription } from "../components/ui/alert";
+
 import { Mail, ArrowLeft, CheckCircle2, AlertCircle, Lock, Key } from "lucide-react";
 
 export default function ForgotPasswordPage() {
     const navigate = useNavigate();
 
-    // 1: nhập email, 2: nhập OTP, 3: mật khẩu mới, 4: thành công
+    // 1: Email/Username, 2: OTP, 3: New Password, 4: Success
     const [step, setStep] = useState(1);
 
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState(""); // email hoặc username
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,42 +26,47 @@ export default function ForgotPasswordPage() {
 
     const otpValue = useMemo(() => otp.join(""), [otp]);
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    const setFieldError = (key, message) => setErrors((prev) => ({ ...prev, [key]: message }));
     const clearErrors = () => setErrors({});
+    const setFieldError = (key, msg) => setErrors((prev) => ({ ...prev, [key]: msg }));
+
+    const isLikelyEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
     const handleSendOTP = async (e) => {
         e.preventDefault();
         clearErrors();
 
-        const trimmed = email.trim();
-        if (!trimmed) return setFieldError("email", "Vui lòng nhập email");
-        if (!emailRegex.test(trimmed)) return setFieldError("email", "Email không hợp lệ");
+        const trimmed = username.trim();
+        if (!trimmed) return setFieldError("username", "Vui lòng nhập email / tên đăng nhập");
+
+        // Nếu user nhập email thì validate email; nếu họ dùng username/phone thì bỏ qua regex email
+        if (trimmed.includes("@") && !isLikelyEmail(trimmed)) {
+            return setFieldError("username", "Email không hợp lệ");
+        }
 
         setIsLoading(true);
         try {
             const res = await nguoiDungService.sendForgotPasswordOTP(trimmed);
             if (res?.status === 200) {
-                setEmail(trimmed);
+                setUsername(trimmed);
+                setOtp(["", "", "", "", "", ""]);
                 setStep(2);
             } else {
-                setFieldError("email", res?.message || "Gửi OTP thất bại");
+                setFieldError("username", res?.message || "Gửi OTP thất bại");
             }
         } catch (err) {
             const msg = err?.response?.data?.message || "Có lỗi xảy ra khi gửi OTP";
-            setFieldError("email", msg);
+            setFieldError("username", msg);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // ✅ Step 2: chỉ kiểm tra đủ 6 số rồi chuyển step 3 (KHÔNG gọi API)
-    const handleGoToNewPassword = (e) => {
+    // Step 2: chỉ check đủ 6 số (BE không có verify otp riêng)
+    const handleGoStep3 = (e) => {
         e.preventDefault();
         clearErrors();
 
-        if (otpValue.length !== 6) return setFieldError("otp", "Vui lòng nhập đầy đủ mã OTP");
+        if (otpValue.length !== 6) return setFieldError("otp", "Vui lòng nhập đủ 6 số OTP");
         setStep(3);
     };
 
@@ -67,21 +74,21 @@ export default function ForgotPasswordPage() {
         e.preventDefault();
         clearErrors();
 
-        if (otpValue.length !== 6) return setFieldError("otp", "Vui lòng nhập đầy đủ mã OTP");
+        const trimmed = username.trim();
+        if (!trimmed) return setFieldError("general", "Thiếu username/email");
+        if (otpValue.length !== 6) return setFieldError("general", "Thiếu OTP");
 
         if (!newPassword) return setFieldError("newPassword", "Vui lòng nhập mật khẩu mới");
-        if (newPassword.length < 6) return setFieldError("newPassword", "Mật khẩu phải có ít nhất 6 ký tự");
+        if (newPassword.length < 6) return setFieldError("newPassword", "Mật khẩu tối thiểu 6 ký tự");
         if (newPassword !== confirmPassword) return setFieldError("confirmPassword", "Mật khẩu xác nhận không khớp");
 
         setIsLoading(true);
         try {
-            const payload = {
-                username: email,      // backend cho phép email là username
+            const res = await nguoiDungService.resetPassword({
+                username: trimmed,
                 otp: otpValue,
-                password: newPassword // backend field là "password"
-            };
-
-            const res = await nguoiDungService.resetPassword(payload);
+                password: newPassword,
+            });
 
             if (res?.status === 200) {
                 setStep(4);
@@ -98,16 +105,15 @@ export default function ForgotPasswordPage() {
 
     const handleResendOTP = async () => {
         clearErrors();
-        setOtp(["", "", "", "", "", ""]);
-
-        const trimmed = email.trim();
-        if (!trimmed) return setFieldError("general", "Vui lòng nhập email trước");
+        const trimmed = username.trim();
+        if (!trimmed) return setFieldError("general", "Vui lòng nhập email/username trước");
 
         setIsLoading(true);
         try {
             const res = await nguoiDungService.sendForgotPasswordOTP(trimmed);
             if (res?.status === 200) {
-                setFieldError("success", "Mã OTP đã được gửi lại");
+                setOtp(["", "", "", "", "", ""]);
+                setFieldError("success", "OTP đã được gửi lại");
                 setTimeout(() => setErrors({}), 2500);
             } else {
                 setFieldError("general", res?.message || "Gửi lại OTP thất bại");
@@ -121,23 +127,22 @@ export default function ForgotPasswordPage() {
     };
 
     const handleOtpChange = (index, value) => {
-        if (value.length > 1) value = value[0];
-        if (!/^\d*$/.test(value)) return;
-
+        // chỉ cho nhập số
+        const v = value.replace(/\D/g, "").slice(0, 1);
         const next = [...otp];
-        next[index] = value;
+        next[index] = v;
         setOtp(next);
 
-        if (value && index < 5) {
-            const nextInput = document.getElementById(`otp-${index + 1}`);
-            if (nextInput) nextInput.focus();
+        if (v && index < 5) {
+            const el = document.getElementById(`otp-${index + 1}`);
+            if (el) el.focus();
         }
     };
 
     const handleOtpKeyDown = (index, e) => {
         if (e.key === "Backspace" && !otp[index] && index > 0) {
-            const prevInput = document.getElementById(`otp-${index - 1}`);
-            if (prevInput) prevInput.focus();
+            const el = document.getElementById(`otp-${index - 1}`);
+            if (el) el.focus();
         }
     };
 
@@ -150,6 +155,7 @@ export default function ForgotPasswordPage() {
                         <div className="text-center mb-8">
                             {step !== 4 && (
                                 <button
+                                    type="button"
                                     onClick={() => navigate("/login")}
                                     className="flex items-center text-gray-600 hover:text-purple-600 mb-4 transition-colors"
                                 >
@@ -171,15 +177,16 @@ export default function ForgotPasswordPage() {
                                 {step === 3 && "Đặt mật khẩu mới"}
                                 {step === 4 && "Thành công!"}
                             </h1>
+
                             <p className="text-gray-600">
-                                {step === 1 && "Nhập email để nhận mã OTP"}
-                                {step === 2 && "Nhập mã OTP đã gửi về email"}
-                                {step === 3 && "Tạo mật khẩu mới cho tài khoản"}
+                                {step === 1 && "Nhập email / tên đăng nhập để nhận OTP"}
+                                {step === 2 && "Nhập OTP (6 số) đã gửi về email"}
+                                {step === 3 && "Nhập mật khẩu mới và xác nhận"}
                                 {step === 4 && "Mật khẩu đã được đặt lại thành công"}
                             </p>
                         </div>
 
-                        {/* Alerts */}
+                        {/* Global Alerts */}
                         {(errors.general || errors.success) && (
                             <div className="space-y-3 mb-4">
                                 {errors.general && (
@@ -197,28 +204,30 @@ export default function ForgotPasswordPage() {
                             </div>
                         )}
 
-                        {/* Step 1: Email */}
+                        {/* STEP 1 */}
                         {step === 1 && (
                             <form onSubmit={handleSendOTP} className="space-y-6">
-                                {errors.email && (
+                                {errors.username && (
                                     <Alert variant="destructive">
                                         <AlertCircle className="h-4 w-4" />
-                                        <AlertDescription className="text-sm">{errors.email}</AlertDescription>
+                                        <AlertDescription className="text-sm">{errors.username}</AlertDescription>
                                     </Alert>
                                 )}
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+                                    <Label htmlFor="username" className="text-gray-700 font-medium">
+                                        Email / Tên đăng nhập
+                                    </Label>
                                     <div className="relative">
                                         <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                                         <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="example@gmail.com"
+                                            id="username"
+                                            type="text"
+                                            placeholder="example@gmail.com hoặc username"
                                             className="pl-10 h-12 border-gray-300"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            autoComplete="email"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            autoComplete="username"
                                         />
                                     </div>
                                 </div>
@@ -233,9 +242,9 @@ export default function ForgotPasswordPage() {
                             </form>
                         )}
 
-                        {/* Step 2: OTP */}
+                        {/* STEP 2 */}
                         {step === 2 && (
-                            <form onSubmit={handleGoToNewPassword} className="space-y-6">
+                            <form onSubmit={handleGoStep3} className="space-y-6">
                                 {errors.otp && (
                                     <Alert variant="destructive">
                                         <AlertCircle className="h-4 w-4" />
@@ -286,7 +295,7 @@ export default function ForgotPasswordPage() {
                             </form>
                         )}
 
-                        {/* Step 3: New Password */}
+                        {/* STEP 3 */}
                         {step === 3 && (
                             <form onSubmit={handleResetPassword} className="space-y-6">
                                 {errors.newPassword && (
@@ -303,7 +312,9 @@ export default function ForgotPasswordPage() {
                                 )}
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="newPassword" className="text-gray-700 font-medium">Mật khẩu mới</Label>
+                                    <Label htmlFor="newPassword" className="text-gray-700 font-medium">
+                                        Mật khẩu mới
+                                    </Label>
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                                         <Input
@@ -319,7 +330,9 @@ export default function ForgotPasswordPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">Xác nhận mật khẩu</Label>
+                                    <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">
+                                        Xác nhận mật khẩu
+                                    </Label>
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                                         <Input
@@ -344,7 +357,7 @@ export default function ForgotPasswordPage() {
                             </form>
                         )}
 
-                        {/* Step 4: Success */}
+                        {/* STEP 4 */}
                         {step === 4 && (
                             <div className="space-y-6">
                                 <div className="text-center p-6 bg-green-50 rounded-lg">

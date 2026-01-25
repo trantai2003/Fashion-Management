@@ -1,0 +1,92 @@
+package com.dev.backend.controller;
+
+import com.dev.backend.constant.variables.IRoleType;
+import com.dev.backend.customizeanotation.RequireAuth;
+import com.dev.backend.dto.request.ChatLieuCreating;
+import com.dev.backend.dto.request.ChatLieuUpdating;
+import com.dev.backend.dto.response.entities.ChatLieuDto;
+import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.services.impl.entities.ChatLieuService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/material")  // Đổi path nếu cần (ví dụ /api/chat-lieu)
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
+public class ChatLieuController {
+
+    private final ChatLieuService service;
+
+    // Material List - GET /api/material
+    @GetMapping
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> getAll(@RequestParam(required = false) String search) {
+        List<ChatLieuDto> dtos = service.findAll(search);
+        return ResponseEntity.ok(ResponseData.builder()
+                .status(200)
+                .data(dtos)
+                .message("Lấy danh sách chất liệu thành công")
+                .build());
+    }
+
+    // Material Detail - GET /api/material/{id}
+    @GetMapping("/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> getById(@PathVariable Integer id) {
+        ChatLieuDto dto = service.findByIdDto(id);
+        return ResponseEntity.ok(ResponseData.builder()
+                .status(200)
+                .data(dto)
+                .message("Lấy chi tiết chất liệu thành công")
+                .build());
+    }
+
+    // Add Material - POST /api/material
+    @PostMapping
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> create(@RequestBody ChatLieuCreating creating) {
+        ChatLieuDto dto = service.create(creating);
+        return ResponseEntity.ok(ResponseData.builder()
+                .status(200)
+                .data(dto)
+                .message("Thêm chất liệu mới thành công")
+                .build());
+    }
+
+    // Edit Material - PUT /api/material/{id}
+    @PutMapping("/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> update(@PathVariable Integer id, @RequestBody ChatLieuUpdating updating) {
+        ChatLieuDto dto = service.update(id, updating);
+        return ResponseEntity.ok(ResponseData.builder()
+                .status(200)
+                .data(dto)
+                .message("Cập nhật chất liệu thành công")
+                .build());
+    }
+
+    // Delete Material - DELETE /api/material/{id}
+    @DeleteMapping("/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
+    )
+    public ResponseEntity<ResponseData> delete(@PathVariable Integer id) {
+        service.delete(id);
+        return ResponseEntity.ok(ResponseData.builder()
+                .status(200)
+                .message("Xóa chất liệu thành công")
+                .build());
+    }
+}
