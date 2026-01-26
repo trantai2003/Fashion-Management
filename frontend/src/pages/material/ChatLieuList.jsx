@@ -184,7 +184,7 @@ export default function ChatLieuList() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    onClick={() => navigate(`/material/edit/${item.id}`)}
+                                                    onClick={() => navigate(`/material/${item.id}`)}
                                                     title="Chỉnh sửa"
                                                 >
                                                     <Edit className="h-4 w-4 text-purple-600" />
