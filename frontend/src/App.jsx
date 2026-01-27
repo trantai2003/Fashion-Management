@@ -21,6 +21,7 @@ import ViewUserDetailByAdmin from "@/pages/admin/ViewUserDetailByAdmin.jsx";
 import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx";
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
+import ColorSizeManagement from "@/pages/admin/ColorSizeManagement.jsx";
 export default function App() {
   return (
     <BrowserRouter>
@@ -57,7 +58,9 @@ export default function App() {
           <Route path="users/:id/reset-password" element={<ResetUserPasswordByAdmin />} />
           <Route path="users/:id/edit-role" element={<EditUserRoleByAdmin />} />
           <Route path="dashboard" element={<DashboardByAdmin />} />
+          <Route path="attributes" element={<ColorSizeManagement />} />
         </Route>
+        <Route path="*" element={<div className="flex items-center justify-center h-screen text-xl font-bold">404 - Page Not Found</div>} />
       </Routes>
     </BrowserRouter>
   );
