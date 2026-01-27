@@ -6,9 +6,7 @@ import com.dev.backend.dto.response.entities.PhanQuyenNguoiDungKhoDto;
 import com.dev.backend.services.JwtService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -250,4 +248,3 @@ public class JwtServiceImpl implements JwtService {
         return false;
     }
 }
-

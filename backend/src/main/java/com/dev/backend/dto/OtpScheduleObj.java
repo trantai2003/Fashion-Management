@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
@@ -13,6 +14,7 @@ import java.time.Instant;
 @Builder
 @EqualsAndHashCode( of = {"email"})
 public class OtpScheduleObj {
+
     String email;
     String otp;
     OtpType type;

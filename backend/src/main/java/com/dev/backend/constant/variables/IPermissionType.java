@@ -40,3 +40,4 @@ public interface IPermissionType {
             quan_ly_nha_cung_cap = "quan_ly_nha_cung_cap",
             quan_ly_khach_hang = "quan_ly_khach_hang";
 }
+

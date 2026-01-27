@@ -22,7 +22,7 @@ public class CanhBao {
     private Integer id;
 
     @NotNull
-    
+    @Lob
     @Column(name = "loai_canh_bao", nullable = false)
     private String loaiCanhBao;
 

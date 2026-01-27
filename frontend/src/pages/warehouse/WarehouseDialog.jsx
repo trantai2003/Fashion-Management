@@ -30,7 +30,6 @@ import {
     ChevronDown,
     Check
 } from 'lucide-react';
-import { formatCurrency, formatDate, formatNumber } from '@/utils/formatters';
 
 export default function WarehouseDialog({
     showDialog,
@@ -41,10 +40,11 @@ export default function WarehouseDialog({
     setFormData,
     errors,
     managers,
-    isLoadingManagers,
     onSubmit,
     onClose
 }) {
+    // Computed labels for dropdowns
+    const statusLabel = formData.trangThai ? 'Hoạt động' : 'Không hoạt động';
     const managerLabel = formData.quanLyId
         ? managers.find(m => m.id.toString() === formData.quanLyId)?.name
         : 'Chọn người quản lý';
@@ -58,7 +58,7 @@ export default function WarehouseDialog({
             }}
         >
 
-            <DialogContent className="w-[95vw] max-w-2xl bg-white rounded-2xl border border-gray-200 shadow-2xl">
+            <DialogContent className="w-[95vw] max-w-2xl bg-white rounded-2xl border border-gray-200 shadow-2xl z-[60]">
 
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -86,15 +86,9 @@ export default function WarehouseDialog({
                             <div className="space-y-2">
                                 <Label className="text-sm text-gray-600 font-normal">Trạng thái</Label>
                                 <div>
-                                    {selectedWarehouse?.trangThai === 1 ? (
-                                        <Badge className="bg-gray-900 hover:bg-gray-800 text-white border-0 px-3 py-1">
-                                            Hoạt động
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="secondary" className="px-3 py-1">
-                                            Không hoạt động
-                                        </Badge>
-                                    )}
+                                    <Badge className="bg-gray-900 hover:bg-gray-800 text-white border-0 px-3 py-1">
+                                        Hoạt động
+                                    </Badge>
                                 </div>
                             </div>
                         </div>
@@ -120,7 +114,7 @@ export default function WarehouseDialog({
                                 <User className="w-4 h-4" />
                                 Người quản lý
                             </Label>
-                            <p className="font-semibold text-base">{selectedWarehouse?.quanLy?.hoTen || 'N/A'}</p>
+                            <p className="font-semibold text-base">{selectedWarehouse?.quanLy}</p>
                         </div>
 
                         {/* Số lượng tồn kho và Giá trị tồn kho */}
@@ -131,9 +125,7 @@ export default function WarehouseDialog({
                                     Số lượng tồn kho
                                 </Label>
                                 <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                                    <p className="text-2xl font-bold text-purple-600">
-                                        {formatNumber(selectedWarehouse?.soLuongTon)}
-                                    </p>
+                                    <p className="text-2xl font-bold text-purple-600">{selectedWarehouse?.soLuongTon?.toLocaleString()}</p>
                                 </div>
                             </div>
                             <div className="space-y-2">
@@ -142,9 +134,7 @@ export default function WarehouseDialog({
                                     Giá trị tồn kho
                                 </Label>
                                 <div className="p-4 bg-green-50 rounded-lg border border-green-100">
-                                    <p className="text-2xl font-bold text-green-600">
-                                        {formatCurrency(selectedWarehouse?.giaTriTon)}
-                                    </p>
+                                    <p className="text-2xl font-bold text-green-600">{selectedWarehouse?.giaTriTon}</p>
                                 </div>
                             </div>
                         </div>
@@ -155,7 +145,7 @@ export default function WarehouseDialog({
                                 <Calendar className="w-4 h-4" />
                                 Ngày tạo
                             </Label>
-                            <p className="text-base">{formatDate(selectedWarehouse?.ngayTao)}</p>
+                            <p className="text-base">{selectedWarehouse?.ngayTao}</p>
                         </div>
                     </div>
                 ) : (
@@ -186,35 +176,35 @@ export default function WarehouseDialog({
                             <div className="space-y-2">
                                 <Label>Trạng thái *</Label>
 
-                                <DropdownMenu modal={false}>
+                                <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button
                                             type="button"
                                             className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-left text-sm flex items-center justify-between hover:bg-gray-50"
                                         >
-                                            <span>{formData.trangThai === 1 ? 'Hoạt động' : 'Không hoạt động'}</span>
+                                            <span>{statusLabel}</span>
                                             <ChevronDown className="h-4 w-4 text-gray-500" />
                                         </button>
                                     </DropdownMenuTrigger>
 
                                     <DropdownMenuContent
                                         align="start"
-                                        className="w-[--radix-dropdown-menu-trigger-width] bg-white border border-gray-200 shadow-xl rounded-xl"
+                                        className="w-[--radix-dropdown-menu-trigger-width] bg-white border border-gray-200 shadow-xl rounded-xl z-[99999]"
                                     >
                                         <DropdownMenuItem
-                                            onClick={() => setFormData({ ...formData, trangThai: 1 })}
-                                            className="flex items-center justify-between bg-white hover:bg-gray-100 cursor-pointer"
+                                            onClick={() => setFormData({ ...formData, trangThai: true })}
+                                            className="flex items-center justify-between"
                                         >
                                             Hoạt động
-                                            {Number(formData.trangThai) === 1 && <Check className="h-4 w-4" />}
+                                            {formData.trangThai === true && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
 
                                         <DropdownMenuItem
-                                            onClick={() => setFormData({ ...formData, trangThai: 0 })}
-                                            className="flex items-center justify-between bg-white hover:bg-gray-100 cursor-pointer"
+                                            onClick={() => setFormData({ ...formData, trangThai: false })}
+                                            className="flex items-center justify-between"
                                         >
                                             Không hoạt động
-                                            {Number(formData.trangThai) === 0 && <Check className="h-4 w-4" />}
+                                            {formData.trangThai === false && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -260,15 +250,14 @@ export default function WarehouseDialog({
                         <div className="space-y-2">
                             <Label>Người quản lý *</Label>
 
-                            <DropdownMenu modal={false}>
+                            <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <button
                                         type="button"
                                         className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-left text-sm flex items-center justify-between hover:bg-gray-50"
-                                        disabled={isLoadingManagers}
                                     >
                                         <span className={formData.quanLyId ? "" : "text-gray-400"}>
-                                            {isLoadingManagers ? "Đang tải..." : managerLabel}
+                                            {managerLabel}
                                         </span>
                                         <ChevronDown className="h-4 w-4 text-gray-500" />
                                     </button>
@@ -276,24 +265,18 @@ export default function WarehouseDialog({
 
                                 <DropdownMenuContent
                                     align="start"
-                                    className="w-[--radix-dropdown-menu-trigger-width] bg-white border border-gray-200 shadow-xl rounded-xl max-h-60 overflow-auto"
+                                    className="w-[--radix-dropdown-menu-trigger-width] bg-white border border-gray-200 shadow-xl rounded-xl max-h-60 overflow-auto z-[99999]"
                                 >
-                                    {managers.length === 0 ? (
-                                        <div className="p-2 text-sm text-gray-500 text-center">
-                                            Không có người quản lý
-                                        </div>
-                                    ) : (
-                                        managers.map((m) => (
-                                            <DropdownMenuItem
-                                                key={m.id}
-                                                onClick={() => setFormData({ ...formData, quanLyId: m.id.toString() })}
-                                                className="flex items-center justify-between bg-white hover:bg-gray-100 cursor-pointer"
-                                            >
-                                                {m.name}
-                                                {formData.quanLyId === m.id.toString() && <Check className="h-4 w-4" />}
-                                            </DropdownMenuItem>
-                                        ))
-                                    )}
+                                    {managers.map((m) => (
+                                        <DropdownMenuItem
+                                            key={m.id}
+                                            onClick={() => setFormData({ ...formData, quanLyId: m.id.toString() })}
+                                            className="flex items-center justify-between"
+                                        >
+                                            {m.name}
+                                            {formData.quanLyId === m.id.toString() && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                    ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
 

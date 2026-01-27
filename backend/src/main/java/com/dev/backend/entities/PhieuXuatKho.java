@@ -10,7 +10,7 @@ import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
 import java.time.Instant;
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -42,7 +42,7 @@ public class PhieuXuatKho {
 
     @ColumnDefault("'ban_hang'")
     @Generated(event = EventType.INSERT)
-    
+    @Lob
     @Column(name = "loai_xuat")
     private String loaiXuat;
 
@@ -55,7 +55,7 @@ public class PhieuXuatKho {
     @Column(name = "trang_thai")
     private Integer trangThai;
 
-    
+    @Lob
     @Column(name = "ghi_chu")
     private String ghiChu;
 

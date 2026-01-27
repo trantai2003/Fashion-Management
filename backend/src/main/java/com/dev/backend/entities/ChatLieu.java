@@ -31,7 +31,7 @@ public class ChatLieu {
     @Column(name = "ten_chat_lieu", nullable = false, length = 100)
     private String tenChatLieu;
 
-    
+    @Lob
     @Column(name = "mo_ta")
     private String moTa;
 

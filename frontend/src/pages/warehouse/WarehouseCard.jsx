@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Warehouse, Edit, Trash2, Eye, MapPin, User, Package, TrendingUp } from 'lucide-react';
-import { formatCurrency, formatNumber } from '@/utils/formatters';
 
 export default function WarehouseCard({ warehouse, onView, onEdit, onDelete }) {
     return (
@@ -19,7 +18,7 @@ export default function WarehouseCard({ warehouse, onView, onEdit, onDelete }) {
                             <p className="text-sm text-gray-600 font-mono">{warehouse.maKho}</p>
                         </div>
                     </div>
-                    {warehouse.trangThai === 1 ? (
+                    {warehouse.trangThai ? (
                         <Badge className="bg-gray-900 hover:bg-gray-800 text-white border-0">
                             Hoạt động
                         </Badge>
@@ -32,7 +31,7 @@ export default function WarehouseCard({ warehouse, onView, onEdit, onDelete }) {
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 text-gray-400 mt-1 shrink-0" />
+                    <MapPin className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
                     <p className="text-sm text-gray-700">{warehouse.diaChi}</p>
                 </div>
 
@@ -41,7 +40,7 @@ export default function WarehouseCard({ warehouse, onView, onEdit, onDelete }) {
                         <User className="w-4 h-4 text-gray-400" />
                         <span className="text-sm text-gray-600">Quản lý:</span>
                     </div>
-                    <span className="text-sm font-medium">{warehouse.quanLy?.hoTen || 'N/A'}</span>
+                    <span className="text-sm font-medium">{warehouse.quanLy}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -49,7 +48,7 @@ export default function WarehouseCard({ warehouse, onView, onEdit, onDelete }) {
                         <Package className="w-4 h-4 text-gray-400" />
                         <span className="text-sm text-gray-600">Tồn kho:</span>
                     </div>
-                    <span className="text-sm font-bold text-purple-600">{formatNumber(warehouse.soLuongTon)}</span>
+                    <span className="text-sm font-bold text-purple-600">{warehouse.soLuongTon}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -57,9 +56,7 @@ export default function WarehouseCard({ warehouse, onView, onEdit, onDelete }) {
                         <TrendingUp className="w-4 h-4 text-gray-400" />
                         <span className="text-sm text-gray-600">Giá trị:</span>
                     </div>
-                    <span className="text-sm font-bold text-green-600">
-                        {formatCurrency(warehouse.giaTriTon)}
-                    </span>
+                    <span className="text-sm font-bold text-green-600">{warehouse.giaTriTon}</span>
                 </div>
 
                 <div className="pt-4 border-t flex gap-2">

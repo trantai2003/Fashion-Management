@@ -1,16 +1,11 @@
 package com.dev.backend.dto.response.entities;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.io.Serializable;
 import java.time.Instant;
+import java.io.Serializable;
 
-/**
- * DTO for {@link com.dev.backend.entities.Kho}
- */
 @AllArgsConstructor
 @Getter
 @Setter

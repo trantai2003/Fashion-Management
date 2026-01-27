@@ -4,120 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2de712c9-5c18-4145-baab-5831b5859d52" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/constant/enums/HanhDong.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/controller/MauSacController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/controller/SanPhamQuanAoController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/controller/SizeController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/MauSacDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/SanPhamQuanAoDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/SizeDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/TepTinDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/LichSuThayDoi.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/TepTin.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/DanhMucQuanAoMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/MauSacMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/SizeMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/TepTinRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/TepTinService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/ui/confirm-modal.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/hooks/useToggle.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/product/components/product/ProductComponent.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/product/components/product/ProductModal.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/product/index.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/services/productService.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/utils/formatters.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/validations/productSchema.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/config/MailConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/config/MailConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/constant/GlobalCache.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/constant/GlobalCache.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/constant/variables/ConstantVariables.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/constant/variables/ConstantVariables.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/constant/variables/IPermissionType.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/constant/variables/IPermissionType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/controller/AdminController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/controller/AdminDashboardController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/controller/KhoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/controller/KhoController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/controller/NguoiDungController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/controller/NguoiDungController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/customizeanotation/RequireAuth.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/customizeanotation/RequireAuth.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/OtpScheduleObj.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/OtpScheduleObj.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/request/AdminUpdateRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/request/NguoiDungCreating.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/request/PhanQuyenNguoiDungKhoCreating.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/request/PhanQuyenNguoiDungKhoCreating.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/request/ResetPasswordRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/request/ResetPasswordRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/request/UpdateNguoiDungRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/request/UpdateNguoiDungRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/AdminDashboardResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/customize/TonKhoChiTietDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/customize/TonKhoChiTietDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/customize/TonKhoTongHopDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/customize/TonKhoTongHopDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/ChatLieuDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/ChatLieuDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/ChiTietQuyenKhoDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/ChiTietQuyenKhoDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/KhoDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/KhoDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/NguoiDungAuthInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/NguoiDungAuthInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/NguoiDungDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/NguoiDungDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/PhanQuyenNguoiDungKhoDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/PhanQuyenNguoiDungKhoDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/QuyenHanDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/dto/response/entities/QuyenHanDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/BienTheSanPham.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/BienTheSanPham.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/CanhBao.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/CanhBao.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChatLieu.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChatLieu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChiTietDonBanHang.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChiTietDonBanHang.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChiTietDonMuaHang.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChiTietDonMuaHang.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChiTietPhieuNhapKho.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChiTietPhieuNhapKho.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChiTietPhieuXuatKho.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/ChiTietPhieuXuatKho.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/DanhMucQuanAo.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/DanhMucQuanAo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/DonBanHang.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/DonBanHang.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/DonMuaHang.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/DonMuaHang.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/KhachHang.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/KhachHang.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/Kho.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/Kho.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/LichSuGiaoDichKho.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/LichSuGiaoDichKho.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/LoHang.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/LoHang.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/NguoiDung.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/NguoiDung.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/NhaCungCap.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/NhaCungCap.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/PhanQuyenNguoiDungKho.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/PhanQuyenNguoiDungKho.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/PhieuNhapKho.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/PhieuNhapKho.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/PhieuXuatKho.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/PhieuXuatKho.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/QuyenHan.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/QuyenHan.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/SanPhamQuanAo.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/SanPhamQuanAo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/Size.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/Size.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/TonKhoTheoLo.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/entities/TonKhoTheoLo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/exception/RestControllerGlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/exception/RestControllerGlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/ChatLieuMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/ChatLieuMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/KhoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/KhoMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/NguoiDungMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/NguoiDungMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/PhanQuyenNguoiDungKhoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/PhanQuyenNguoiDungKhoMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/QuyenHanMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/QuyenHanMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/SanPhamQuanAoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/mapper/SanPhamQuanAoMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/DonBanHangRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/DonBanHangRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/DonMuaHangRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/DonMuaHangRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/NguoiDungRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/NguoiDungRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/PhanQuyenNguoiDungKhoRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/PhanQuyenNguoiDungKhoRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/SanPhamQuanAoRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/SanPhamQuanAoRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/TonKhoTheoLoRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/TonKhoTheoLoRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/ChiTietQuyenKhoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/ChiTietQuyenKhoService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/NguoiDungService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/NguoiDungService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/SanPhamQuanAoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/SanPhamQuanAoService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/multitable/AdminDashboardServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/utils/JwtServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/utils/JwtServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/multitable/AdminDashboardService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/templates/activation.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/templates/activation.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ui/dropdown-menu.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ui/dropdown-menu.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ui/pagination.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ui/pagination.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ui/select.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ui/select.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/warehouse/Warehouse.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/warehouse/Warehouse.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/warehouse/WarehouseCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/warehouse/WarehouseCard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/warehouse/WarehouseDialog.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/warehouse/WarehouseDialog.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/warehouse/WarehouseSearchFilter.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/warehouse/WarehouseSearchFilter.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/apiClient.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/apiClient.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/khoService.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/khoService.js" afterDir="false" />
-    </list>
+    <list default="true" id="2de712c9-5c18-4145-baab-5831b5859d52" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -131,9 +18,9 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 3
-}</component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 3
+}]]></component>
   <component name="ProjectId" id="38ksLErJPj9VARvB2NfBzhiGe5w" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -141,15 +28,10 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.BackendApplication.executor": "Run",
-    "git-widget-placeholder": "Merging dev",
     "last_opened_file_path": "C:/Users/ADMIN/OneDrive - tqk70/Documents/GitHub/Fashion-Management",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -162,16 +44,6 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager">
-    <configuration name="BackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
-      <module name="backend" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.dev.backend.BackendApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

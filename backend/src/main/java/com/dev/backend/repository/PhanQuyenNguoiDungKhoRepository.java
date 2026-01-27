@@ -15,8 +15,8 @@ public interface PhanQuyenNguoiDungKhoRepository extends JpaRepository<PhanQuyen
 
 
     @Query("""
-            SELECT pqndk  FROM PhanQuyenNguoiDungKho pqndk  WHERE
-                        pqndk.nguoiDung.id = :nguoiDungId AND pqndk.trangThai = 1
+            SELECT pqndk  FROM PhanQuyenNguoiDungKho pqndk  WHERE 
+                        pqndk.nguoiDung.id = :nguoiDungId AND pqndk.trangThai = 1 
                                     AND (pqndk.ngayKetThuc IS NULL OR pqndk.ngayKetThuc > CURRENT_TIMESTAMP)
             """)
     List<PhanQuyenNguoiDungKho> findByNguoiDungIdAndActive(@Param("nguoiDungId") Integer nguoiDungId);

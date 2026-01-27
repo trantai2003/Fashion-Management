@@ -1,20 +1,20 @@
 package com.dev.backend.dto.request;
 
+import com.dev.backend.constant.enums.RoleType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-@ToString
-public class UpdateNguoiDungRequest {
-    Integer id;
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class NguoiDungCreating {
     String tenDangNhap;
-    String hoTen;
     String email;
+    String hoTen;
     String soDienThoai;
+    RoleType vaiTro;
+    String matKhau;
 }
-

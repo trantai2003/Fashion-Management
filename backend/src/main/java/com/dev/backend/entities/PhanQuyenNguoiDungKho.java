@@ -11,6 +11,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.generator.EventType;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Getter
@@ -53,7 +54,7 @@ public class PhanQuyenNguoiDungKho {
     @JoinColumn(name = "nguoi_cap_quyen_id")
     private NguoiDung nguoiCapQuyen;
 
-    
+    @Lob
     @Column(name = "ghi_chu")
     private String ghiChu;
 

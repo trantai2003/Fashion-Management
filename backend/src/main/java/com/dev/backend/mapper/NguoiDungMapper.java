@@ -3,8 +3,6 @@ package com.dev.backend.mapper;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.entities.NguoiDung;
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 

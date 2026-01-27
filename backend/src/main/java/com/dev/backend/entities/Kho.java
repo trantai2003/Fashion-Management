@@ -31,6 +31,7 @@ public class Kho {
     @Column(name = "ten_kho", nullable = false, length = 100)
     private String tenKho;
 
+    @Lob
     @Column(name = "dia_chi")
     private String diaChi;
 

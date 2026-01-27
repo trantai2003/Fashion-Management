@@ -1,9 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { khoService } from '@/services/khoService';
-import { useToggle } from '@/hooks/useToggle';
-import ConfirmModal from '@/components/ui/confirm-modal';
+import React, { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle2 } from 'lucide-react';
 import {
     WarehouseHeader,
     WarehouseStats,
@@ -14,83 +11,78 @@ import {
 } from '.';
 
 export default function WarehouseManagement() {
-    const [warehouses, setWarehouses] = useState([]);
-    const [managers, setManagers] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isLoadingManagers, setIsLoadingManagers] = useState(false);
+    const [warehouses, setWarehouses] = useState([
+        {
+            id: 1,
+            maKho: 'KHO-A',
+            tenKho: 'Kho A - Hà Nội',
+            diaChi: '123 Đường Láng, Đống Đa, Hà Nội',
+            quanLy: 'Trần Thị Mai',
+            quanLyId: 2,
+            soLuongTon: 1250,
+            giaTriTon: '₫145,000,000',
+            trangThai: true,
+            ngayTao: '2024-01-15'
+        },
+        {
+            id: 2,
+            maKho: 'KHO-B',
+            tenKho: 'Kho B - TP.HCM',
+            diaChi: '456 Nguyễn Huệ, Quận 1, TP.HCM',
+            quanLy: 'Nguyễn Văn Hùng',
+            quanLyId: 3,
+            soLuongTon: 890,
+            giaTriTon: '₫98,500,000',
+            trangThai: true,
+            ngayTao: '2024-02-20'
+        },
+        {
+            id: 3,
+            maKho: 'KHO-C',
+            tenKho: 'Kho C - Đà Nẵng',
+            diaChi: '789 Lê Duẩn, Hải Châu, Đà Nẵng',
+            quanLy: 'Lê Thị Hoa',
+            quanLyId: 4,
+            soLuongTon: 450,
+            giaTriTon: '₫52,300,000',
+            trangThai: false,
+            ngayTao: '2024-03-10'
+        },
+    ]);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [showDialog, setShowDialog] = useState(false);
     const [dialogMode, setDialogMode] = useState('create'); // create, edit, view
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
-    const [isConfirmOpen, openConfirm, closeConfirm] = useToggle(false);
-    const [warehouseToDelete, setWarehouseToDelete] = useState(null);
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     const [formData, setFormData] = useState({
         maKho: '',
         tenKho: '',
         diaChi: '',
         quanLyId: '',
-        trangThai: 1
+        trangThai: true
     });
 
     const [errors, setErrors] = useState({});
 
-    // Fetch warehouses
-    const fetchWarehouses = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const payload = buildWarehouseFilterPayload({ searchTerm, filterStatus });
-            const res = await khoService.filter(payload);
-
-            if (res.data?.status === 200) {
-                const pageData = res.data.data;
-                setWarehouses(pageData.content || []);
-            }
-        } catch (error) {
-            console.error("Lỗi khi tải danh sách kho:", error);
-            toast.error("Không thể tải danh sách kho");
-            setWarehouses([]);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [searchTerm, filterStatus]);
-
-    // Fetch managers
-    const fetchManagers = useCallback(async () => {
-        try {
-            setIsLoadingManagers(true);
-            const res = await khoService.getManagers();
-            if (res.data?.status === 200) {
-                const pageData = res.data.data;
-                const users = pageData.content || [];
-                setManagers(users.map(u => ({ id: u.id, name: u.hoTen })));
-            }
-        } catch (error) {
-            console.error("Lỗi khi tải danh sách quản lý:", error);
-            toast.error("Không thể tải danh sách người quản lý");
-        } finally {
-            setIsLoadingManagers(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchWarehouses();
-    }, [fetchWarehouses]);
-
-    useEffect(() => {
-        if (showDialog) {
-            fetchManagers();
-        }
-    }, [showDialog, fetchManagers]);
+    // Mock managers data
+    const managers = [
+        { id: 2, name: 'Trần Thị Mai' },
+        { id: 3, name: 'Nguyễn Văn Hùng' },
+        { id: 4, name: 'Lê Thị Hoa' },
+        { id: 5, name: 'Phạm Văn Nam' },
+    ];
 
     const validateForm = () => {
         const newErrors = {};
 
         if (!formData.maKho) {
             newErrors.maKho = 'Vui lòng nhập mã kho';
+        } else if (dialogMode === 'create' && warehouses.some(w => w.maKho === formData.maKho)) {
+            newErrors.maKho = 'Mã kho đã tồn tại';
         }
 
         if (!formData.tenKho) {
@@ -111,44 +103,6 @@ export default function WarehouseManagement() {
         return Object.keys(newErrors).length === 0;
     };
 
-    function buildWarehouseFilterPayload(filters) {
-        const filterList = [];
-
-        if (filters.searchTerm?.trim()) {
-            ["tenKho", "maKho", "diaChi"].forEach((field) => {
-                filterList.push({
-                    fieldName: field,
-                    operation: "ILIKE",
-                    value: filters.searchTerm.trim(),
-                    logicType: "OR",
-                });
-            });
-        }
-
-        if (filters.filterStatus === "active") {
-            filterList.push({
-                fieldName: "trangThai",
-                operation: "EQUALS",
-                value: 1,
-                logicType: "AND",
-            });
-        } else if (filters.filterStatus === "inactive") {
-            filterList.push({
-                fieldName: "trangThai",
-                operation: "EQUALS",
-                value: 0,
-                logicType: "AND",
-            });
-        }
-
-        return {
-            filters: filterList,
-            sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
-            page: 0,
-            size: 100,
-        };
-    }
-
     const handleOpenDialog = (mode, warehouse = null) => {
         setDialogMode(mode);
         setSelectedWarehouse(warehouse);
@@ -159,15 +113,15 @@ export default function WarehouseManagement() {
                 tenKho: '',
                 diaChi: '',
                 quanLyId: '',
-                trangThai: 1
+                trangThai: true
             });
         } else if (mode === 'edit' && warehouse) {
             setFormData({
                 maKho: warehouse.maKho,
                 tenKho: warehouse.tenKho,
                 diaChi: warehouse.diaChi,
-                quanLyId: warehouse.quanLy?.id?.toString() || '',
-                trangThai: warehouse.trangThai ?? 1
+                quanLyId: warehouse.quanLyId.toString(),
+                trangThai: warehouse.trangThai
             });
         } else if (mode === 'view' && warehouse) {
             setSelectedWarehouse(warehouse);
@@ -183,94 +137,83 @@ export default function WarehouseManagement() {
         setErrors({});
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (!validateForm()) return;
 
-        try {
-            const warehouseData = {
-                maKho: formData.maKho,
-                tenKho: formData.tenKho,
-                diaChi: formData.diaChi,
-                quanLyId: Number(formData.quanLyId),
-                trangThai: Number(formData.trangThai)
+        const manager = managers.find(m => m.id === parseInt(formData.quanLyId));
+
+        if (dialogMode === 'create') {
+            const newWarehouse = {
+                id: warehouses.length + 1,
+                ...formData,
+                quanLy: manager.name,
+                quanLyId: parseInt(formData.quanLyId),
+                soLuongTon: 0,
+                giaTriTon: '₫0',
+                ngayTao: new Date().toISOString().split('T')[0]
             };
+            setWarehouses([...warehouses, newWarehouse]);
+            setSuccessMessage('Thêm kho mới thành công!');
+        } else if (dialogMode === 'edit') {
+            setWarehouses(warehouses.map(w =>
+                w.id === selectedWarehouse.id
+                    ? { ...w, ...formData, quanLy: manager.name, quanLyId: parseInt(formData.quanLyId) }
+                    : w
+            ));
+            setSuccessMessage('Cập nhật thông tin kho thành công!');
+        }
 
-            console.log('Sending warehouse data:', warehouseData);
+        setShowDialog(false);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+    };
 
-            let res;
-            if (dialogMode === 'create') {
-                res = await khoService.create(warehouseData);
-            } else if (dialogMode === 'edit') {
-                const updateData = {
-                    id: selectedWarehouse.id,
-                    ...warehouseData
-                };
-                res = await khoService.update(updateData);
-            }
-
-            // Check if backend returns error in response body (HTTP 200 with data.status = 400)
-            if (res?.data?.status >= 400) {
-                toast.error(res.data.message || 'Có lỗi xảy ra');
-                return;
-            }
-
-            // Success
-            toast.success(dialogMode === 'create' ? 'Thêm kho mới thành công!' : 'Cập nhật thông tin kho thành công!');
-            setShowDialog(false);
-            setErrors({});
-            fetchWarehouses();
-        } catch (error) {
-            console.error('Chi tiết lỗi:', error);
-            console.error('Error response:', error.response);
-            console.error('Error response data:', error.response?.data);
-
-            const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra khi xử lý kho';
-            toast.error(errorMessage);
+    const handleDelete = (warehouse) => {
+        if (window.confirm(`Bạn có chắc chắn muốn xóa kho "${warehouse.tenKho}"?`)) {
+            setWarehouses(warehouses.filter(w => w.id !== warehouse.id));
+            setSuccessMessage('Xóa kho thành công!');
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
         }
     };
 
-    const handleDeleteClick = useCallback((warehouse) => {
-        setWarehouseToDelete(warehouse);
-        openConfirm();
-    }, [openConfirm]);
-
-    const handleConfirmDelete = useCallback(async () => {
-        if (!warehouseToDelete) return;
-
-        try {
-            setIsDeleting(true);
-            await khoService.delete(warehouseToDelete.id);
-            toast.success('Xóa kho thành công!');
-            closeConfirm();
-            setWarehouseToDelete(null);
-            fetchWarehouses();
-        } catch (error) {
-            console.error('Lỗi khi xóa kho:', error);
-            toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa kho');
-        } finally {
-            setIsDeleting(false);
-        }
-    }, [warehouseToDelete, closeConfirm, fetchWarehouses]);
-
-    const handleCancelDelete = useCallback(() => {
-        if (!isDeleting) {
-            setWarehouseToDelete(null);
-            closeConfirm();
-        }
-    }, [isDeleting, closeConfirm]);
+    const filteredWarehouses = warehouses.filter(warehouse => {
+        const matchesSearch = warehouse.tenKho.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            warehouse.maKho.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            warehouse.diaChi.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = filterStatus === 'all' ||
+            (filterStatus === 'active' && warehouse.trangThai) ||
+            (filterStatus === 'inactive' && !warehouse.trangThai);
+        return matchesSearch && matchesStatus;
+    });
 
     const stats = {
         total: warehouses.length,
-        active: warehouses.filter(w => w.trangThai === 1).length,
-        inactive: warehouses.filter(w => w.trangThai === 0).length,
-        totalStock: warehouses.reduce((sum, w) => sum + (w.soLuongTon || 0), 0)
+        active: warehouses.filter(w => w.trangThai).length,
+        inactive: warehouses.filter(w => !w.trangThai).length,
+        totalStock: warehouses.reduce((sum, w) => sum + w.soLuongTon, 0)
     };
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto space-y-6">
+                {/* Header */}
                 <WarehouseHeader onAddWarehouse={() => handleOpenDialog('create')} />
+
+                {/* Success Alert */}
+                {showSuccess && (
+                    <Alert className="bg-green-50 border-green-200">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <AlertDescription className="text-green-800">
+                            {successMessage}
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                {/* Stats Cards */}
                 <WarehouseStats stats={stats} />
+
+                {/* Search and Filter */}
                 <WarehouseSearchFilter
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
@@ -278,17 +221,13 @@ export default function WarehouseManagement() {
                     setFilterStatus={setFilterStatus}
                 />
 
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-                        <span className="ml-3 text-gray-600">Đang tải danh sách kho...</span>
-                    </div>
-                ) : warehouses.length > 0 ? (
+                {/* Warehouse Cards */}
+                {filteredWarehouses.length > 0 ? (
                     <WarehouseList
-                        warehouses={warehouses}
+                        warehouses={filteredWarehouses}
                         onView={(warehouse) => handleOpenDialog('view', warehouse)}
                         onEdit={(warehouse) => handleOpenDialog('edit', warehouse)}
-                        onDelete={handleDeleteClick}
+                        onDelete={handleDelete}
                     />
                 ) : (
                     <WarehouseEmptyState />
@@ -304,26 +243,8 @@ export default function WarehouseManagement() {
                     setFormData={setFormData}
                     errors={errors}
                     managers={managers}
-                    isLoadingManagers={isLoadingManagers}
                     onSubmit={handleSubmit}
                     onClose={handleCloseDialog}
-                />
-
-                {/* Confirm Delete Modal */}
-                <ConfirmModal
-                    isOpen={isConfirmOpen}
-                    onClose={handleCancelDelete}
-                    onConfirm={handleConfirmDelete}
-                    title="Xác nhận xóa kho"
-                    description={
-                        warehouseToDelete
-                            ? `Bạn có chắc chắn muốn xóa kho "${warehouseToDelete.tenKho}"? Hành động này không thể hoàn tác.`
-                            : "Bạn có chắc chắn muốn xóa kho này?"
-                    }
-                    confirmText="Xóa"
-                    cancelText="Hủy"
-                    variant="danger"
-                    isLoading={isDeleting}
                 />
             </div>
         </div>

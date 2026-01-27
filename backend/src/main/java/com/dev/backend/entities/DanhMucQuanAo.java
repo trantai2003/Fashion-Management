@@ -35,7 +35,7 @@ public class DanhMucQuanAo {
     @JoinColumn(name = "danh_muc_cha_id")
     private DanhMucQuanAo danhMucCha;
 
-    
+    @Lob
     @Column(name = "mo_ta")
     private String moTa;
 

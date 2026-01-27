@@ -21,10 +21,17 @@ import java.util.List;
 @EqualsAndHashCode(of = {"id"})
 public class NguoiDungDto implements Serializable {
     Integer id;
+    @NotNull
+    @Size(max = 50)
     String tenDangNhap;
+    @NotNull
+    @Size(max = 100)
     String hoTen;
+    @Size(max = 100)
     String email;
+    @Size(max = 20)
     String soDienThoai;
+    @NotNull
     String vaiTro;
     Integer trangThai;
     Instant ngayTao;

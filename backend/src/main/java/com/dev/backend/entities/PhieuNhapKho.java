@@ -11,6 +11,7 @@ import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -55,7 +56,7 @@ public class PhieuNhapKho {
     @Column(name = "tong_tien", precision = 15, scale = 2)
     private BigDecimal tongTien;
 
-    
+    @Lob
     @Column(name = "ghi_chu")
     private String ghiChu;
 
