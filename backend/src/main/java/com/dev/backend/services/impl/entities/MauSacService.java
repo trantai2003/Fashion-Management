@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MauSacService extends BaseServiceImpl<MauSac,Integer> {
+public class MauSacService extends BaseServiceImpl<MauSac, Integer> {
     @Autowired
     private EntityManager entityManager;
 
