@@ -36,11 +36,9 @@ public class LichSuThayDoi {
     @Column(name = "hanh_dong", length = 50)
     private String hanhDong;
 
-    @Lob
     @Column(name = "gia_tri_cu")
     private String giaTriCu;
 
-    @Lob
     @Column(name = "gia_tri_moi")
     private String giaTriMoi;
 

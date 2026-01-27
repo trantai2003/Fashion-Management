@@ -53,7 +53,7 @@ public class PhanQuyenNguoiDungKho {
     @JoinColumn(name = "nguoi_cap_quyen_id")
     private NguoiDung nguoiCapQuyen;
 
-    @Lob
+    
     @Column(name = "ghi_chu")
     private String ghiChu;
 

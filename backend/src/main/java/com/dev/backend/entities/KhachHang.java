@@ -43,13 +43,13 @@ public class KhachHang {
     @Column(name = "email", length = 100)
     private String email;
 
-    @Lob
+    
     @Column(name = "dia_chi")
     private String diaChi;
 
     @ColumnDefault("'le'")
     @Generated(event = EventType.INSERT)
-    @Lob
+    
     @Column(name = "loai_khach_hang")
     private String loaiKhachHang;
 

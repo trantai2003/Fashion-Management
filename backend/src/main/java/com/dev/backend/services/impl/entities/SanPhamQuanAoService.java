@@ -67,8 +67,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
     //Mapper
     @Autowired
     private SanPhamQuanAoMapper sanPhamQuanAoMapper;
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected EntityManager getEntityManager() {
@@ -218,6 +217,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
             objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             giaTriMoiJson = objectMapper.writeValueAsString(creating);
         } catch (JsonProcessingException e) {
+            log.error("Lỗi json", e);
             giaTriMoiJson = "error when parse";
         }
 

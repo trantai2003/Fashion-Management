@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface NguoiDungMapper {
     NguoiDungDto toDto(NguoiDung entity);
     List<NguoiDungDto> toDtoList(List<NguoiDung> list);

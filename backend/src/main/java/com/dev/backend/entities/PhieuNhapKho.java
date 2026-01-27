@@ -55,7 +55,7 @@ public class PhieuNhapKho {
     @Column(name = "tong_tien", precision = 15, scale = 2)
     private BigDecimal tongTien;
 
-    @Lob
+    
     @Column(name = "ghi_chu")
     private String ghiChu;
 

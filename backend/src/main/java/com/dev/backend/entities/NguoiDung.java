@@ -45,7 +45,7 @@ public class NguoiDung {
     private String soDienThoai;
 
     @NotNull
-    @Lob
+    
     @Column(name = "vai_tro", nullable = false)
     private String vaiTro;
 

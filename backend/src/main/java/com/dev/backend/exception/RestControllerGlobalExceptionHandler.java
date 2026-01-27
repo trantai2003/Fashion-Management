@@ -40,6 +40,18 @@ public class RestControllerGlobalExceptionHandler {
                         .build());
     }
 
+    @ExceptionHandler({IllegalArgumentException.class})
+    public ResponseEntity<ResponseData<?>> handleIllegalArgumentException(IllegalArgumentException e, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseData.builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message(e.getMessage())
+                        .data(e.getMessage())
+                        .path(getPath(request))
+                        .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .build());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseData<?>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, WebRequest request) {
         Map<String, String> fieldErrors = ex.getBindingResult()

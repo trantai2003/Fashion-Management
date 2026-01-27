@@ -20,16 +20,11 @@ import com.dev.backend.services.JwtService;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
 import java.util.*;
@@ -70,112 +65,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     private final NguoiDungRepository nguoiDungRepository = (NguoiDungRepository) super.getRepository();
-
-    public Page<NguoiDung> getUserList(Pageable pageable) {
-        return nguoiDungRepository.findAll(pageable);
-    }
-
-    public NguoiDung getDetail(Integer id) {
-        return nguoiDungRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-    }
-
-    @Transactional
-    public NguoiDung toggleStatus(Integer userId) {
-
-        //lay current id
-        Integer currentUserId = null;
-
-        Authentication authentication = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
-
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
-            Object userIdClaim = jwt.getClaim("id");
-            if (userIdClaim != null) {
-                currentUserId = Integer.valueOf(userIdClaim.toString());
-            }
-        }
-
-        //lay id bi thao tac
-        NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
-                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
-
-        //chan tu khoa
-        if (nguoiDung.getId().equals(currentUserId)) {
-            throw new CommonException("Không thể tự khóa tài khoản của chính mình");
-        }
-
-        //toggle trang thai
-        if (nguoiDung.getTrangThai() != null && nguoiDung.getTrangThai() == 1) {
-            nguoiDung.setTrangThai(0);
-        } else {
-            nguoiDung.setTrangThai(1);
-        }
-
-        nguoiDung.setNgayCapNhat(Instant.now());
-
-        return nguoiDungRepository.save(nguoiDung);
-    }
-
-
-
-    @Transactional
-    public void updateUserByAdmin(Integer userId, AdminUpdateRequest request) {
-
-        NguoiDung nguoiDung = nguoiDungRepository.findById(userId)
-                .orElseThrow(() -> new CommonException("Không tìm thấy người dùng"));
-
-        // reset password
-        if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
-            nguoiDung.setMatKhauHash(
-                    passwordEncoder.encode(request.getNewPassword())
-            );
-        }
-
-        nguoiDung.setNgayCapNhat(Instant.now());
-        nguoiDungRepository.save(nguoiDung);
-    }
-
-
-    @Transactional
-    public NguoiDung createInternalUser(NguoiDungCreating request) {
-
-        if (nguoiDungRepository.existsByTenDangNhap(request.getTenDangNhap())) {
-            throw new CommonException("Tên đăng nhập đã tồn tại");
-        }
-
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            if (nguoiDungRepository.existsByEmail(request.getEmail())) {
-                throw new CommonException("Email đã tồn tại");
-            }
-        }
-
-        if (request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()) {
-            if (nguoiDungRepository.existsBySoDienThoai(request.getSoDienThoai())) {
-                throw new CommonException("Số điện thoại đã tồn tại");
-            }
-        }
-
-        NguoiDung nguoiDung = new NguoiDung();
-        nguoiDung.setTenDangNhap(request.getTenDangNhap());
-        nguoiDung.setEmail(
-                request.getEmail() != null && !request.getEmail().isBlank()
-                        ? request.getEmail()
-                        : null
-        );
-        nguoiDung.setHoTen(request.getHoTen());
-        nguoiDung.setSoDienThoai(
-                request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()
-                        ? request.getSoDienThoai()
-                        : null
-        );
-        nguoiDung.setVaiTro(request.getVaiTro().toString());
-        nguoiDung.setTrangThai(1);
-        nguoiDung.setMatKhauHash(passwordEncoder.encode(request.getMatKhau()));
-
-        return create(nguoiDung);
-    }
 
     @Transactional
     public ResponseEntity<ResponseData<String>> register(RegisterRequest registerRequest) {
@@ -229,7 +118,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     @Transactional
     public ResponseEntity<ResponseData<String>> activeAccount(VerifyAccount verifyDto) {
         OtpScheduleObj findingRegisterOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
-                otpScheduleObj.getEmail().equals(verifyDto.getEmail())).findFirst().orElseThrow(
+                otpScheduleObj.getEmail().equals(verifyDto.getEmail()) && otpScheduleObj.getType().equals(OtpType.ACCOUNT_ACTIVATION)).findFirst().orElseThrow(
                 () -> new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn")
         );
 
@@ -251,6 +140,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         NguoiDung nguoiDung = findingNguoiDung.get();
         nguoiDung.setTrangThai(1);
         update(nguoiDung.getId(), nguoiDung);
+        GlobalCache.OTP_SCHEDULE_OBJS.remove(findingRegisterOtp);
 
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
@@ -351,7 +241,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                 OtpScheduleObj.builder()
                         .email(nguoiDung.getEmail())
                         .otp(otp)
-                        .createdAt(nguoiDung.getNgayTao())
+                        .createdAt(Instant.now())
                         .type(OtpType.RESET_PASSWORD)
                         .build()
         );
@@ -381,20 +271,24 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                 rpRequest.getUsername()).orElseThrow(
                 () -> new CommonException("Không tìm thấy tài khoản")
         );
-        OtpScheduleObj findingRegisterOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
-                otpScheduleObj.getEmail().equals(nguoiDung.getEmail())).findFirst().orElseThrow(
-                () -> new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn")
+        OtpScheduleObj findingResetOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
+                otpScheduleObj.getEmail().equals(nguoiDung.getEmail()) && otpScheduleObj.getType().equals(OtpType.RESET_PASSWORD)).findFirst().orElseThrow(
+                () -> new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn 1")
         );
 
-        if (!findingRegisterOtp.getOtp().equals(rpRequest.getOtp())) {
-            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
+        if (!findingResetOtp.getOtp().equals(rpRequest.getOtp())) {
+            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn 2");
+        }
+
+        Instant now = Instant.now();
+        if (now.isAfter(findingResetOtp.getCreatedAt().plusSeconds(300))) {
+            throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn 3");
         }
 
         nguoiDung.setMatKhauHash(passwordEncoder.encode(rpRequest.getPassword()));
-        nguoiDungRepository.save(nguoiDung);
-        GlobalCache.OTP_SCHEDULE_OBJS.removeIf(o ->
-                o.getEmail().equals(nguoiDung.getEmail()) && o.getType() == OtpType.RESET_PASSWORD
-        );
+
+        GlobalCache.OTP_SCHEDULE_OBJS.remove(findingResetOtp);
+
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())

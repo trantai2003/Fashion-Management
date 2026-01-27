@@ -8,7 +8,6 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -20,7 +19,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "san_pham_quan_ao")
-public class SanPhamQuanAo implements Serializable {
+public class SanPhamQuanAo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -41,7 +40,7 @@ public class SanPhamQuanAo implements Serializable {
     @JoinColumn(name = "danh_muc_id", nullable = false)
     private DanhMucQuanAo danhMuc;
 
-    @Lob
+    
     @Column(name = "mo_ta")
     private String moTa;
 

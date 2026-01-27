@@ -43,7 +43,7 @@ public class NhaCungCap {
     @Column(name = "email", length = 100)
     private String email;
 
-    @Lob
+    
     @Column(name = "dia_chi")
     private String diaChi;
 

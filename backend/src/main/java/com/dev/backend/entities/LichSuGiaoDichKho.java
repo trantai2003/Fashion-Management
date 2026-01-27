@@ -28,7 +28,6 @@ public class LichSuGiaoDichKho {
     private Instant ngayGiaoDich;
 
     @NotNull
-    @Lob
     @Column(name = "loai_giao_dich", nullable = false)
     private String loaiGiaoDich;
 

@@ -9,9 +9,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface QuyenHanMapper {
-    QuyenHan toEntity(QuyenHanDto quyenHanDto);
 
     QuyenHanDto toDto(QuyenHan quyenHan);
 
@@ -21,7 +20,4 @@ public interface QuyenHanMapper {
         if(page.isEmpty()) return Page.empty();
         return page.map(this::toDto);
     }
-
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    QuyenHan partialUpdate(QuyenHanDto quyenHanDto, @MappingTarget QuyenHan quyenHan);
 }

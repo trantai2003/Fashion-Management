@@ -6,14 +6,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
-
+@Component
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface PhanQuyenNguoiDungKhoMapper {
     PhanQuyenNguoiDungKhoDto toDto(PhanQuyenNguoiDungKho phanQuyenNguoiDungKho);
-
-    PhanQuyenNguoiDungKho toEntity(PhanQuyenNguoiDungKhoDto phanQuyenNguoiDungKhoDto);
 
     List<PhanQuyenNguoiDungKhoDto> toDtoList(List<PhanQuyenNguoiDungKho> list);
 

@@ -66,15 +66,15 @@ public class DonBanHang {
 
     @ColumnDefault("'chua_thanh_toan'")
     @Generated(event = EventType.INSERT)
-    @Lob
+    
     @Column(name = "trang_thai_thanh_toan")
     private String trangThaiThanhToan;
 
-    @Lob
+    
     @Column(name = "dia_chi_giao_hang")
     private String diaChiGiaoHang;
 
-    @Lob
+    
     @Column(name = "ghi_chu")
     private String ghiChu;
 

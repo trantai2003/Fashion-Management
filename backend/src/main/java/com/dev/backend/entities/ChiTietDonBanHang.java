@@ -51,7 +51,7 @@ public class ChiTietDonBanHang {
     @Generated(event = EventType.INSERT)
     private BigDecimal thanhTien;
 
-    @Lob
+    
     @Column(name = "ghi_chu")
     private String ghiChu;
 

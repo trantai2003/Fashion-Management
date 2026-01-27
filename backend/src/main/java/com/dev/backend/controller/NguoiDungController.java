@@ -96,9 +96,3 @@ public class NguoiDungController {
         );
     }
 }
-
-
-
-
-
-

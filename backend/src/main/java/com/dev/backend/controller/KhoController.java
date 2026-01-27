@@ -51,9 +51,8 @@ public class KhoController {
     @PostMapping("/filter")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}
-
     )
-    public ResponseEntity<ResponseData<Page<KhoDto>>> filter(@RequestHeader("Authorization") String authHeader, @RequestBody BaseFilterRequest filter){
+    public ResponseEntity<ResponseData<Page<KhoDto>>> filter(@RequestBody BaseFilterRequest filter){
         return ResponseEntity.ok(
                 ResponseData.<Page<KhoDto>>builder()
                         .status(HttpStatus.OK.value())

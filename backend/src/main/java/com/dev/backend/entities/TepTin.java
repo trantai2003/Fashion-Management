@@ -34,7 +34,7 @@ public class TepTin {
     @Column(name = "ten_luu_tru", nullable = false)
     private String tenLuuTru;
 
-    @Lob
+    
     @Column(name = "duong_dan")
     private String duongDan;
 

@@ -43,7 +43,7 @@ public class LoHang {
     @Column(name = "gia_von", nullable = false, precision = 15, scale = 2)
     private BigDecimal giaVon;
 
-    @Lob
+    
     @Column(name = "ghi_chu")
     private String ghiChu;
 
