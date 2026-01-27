@@ -15,6 +15,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Autowired
     private JwtService jwtService;
 
+    //Truoc khi vao 1 api nao thi chay qua day de lay context user
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String authHeader = request.getHeader("Authorization");
