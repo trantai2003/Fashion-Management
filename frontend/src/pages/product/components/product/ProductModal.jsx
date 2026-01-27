@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
@@ -21,12 +21,11 @@ import { productSchema } from "@/validations/productSchema";
 
 export default function ProductModal({ isOpen, onClose, onSuccess, productId = null }) {
     const isEditMode = !!productId;
+    const prevProductIdRef = useRef(productId);
 
     const [colors, setColors] = useState([]);
     const [sizes, setSizes] = useState([]);
-    console.log("🚀 ~ ProductModal ~ sizes:", sizes)
     const [materials, setMaterials] = useState([]);
-    console.log("🚀 ~ ProductModal ~ materials:", materials)
     const [productImages, setProductImages] = useState([]);
     const [variantImages, setVariantImages] = useState([]);
     const [existingProductImages, setExistingProductImages] = useState([]);
@@ -68,7 +67,6 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
         name: "bienTheSanPhams"
     });
 
-    // Fetch product details when in edit mode
     const fetchProductDetails = useCallback(async (id) => {
         try {
             setIsLoadingProduct(true);
@@ -122,11 +120,61 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
         }
     }, [reset, onClose]);
 
+    const resetFormToDefaults = useCallback(() => {
+        const defaultValues = {
+            tenSanPham: "",
+            maSanPham: "",
+            maVach: "",
+            danhMucId: 1,
+            moTa: "",
+            giaVonMacDinh: 0,
+            giaBanMacDinh: 0,
+            mucTonToiThieu: 0,
+            trangThai: 1,
+            bienTheSanPhams: [{
+                mauSacId: null,
+                sizeId: null,
+                chatLieuId: null,
+                maSku: "",
+                maVachSku: "",
+                giaVon: 0,
+                giaBan: 0,
+                trangThai: 1,
+            }],
+        };
+
+        reset(defaultValues);
+
+        setProductImages([]);
+        setVariantImages([]);
+        setExistingProductImages([]);
+        setExistingVariantImages([]);
+    }, [reset]);
+
     useEffect(() => {
-        if (isOpen && isEditMode) {
+        if (isOpen && isEditMode && productId) {
             fetchProductDetails(productId);
         }
     }, [isOpen, isEditMode, productId, fetchProductDetails]);
+
+    useEffect(() => {
+        if (!isOpen) {
+            prevProductIdRef.current = null;
+            return;
+        }
+
+        const prevProductId = prevProductIdRef.current;
+        const currentProductId = productId;
+
+        if (prevProductId !== null && currentProductId === null) {
+            resetFormToDefaults();
+        }
+        else if (currentProductId === null && prevProductId === null) {
+            resetFormToDefaults();
+        }
+
+        prevProductIdRef.current = currentProductId;
+    }, [isOpen, productId, resetFormToDefaults]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -147,9 +195,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
                 }
 
                 if (sizesResult.status === "fulfilled") {
-                    console.log("🚀 ~ fetchData ~ sizesRes:", sizesResult.value);
                     const sizeData = extractData(sizesResult.value);
-                    console.log("🚀 ~ fetchData ~ sizeData:", sizeData);
                     setSizes(sizeData);
                 } else {
                     console.error("Lỗi tải size:", sizesResult.reason);
@@ -208,7 +254,6 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
             const jsonBlob = new Blob([JSON.stringify(productData)], { type: 'application/json' });
             formData.append(dataKey, jsonBlob);
 
-            // Append image files
             productImages.forEach((file) => {
                 formData.append('anhSanPhams', file);
             });
@@ -229,7 +274,6 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
                 return;
             }
 
-            // Success
             toast.success(isEditMode ? "Cập nhật sản phẩm thành công!" : "Tạo sản phẩm thành công!");
             handleResetForm();
             onSuccess();
@@ -245,14 +289,12 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
     };
 
     const handleResetForm = () => {
-        reset();
-        setProductImages([]);
-        setVariantImages([]);
-        setExistingProductImages([]);
-        setExistingVariantImages([]);
+        console.log('Resetting form');
+        resetFormToDefaults();
     };
 
     const handleCancel = () => {
+        console.log('handleCancelhandleCancel');
         if (!isSubmitting) {
             handleResetForm();
             onClose();
@@ -314,7 +356,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
                 </DialogHeader>
 
                 <div className="max-h-[calc(90vh-12rem)] overflow-y-auto overflow-x-visible px-1">
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <form key={productId || 'create'} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div className="space-y-4">
                             <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">Thông tin cơ bản</h3>
 
@@ -359,7 +401,6 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
                                     />
                                 </div>
 
-                                {/* Hidden field for danhMucId - always set to 1 */}
                                 <Controller
                                     name="danhMucId"
                                     control={control}
@@ -391,7 +432,6 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
                                     />
                                 </div>
 
-                                {/* Giá mặc định */}
                                 <div className="space-y-2">
                                     <Label htmlFor="giaVonMacDinh">Giá vốn mặc định</Label>
                                     <Controller
@@ -431,7 +471,6 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
                                     )}
                                 </div>
 
-                                {/* Mức tồn tối thiểu */}
                                 <div className="col-span-2 space-y-2">
                                     <Label htmlFor="mucTonToiThieu">Mức tồn tối thiểu</Label>
                                     <Controller
@@ -754,7 +793,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
                                                 {existingProductImages.map((img, index) => (
                                                     <div key={`existing-${index}`} className="relative">
                                                         <img
-                                                            src={img.urlAnh}
+                                                            src={img.tepTin.duongDan}
                                                             alt="Product"
                                                             className="w-full h-20 object-cover rounded"
                                                         />
@@ -820,7 +859,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
                                                 {existingVariantImages.map((img, index) => (
                                                     <div key={`existing-${index}`} className="relative">
                                                         <img
-                                                            src={img.urlAnh}
+                                                            src={img.tepTin.duongDan}
                                                             alt="Variant"
                                                             className="w-full h-20 object-cover rounded"
                                                         />

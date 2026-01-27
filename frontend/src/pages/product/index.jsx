@@ -91,7 +91,7 @@ export default function ProductList() {
         trangThai: "ALL",
         giaTu: "",
         giaDen: "",
-        page: 1,
+        page: 0,
         size: 10,
     });
 
@@ -305,8 +305,8 @@ export default function ProductList() {
                                     )}
                                 </div>
                             </div>
-
-                            <div className="space-y-1.5">
+                                        {/* filter theo danh muc - pending api */}
+                            {/* <div className="space-y-1.5">
                                 <Label className="text-[13px] text-gray-600 block leading-none">
                                     Danh mục
                                 </Label>
@@ -346,7 +346,7 @@ export default function ProductList() {
                                         })}
                                     </SelectContent>
                                 </Select>
-                            </div>
+                            </div> */}
 
                             <div className="space-y-1.5">
                                 <Label className="text-[13px] text-gray-600 block leading-none">
@@ -479,12 +479,12 @@ export default function ProductList() {
                                         <TableHead className="px-4 py-3">ID</TableHead>
                                         <TableHead className="px-4 py-3">Hình ảnh</TableHead>
                                         <TableHead className="px-4 py-3">Tên sản phẩm</TableHead>
-                                        <TableHead className="px-4 py-3">Danh mục</TableHead>
+                                        {/* <TableHead className="px-4 py-3">Danh mục</TableHead> */}
                                         <TableHead className="px-4 py-3">Giá bán</TableHead>
                                         <TableHead className="px-4 py-3">Tồn kho</TableHead>
                                         <TableHead className="px-4 py-3">Trạng thái</TableHead>
                                         <TableHead className="px-4 py-3">Ngày tạo</TableHead>
-                                        <TableHead className="px-4 py-3">Actions</TableHead>
+                                        <TableHead className="px-4 py-3 text-center">Thao tác</TableHead>
                                     </TableRow>
                                 </TableHeader>
 
@@ -499,9 +499,9 @@ export default function ProductList() {
                                                     <TableCell className="px-4 py-3">
                                                         <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
                                                     </TableCell>
-                                                    <TableCell className="px-4 py-3">
+                                                    {/* <TableCell className="px-4 py-3">
                                                         <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-                                                    </TableCell>
+                                                    </TableCell> */}
                                                     <TableCell className="px-4 py-3">
                                                         <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
                                                     </TableCell>
@@ -549,9 +549,9 @@ export default function ProductList() {
 
                                             <TableCell className="px-4 py-3">
                                                 <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                                                    {product.hinhAnh ? (
+                                                    {product.anhQuanAos ? (
                                                         <img
-                                                            src={product.hinhAnh}
+                                                            src={product.anhQuanAos[0].tepTin.duongDan}
                                                             alt={product.tenSanPham}
                                                             className="w-full h-full object-cover"
                                                         />
@@ -567,14 +567,14 @@ export default function ProductList() {
                                                 </div>
                                             </TableCell>
 
-                                            <TableCell className="px-4 py-3">
+                                            {/* <TableCell className="px-4 py-3">
                                                 <span className="px-2 py-1 text-xs rounded bg-blue-50 text-blue-700">
                                                     {product.danhMuc?.tenDanhMuc || "N/A"}
                                                 </span>
-                                            </TableCell>
+                                            </TableCell> */}
 
                                             <TableCell className="px-4 py-3 font-medium text-purple-700">
-                                                {product.giaBan ? formatCurrency(product.giaBan) : "N/A"}
+                                                {product.giaBanMacDinh ? formatCurrency(product.giaBanMacDinh) : "N/A"}
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3">
@@ -599,7 +599,7 @@ export default function ProductList() {
                                                 {formatDate(product.ngayTao) !== 'N/A' ? formatDate(product.ngayTao) : '-'}
                                             </TableCell>
 
-                                            <TableCell className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                                            <TableCell className="px-4 py-3 text-right space-x-2 flex items-center justify-center">
                                                 <Button
                                                     onClick={() => handleViewClick(product.id)}
                                                     className="text-sm font-semibold text-purple-600 hover:underline flex items-center gap-2"
