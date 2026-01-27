@@ -76,13 +76,11 @@ public class NguoiDungController {
     @PostMapping("/forgot-password")
     public ResponseEntity<ResponseData<String >> forgotPassword(@RequestBody ForgotPasswordRequest fpRequest) {
         return nguoiDungService.forgotPassword(fpRequest);
-
     }
 
     @PostMapping("reset-password")
     public ResponseEntity<ResponseData<String >> resetPassword(@RequestBody ResetPasswordRequest rpRequest){
         return nguoiDungService.resetPassword(rpRequest);
-
     }
 
     @PostMapping("/filter")
@@ -98,9 +96,3 @@ public class NguoiDungController {
         );
     }
 }
-
-
-
-
-
-

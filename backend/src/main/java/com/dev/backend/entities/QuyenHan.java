@@ -31,12 +31,12 @@ public class QuyenHan {
     @Column(name = "ten_quyen", nullable = false, length = 100)
     private String tenQuyen;
 
-    @Lob
+    
     @Column(name = "mo_ta")
     private String moTa;
 
     @NotNull
-    @Lob
+    
     @Column(name = "nhom_quyen", nullable = false)
     private String nhomQuyen;
 

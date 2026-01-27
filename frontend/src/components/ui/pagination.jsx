@@ -70,7 +70,7 @@ function PaginationPrevious({
       className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
       {...props}>
       <ChevronLeftIcon />
-      <span className="hidden sm:block">Previous</span>
+      <span className="hidden sm:block">Trước</span>
     </PaginationLink>
   );
 }
@@ -85,7 +85,7 @@ function PaginationNext({
       size="default"
       className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
       {...props}>
-      <span className="hidden sm:block">Next</span>
+      <span className="hidden sm:block">Tiếp theo</span>
       <ChevronRightIcon />
     </PaginationLink>
   );
@@ -102,7 +102,7 @@ function PaginationEllipsis({
       className={cn("flex size-9 items-center justify-center", className)}
       {...props}>
       <MoreHorizontalIcon className="size-4" />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">Thêm trang</span>
     </span>
   );
 }

@@ -32,7 +32,7 @@ public class Size {
 
     @ColumnDefault("'chu'")
     @Generated(event = EventType.INSERT)
-    @Lob
+    
     @Column(name = "loai_size")
     private String loaiSize;
 
@@ -41,7 +41,7 @@ public class Size {
     @Column(name = "thu_tu_sap_xep")
     private Integer thuTuSapXep;
 
-    @Lob
+    
     @Column(name = "mo_ta")
     private String moTa;
 

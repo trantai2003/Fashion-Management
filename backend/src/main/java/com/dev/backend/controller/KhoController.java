@@ -51,9 +51,8 @@ public class KhoController {
     @PostMapping("/filter")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}
-
     )
-    public ResponseEntity<ResponseData<Page<KhoDto>>> filter(@RequestHeader("Authorization") String authHeader, @RequestBody BaseFilterRequest filter){
+    public ResponseEntity<ResponseData<Page<KhoDto>>> filter(@RequestBody BaseFilterRequest filter){
         return ResponseEntity.ok(
                 ResponseData.<Page<KhoDto>>builder()
                         .status(HttpStatus.OK.value())
@@ -71,7 +70,7 @@ public class KhoController {
         return khoService.create(creating);
     }
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien}
     )
@@ -92,11 +91,11 @@ public class KhoController {
         kho.setTrangThai(0);
         khoService.update(kho.getId(), kho);
         return ResponseEntity.ok(
-                ResponseData.<String>builder()
-                        .status(HttpStatus.OK.value())
-                        .data("Success")
-                        .message("Success")
-                        .build()
+          ResponseData.<String>builder()
+                  .status(HttpStatus.OK.value())
+                  .data("Success")
+                  .message("Success")
+                  .build()
         );
     }
 
