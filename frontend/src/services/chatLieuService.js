@@ -50,7 +50,6 @@ export const getChatLieuById = async (id) => {
 export const createChatLieu = async (data) => {
     try {
         const response = await apiClient.post(CHAT_LIEU_API, data);
-        // Trả về response.data.data - GIỐNG supplierService
         return response.data.data;
     } catch (error) {
         console.error('Lỗi tạo chất liệu:', error);
@@ -82,7 +81,7 @@ export const updateChatLieu = async (id, data) => {
  */
 export const deleteChatLieu = async (id) => {
     try {
-        // Delete không cần return data - GIỐNG supplierService
+        // Delete không cần return data
         await apiClient.delete(`${CHAT_LIEU_API}/${id}`);
     } catch (error) {
         console.error('Lỗi xóa chất liệu:', error);

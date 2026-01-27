@@ -58,7 +58,6 @@ export default function ChatLieuDetail() {
     });
 
     // Load dữ liệu khi ở chế độ chỉnh sửa
-    // Pattern: GIỐNG HỆT SupplierDetail
     useEffect(() => {
         if (isEdit) {
             const fetchData = async () => {
@@ -73,7 +72,7 @@ export default function ChatLieuDetail() {
                     });
                     // Set trạng thái - check giá trị boolean hoặc 1/0
                     setLocalTrangThai(data.trangThai === 1 || data.trangThai === true);
-                } catch (error) {
+                } catch {
                     // Toast lỗi đơn giản - GIỐNG supplierService
                     toast.error("Không thể tải thông tin chất liệu");
                     navigate("/material");
@@ -85,12 +84,11 @@ export default function ChatLieuDetail() {
         }
     }, [id, form, navigate, isEdit]);
 
-    // Xử lý submit form (thêm mới hoặc cập nhật)
-    // Pattern: GIỐNG HỆT SupplierDetail
+    // Xử lý submit form
     const onSubmit = async (values) => {
         setLoading(true);
         try {
-            // Thêm trạng thái vào payload (1 hoặc 0) - GIỐNG supplier
+            // Thêm trạng thái vào payload (1 hoặc 0)
             const payload = { ...values, trangThai: localTrangThai ? 1 : 0 };
 
             if (isEdit) {

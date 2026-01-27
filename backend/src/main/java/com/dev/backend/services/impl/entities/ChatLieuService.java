@@ -61,7 +61,7 @@ public class ChatLieuService extends BaseServiceImpl<ChatLieu, Integer> {
         return mapper.toDto(entity);
     }
 
-    // Tạo mới chất liệu (KHÔNG kiểm tra trùng ở đây theo yêu cầu)
+    // Tạo mới chất liệu
     @Transactional
     public ChatLieuDto create(ChatLieuCreating creating) {
 

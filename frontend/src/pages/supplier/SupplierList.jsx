@@ -203,7 +203,10 @@ export default function SupplierList() {
                                                             <Button
                                                                 variant="outline"
                                                                 className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                                                                onClick={() => setDeleteId(null)}
+                                                                onClick={() => {
+                                                                    setDeleteId(null);           // Đóng dialog
+                                                                    navigate("/supplier");       // ← Điều hướng về danh sách
+                                                                }}
                                                             >
                                                                 Hủy
                                                             </Button>
