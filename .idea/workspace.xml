@@ -4,7 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2de712c9-5c18-4145-baab-5831b5859d52" name="Changes" comment="" />
+    <list default="true" id="2de712c9-5c18-4145-baab-5831b5859d52" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/BienTheSanPhamRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/BienTheSanPhamRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/LichSuThayDoiQuyenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/LichSuThayDoiQuyenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/SanPhamQuanAoRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/repository/SanPhamQuanAoRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/BienTheSanPhamService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/BienTheSanPhamService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/LichSuThayDoiQuyenService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/LichSuThayDoiQuyenService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/SanPhamQuanAoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/dev/backend/services/impl/entities/SanPhamQuanAoService.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -18,9 +27,9 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="38ksLErJPj9VARvB2NfBzhiGe5w" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -32,6 +41,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.BackendApplication.executor": "Run",
+    "git-widget-placeholder": "nguyenthanhbinh",
     "last_opened_file_path": "C:/Users/ADMIN/OneDrive - tqk70/Documents/GitHub/Fashion-Management",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -39,11 +49,20 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
+    "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.0",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.dev.backend.entities" />
+      <recent name="com.dev.backend.repository" />
+      <recent name="com.dev.backend.services.impl.entities" />
+      <recent name="com.dev.backend.dto.response.entities" />
+      <recent name="com.dev.backend.controller" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
