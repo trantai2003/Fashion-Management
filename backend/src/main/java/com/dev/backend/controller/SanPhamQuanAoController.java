@@ -53,7 +53,7 @@ public class SanPhamQuanAoController {
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}
     )
     public ResponseEntity<ResponseData<SanPhamQuanAoDto>> update(
-            @RequestBody SanPhamQuanAoUpdating updating,
+            @RequestPart SanPhamQuanAoUpdating updating,
             @RequestPart(value = "anhSanPhams", required = false) List<MultipartFile> anhSanPhams,
             @RequestPart(value = "anhBienThes", required = false) List<MultipartFile> anhBienThes) {
         return sanPhamQuanAoService.update(updating, anhSanPhams, anhBienThes);
