@@ -115,7 +115,7 @@ export default function AuthPage() {
 
                         if (role === 'quan_tri_vien') {
                             console.log("Redirecting to /admin/dashboard");
-                            navigate('/admin/dashboard'); // Redirect to dashboard
+                            navigate('/dashboard'); // Redirect to dashboard
                         } else if (role === 'quan_ly_kho' || role === 'nhan_vien_kho') {
                             console.log("Redirecting to /warehouse");
                             navigate('/warehouse');
