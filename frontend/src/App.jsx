@@ -14,7 +14,7 @@ import ChatLieuDetailView from "./pages/material/ChatLieuDetailView";
 import SupplierList from "./pages/supplier/SupplierList";
 import SupplierDetail from "./pages/supplier/SupplierDetail";
 import SupplierDetailView from "./pages/supplier/SupplierDetailView";
-
+import ProductList from "./pages/product";
 import AddUserByAdmin from "@/pages/admin/AddUserByAdmin.jsx";
 import ViewUserListByAdmin from "./pages/admin/ViewUserListByAdmin";
 import ViewUserDetailByAdmin from "@/pages/admin/ViewUserDetailByAdmin.jsx";
@@ -40,7 +40,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/user/:id" element={<UserDetail />} />
         <Route path="/warehouse" element={<Warehouse />} />
-
+        <Route path="/products" element={<ProductList />} />
         <Route path="/material" element={<ChatLieuList />} />
         <Route path="/material/new" element={<ChatLieuDetail />} />
         <Route path="/material/view/:id" element={<ChatLieuDetailView />} />
