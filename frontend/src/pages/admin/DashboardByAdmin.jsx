@@ -127,7 +127,7 @@ export default function DashboardByAdmin() {
                         </div>
 
                         <Link
-                            to="/admin/users"
+                            to="/users"
                             className="text-sm text-purple-600 hover:underline font-medium"
                         >
                             Xem tất cả
