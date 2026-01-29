@@ -44,12 +44,6 @@ export default function AdminLayout() {
             title: "User List",
             subtitle: "Xem danh sách nhân viên / khách hàng",
         },
-        {
-            key: "ATTRIBUTES",
-            match: (path) => path === "/admin/attributes",
-            title: "Quản lý thuộc tính",
-            subtitle: "Màu sắc & Kích cỡ",
-        },
     ];
 
     const pageMeta = PAGE_META_CONFIG.find((item) =>
