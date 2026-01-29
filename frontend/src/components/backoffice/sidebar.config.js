@@ -16,10 +16,6 @@ export const SIDEBAR_MENU = [
     to: "/dashboard",
     roles: [
       "quan_tri_vien",
-      "quan_ly_kho",
-      "nhan_vien_kho",
-      "nhan_vien_mua_hang",
-      "nhan_vien_ban_hang",
     ],
   },
 
@@ -99,6 +95,7 @@ export const SIDEBAR_MENU = [
     icon: Warehouse,
     roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],
     children: [
+      { label: "Kho", to: "/warehouse" },
       { label: "Phiếu xuất kho", to: "/goods-issues" },
       { label: "Danh sách lấy hàng", to: "/pick-lists" },
       { label: "Chuyển kho nội bộ", to: "/stock-transfers" },
