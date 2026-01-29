@@ -65,7 +65,7 @@ export default function ViewUserDetailByAdmin() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <Link
-                    to="/admin/users"
+                    to="/users"
                     className="text-sm text-purple-600 font-semibold"
                 >
                     ← Quay lại danh sách

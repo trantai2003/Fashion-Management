@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-export default function AdminHeader({
+export default function BackofficeHeader({
   title,
   subtitle,
 }) {
@@ -46,14 +46,6 @@ export default function AdminHeader({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-4">
-          {/* Notification */}
-          <button className="relative text-gray-500 hover:text-gray-700">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 text-[10px] bg-red-500 text-white rounded-full flex items-center justify-center">
-              3
-            </span>
-          </button>
-
           {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

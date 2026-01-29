@@ -175,12 +175,7 @@ const ColorSizeManagement = () => {
     return (
         <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Quản lý Thuộc tính</h2>
-                    <p className="text-muted-foreground">
-                        Quản lý danh sách màu sắc và kích cỡ sản phẩm.
-                    </p>
-                </div>
+                
                 <Button onClick={() => handleOpenModal('add')} className="bg-purple-600 hover:bg-purple-700 text-white">
                     <Plus className="mr-2 h-4 w-4" />
                     {activeTab === 'color' ? 'Thêm màu mới' : 'Thêm size mới'}

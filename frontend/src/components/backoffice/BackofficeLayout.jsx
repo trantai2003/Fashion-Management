@@ -1,15 +1,15 @@
 import { Outlet, useLocation, useParams } from "react-router-dom";
-import AdminSidebar from "./AdminSidebar";
-import AdminHeader from "./AdminHeader";
+import BackofficeSidebar from "./BackofficeSidebar";
+import BackofficeHeader from "./BackofficeHeader";
 import { Toaster } from "@/components/ui/sonner";
 
-export default function AdminLayout() {
+export default function BackofficeLayout() {
     const { pathname } = useLocation();
 
     const PAGE_META_CONFIG = [
         {
             key: "DASHBOARD",
-            match: (path) => path === "/admin/dashboard",
+            match: (path) => path === "/dashboard",
             title: "Admin Dashboard",
             subtitle: "Tổng quan hoạt động quản trị",
         },
@@ -27,7 +27,7 @@ export default function AdminLayout() {
         },
         {
             key: "ADD_USER",
-            match: (path) => path === "/admin/users/add",
+            match: (path) => path === "/users/add",
             title: "Add User",
             subtitle: "Thêm người dùng mới",
         },
@@ -40,15 +40,33 @@ export default function AdminLayout() {
         },
         {
             key: "USER_LIST",
-            match: (path) => path === "/admin/users",
+            match: (path) => path === "/users",
             title: "User List",
             subtitle: "Xem danh sách nhân viên / khách hàng",
         },
         {
             key: "ATTRIBUTES",
-            match: (path) => path === "/admin/attributes",
+            match: (path) => path === "/attributes",
             title: "Quản lý thuộc tính",
             subtitle: "Màu sắc & Kích cỡ",
+        },
+        {
+            key: "MATERIALS",
+            match: (path) => path === "/material",
+            title: "Quản lý chất liệu",
+            subtitle: "Chất liệu sản phẩm",
+        },
+        {
+            key: "PRODUCTS",
+            match: (path) => path === "/products",
+            title: "Quản lý sản phẩm",
+            subtitle: "Danh sách sản phẩm",
+        },
+        {
+            key: "SUPPLIERS",
+            match: (path) => path === "/supplier",
+            title: "Quản lý nhà cung cấp",
+            subtitle: "Danh sách nhà cung cấp",
         },
     ];
 
@@ -58,11 +76,11 @@ export default function AdminLayout() {
 
 
     return (
-        <AdminSidebar>
+        <BackofficeSidebar>
             <Toaster position="top-center" richColors />
             <div className="flex flex-col w-full min-h-0 h-full">
                 <div className="shrink-0">
-                    <AdminHeader
+                    <BackofficeHeader
                         title={pageMeta?.title}
                         subtitle={pageMeta?.subtitle}
                     />
@@ -72,6 +90,6 @@ export default function AdminLayout() {
                     <Outlet />
                 </main>
             </div>
-        </AdminSidebar>
+        </BackofficeSidebar>
     );
 }

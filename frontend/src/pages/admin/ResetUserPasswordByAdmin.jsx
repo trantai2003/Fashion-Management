@@ -38,7 +38,7 @@ export default function resetUserPasswordByAdmin() {
             });
 
             toast.success("Reset mật khẩu thành công");
-            navigate("/admin/users");
+            navigate("/users");
         } catch (err) {
             toast.error(err?.response?.data?.message || "Có lỗi xảy ra");
         } finally {
@@ -128,7 +128,7 @@ export default function resetUserPasswordByAdmin() {
                                     type="button"
                                     variant="ghost"
                                     className="w-full font-semibold text-gray-400 hover:text-gray-600 transition-colors"
-                                    onClick={() => navigate("/admin/users")}
+                                    onClick={() => navigate("/users")}
                                 >
                                     Hủy thao tác
                                 </Button>

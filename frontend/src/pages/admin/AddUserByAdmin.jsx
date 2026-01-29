@@ -36,7 +36,7 @@ export default function AddUserByAdmin() {
             setLoading(true);
 
             await adminService.createUserByAdmin(form);
-            navigate("/admin/users", {
+            navigate("/users", {
                 state: {
                     success: true,
                     message: "Tạo người dùng thành công",
@@ -202,7 +202,7 @@ export default function AddUserByAdmin() {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => navigate("/admin/users")}
+                        onClick={() => navigate("/users")}
                         className="h-10 px-5 rounded-lg"
                     >
                         Hủy
