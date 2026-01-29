@@ -25,10 +25,11 @@ export default function WarehouseSearchFilter({ searchTerm, setSearchTerm, filte
                         />
                     </div>
 
+                    {/* Filter dropdown (Portal => không bao giờ bị cắt) */}
                     <div className="w-full md:w-48">
-                        <DropdownMenu modal={false}>
+                        <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="w-full justify-between bg-white">
+                                <Button variant="outline" className="w-full justify-between">
                                     {filterStatus === "all" && "Tất cả trạng thái"}
                                     {filterStatus === "active" && "Đang hoạt động"}
                                     {filterStatus === "inactive" && "Không hoạt động"}
@@ -36,24 +37,24 @@ export default function WarehouseSearchFilter({ searchTerm, setSearchTerm, filte
                                 </Button>
                             </DropdownMenuTrigger>
 
-                            <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-xl">
+                            <DropdownMenuContent align="end" className="w-48 z-[9999]">
                                 <DropdownMenuItem
                                     onClick={() => setFilterStatus("all")}
-                                    className="flex items-center justify-between cursor-pointer bg-white hover:bg-gray-100"
+                                    className="flex items-center justify-between cursor-pointer"
                                 >
                                     Tất cả trạng thái
                                     {filterStatus === "all" && <Check className="h-4 w-4" />}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => setFilterStatus("active")}
-                                    className="flex items-center justify-between cursor-pointer bg-white hover:bg-gray-100"
+                                    className="flex items-center justify-between cursor-pointer"
                                 >
                                     Đang hoạt động
                                     {filterStatus === "active" && <Check className="h-4 w-4" />}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => setFilterStatus("inactive")}
-                                    className="flex items-center justify-between cursor-pointer bg-white hover:bg-gray-100"
+                                    className="flex items-center justify-between cursor-pointer"
                                 >
                                     Không hoạt động
                                     {filterStatus === "inactive" && <Check className="h-4 w-4" />}

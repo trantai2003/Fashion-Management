@@ -9,9 +9,7 @@ apiClient.interceptors.request.use(
     (config) => {
         if (config.skipAuth) return config;
 
-        const fixedToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0cmFudGFpMTcxMDIwMDNAZ21haWwuY29tIiwic29EaWVuVGhvYWkiOiIwOTAxMjM0NTY3IiwiaXNzIjoiRmFzaGlvblN5c3RlbSIsInRlbkRhbmdOaGFwIjoiYWRtaW4iLCJ1c2VyQWdlbnQiOiJHb29nbGUiLCJ0cmFuZ1RoYWkiOjEsInNjb3BlIjoicXVhbl90cmlfdmllbiIsIndhcmVob3VzZVBlcm1pc3Npb25zIjoiW10iLCJpZCI6MSwiaG9UZW4iOiJUcuG6p24gxJDhu6ljIFTDoGkiLCJleHAiOjE3Njk3MDkwNTMsImlhdCI6MTc2OTYyMjY1M30.Ft0asPHVp9rHmvP5h_o2ssCC4OyDGyglr80Uq3xL-RA";
-
-        const token = fixedToken || localStorage.getItem("access_token");
+        const token = localStorage.getItem("access_token");
         if (token) {
             config.headers = config.headers || {};
             config.headers.Authorization = `Bearer ${token}`;
@@ -21,17 +19,13 @@ apiClient.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+// Add a response interceptor
 apiClient.interceptors.response.use(
     (response) => {
-
-        if (response?.data?.status >= 400) {
-            const error = new Error(response.data.message || 'Error');
-            error.response = response;
-            return Promise.reject(error);
-        }
         return response;
     },
     (error) => {
+        // Handle global errors here, e.g., redirect to login on 401
         return Promise.reject(error);
     }
 );
