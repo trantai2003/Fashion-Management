@@ -296,7 +296,12 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
 
     return (
         <Dialog open={isOpen} onOpenChange={handleCancel}>
-            <DialogContent className="sm:max-w-[900px] max-h-[90vh] bg-white border border-gray-200 rounded-xl shadow-sm">
+            <DialogContent className="sm:max-w-[900px]
+    max-h-[90vh]
+    bg-white text-gray-900
+    border border-gray-200
+    rounded-xl shadow-sm
+    dark:bg-white dark:text-gray-900">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-purple-700">
                         Thêm sản phẩm mới
