@@ -68,6 +68,12 @@ export default function BackofficeLayout() {
             title: "Quản lý nhà cung cấp",
             subtitle: "Danh sách nhà cung cấp",
         },
+        {
+            key: "WAREHOUSE",
+            match: (path) => path === "/warehouse",
+            title: "Quản lý kho",
+            subtitle: "Quản lý thông tin vận hành các kho hàng",
+        },
     ];
 
     const pageMeta = PAGE_META_CONFIG.find((item) =>
