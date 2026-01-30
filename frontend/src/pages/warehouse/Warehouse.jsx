@@ -45,6 +45,10 @@ export default function WarehouseManagement() {
             const payload = buildWarehouseFilterPayload({ searchTerm, filterStatus });
             const res = await khoService.filter(payload);
 
+            // doi 2 s
+            
+            console.log(res);
+
             if (res.data?.status === 200) {
                 const pageData = res.data.data;
                 setWarehouses(pageData.content || []);
