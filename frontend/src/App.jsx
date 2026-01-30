@@ -21,7 +21,7 @@ import ViewUserDetailByAdmin from "@/pages/admin/ViewUserDetailByAdmin.jsx";
 import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx";
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
-import ColorSizeManagement from "@/pages/admin/ColorSizeManagement.jsx";
+import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
 export default function App() {
   return (
     <BrowserRouter>
