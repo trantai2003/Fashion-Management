@@ -2,6 +2,7 @@ import { Outlet, useLocation, useParams } from "react-router-dom";
 import BackofficeSidebar from "./BackofficeSidebar";
 import BackofficeHeader from "./BackofficeHeader";
 import { Toaster } from "@/components/ui/sonner";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 export default function BackofficeLayout() {
     const { pathname } = useLocation();
@@ -82,20 +83,25 @@ export default function BackofficeLayout() {
 
 
     return (
-        <BackofficeSidebar>
-            <Toaster position="top-center" richColors />
-            <div className="flex flex-col w-full min-h-0 h-full">
-                <div className="shrink-0">
-                    <BackofficeHeader
-                        title={pageMeta?.title}
-                        subtitle={pageMeta?.subtitle}
-                    />
-                </div>
+    <SidebarProvider defaultOpen>
+      <div className="flex h-screen w-full overflow-hidden">
+        {/* SIDEBAR */}
+        <BackofficeSidebar />
 
-                <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-gray-50">
-                    <Outlet />
-                </main>
-            </div>
-        </BackofficeSidebar>
-    );
+        {/* MAIN CONTENT */}
+        <SidebarInset className="flex flex-col min-w-0 w-full">
+          <Toaster position="top-center" richColors />
+
+          <BackofficeHeader
+            title={pageMeta?.title}
+            subtitle={pageMeta?.subtitle}
+          />
+
+          <main className="flex-1 min-w-0 overflow-y-auto bg-gray-50">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  );
 }
