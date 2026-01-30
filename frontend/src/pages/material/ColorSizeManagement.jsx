@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,15 @@ const ColorSizeManagement = () => {
     const [totalColors, setTotalColors] = useState(0);
     const [totalSizes, setTotalSizes] = useState(0);
 
+    // Pagination State
+    const [colorPage, setColorPage] = useState(1);
+    const [colorLimit, setColorLimit] = useState(10);
+    const [colorTotalPages, setColorTotalPages] = useState(0);
+
+    const [sizePage, setSizePage] = useState(1);
+    const [sizeLimit, setSizeLimit] = useState(10);
+    const [sizeTotalPages, setSizeTotalPages] = useState(0);
+
     // Form State
     const [formData, setFormData] = useState({
         tenMau: '',
@@ -46,10 +56,11 @@ const ColorSizeManagement = () => {
 
     const fetchColors = async () => {
         try {
-            const res = await mauSacService.filter({ page: 0, size: 100, filters: [] });
+            const res = await mauSacService.filter({ page: colorPage - 1, size: colorLimit, filters: [] });
             if (res.status === 200) {
                 setColors(res.data.content);
                 setTotalColors(res.data.totalElements);
+                setColorTotalPages(res.data.totalPages);
             }
         } catch (error) {
             console.error("Failed to fetch colors", error);
@@ -59,10 +70,11 @@ const ColorSizeManagement = () => {
 
     const fetchSizes = async () => {
         try {
-            const res = await sizeService.filter({ page: 0, size: 100, filters: [] });
+            const res = await sizeService.filter({ page: sizePage - 1, size: sizeLimit, filters: [] });
             if (res.status === 200) {
                 setSizes(res.data.content);
                 setTotalSizes(res.data.totalElements);
+                setSizeTotalPages(res.data.totalPages);
             }
         } catch (error) {
             console.error("Failed to fetch sizes", error);
@@ -72,8 +84,11 @@ const ColorSizeManagement = () => {
 
     useEffect(() => {
         fetchColors();
+    }, [colorPage, colorLimit]);
+
+    useEffect(() => {
         fetchSizes();
-    }, []);
+    }, [sizePage, sizeLimit]);
 
     const handleOpenModal = (mode, item = null) => {
         setModalMode(mode);
@@ -175,7 +190,7 @@ const ColorSizeManagement = () => {
     return (
         <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
-                
+
                 <Button onClick={() => handleOpenModal('add')} className="bg-purple-600 hover:bg-purple-700 text-white">
                     <Plus className="mr-2 h-4 w-4" />
                     {activeTab === 'color' ? 'Thêm màu mới' : 'Thêm size mới'}
@@ -210,7 +225,7 @@ const ColorSizeManagement = () => {
                                     ) : (
                                         colors.map((color, index) => (
                                             <TableRow key={color.id}>
-                                                <TableCell>{color.id}</TableCell>
+                                                <TableCell>{(colorPage - 1) * colorLimit + index + 1}</TableCell>
                                                 <TableCell>{color.maMau}</TableCell>
                                                 <TableCell className="font-medium">{color.tenMau}</TableCell>
                                                 <TableCell>
@@ -241,6 +256,53 @@ const ColorSizeManagement = () => {
                                     )}
                                 </TableBody>
                             </Table>
+                            {/* Color Pagination */}
+                            {colors.length > 0 && (
+                                <div className="flex items-center justify-end p-4 border-t gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-600">Rows</span>
+                                        <Select
+                                            value={String(colorLimit)}
+                                            onValueChange={(value) => {
+                                                setColorLimit(Number(value));
+                                                setColorPage(1);
+                                            }}
+                                        >
+                                            <SelectTrigger className="w-[80px]">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="5">5</SelectItem>
+                                                <SelectItem value="10">10</SelectItem>
+                                                <SelectItem value="20">20</SelectItem>
+                                                <SelectItem value="50">50</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            disabled={colorPage === 1}
+                                            onClick={() => setColorPage(colorPage - 1)}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
+                                        <Button className="bg-purple-600 text-white cursor-default shadow-md h-8 w-8 p-0">
+                                            {colorPage}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            disabled={colorPage === colorTotalPages}
+                                            onClick={() => setColorPage(colorPage + 1)}
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -269,7 +331,7 @@ const ColorSizeManagement = () => {
                                     ) : (
                                         sizes.map((size, index) => (
                                             <TableRow key={size.id}>
-                                                <TableCell>{size.id}</TableCell>
+                                                <TableCell>{(sizePage - 1) * sizeLimit + index + 1}</TableCell>
                                                 <TableCell>{size.maSize}</TableCell>
                                                 <TableCell className="font-medium">{size.tenSize}</TableCell>
                                                 <TableCell>{size.loaiSize}</TableCell>
@@ -294,6 +356,53 @@ const ColorSizeManagement = () => {
                                     )}
                                 </TableBody>
                             </Table>
+                            {/* Size Pagination */}
+                            {sizes.length > 0 && (
+                                <div className="flex items-center justify-end p-4 border-t gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-600">Rows</span>
+                                        <Select
+                                            value={String(sizeLimit)}
+                                            onValueChange={(value) => {
+                                                setSizeLimit(Number(value));
+                                                setSizePage(1);
+                                            }}
+                                        >
+                                            <SelectTrigger className="w-[80px]">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="5">5</SelectItem>
+                                                <SelectItem value="10">10</SelectItem>
+                                                <SelectItem value="20">20</SelectItem>
+                                                <SelectItem value="50">50</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            disabled={sizePage === 1}
+                                            onClick={() => setSizePage(sizePage - 1)}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
+                                        <Button className="bg-purple-600 text-white cursor-default shadow-md h-8 w-8 p-0">
+                                            {sizePage}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            disabled={sizePage === sizeTotalPages}
+                                            onClick={() => setSizePage(sizePage + 1)}
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
