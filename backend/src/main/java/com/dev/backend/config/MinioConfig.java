@@ -21,16 +21,16 @@ public class MinioConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(MinioConfig.class);
 
-    @Value("${minio.endpoint}")
+    @Value("${minio.endpoint:http://localhost:9000}")
     private String endpoint;
 
-    @Value("${minio.accessKey}")
+    @Value("${minio.accessKey:minioadmin}")
     private String accessKey;
 
-    @Value("${minio.secretKey}")
+    @Value("${minio.secretKey:minioadmin}")
     private String secretKey;
 
-    @Value("${minio.bucketName}")
+    @Value("${minio.bucketName:fashion}")
     private String bucketName;
 
     @Bean
@@ -66,14 +66,14 @@ public class MinioConfig {
                             "            ]\n" +
                             "        }\n" +
                             "    ]\n" +
-                            "}", bucketName);
+                            "}",
+                    bucketName);
 
             minioClient.setBucketPolicy(
                     SetBucketPolicyArgs.builder()
                             .bucket(bucketName)
                             .config(policy)
-                            .build()
-            );
+                            .build());
             logger.info("Set bucket policy for public read access on bucket: {}", bucketName);
 
             return minioClient;
@@ -97,9 +97,15 @@ public class MinioConfig {
         try {
             final TrustManager[] trustAllCerts = new TrustManager[] {
                     new X509TrustManager() {
-                        public void checkClientTrusted(X509Certificate[] chain, String authType) {}
-                        public void checkServerTrusted(X509Certificate[] chain, String authType) {}
-                        public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[]{}; }
+                        public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                        }
+
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[] {};
+                        }
                     }
             };
 
@@ -107,7 +113,7 @@ public class MinioConfig {
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
 
             return new OkHttpClient.Builder()
-                    .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager)trustAllCerts[0])
+                    .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAllCerts[0])
                     .hostnameVerifier((hostname, session) -> true)
                     .build();
         } catch (Exception e) {

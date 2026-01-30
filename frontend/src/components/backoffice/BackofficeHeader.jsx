@@ -1,4 +1,8 @@
-import { Bell, ChevronDown } from "lucide-react";
+import {
+  ChevronDown,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 
@@ -11,10 +15,12 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-export default function AdminHeader({
+import { useSidebar } from "@/components/ui/sidebar";
+export default function BackofficeHeader({
   title,
   subtitle,
 }) {
+  const { toggleSidebar, open } = useSidebar();
   const token = localStorage.getItem("access_token");
 
   let userId = null;
@@ -32,28 +38,35 @@ export default function AdminHeader({
   return (
     <header className="sticky top-0 z-40 bg-white border-b">
       <div className="h-16 px-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-gray-900">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="text-xs text-gray-500">
-              {subtitle}
-            </p>
-          )}
+        {/* Left */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="hover:bg-gray-100"
+          >
+            {open ? (
+              <PanelLeftClose className="h-5 w-5" />
+            ) : (
+              <PanelLeftOpen className="h-5 w-5" />
+            )}
+          </Button>
+
+          <div>
+            <h1 className="text-lg font-bold text-gray-900">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="text-xs text-gray-500">
+                {subtitle}
+              </p>
+            )}
+          </div>
         </div>
 
-
-        {/* Right: Actions */}
+        {/* Right */}
         <div className="flex items-center gap-4">
-          {/* Notification */}
-          <button className="relative text-gray-500 hover:text-gray-700">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 text-[10px] bg-red-500 text-white rounded-full flex items-center justify-center">
-              3
-            </span>
-          </button>
-
           {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

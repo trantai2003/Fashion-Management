@@ -303,7 +303,7 @@ export default function ViewUserListByAdmin() {
                             <div className="text-sm font-semibold">Danh sách Users</div>
                             <div className="flex items-center gap-3">
                                 <span className="text-xs text-gray-500">Tổng: {total}</span>
-                                <Link to="/admin/users/add">
+                                <Link to="/users/add">
                                     <Button size="sm" className="bg-purple-600 text-white hover:bg-purple-700">
                                         + Add New User
                                     </Button>
@@ -384,14 +384,14 @@ export default function ViewUserListByAdmin() {
                                                     View
                                                 </Link>
                                                 <Link
-                                                    to={`/admin/users/${u.id}/edit-role`}
+                                                    to={`/users/${u.id}/edit-role`}
                                                     className="text-sm font-semibold text-gray-700 hover:underline"
                                                 >
                                                     Role
                                                 </Link>
 
                                                 <Link
-                                                    to={`/admin/users/${u.id}/reset-password`}
+                                                    to={`/users/${u.id}/reset-password`}
                                                     className="text-sm font-semibold text-red-600 hover:underline"
                                                 >
                                                     Reset
