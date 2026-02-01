@@ -1,5 +1,6 @@
 package com.dev.backend.services.impl.entities;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import com.dev.backend.constant.GlobalCache;
 import com.dev.backend.constant.enums.OtpType;
 import com.dev.backend.constant.enums.RoleType;
@@ -7,6 +8,7 @@ import com.dev.backend.dto.OtpScheduleObj;
 import com.dev.backend.dto.request.*;
 import com.dev.backend.dto.response.LoginResponse;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
 import com.dev.backend.dto.response.entities.NguoiDungDto;
 import com.dev.backend.entities.NguoiDung;
 import com.dev.backend.entities.PhanQuyenNguoiDungKho;
@@ -24,12 +26,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
 import java.util.*;
@@ -58,7 +59,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     private EmailService emailService;
 
     @Autowired
-    private PhanQuyenNguoiDungKhoMapper  pqndkMapper;
+    private PhanQuyenNguoiDungKhoMapper pqndkMapper;
 
 
     @Override
@@ -71,7 +72,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     private final NguoiDungRepository nguoiDungRepository = (NguoiDungRepository) super.getRepository();
-
 
 
     @Transactional
@@ -207,7 +207,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                         .build()
         );
     }
-
 
 
     @Transactional
@@ -369,7 +368,6 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
 
-
     @Transactional
     public void updateUserByAdmin(Integer userId, AdminUpdateRequest request) {
 
@@ -425,6 +423,25 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         nguoiDung.setMatKhauHash(passwordEncoder.encode(request.getMatKhau()));
 
         return create(nguoiDung);
+    }
+
+    @Transactional
+    public ResponseEntity<ResponseData<String>> changePassword(ChangePasswordRequest changePass) {
+        NguoiDungAuthInfo nguoiDungInfo = com.dev.backend.config.SecurityContextHolder.getUser();
+
+        NguoiDung nguoiDung = nguoiDungRepository.findByEmail(nguoiDungInfo.getEmail()).orElseThrow(
+                () -> new CommonException("Không tìm thấy tài khoản email: " + nguoiDungInfo.getEmail())
+        );
+        nguoiDung.setMatKhauHash(passwordEncoder.encode(changePass.getNewPassword()));
+
+        update(nguoiDung.getId(), nguoiDung);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Thay đổi mật khẩu thành công!")
+                        .build()
+        );
     }
 }
 

@@ -97,6 +97,12 @@ public class NguoiDungController {
                         .build()
         );
     }
+
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ResponseData<String>> changePassword(@RequestBody ChangePasswordRequest changePass){
+        return nguoiDungService.changePassword(changePass);
+    }
 }
 
 
