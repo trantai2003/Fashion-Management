@@ -4,56 +4,57 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
 @AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Getter
 @Setter
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "lich_su_thay_doi")
 public class LichSuThayDoi {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    Integer id;
 
     @Size(max = 50)
     @Column(name = "loai_tham_chieu", length = 50)
-    private String loaiThamChieu;
+    String loaiThamChieu;
 
     @Column(name = "id_tham_chieu")
-    private Integer idThamChieu;
+    Integer idThamChieu;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "kho_id")
-    private Kho kho;
+    Kho kho;
 
     @Size(max = 50)
     @Column(name = "hanh_dong", length = 50)
-    private String hanhDong;
+    String hanhDong;
 
     @Column(name = "gia_tri_cu")
-    private String giaTriCu;
+    String giaTriCu;
 
     @Column(name = "gia_tri_moi")
-    private String giaTriMoi;
+    String giaTriMoi;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "nguoi_thuc_hien_id", nullable = false)
-    private NguoiDung nguoiThucHien;
+    NguoiDung nguoiThucHien;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_thuc_hien")
-    private Instant ngayThucHien;
+    Instant ngayThucHien;
 
-    @Lob
     @Column(name = "ghi_chu")
-    private String ghiChu;
+    String ghiChu;
 
 
 }

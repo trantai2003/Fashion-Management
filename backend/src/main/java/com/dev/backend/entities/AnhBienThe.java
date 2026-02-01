@@ -20,31 +20,31 @@ public class AnhBienThe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    Integer id;
 
     @NotNull
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "bien_the_id", nullable = false)
-    private BienTheSanPham bienThe;
+    BienTheSanPham bienThe;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "tep_tin_id", nullable = false)
-    private TepTin tepTin;
+    TepTin tepTin;
 
     @ColumnDefault("1")
     @Column(name = "trang_thai")
-    private Integer trangThai;
+    Integer trangThai;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_tao")
-    private Instant ngayTao;
+    Instant ngayTao;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_cap_nhat")
-    private Instant ngayCapNhat;
+    Instant ngayCapNhat;
 
 
 }

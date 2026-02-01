@@ -3,79 +3,87 @@ package com.dev.backend.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.util.List;
 
+@AllArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "don_mua_hang")
 public class DonMuaHang {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    Integer id;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "so_don_mua", nullable = false, length = 50)
-    private String soDonMua;
+    String soDonMua;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "nha_cung_cap_id", nullable = false)
-    private NhaCungCap nhaCungCap;
+    NhaCungCap nhaCungCap;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "kho_nhap_id", nullable = false)
-    private Kho khoNhap;
+    Kho khoNhap;
 
     @NotNull
     @Column(name = "ngay_dat_hang", nullable = false)
-    private Instant ngayDatHang;
+    Instant ngayDatHang;
 
     @Column(name = "ngay_giao_du_kien")
-    private Instant ngayGiaoDuKien;
+    Instant ngayGiaoDuKien;
 
     @ColumnDefault("0")
     @Generated(event = EventType.INSERT)
     @Column(name = "trang_thai")
-    private Integer trangThai;
+    Integer trangThai;
 
     @ColumnDefault("0.00")
     @Generated(event = EventType.INSERT)
     @Column(name = "tong_tien", precision = 15, scale = 2)
-    private BigDecimal tongTien;
+    BigDecimal tongTien;
 
-    @Lob
     @Column(name = "ghi_chu")
-    private String ghiChu;
+    String ghiChu;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nguoi_tao_id")
-    private NguoiDung nguoiTao;
+    NguoiDung nguoiTao;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nguoi_duyet_id")
-    private NguoiDung nguoiDuyet;
+    NguoiDung nguoiDuyet;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Generated(event = EventType.INSERT)
     @Column(name = "ngay_tao")
-    private Instant ngayTao;
+    Instant ngayTao;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Generated(event = EventType.INSERT)
     @Column(name = "ngay_cap_nhat")
-    private Instant ngayCapNhat;
+    Instant ngayCapNhat;
+
+
+    // Danh sách chi tiết đơn mua hàng
+    @OneToMany(mappedBy = "donMuaHang", fetch = FetchType.LAZY)
+    List<ChiTietDonMuaHang> chiTietDonMuaHangs;
 
 
 }
