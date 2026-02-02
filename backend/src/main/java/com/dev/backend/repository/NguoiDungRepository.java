@@ -31,4 +31,5 @@ public interface NguoiDungRepository extends JpaRepository<NguoiDung, Integer>, 
         where u.trangThai = 0
     """)
     Long countBannedUsers();
+
 }
