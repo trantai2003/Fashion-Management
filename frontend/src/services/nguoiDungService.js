@@ -68,5 +68,10 @@ export const nguoiDungService = {
         return localStorage.getItem("access_token");
     },
 
+    async changePassword(payload) {
+        const res = await apiClient.post("/api/v1/nguoi-dung/change-password", payload);
+        return res.data;
+    },
+
 
 };
