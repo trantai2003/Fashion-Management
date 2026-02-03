@@ -23,6 +23,7 @@ import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
 import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
 import OrderDetails from "./pages/purchase/OrderDetails";
+import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
 export default function App() {
   return (
     <BrowserRouter>
@@ -83,6 +84,9 @@ export default function App() {
 
           {/* Purchase Orders */}
           <Route path="/purchase-orders/:id" element={<OrderDetails />} />
+
+          {/* Receipt*/}
+          <Route path="/goods-receipts" element={<PhieuNhapKhoList />} />
         </Route>
 
         {/* ========== 404 ========== */}

@@ -75,6 +75,12 @@ export default function BackofficeLayout() {
             title: "Quản lý kho",
             subtitle: "Quản lý thông tin vận hành các kho hàng",
         },
+        {
+            key: "GOODS_RECEIPTS",
+            match: (path) => path === "/goods-receipts",
+            title: "Quản lý phiếu nhập kho",
+            subtitle: "Danh sách phiếu nhập kho",
+        }
     ];
 
     const pageMeta = PAGE_META_CONFIG.find((item) =>
