@@ -96,6 +96,7 @@ export default function ChatLieuList() {
     const totalPages = Math.ceil(chatLieus.length / itemsPerPage);
 
     return (
+        
         <div className="container mx-auto py-10">
             <Card className="border-0 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-white">
                 {/* Header với tiêu đề và nút thêm mới */}
