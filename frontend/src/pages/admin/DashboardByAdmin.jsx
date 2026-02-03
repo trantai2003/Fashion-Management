@@ -127,7 +127,7 @@ export default function DashboardByAdmin() {
                         </div>
 
                         <Link
-                            to="/admin/users"
+                            to="/users"
                             className="text-sm text-purple-600 hover:underline font-medium"
                         >
                             Xem tất cả
@@ -139,7 +139,6 @@ export default function DashboardByAdmin() {
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr className="text-left text-xs text-gray-500 border-b">
-                                    <th className="py-2 pr-3 font-medium">ID</th>
                                     <th className="py-2 pr-3 font-medium">Tên đăng nhập</th>
                                     <th className="py-2 pr-3 font-medium">Họ tên</th>
                                     <th className="py-2 pr-3 font-medium">Vai trò</th>
@@ -154,9 +153,6 @@ export default function DashboardByAdmin() {
                                         key={user.id}
                                         className="border-b last:border-b-0 text-sm"
                                     >
-                                        <td className="py-3 pr-3 text-gray-700">
-                                            {user.id}
-                                        </td>
 
                                         <td className="py-3 pr-3 font-medium text-gray-900">
                                             {user.tenDangNhap}

@@ -163,13 +163,27 @@ export default function UserDetail() {
             // validate FE nhẹ
             if (!payload.tenDangNhap) throw new Error("Tên đăng nhập không được để trống");
             if (!payload.hoTen) throw new Error("Họ tên không được để trống");
+            if (editedData.password && editedData.password.length < 6) {
+                throw new Error("Mật khẩu mới phải có ít nhất 6 ký tự");
+            }
 
+            // 1. Update info
             const res = await nguoiDungService.updateUser(payload);
             const updatedDto = res?.data; // ResponseData.data
             if (!updatedDto) throw new Error("Cập nhật thành công nhưng response thiếu data");
 
+            // 2. Change password if entered
+            if (editedData.password && editedData.password.trim().length > 0) {
+                // Assuming BE needs { id, password } or similar
+                await nguoiDungService.changePassword({
+                    id: Number(userData.id),
+                    password: editedData.password.trim()
+                });
+            }
+
             setUserData(updatedDto);
-            setEditedData(updatedDto);
+            // reset editedData, clear password
+            setEditedData({ ...updatedDto, password: "" });
             setIsEditing(false);
 
             setShowSuccess(true);
@@ -340,9 +354,9 @@ export default function UserDetail() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Thông tin người dùng</CardTitle>
-                                        <CardDescription>
+                                        {/* <CardDescription>
                                             {isEditing ? "Chỉnh sửa các trường cho phép cập nhật" : "Chế độ chỉ xem (read-only)"}
-                                        </CardDescription>
+                                        </CardDescription> */}
                                     </CardHeader>
 
                                     <CardContent className="space-y-6">
@@ -354,10 +368,10 @@ export default function UserDetail() {
                                             </Label>
                                             <Input
                                                 id="tenDangNhap"
-                                                value={isEditing ? editedData.tenDangNhap : userData.tenDangNhap}
-                                                onChange={(e) => handleInputChange("tenDangNhap", e.target.value)}
-                                                disabled={!isEditing || loadingUser}
-                                                className={!isEditing ? "bg-gray-50" : ""}
+                                                value={userData.tenDangNhap}
+                                                readOnly
+                                                disabled
+                                                className="bg-gray-50"
                                             />
                                         </div>
 
@@ -382,14 +396,13 @@ export default function UserDetail() {
                                             <Input
                                                 id="email"
                                                 type="email"
-                                                value={isEditing ? editedData.email : userData.email}
-                                                onChange={(e) => handleInputChange("email", e.target.value)}
-                                                disabled={!isEditing || loadingUser}
-                                                className={!isEditing ? "bg-gray-50" : ""}
+                                                value={userData.email}
+                                                readOnly
+                                                disabled
+                                                className="bg-gray-50"
                                             />
                                         </div>
 
-                                        {/* soDienThoai */}
                                         <div className="space-y-2">
                                             <Label htmlFor="soDienThoai" className="flex items-center gap-2">
                                                 <Phone className="w-4 h-4 text-gray-500" />
@@ -399,6 +412,23 @@ export default function UserDetail() {
                                                 id="soDienThoai"
                                                 value={isEditing ? editedData.soDienThoai : userData.soDienThoai}
                                                 onChange={(e) => handleInputChange("soDienThoai", e.target.value)}
+                                                disabled={!isEditing || loadingUser}
+                                                className={!isEditing ? "bg-gray-50" : ""}
+                                            />
+                                        </div>
+
+                                        {/* password - only writable in edit mode */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="password" className="flex items-center gap-2">
+                                                <Shield className="w-4 h-4 text-gray-500" />
+                                                Mật khẩu
+                                            </Label>
+                                            <Input
+                                                id="password"
+                                                type="password"
+                                                value={isEditing ? (editedData.password || "") : "********"}
+                                                placeholder={isEditing ? "Nhập mật khẩu mới" : ""}
+                                                onChange={(e) => handleInputChange("password", e.target.value)}
                                                 disabled={!isEditing || loadingUser}
                                                 className={!isEditing ? "bg-gray-50" : ""}
                                             />

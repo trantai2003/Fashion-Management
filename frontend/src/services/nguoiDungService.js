@@ -21,7 +21,11 @@ export const nguoiDungService = {
     async login(payload) {
         const res = await apiClient.post("/api/v1/nguoi-dung/login", payload, { skipAuth: true });
         const token = res?.data?.data?.token;
+        const nguoiDung = res?.data?.data?.nguoiDung;
         if (token) localStorage.setItem("access_token", token);
+        if (nguoiDung?.vaiTro) {
+            localStorage.setItem("role", nguoiDung.vaiTro);
+        }
         return res.data;
     },
 
@@ -62,6 +66,11 @@ export const nguoiDungService = {
 
     getToken() {
         return localStorage.getItem("access_token");
+    },
+
+    async changePassword(payload) {
+        const res = await apiClient.post("/api/v1/nguoi-dung/change-password", payload);
+        return res.data;
     },
 
 

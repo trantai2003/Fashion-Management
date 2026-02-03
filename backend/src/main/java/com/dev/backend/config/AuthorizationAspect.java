@@ -30,6 +30,7 @@ public class AuthorizationAspect {
 
     @Around("@annotation(requireAuth)")
     public Object checkAuthorization(ProceedingJoinPoint joinPoint, RequireAuth requireAuth) throws Throwable {
+        //tu request lay ra token
         String authHeader = getAuthHeader(joinPoint);
         String token = jwtService.getTokenFromAuthHeader(authHeader);
 
@@ -57,7 +58,7 @@ public class AuthorizationAspect {
                 throw new AccessDeniedException("Vai trò không đủ");
             }
         }
-
+        //check theo Kho
         if (requireAuth.inWarehouse()) {
             Integer warehouseId = getWarehouseId(joinPoint);
 
@@ -79,6 +80,7 @@ public class AuthorizationAspect {
         return joinPoint.proceed();
     }
 
+    //lấy giá trị header Authorization để tách JWT token.
     private String getAuthHeader(ProceedingJoinPoint joinPoint) {
         // Thử lấy từ method parameter trước
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SizeService extends BaseServiceImpl<Size,Integer> {
+public class SizeService extends BaseServiceImpl<Size, Integer> {
     @Autowired
     private EntityManager entityManager;
 
