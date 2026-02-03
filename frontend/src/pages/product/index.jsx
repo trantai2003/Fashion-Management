@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { productService } from "@/services/productService.js";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Loader2, Search, Eye, Settings, Trash2, RefreshCcw, Package } from "lucide-react";
+import { Loader2, Search, Eye, Settings, Trash2, RefreshCcw, Package, Edit } from "lucide-react";
 import { useToggle } from "@/hooks/useToggle";
 import AddProductModal from "@/pages/product/components/product/AddProductModal";
 import EditProductModal from "@/pages/product/components/product/EditProductModal";
@@ -552,17 +552,17 @@ export default function ProductList() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3 text-right space-x-2 flex items-center justify-center">
-                                                <Button
+                                                {/* <Button
                                                     onClick={() => handleViewClick(product.id)}
                                                     className="text-sm font-semibold text-purple-600 hover:underline flex items-center gap-2"
                                                 >
                                                     <Eye className="h-3.5 w-3.5" />
-                                                </Button>
+                                                </Button> */}
                                                 <Button
                                                     onClick={() => handleEditClick(product.id)}
                                                     className="text-sm font-semibold text-blue-600 hover:underline flex items-center gap-2"
                                                 >
-                                                    <Settings className="h-3.5 w-3.5" />
+                                                    <Edit className="h-3.5 w-3.5" />
                                                 </Button>
 
                                                 <Button
