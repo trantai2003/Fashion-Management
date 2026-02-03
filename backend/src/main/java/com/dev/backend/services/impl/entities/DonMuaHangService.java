@@ -61,7 +61,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
     @Transactional
     public ResponseEntity<ResponseData<DonMuaHangDto>> create(DonMuaHangCreating creating) {
-
+        NguoiDungAuthInfo authInfo = SecurityContextHolder.getUser();
         NhaCungCap nhaCungCap = nhaCungCapService.getOne(creating.getNhaCungCapId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy nhà cung cấp id: " + creating.getNhaCungCapId())
         );
@@ -69,9 +69,6 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         Kho khoNhap = khoService.getOne(SecurityContextHolder.getKhoId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy kho id: " + SecurityContextHolder.getKhoId())
         );
-
-
-        NguoiDungAuthInfo authInfo = SecurityContextHolder.getUser();
 
         NguoiDung nguoiTao = nguoiDungService.getOne(authInfo.getId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy người dùng id :" + authInfo.getId())

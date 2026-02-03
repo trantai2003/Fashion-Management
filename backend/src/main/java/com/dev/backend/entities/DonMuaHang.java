@@ -11,6 +11,7 @@ import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -82,8 +83,10 @@ public class DonMuaHang {
 
 
     // Danh sách chi tiết đơn mua hàng
+
+    @Builder.Default
     @OneToMany(mappedBy = "donMuaHang", fetch = FetchType.LAZY)
-    List<ChiTietDonMuaHang> chiTietDonMuaHangs;
+    List<ChiTietDonMuaHang> chiTietDonMuaHangs = new ArrayList<>();
 
 
 }
