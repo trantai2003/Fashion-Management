@@ -23,6 +23,8 @@ import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
 import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
 import OrderDetails from "./pages/purchase/OrderDetails";
+import KhachHangDetails from "./pages/customer/KhachHangDetails";
+import KhachHangEdit from "./pages/customer/KhachHangEdit";
 export default function App() {
   return (
     <BrowserRouter>

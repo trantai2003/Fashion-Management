@@ -1,12 +1,12 @@
 // src/services/khachHangService.js
-import api from "@/utils/api";
+import apiClient from "./apiClient";  // Giữ nguyên import
 
 export const getKhachHangById = async (id) => {
-  const response = await api.get(`/customer/${id}`);
+  const response = await apiClient.get(`/api/customer/${id}`);  // ← Thêm /api/
   return response.data.data;
 };
 
 export const updateKhachHang = async (id, values) => {
-  const response = await api.put(`/customer/${id}`, values);
+  const response = await apiClient.put(`/api/customer/${id}`, values);  // ← Thêm /api/
   return response.data.data;
 };

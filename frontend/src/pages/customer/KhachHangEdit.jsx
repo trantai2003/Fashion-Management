@@ -31,13 +31,33 @@ import {
   updateKhachHang,
 } from "@/services/khachHangService";
 
+// Schema Zod - validation cơ bản (chưa check trùng vì backend chưa hỗ trợ API)
 const formSchema = z.object({
-  tenKhachHang: z.string().min(1, "Tên không được để trống").max(200, "Tên tối đa 200 ký tự"),
-  nguoiLienHe: z.string().max(100, "Người liên hệ tối đa 100 ký tự").optional(),
-  soDienThoai: z.string().max(20, "Số điện thoại tối đa 20 ký tự").optional(),
-  email: z.string().email("Email không hợp lệ").max(100, "Email tối đa 100 ký tự").optional(),
+  tenKhachHang: z.string()
+    .min(1, "Tên khách hàng không được để trống")
+    .max(200, "Tên tối đa 200 ký tự"),
+
+  nguoiLienHe: z.string()
+    .max(100, "Người liên hệ tối đa 100 ký tự")
+    .optional(),
+
+  soDienThoai: z.string()
+    .max(20, "Số điện thoại tối đa 20 ký tự")
+    .regex(/^(0|\+84)[3|5|7|8|9][0-9]{8}$/, "Số điện thoại không đúng định dạng Việt Nam (10-11 số, bắt đầu bằng 0 hoặc +84)")
+    .optional(),
+
+  email: z.string()
+    .email("Email không hợp lệ")
+    .max(100, "Email tối đa 100 ký tự")
+    .optional(),
+
   diaChi: z.string().optional(),
-  loaiKhachHang: z.string().optional(),
+
+  // Dropdown enum - bắt buộc chọn nếu muốn
+  loaiKhachHang: z.enum(["le", "si", "doanh_nghiep"], {
+    errorMap: () => ({ message: "Vui lòng chọn loại khách hàng hợp lệ" }),
+  }).optional(),
+
   trangThai: z.number().optional(),
 });
 
@@ -57,6 +77,7 @@ export default function KhachHangEdit() {
       loaiKhachHang: "",
       trangThai: 0,
     },
+    mode: "onChange", // Validate realtime
   });
 
   useEffect(() => {
@@ -71,7 +92,7 @@ export default function KhachHangEdit() {
           email: data.email || "",
           diaChi: data.diaChi || "",
           loaiKhachHang: data.loaiKhachHang || "",
-          trangThai: data.trangThai,
+          trangThai: data.trangThai || 0,
         });
       } catch (error) {
         toast.error(error.response?.data?.message || "Không thể tải thông tin khách hàng");
@@ -87,17 +108,14 @@ export default function KhachHangEdit() {
     setLoading(true);
     try {
       await updateKhachHang(id, values);
-      toast.success("Cập nhật khách hàng thành công", {
+      toast.success("Cập nhật khách hàng thành công!", {
         duration: 3000,
         position: "top-right",
       });
-      navigate("/customer");
+      navigate(`/customer/${id}`);
     } catch (error) {
-      let errorMessage = "Có lỗi xảy ra khi lưu. Vui lòng thử lại!";
-      if (error.response) {
-        errorMessage = error.response.data?.message || errorMessage;
-      }
-      toast.error(errorMessage, {
+      const errorMsg = error.response?.data?.message || "Có lỗi xảy ra khi cập nhật";
+      toast.error(errorMsg, {
         duration: 5000,
         position: "top-right",
       });
@@ -108,8 +126,8 @@ export default function KhachHangEdit() {
 
   return (
     <div className="container mx-auto py-10 max-w-2xl">
-      <Button variant="ghost" className="mb-6 text-purple-600 hover:text-purple-800" onClick={() => navigate("/customer")}>
-        <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại danh sách
+      <Button variant="ghost" className="mb-6 text-purple-600 hover:text-purple-800" onClick={() => navigate(`/customer/${id}`)}>
+        <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại chi tiết
       </Button>
 
       <Card className="border-0 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-white">
@@ -132,7 +150,7 @@ export default function KhachHangEdit() {
                       <FormItem>
                         <FormLabel className="text-purple-800">Tên khách hàng</FormLabel>
                         <FormControl>
-                          <Input placeholder="Tên khách hàng" className="border-purple-300 focus:border-purple-500" {...field} />
+                          <Input className="border-purple-300 focus:border-purple-500" {...field} />
                         </FormControl>
                         <FormMessage className="text-red-500" />
                       </FormItem>
@@ -145,7 +163,7 @@ export default function KhachHangEdit() {
                       <FormItem>
                         <FormLabel className="text-purple-800">Người liên hệ</FormLabel>
                         <FormControl>
-                          <Input placeholder="Người liên hệ" className="border-purple-300 focus:border-purple-500" {...field} />
+                          <Input className="border-purple-300 focus:border-purple-500" {...field} />
                         </FormControl>
                         <FormMessage className="text-red-500" />
                       </FormItem>
@@ -158,7 +176,7 @@ export default function KhachHangEdit() {
                       <FormItem>
                         <FormLabel className="text-purple-800">Số điện thoại</FormLabel>
                         <FormControl>
-                          <Input placeholder="Số điện thoại" className="border-purple-300 focus:border-purple-500" {...field} />
+                          <Input className="border-purple-300 focus:border-purple-500" {...field} />
                         </FormControl>
                         <FormMessage className="text-red-500" />
                       </FormItem>
@@ -171,7 +189,7 @@ export default function KhachHangEdit() {
                       <FormItem>
                         <FormLabel className="text-purple-800">Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="Email" className="border-purple-300 focus:border-purple-500" {...field} />
+                          <Input className="border-purple-300 focus:border-purple-500" {...field} />
                         </FormControl>
                         <FormMessage className="text-red-500" />
                       </FormItem>
@@ -184,7 +202,7 @@ export default function KhachHangEdit() {
                       <FormItem>
                         <FormLabel className="text-purple-800">Địa chỉ</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Địa chỉ" className="border-purple-300 focus:border-purple-500" {...field} />
+                          <Textarea className="border-purple-300 focus:border-purple-500" {...field} />
                         </FormControl>
                         <FormMessage className="text-red-500" />
                       </FormItem>
@@ -197,7 +215,15 @@ export default function KhachHangEdit() {
                       <FormItem>
                         <FormLabel className="text-purple-800">Loại khách hàng</FormLabel>
                         <FormControl>
-                          <Input placeholder="Loại khách hàng (ví dụ: le)" className="border-purple-300 focus:border-purple-500" {...field} />
+                          <select
+                            className="flex h-10 w-full rounded-md border border-purple-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-purple-500 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            {...field}
+                          >
+                            <option value="">Chọn loại khách hàng</option>
+                            <option value="le">Cá nhân (le)</option>
+                            <option value="si">Sỉ (si)</option>
+                            <option value="doanh_nghiep">Doanh nghiệp</option>
+                          </select>
                         </FormControl>
                         <FormMessage className="text-red-500" />
                       </FormItem>
@@ -221,7 +247,7 @@ export default function KhachHangEdit() {
             </CardContent>
 
             <CardFooter className="flex justify-end space-x-4 p-6 bg-purple-50 rounded-b-2xl">
-              <Button type="button" variant="outline" className="border-purple-300 text-purple-600" onClick={() => navigate("/customer")}>
+              <Button type="button" variant="outline" className="border-purple-300 text-purple-600" onClick={() => navigate(`/customer/${id}`)}>
                 Hủy
               </Button>
               <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white">
