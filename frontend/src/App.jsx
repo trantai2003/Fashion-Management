@@ -81,6 +81,10 @@ export default function App() {
           <Route path="/supplier/view/:id" element={<SupplierDetailView />} />
           <Route path="/supplier/:id" element={<SupplierDetail />} />
 
+          {/* Customer */}
+          <Route path="/customer/:id" element={<KhachHangDetails />} />
+          <Route path="/customer/:id/edit" element={<KhachHangEdit />} />
+
           {/* Purchase Orders */}
           <Route path="/purchase-orders/:id" element={<OrderDetails />} />
         </Route>
