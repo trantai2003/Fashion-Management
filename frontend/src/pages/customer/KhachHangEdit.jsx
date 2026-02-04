@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Card,
   CardContent,
@@ -24,14 +25,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, User, Phone, Mail, MapPin, Users, Building, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "react-hot-toast";
 import {
   getKhachHangById,
   updateKhachHang,
 } from "@/services/khachHangService";
 
-// Schema Zod - validation cơ bản (chưa check trùng vì backend chưa hỗ trợ API)
+// Schema Zod
 const formSchema = z.object({
   tenKhachHang: z.string()
     .min(1, "Tên khách hàng không được để trống")
@@ -53,10 +54,9 @@ const formSchema = z.object({
 
   diaChi: z.string().optional(),
 
-  // Dropdown enum - bắt buộc chọn nếu muốn
   loaiKhachHang: z.enum(["le", "si", "doanh_nghiep"], {
     errorMap: () => ({ message: "Vui lòng chọn loại khách hàng hợp lệ" }),
-  }).optional(),
+  }),
 
   trangThai: z.number().optional(),
 });
@@ -74,10 +74,9 @@ export default function KhachHangEdit() {
       soDienThoai: "",
       email: "",
       diaChi: "",
-      loaiKhachHang: "",
+      loaiKhachHang: "le",
       trangThai: 0,
     },
-    mode: "onChange", // Validate realtime
   });
 
   useEffect(() => {
@@ -91,11 +90,15 @@ export default function KhachHangEdit() {
           soDienThoai: data.soDienThoai || "",
           email: data.email || "",
           diaChi: data.diaChi || "",
-          loaiKhachHang: data.loaiKhachHang || "",
+          loaiKhachHang: data.loaiKhachHang || "le",
           trangThai: data.trangThai || 0,
         });
       } catch (error) {
-        toast.error(error.response?.data?.message || "Không thể tải thông tin khách hàng");
+        toast.error(error.response?.data?.message || "Không thể tải thông tin khách hàng", {
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+          duration: 5000,
+          position: "top-center",
+        });
         navigate("/customer");
       } finally {
         setLoading(false);
@@ -109,15 +112,35 @@ export default function KhachHangEdit() {
     try {
       await updateKhachHang(id, values);
       toast.success("Cập nhật khách hàng thành công!", {
-        duration: 3000,
-        position: "top-right",
+        icon: <CheckCircle2 className="h-6 w-6 text-green-600" />,
+        style: {
+          border: "1px solid #10b981",
+          background: "linear-gradient(to right, #ecfdf5, #f0fdfa)",
+          color: "#065f46",
+          padding: "16px 24px",
+          borderRadius: "12px",
+          fontWeight: "600",
+          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+        },
+        duration: 4000,
+        position: "top-center",
       });
       navigate(`/customer/${id}`);
     } catch (error) {
       const errorMsg = error.response?.data?.message || "Có lỗi xảy ra khi cập nhật";
       toast.error(errorMsg, {
-        duration: 5000,
-        position: "top-right",
+        icon: <AlertCircle className="h-6 w-6 text-red-600" />,
+        style: {
+          border: "1px solid #ef4444",
+          background: "linear-gradient(to right, #fef2f2, #fee2e2)",
+          color: "#991b1b",
+          padding: "16px 24px",
+          borderRadius: "12px",
+          fontWeight: "600",
+          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+        },
+        duration: 6000,
+        position: "top-center",
       });
     } finally {
       setLoading(false);
@@ -130,129 +153,224 @@ export default function KhachHangEdit() {
         <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại chi tiết
       </Button>
 
-      <Card className="border-0 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-white">
-        <CardHeader className="bg-purple-100 p-6 rounded-t-2xl">
-          <CardTitle className="text-2xl font-bold text-purple-800">Chỉnh sửa khách hàng</CardTitle>
-          <CardDescription className="text-purple-600">Cập nhật thông tin khách hàng</CardDescription>
+      <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden bg-gradient-to-br from-purple-50 via-white to-purple-50">
+        <CardHeader className="bg-gradient-to-r from-purple-100 to-purple-200 p-8 rounded-t-3xl">
+          <CardTitle className="text-3xl font-bold text-purple-900">Chỉnh sửa khách hàng</CardTitle>
+          <CardDescription className="text-purple-700 mt-2 text-lg">Cập nhật thông tin chi tiết</CardDescription>
         </CardHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <CardContent className="space-y-6 p-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <CardContent className="space-y-8 p-8">
               {loading ? (
-                <div className="text-center py-8 text-purple-600">Đang tải...</div>
+                <div className="text-center py-12 text-purple-600 text-xl font-medium flex items-center justify-center gap-3">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  Đang tải...
+                </div>
               ) : (
                 <>
+                  {/* Tên khách hàng */}
                   <FormField
                     control={form.control}
                     name="tenKhachHang"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-purple-800">Tên khách hàng</FormLabel>
+                        <FormLabel className="text-purple-900 flex items-center gap-3 text-lg font-medium">
+                          <User className="h-5 w-5 text-purple-600" />
+                          Tên khách hàng
+                        </FormLabel>
                         <FormControl>
-                          <Input className="border-purple-300 focus:border-purple-500" {...field} />
+                          <div className="relative">
+                            <Input className="border-purple-300 focus:border-purple-500 focus:ring-purple-500 pl-11 h-12 text-base transition-all duration-200" {...field} />
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-500" />
+                          </div>
                         </FormControl>
-                        <FormMessage className="text-red-500" />
+                        <FormMessage className="text-red-600" />
                       </FormItem>
                     )}
                   />
+
+                  {/* Người liên hệ */}
                   <FormField
                     control={form.control}
                     name="nguoiLienHe"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-purple-800">Người liên hệ</FormLabel>
+                        <FormLabel className="text-purple-900 flex items-center gap-3 text-lg font-medium">
+                          <User className="h-5 w-5 text-purple-600" />
+                          Người liên hệ
+                        </FormLabel>
                         <FormControl>
-                          <Input className="border-purple-300 focus:border-purple-500" {...field} />
+                          <div className="relative">
+                            <Input className="border-purple-300 focus:border-purple-500 focus:ring-purple-500 pl-11 h-12 text-base transition-all duration-200" {...field} />
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-500" />
+                          </div>
                         </FormControl>
-                        <FormMessage className="text-red-500" />
+                        <FormMessage className="text-red-600" />
                       </FormItem>
                     )}
                   />
+
+                  {/* Số điện thoại */}
                   <FormField
                     control={form.control}
                     name="soDienThoai"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-purple-800">Số điện thoại</FormLabel>
+                        <FormLabel className="text-purple-900 flex items-center gap-3 text-lg font-medium">
+                          <Phone className="h-5 w-5 text-purple-600" />
+                          Số điện thoại
+                        </FormLabel>
                         <FormControl>
-                          <Input className="border-purple-300 focus:border-purple-500" {...field} />
+                          <div className="relative">
+                            <Input className="border-purple-300 focus:border-purple-500 focus:ring-purple-500 pl-11 h-12 text-base transition-all duration-200" {...field} />
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-500" />
+                          </div>
                         </FormControl>
-                        <FormMessage className="text-red-500" />
+                        <FormMessage className="text-red-600" />
                       </FormItem>
                     )}
                   />
+
+                  {/* Email */}
                   <FormField
                     control={form.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-purple-800">Email</FormLabel>
+                        <FormLabel className="text-purple-900 flex items-center gap-3 text-lg font-medium">
+                          <Mail className="h-5 w-5 text-purple-600" />
+                          Email
+                        </FormLabel>
                         <FormControl>
-                          <Input className="border-purple-300 focus:border-purple-500" {...field} />
+                          <div className="relative">
+                            <Input className="border-purple-300 focus:border-purple-500 focus:ring-purple-500 pl-11 h-12 text-base transition-all duration-200" {...field} />
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-500" />
+                          </div>
                         </FormControl>
-                        <FormMessage className="text-red-500" />
+                        <FormMessage className="text-red-600" />
                       </FormItem>
                     )}
                   />
+
+                  {/* Địa chỉ */}
                   <FormField
                     control={form.control}
                     name="diaChi"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-purple-800">Địa chỉ</FormLabel>
+                        <FormLabel className="text-purple-900 flex items-center gap-3 text-lg font-medium">
+                          <MapPin className="h-5 w-5 text-purple-600" />
+                          Địa chỉ
+                        </FormLabel>
                         <FormControl>
-                          <Textarea className="border-purple-300 focus:border-purple-500" {...field} />
+                          <div className="relative">
+                            <Textarea className="border-purple-300 focus:border-purple-500 focus:ring-purple-500 pl-11 min-h-[100px] text-base transition-all duration-200" {...field} />
+                            <MapPin className="absolute left-3 top-3 h-5 w-5 text-purple-500" />
+                          </div>
                         </FormControl>
-                        <FormMessage className="text-red-500" />
+                        <FormMessage className="text-red-600" />
                       </FormItem>
                     )}
                   />
+
+                  {/* Radio buttons loại khách hàng - đẹp hơn */}
                   <FormField
                     control={form.control}
                     name="loaiKhachHang"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-purple-800">Loại khách hàng</FormLabel>
+                      <FormItem className="space-y-4">
+                        <FormLabel className="text-purple-900 font-medium flex items-center gap-3 text-lg">
+                          <Users className="h-5 w-5 text-purple-600" />
+                          Loại khách hàng
+                        </FormLabel>
                         <FormControl>
-                          <select
-                            className="flex h-10 w-full rounded-md border border-purple-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-purple-500 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            {...field}
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="grid grid-cols-1 md:grid-cols-3 gap-5"
                           >
-                            <option value="">Chọn loại khách hàng</option>
-                            <option value="le">Cá nhân (le)</option>
-                            <option value="si">Sỉ (si)</option>
-                            <option value="doanh_nghiep">Doanh nghiệp</option>
-                          </select>
+                            <FormItem>
+                              <FormControl>
+                                <RadioGroupItem value="le" id="le" className="peer sr-only" />
+                              </FormControl>
+                              <FormLabel
+                                htmlFor="le"
+                                className="flex flex-col items-center justify-between rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-white to-purple-50 p-6 text-center hover:border-purple-500 hover:shadow-xl peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-gradient-to-br peer-data-[state=checked]:from-purple-100 peer-data-[state=checked]:to-purple-200 peer-data-[state=checked]:shadow-2xl transition-all duration-300 cursor-pointer group"
+                              >
+                                <User className="h-12 w-12 text-purple-600 mb-4 group-hover:scale-110 transition-transform" />
+                                <div className="font-bold text-lg text-purple-900">Cá nhân (le)</div>
+                                <div className="text-sm text-purple-700 mt-2">Khách lẻ, mua lẻ</div>
+                              </FormLabel>
+                            </FormItem>
+
+                            <FormItem>
+                              <FormControl>
+                                <RadioGroupItem value="si" id="si" className="peer sr-only" />
+                              </FormControl>
+                              <FormLabel
+                                htmlFor="si"
+                                className="flex flex-col items-center justify-between rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-white to-purple-50 p-6 text-center hover:border-purple-500 hover:shadow-xl peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-gradient-to-br peer-data-[state=checked]:from-purple-100 peer-data-[state=checked]:to-purple-200 peer-data-[state=checked]:shadow-2xl transition-all duration-300 cursor-pointer group"
+                              >
+                                <Users className="h-12 w-12 text-purple-600 mb-4 group-hover:scale-110 transition-transform" />
+                                <div className="font-bold text-lg text-purple-900">Sỉ (si)</div>
+                                <div className="text-sm text-purple-700 mt-2">Khách sỉ, mua số lượng lớn</div>
+                              </FormLabel>
+                            </FormItem>
+
+                            <FormItem>
+                              <FormControl>
+                                <RadioGroupItem value="doanh_nghiep" id="doanh_nghiep" className="peer sr-only" />
+                              </FormControl>
+                              <FormLabel
+                                htmlFor="doanh_nghiep"
+                                className="flex flex-col items-center justify-between rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-white to-purple-50 p-6 text-center hover:border-purple-500 hover:shadow-xl peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-gradient-to-br peer-data-[state=checked]:from-purple-100 peer-data-[state=checked]:to-purple-200 peer-data-[state=checked]:shadow-2xl transition-all duration-300 cursor-pointer group"
+                              >
+                                <Building className="h-12 w-12 text-purple-600 mb-4 group-hover:scale-110 transition-transform" />
+                                <div className="font-bold text-lg text-purple-900">Doanh nghiệp</div>
+                                <div className="text-sm text-purple-700 mt-2">Công ty, đối tác</div>
+                              </FormLabel>
+                            </FormItem>
+                          </RadioGroup>
                         </FormControl>
-                        <FormMessage className="text-red-500" />
+                        <FormMessage className="text-red-500 text-center" />
                       </FormItem>
                     )}
                   />
+
+                  {/* Switch trạng thái */}
                   <FormItem className="flex flex-col space-y-3">
-                    <FormLabel className="text-purple-800 font-medium">Trạng thái</FormLabel>
-                    <div className="flex items-center space-x-4">
+                    <FormLabel className="text-purple-900 font-medium flex items-center gap-3 text-lg">
                       <Switch
                         checked={form.watch("trangThai") === 1}
                         onCheckedChange={(checked) => form.setValue("trangThai", checked ? 1 : 0)}
                         className={`data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-400 transition-colors duration-300`}
                       />
-                      <span className={`text-sm font-semibold ${form.watch("trangThai") === 1 ? "text-green-700" : "text-red-700"}`}>
+                      <span className={`text-lg font-semibold ${form.watch("trangThai") === 1 ? "text-green-700" : "text-red-700"}`}>
                         {form.watch("trangThai") === 1 ? "Hoạt động" : "Ngừng hoạt động"}
                       </span>
-                    </div>
+                    </FormLabel>
                   </FormItem>
                 </>
               )}
             </CardContent>
 
-            <CardFooter className="flex justify-end space-x-4 p-6 bg-purple-50 rounded-b-2xl">
-              <Button type="button" variant="outline" className="border-purple-300 text-purple-600" onClick={() => navigate(`/customer/${id}`)}>
+            <CardFooter className="flex justify-end space-x-4 p-8 bg-gradient-to-r from-purple-50 to-purple-100 rounded-b-2xl">
+              <Button type="button" variant="outline" className="border-purple-400 text-purple-700 hover:bg-purple-100 transition-colors" onClick={() => navigate(`/customer/${id}`)}>
                 Hủy
               </Button>
-              <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white">
-                <Save className="mr-2 h-4 w-4" />
-                {loading ? "Đang lưu..." : "Cập nhật"}
+              <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white transition-colors min-w-[140px]">
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-5 w-5" />
+                    Cập nhật
+                  </>
+                )}
               </Button>
             </CardFooter>
           </form>
