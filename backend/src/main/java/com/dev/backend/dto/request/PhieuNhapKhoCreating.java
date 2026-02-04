@@ -1,8 +1,7 @@
-package com.dev.backend.dto.response.entities;
+package com.dev.backend.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
 import java.time.Instant;
 
 @AllArgsConstructor
@@ -11,16 +10,9 @@ import java.time.Instant;
 @Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PhieuNhapKhoDto {
-    Integer id;
-    String soPhieuNhap;
+public class PhieuNhapKhoCreating {
     Integer donMuaHangId;
-    String soDonMua;
-    Integer nhaCungCapId;
-    String tenNhaCungCap;
     Integer khoId;
-    String tenKho;
     Instant ngayNhap;
-    Integer trangThai;
     String ghiChu;
 }
