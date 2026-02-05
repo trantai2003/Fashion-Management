@@ -22,8 +22,10 @@ import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
 import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
-import OrderDetails from "./pages/purchase/OrderDetails";
 import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
+
+import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
+import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
 export default function App() {
   return (
     <BrowserRouter>
@@ -76,17 +78,18 @@ export default function App() {
           <Route path="/material/view/:id" element={<ChatLieuDetailView />} />
           <Route path="/material/:id" element={<ChatLieuDetail />} />
 
+          {/* Purchase Order */}
+          <Route path="/purchase-orders" element={<PurchaseOrder />} />
+          <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
+
           {/* Supplier */}
           <Route path="/supplier" element={<SupplierList />} />
           <Route path="/supplier/new" element={<SupplierDetail />} />
           <Route path="/supplier/view/:id" element={<SupplierDetailView />} />
           <Route path="/supplier/:id" element={<SupplierDetail />} />
 
-          {/* Purchase Orders */}
-          <Route path="/purchase-orders/:id" element={<OrderDetails />} />
-
-          {/* Receipt*/}
           <Route path="/goods-receipts" element={<PhieuNhapKhoList />} />
+          {/* Receipt*/}
         </Route>
 
         {/* ========== 404 ========== */}
