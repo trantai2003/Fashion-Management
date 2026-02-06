@@ -6,6 +6,7 @@ import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.PhieuNhapKhoCreating;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoDto;
 import com.dev.backend.dto.response.entities.PhieuNhapKhoDto;
 import com.dev.backend.entities.PhieuNhapKho;
 import com.dev.backend.mapper.PhieuNhapKhoMapper;
@@ -50,14 +51,27 @@ public class PhieuNhapKhoController {
                     IRoleType.quan_ly_kho,
                     IRoleType.nhan_vien_kho
             },
-            permissions = {
-                    IPermissionType.tao_phieu_nhap
+            inWarehouse = true
+    )
+    public PhieuNhapKhoDto create(
+            @RequestBody PhieuNhapKhoCreating creating
+    ) {
+        PhieuNhapKho entity = phieuNhapKhoService.createDraft(creating);
+        return phieuNhapKhoMapper.toDto(entity);
+    }
+
+    @GetMapping("/{id}")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho
             },
             inWarehouse = true
     )
-    public ResponseEntity<ResponseData<PhieuNhapKhoDto>> create(
-            @RequestBody PhieuNhapKhoCreating creating
+    public ChiTietPhieuNhapKhoDto getDetail(
+            @PathVariable Integer id
     ) {
-        return phieuNhapKhoService.create(creating);
+        return phieuNhapKhoService.getDetail(id);
     }
 }

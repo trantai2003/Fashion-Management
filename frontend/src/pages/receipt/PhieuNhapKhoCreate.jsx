@@ -61,24 +61,50 @@ export default function PhieuNhapKhoCreate() {
     };
 
     const handleSaveDraft = async () => {
-        if (!selectedPO) {
+        if (!selectedPO || !poDetailMock) {
             alert("Vui lòng chọn đơn mua hàng (PO)");
             return;
         }
 
+        //Mock chi tiết phiếu nhập kho từ chi tiết PO
+        const chiTietPhieuNhapKhos = poDetailMock.chiTietDonMuaHangs.map((ct) => ({
+            bienTheSanPhamId: ct.id,       //mock
+            soLuongDuKienNhap: ct.soLuong  //mặc định = sl PO
+        }));
+
+        if (chiTietPhieuNhapKhos.length === 0) {
+            alert("Danh sách sản phẩm nhập không được rỗng");
+            return;
+        }
+
+        const payload = {
+            donMuaHangId: selectedPO.id,
+            khoId: selectedPO.khoNhapId, //lay từ PO
+            ngayNhap: ngayNhap ? `${ngayNhap}T00:00:00Z` : null,
+            ghiChu: "Tạo phiếu nhập kho (MOCK)",
+            chiTietPhieuNhapKhos
+        };
+
+        //mock mode để test giao diện
+        console.log("🚧 [MOCK MODE] CREATE GOODS RECEIPT PAYLOAD");
+        console.table(chiTietPhieuNhapKhos);
+        console.log(payload);
+
+        alert(
+            "Đang ở MOCK MODE.\n" +
+            "Phiếu nhập chưa được tạo trong DB.\n" +
+            "Khi cắm API PO thật → bật lại createDraft."
+        );
+
+        //tam thời kh gọi api
+        return;
+
+        /*
+        // ===== BẬT LẠI KHI CÓ PO THẬT =====
         setLoading(true);
         try {
-            const payload = {
-                donMuaHangId: selectedPO.id,
-                khoId: selectedPO.khoNhapId, // ✅ LẤY TỪ PO
-                ngayNhap: ngayNhap ? `${ngayNhap}T00:00:00Z` : null,
-                ghiChu: "Tạo phiếu nhập kho",
-            };
-
-            console.log("[CREATE RECEIPT PAYLOAD]", payload);
-
             await phieuNhapKhoService.create(payload);
-
+    
             navigate("/goods-receipts", {
                 state: {
                     success: true,
@@ -91,7 +117,10 @@ export default function PhieuNhapKhoCreate() {
         } finally {
             setLoading(false);
         }
+        */
     };
+
+
 
     return (
         <div className="min-h-screen bg-gray-50 flex">

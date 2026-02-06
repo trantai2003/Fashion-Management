@@ -11,6 +11,7 @@ import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @AllArgsConstructor
 @Getter
@@ -80,6 +81,9 @@ public class PhieuNhapKho {
     @Generated(event = EventType.INSERT)
     @Column(name = "ngay_cap_nhat")
     Instant ngayCapNhat;
+
+    @OneToMany(mappedBy = "phieuNhapKho", fetch = FetchType.LAZY)
+    List<ChiTietPhieuNhapKho> chiTietPhieuNhapKhos;
 
 
 }

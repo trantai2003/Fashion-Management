@@ -1,19 +1,20 @@
 package com.dev.backend.services.impl.entities;
 
-import com.dev.backend.config.SecurityContextHolder;
+import com.dev.backend.dto.request.ChiTietPhieuNhapKhoCreating;
 import com.dev.backend.dto.request.PhieuNhapKhoCreating;
-import com.dev.backend.dto.response.ResponseData;
-import com.dev.backend.dto.response.entities.PhieuNhapKhoDto;
+import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoDto;
+import com.dev.backend.dto.response.entities.PhieuNhapKhoItemDto;
 import com.dev.backend.entities.*;
-import com.dev.backend.mapper.PhieuNhapKhoMapper;
 import com.dev.backend.repository.*;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> {
@@ -24,10 +25,8 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     private DonMuaHangRepository donMuaHangRepository;
 
     @Autowired
-    private KhoRepository khoRepository;
+    private ChiTietPhieuNhapKhoRepository chiTietPhieuNhapKhoRepository;
 
-    @Autowired
-    private PhieuNhapKhoMapper phieuNhapKhoMapper;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -42,44 +41,107 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
      * CREATE GOODS RECEIPT (DRAFT)
      * Đúng luồng: chỉ tạo phiếu, không nhập lô, không cập nhật tồn kho
      */
-    public ResponseEntity<ResponseData<PhieuNhapKhoDto>> create(PhieuNhapKhoCreating creating) {
-        // 1. Validate PO tồn tại
-        DonMuaHang donMuaHang = donMuaHangRepository.findById(creating.getDonMuaHangId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn mua hàng"));
-        // 2. Validate kho
-        Kho kho = khoRepository.findById(creating.getKhoId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy kho"));
-        // 3. Tạo phiếu nhập kho (DRAFT)
-        PhieuNhapKho entity = PhieuNhapKho.builder()
+    @Transactional
+    public PhieuNhapKho createDraft(PhieuNhapKhoCreating request) {
+
+        if (request.getChiTietPhieuNhapKhos() == null || request.getChiTietPhieuNhapKhos().isEmpty()) {
+            throw new RuntimeException("Danh sách sản phẩm nhập không được rỗng");
+        }
+
+        DonMuaHang donMuaHang = donMuaHangRepository.findById(request.getDonMuaHangId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy PO"));
+
+        PhieuNhapKho phieuNhapKho = PhieuNhapKho.builder()
                 .soPhieuNhap(generateSoPhieu())
                 .donMuaHang(donMuaHang)
                 .nhaCungCap(donMuaHang.getNhaCungCap())
-                .kho(kho)
+                .kho(donMuaHang.getKhoNhap())
                 .ngayNhap(
-                        creating.getNgayNhap() != null
-                                ? creating.getNgayNhap()
+                        request.getNgayNhap() != null
+                                ? request.getNgayNhap()
                                 : Instant.now()
                 )
-                .ghiChu(creating.getGhiChu())
-                .nguoiNhap(
-                        SecurityContextHolder.getUser() != null
-                                ? entityManager.getReference(
-                                NguoiDung.class,
-                                SecurityContextHolder.getUser().getId()
-                        )
-                                : null
-                )
-                .trangThai(0) // 0 = Draft
+                .ghiChu(request.getGhiChu())
+                .trangThai(0)
+                .tongTien(BigDecimal.ZERO)
                 .build();
-        entity = repository.save(entity);
-        return ResponseEntity.ok(
-                ResponseData.<PhieuNhapKhoDto>builder()
-                        .status(200)
-                        .message("Tạo phiếu nhập kho thành công")
-                        .data(phieuNhapKhoMapper.toDto(entity))
-                        .build()
-        );
+
+        phieuNhapKho = repository.save(phieuNhapKho);
+
+        for (ChiTietPhieuNhapKhoCreating item : request.getChiTietPhieuNhapKhos()) {
+            ChiTietDonMuaHang ctPo =
+                    donMuaHang.getChiTietDonMuaHangs().stream()
+                            .filter(poItem ->
+                                    poItem.getBienTheSanPham().getId()
+                                            .equals(item.getBienTheSanPhamId())
+                            )
+                            .findFirst()
+                            .orElseThrow(() ->
+                                    new RuntimeException("Không tìm thấy sản phẩm trong PO")
+                            );
+
+            ChiTietPhieuNhapKho ct = ChiTietPhieuNhapKho.builder()
+                    .phieuNhapKho(phieuNhapKho)
+                    .bienTheSanPham(ctPo.getBienTheSanPham())
+                    .soLuongNhap(item.getSoLuongDuKienNhap())
+                    .donGia(ctPo.getDonGia())   // lấy tu PO
+                    .loHang(null)               // Draft chưa có lô
+                    .build();
+
+            chiTietPhieuNhapKhoRepository.save(ct);
+        }
+
+        return phieuNhapKho;
     }
+
+    // ================= DETAIL =================
+    @Transactional(readOnly = true)
+    public ChiTietPhieuNhapKhoDto getDetail(Integer id) {
+
+        PhieuNhapKho phieuNhapKho = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
+
+        List<PhieuNhapKhoItemDto> items =
+                phieuNhapKho.getChiTietPhieuNhapKhos().stream()
+                        .map(ct -> {
+
+                            BigDecimal soLuongCanNhap = ct.getSoLuongNhap();
+
+                            BigDecimal soLuongDaKhaiBaoLo =
+                                    chiTietPhieuNhapKhoRepository.sumSoLuongDaNhap(
+                                            phieuNhapKho.getId(),
+                                            ct.getBienTheSanPham().getId()
+                                    );
+
+                            boolean daDuLo =
+                                    soLuongDaKhaiBaoLo.compareTo(soLuongCanNhap) >= 0;
+
+                            return PhieuNhapKhoItemDto.builder()
+                                    .bienTheSanPhamId(ct.getBienTheSanPham().getId())
+                                    .sku(ct.getBienTheSanPham().getMaSku())
+                                    .tenBienThe(ct.getBienTheSanPham().getSanPham().getTenSanPham())
+                                    .soLuongCanNhap(soLuongCanNhap)
+                                    .soLuongDaNhap(soLuongDaKhaiBaoLo)
+                                    .daDuLo(daDuLo)
+                                    .build();
+                        })
+                        .toList();
+
+        return ChiTietPhieuNhapKhoDto.builder()
+                .id(phieuNhapKho.getId())
+                .soPhieuNhap(phieuNhapKho.getSoPhieuNhap())
+                .trangThai(phieuNhapKho.getTrangThai())
+                .ngayNhap(phieuNhapKho.getNgayNhap())
+                .donMuaHangId(phieuNhapKho.getDonMuaHang().getId())
+                .soDonMua(phieuNhapKho.getDonMuaHang().getSoDonMua())
+                .nhaCungCapId(phieuNhapKho.getNhaCungCap().getId())
+                .tenNhaCungCap(phieuNhapKho.getNhaCungCap().getTenNhaCungCap())
+                .khoId(phieuNhapKho.getKho().getId())
+                .tenKho(phieuNhapKho.getKho().getTenKho())
+                .items(items)
+                .build();
+    }
+
     private String generateSoPhieu() {
         return "PN" + System.currentTimeMillis();
     }
