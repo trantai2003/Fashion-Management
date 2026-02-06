@@ -6,7 +6,7 @@ export const phieuNhapKhoService = {
         return res.data;
     },
     async create(payload) {
-        const res = await apiClient.post("/api/phieu-nhap-kho/create", payload);
+        const res = await apiClient.post("/api/v1/phieu-nhap-kho/create", payload);
         return res.data;
     },
 };
