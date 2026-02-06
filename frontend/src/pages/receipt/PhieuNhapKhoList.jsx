@@ -204,7 +204,7 @@ export default function PhieuNhapKhoList() {
                                     Tổng: {total}
                                 </span>
                                 <Link
-                                    to="/nghiep-vu/phieu-nhap-kho/create"
+                                    to="/goods-receipts/create"
                                     className="px-3 py-2 text-sm text-white rounded-md bg-purple-600"
                                 >
                                     + Create Receipt

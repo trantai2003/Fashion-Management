@@ -5,4 +5,8 @@ export const phieuNhapKhoService = {
         const res = await apiClient.post("/api/v1/phieu-nhap-kho/filter", payload);
         return res.data;
     },
+    async create(payload) {
+        const res = await apiClient.post("/api/phieu-nhap-kho/create", payload);
+        return res.data;
+    },
 };

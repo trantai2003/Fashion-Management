@@ -23,7 +23,7 @@ import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
 import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
 import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
-
+import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
 import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
 import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
 export default function App() {
@@ -88,8 +88,9 @@ export default function App() {
           <Route path="/supplier/view/:id" element={<SupplierDetailView />} />
           <Route path="/supplier/:id" element={<SupplierDetail />} />
 
-          <Route path="/goods-receipts" element={<PhieuNhapKhoList />} />
           {/* Receipt*/}
+          <Route path="/goods-receipts/create" element={<PhieuNhapKhoCreate />} />
+          <Route path="/goods-receipts" element={<PhieuNhapKhoList />} />
         </Route>
 
         {/* ========== 404 ========== */}
