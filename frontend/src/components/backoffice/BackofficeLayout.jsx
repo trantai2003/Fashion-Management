@@ -86,6 +86,12 @@ export default function BackofficeLayout() {
             match: (path) => path === "/goods-receipts/create",
             title: "Tạo phiếu nhập kho",
             subtitle: "Tạo mới phiếu nhập kho từ đơn mua hàng (PO)",
+        },
+        {
+            key: "GOODS_RECEIPTS_DETAIL",
+            match: (path) => /^\/goods-receipts\/\d+$/.test(path),
+            title: "Chi tiết phiếu nhập kho",
+            subtitle: "Xem chi tiết phiếu nhập kho",
         }
     ];
 

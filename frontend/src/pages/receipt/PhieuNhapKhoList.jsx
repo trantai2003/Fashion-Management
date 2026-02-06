@@ -54,7 +54,7 @@ export default function PhieuNhapKhoList() {
             page: filters.page,
             size: filters.size,
             filters: filterList,
-            sorts: [{ fieldName: "ngayNhap", direction: "DESC" }],
+            sorts: [{ fieldName: "soPhieuNhap", direction: "DESC" }],
         };
     }
 
@@ -251,7 +251,7 @@ export default function PhieuNhapKhoList() {
                                             </td>
                                             <td className="py-3 px-4 text-right">
                                                 <Link
-                                                    to={`/nghiep-vu/phieu-nhap-kho/${item.id}`}
+                                                    to={`/goods-receipts/${item.id}`}
                                                     className="text-sm font-semibold text-purple-600 hover:text-purple-700"
                                                 >
                                                     View

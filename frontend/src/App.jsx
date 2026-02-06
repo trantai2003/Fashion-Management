@@ -24,6 +24,7 @@ import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
 import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
 import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
 import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
+import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
 import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
 import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
 export default function App() {
@@ -91,6 +92,7 @@ export default function App() {
           {/* Receipt*/}
           <Route path="/goods-receipts/create" element={<PhieuNhapKhoCreate />} />
           <Route path="/goods-receipts" element={<PhieuNhapKhoList />} />
+          <Route path="/goods-receipts/:id" element={<PhieuNhapKhoDetail />} />
         </Route>
 
         {/* ========== 404 ========== */}
