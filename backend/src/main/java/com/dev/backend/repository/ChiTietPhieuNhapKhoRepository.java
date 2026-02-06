@@ -11,13 +11,15 @@ import java.math.BigDecimal;
 @Repository
 public interface ChiTietPhieuNhapKhoRepository extends JpaRepository<ChiTietPhieuNhapKho, Integer>, JpaSpecificationExecutor<ChiTietPhieuNhapKho> {
     @Query("""
-        select coalesce(sum(c.soLuongNhap), 0)
-        from ChiTietPhieuNhapKho c
-        where c.phieuNhapKho.id = :phieuNhapKhoId
-          and c.bienTheSanPham.id = :bienTheSanPhamId
-    """)
-    BigDecimal sumSoLuongDaNhap(
+    SELECT COALESCE(SUM(ct.soLuongNhap), 0)
+    FROM ChiTietPhieuNhapKho ct
+    WHERE ct.phieuNhapKho.id = :phieuNhapKhoId
+      AND ct.bienTheSanPham.id = :bienTheSanPhamId
+      AND ct.loHang IS NOT NULL
+""")
+    BigDecimal sumSoLuongDaKhaiBao(
             @Param("phieuNhapKhoId") Integer phieuNhapKhoId,
             @Param("bienTheSanPhamId") Integer bienTheSanPhamId
     );
+
 }

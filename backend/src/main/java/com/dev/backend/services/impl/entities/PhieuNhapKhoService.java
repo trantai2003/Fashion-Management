@@ -108,7 +108,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                             BigDecimal soLuongCanNhap = ct.getSoLuongNhap();
 
                             BigDecimal soLuongDaKhaiBaoLo =
-                                    chiTietPhieuNhapKhoRepository.sumSoLuongDaNhap(
+                                    chiTietPhieuNhapKhoRepository.sumSoLuongDaKhaiBao(
                                             phieuNhapKho.getId(),
                                             ct.getBienTheSanPham().getId()
                                     );

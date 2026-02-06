@@ -60,7 +60,7 @@ public class PhieuNhapKhoController {
         return phieuNhapKhoMapper.toDto(entity);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/detail")
     @RequireAuth(
             roles = {
                     IRoleType.quan_tri_vien,
