@@ -51,47 +51,62 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         DonMuaHang donMuaHang = donMuaHangRepository.findById(request.getDonMuaHangId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy PO"));
 
-        PhieuNhapKho phieuNhapKho = PhieuNhapKho.builder()
-                .soPhieuNhap(generateSoPhieu())
-                .donMuaHang(donMuaHang)
-                .nhaCungCap(donMuaHang.getNhaCungCap())
-                .kho(donMuaHang.getKhoNhap())
-                .ngayNhap(
-                        request.getNgayNhap() != null
-                                ? request.getNgayNhap()
-                                : Instant.now()
-                )
-                .ghiChu(request.getGhiChu())
-                .trangThai(0)
-                .tongTien(BigDecimal.ZERO)
-                .build();
+        int retry = 0;
+        int maxRetry = 5;
+        while (true) {
+            try {
+                PhieuNhapKho phieuNhapKho = PhieuNhapKho.builder()
+                        .soPhieuNhap(generateSoPhieu())
+                        .donMuaHang(donMuaHang)
+                        .nhaCungCap(donMuaHang.getNhaCungCap())
+                        .kho(donMuaHang.getKhoNhap())
+                        .ngayNhap(
+                                request.getNgayNhap() != null
+                                        ? request.getNgayNhap()
+                                        : Instant.now()
+                        )
+                        .ghiChu(request.getGhiChu())
+                        .trangThai(0)
+                        .tongTien(BigDecimal.ZERO)
+                        .build();
 
-        phieuNhapKho = repository.save(phieuNhapKho);
+                phieuNhapKho = repository.save(phieuNhapKho);
 
-        for (ChiTietPhieuNhapKhoCreating item : request.getChiTietPhieuNhapKhos()) {
-            ChiTietDonMuaHang ctPo =
-                    donMuaHang.getChiTietDonMuaHangs().stream()
-                            .filter(poItem ->
-                                    poItem.getBienTheSanPham().getId()
-                                            .equals(item.getBienTheSanPhamId())
-                            )
-                            .findFirst()
-                            .orElseThrow(() ->
-                                    new RuntimeException("Không tìm thấy sản phẩm trong PO")
-                            );
+                for (ChiTietPhieuNhapKhoCreating item : request.getChiTietPhieuNhapKhos()) {
+                    ChiTietDonMuaHang ctPo =
+                            donMuaHang.getChiTietDonMuaHangs().stream()
+                                    .filter(poItem ->
+                                            poItem.getBienTheSanPham().getId()
+                                                    .equals(item.getBienTheSanPhamId())
+                                    )
+                                    .findFirst()
+                                    .orElseThrow(() ->
+                                            new RuntimeException("Không tìm thấy sản phẩm trong PO")
+                                    );
 
-            ChiTietPhieuNhapKho ct = ChiTietPhieuNhapKho.builder()
-                    .phieuNhapKho(phieuNhapKho)
-                    .bienTheSanPham(ctPo.getBienTheSanPham())
-                    .soLuongNhap(item.getSoLuongDuKienNhap())
-                    .donGia(ctPo.getDonGia())   // lấy tu PO
-                    .loHang(null)               // Draft chưa có lô
-                    .build();
+                    ChiTietPhieuNhapKho ct = ChiTietPhieuNhapKho.builder()
+                            .phieuNhapKho(phieuNhapKho)
+                            .bienTheSanPham(ctPo.getBienTheSanPham())
+                            .soLuongNhap(item.getSoLuongDuKienNhap())
+                            .donGia(ctPo.getDonGia())   // lấy tu PO
+                            .loHang(null)               // Draft chưa có lô
+                            .build();
 
-            chiTietPhieuNhapKhoRepository.save(ct);
+                    chiTietPhieuNhapKhoRepository.save(ct);
+                }
+
+                return phieuNhapKho;
+            } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+
+                // 👉 chỉ retry khi trùng so_phieu_nhap
+                if (isDuplicateSoPhieu(ex) && retry < maxRetry) {
+                    retry++;
+                    continue;
+                }
+
+                throw ex;
+            }
         }
-
-        return phieuNhapKho;
     }
 
     // ================= DETAIL =================
@@ -142,7 +157,49 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                 .build();
     }
 
-    private String generateSoPhieu() {
-        return "PN" + System.currentTimeMillis();
+    @Transactional
+    public void huyPhieuNhap(Integer id) {
+        PhieuNhapKho phieuNhapKho = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
+
+        if (phieuNhapKho.getTrangThai() == 1) {
+            throw new RuntimeException("Phiếu nhập đã hoàn thành, không thể huỷ");
+        }
+
+        if (phieuNhapKho.getTrangThai() == 2) {
+            throw new RuntimeException("Phiếu nhập đã bị huỷ trước đó");
+        }
+        System.out.println("BEFORE = " + phieuNhapKho.getTrangThai());
+        phieuNhapKho.setTrangThai(2);
+        repository.save(phieuNhapKho);
+        repository.flush();
+        System.out.println("AFTER = " + phieuNhapKho.getTrangThai());
     }
-}
+
+    private String generateSoPhieu() {
+            String dateStr = java.time.LocalDate.now()
+                    .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+
+            String prefix = "PN" + dateStr;
+
+            long countToday = ((PhieuNhapKhoRepository) repository)
+                    .countBySoPhieuPrefix(prefix);
+
+            long stt = countToday + 1;
+
+            return prefix + stt;
+    }
+
+    private boolean isDuplicateSoPhieu(Exception ex) {
+        Throwable cause = ex;
+        while (cause != null) {
+            if (cause.getMessage() != null &&
+                    cause.getMessage().contains("uk_phieu_nhap_kho_so_phieu")) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
+    }
+
+    }

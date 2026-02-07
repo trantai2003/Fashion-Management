@@ -51,7 +51,6 @@ public class PhieuNhapKho {
     Instant ngayNhap;
 
     @ColumnDefault("0")
-    @Generated(event = EventType.INSERT)
     @Column(name = "trang_thai")
     Integer trangThai;
 

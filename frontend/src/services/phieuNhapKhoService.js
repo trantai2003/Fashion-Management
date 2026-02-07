@@ -11,6 +11,9 @@ export const phieuNhapKhoService = {
     },
     async getDetail(id) {
         const res = await apiClient.get(`/api/v1/phieu-nhap-kho/${id}/detail`);
-         return res.data;
+        return res.data;
     },
+    async cancel(id) {
+        return apiClient.put(`/api/v1/phieu-nhap-kho/${id}/cancel`);
+    }
 };

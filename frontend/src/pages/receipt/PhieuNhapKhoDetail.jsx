@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
-
+import { toast } from "sonner";
 const STATUS_MAP = {
     0: { label: "Nháp", className: "bg-amber-50 text-amber-700" },
     1: { label: "Hoàn thành", className: "bg-green-50 text-green-700" },
@@ -14,7 +14,10 @@ export default function PhieuNhapKhoDetail() {
 
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const role = localStorage.getItem("role");
+    const isNhanVienKho = role === "nhan_vien_kho";
 
     useEffect(() => {
         fetchDetail();
@@ -27,7 +30,7 @@ export default function PhieuNhapKhoDetail() {
             setData(res);
         } catch (e) {
             console.error(e);
-            alert("Không thể tải chi tiết phiếu nhập");
+            toast.error("Không thể tải chi tiết phiếu nhập");
         } finally {
             setLoading(false);
         }
@@ -67,22 +70,34 @@ export default function PhieuNhapKhoDetail() {
                         </span>
 
                         {/* Cancel */}
+                        {!isNhanVienKho && (
                         <button
                             className="px-4 py-2 rounded-md text-sm
                                            border border-red-200 text-red-600
                                            hover:bg-red-50"
-                            onClick={() => alert("TODO: Huỷ phiếu nhập")}
+                            onClick={() => {
+                                if (data.trangThai === 1) {
+                                    toast.error("Phiếu nhập đã hoàn thành, không thể huỷ");
+                                    return;
+                                }
+                                if (data.trangThai === 2) {
+                                    toast.error("Phiếu nhập đã bị huỷ trước đó");
+                                    return;
+                                }
+                                setShowCancelConfirm(true)
+                            }}
                         >
                             Huỷ phiếu nhập
                         </button>
-
+                        )}
+                        
                         {/* Complete */}
                         <button
-                            disabled={!isAllDuLo}
+                            disabled={!isAllDuLo || data.trangThai !== 0}
                             onClick={() => setShowConfirm(true)}
                             className={`
                                     px-4 py-2 rounded-md text-sm font-semibold
-                                    ${isAllDuLo
+                                    ${isAllDuLo && data.trangThai === 0
                                     ? "bg-purple-600 text-white hover:bg-purple-700"
                                     : "bg-gray-300 text-white cursor-not-allowed"}
                                 `}
@@ -211,6 +226,58 @@ export default function PhieuNhapKhoDetail() {
                                     Confirm & Complete
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ===== CANCEL CONFIRM POPUP ===== */}
+                {showCancelConfirm && (
+                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-lg">
+
+                            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                                Xác nhận huỷ phiếu nhập
+                            </h2>
+
+                            <p className="text-sm text-gray-600 mb-4">
+                                Bạn chắc chắn muốn huỷ phiếu nhập kho
+                                <strong className="mx-1">{data.soPhieuNhap}</strong>?
+                            </p>
+
+                            <ul className="text-sm text-gray-600 list-disc pl-5 mb-4 space-y-1">
+                                <li>Phiếu nhập sẽ chuyển sang trạng thái <b>Đã huỷ</b></li>
+                                <li>Các thông tin đã nhập sẽ được giữ lại để tra cứu</li>
+                                <li>Không thể tiếp tục khai báo lô cho phiếu này</li>
+                            </ul>
+
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setShowCancelConfirm(false)}
+                                    className="px-4 py-2 rounded-md border text-sm hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            await phieuNhapKhoService.cancel(data.id);
+                                            setShowCancelConfirm(false);
+                                            toast.success("Huỷ phiếu nhập thành công");
+                                            navigate("/goods-receipts");
+                                        } catch (e) {
+                                            toast.error(
+                                                e?.response?.data?.message ||
+                                                "Không thể huỷ phiếu nhập"
+                                            );
+                                        }
+                                    }}
+                                    className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
+                                >
+                                    Confirm & Cancel
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 )}

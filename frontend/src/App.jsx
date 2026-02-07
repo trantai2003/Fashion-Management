@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
-
 import BackofficeLayout from "@/components/backoffice/BackofficeLayout";
 import Login from "./pages/Login";
 import HomePage from "./pages/HomePage";
@@ -30,13 +28,6 @@ import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
 export default function App() {
   return (
     <BrowserRouter>
-      {/* Toaster – tạm thời đặt ở App */}
-      <Toaster
-        position="top-center"
-        richColors
-        closeButton
-        duration={3500}
-      />
 
       <Routes>
         {/* ========== PUBLIC ROUTES ========== */}

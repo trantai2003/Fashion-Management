@@ -13,6 +13,7 @@ import com.dev.backend.mapper.PhieuNhapKhoMapper;
 import com.dev.backend.services.impl.entities.PhieuNhapKhoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,7 +52,9 @@ public class PhieuNhapKhoController {
                     IRoleType.quan_ly_kho,
                     IRoleType.nhan_vien_kho
             },
-            inWarehouse = true
+            permissions = {IPermissionType.tao_phieu_nhap},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
     )
     public PhieuNhapKhoDto create(
             @RequestBody PhieuNhapKhoCreating creating
@@ -67,11 +70,31 @@ public class PhieuNhapKhoController {
                     IRoleType.quan_ly_kho,
                     IRoleType.nhan_vien_kho
             },
-            inWarehouse = true
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
     )
-    public ChiTietPhieuNhapKhoDto getDetail(
-            @PathVariable Integer id
-    ) {
+    public ChiTietPhieuNhapKhoDto getDetail(@PathVariable Integer id) {
         return phieuNhapKhoService.getDetail(id);
+    }
+
+    @PutMapping("/{id}/cancel")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+            },
+            permissions = {IPermissionType.huy_phieu_nhap},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> huyPhieuNhap(@PathVariable Integer id) {
+        phieuNhapKhoService.huyPhieuNhap(id);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Hủy phiếu nhập thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
     }
 }
