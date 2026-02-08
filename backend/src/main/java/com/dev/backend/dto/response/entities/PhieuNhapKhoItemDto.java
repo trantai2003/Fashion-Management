@@ -15,6 +15,6 @@ public class PhieuNhapKhoItemDto {
     String sku;
     String tenBienThe;
     BigDecimal soLuongCanNhap;   // kế hoạch nhập đợt này
-    BigDecimal soLuongDaNhap;    // đã khai báo lô
+    BigDecimal soLuongDaKhaiBao;    // đã khai báo lô
     Boolean daDuLo;
 }

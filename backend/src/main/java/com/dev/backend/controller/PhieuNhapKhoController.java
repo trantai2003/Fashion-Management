@@ -4,6 +4,7 @@ import com.dev.backend.constant.variables.IPermissionType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
+import com.dev.backend.dto.request.KhaiBaoLoRequest;
 import com.dev.backend.dto.request.PhieuNhapKhoCreating;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoDto;
@@ -97,4 +98,28 @@ public class PhieuNhapKhoController {
                         .build()
         );
     }
+    @PostMapping("/{id}/khai-bao-lo")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho
+            },
+            inWarehouse = true
+    )
+    public ResponseEntity<ResponseData<String>> khaiBaoLo(
+            @PathVariable Integer id,
+            @RequestBody KhaiBaoLoRequest request
+    ) {
+        phieuNhapKhoService.khaiBaoLo(id, request);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Khai báo lô thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+
 }

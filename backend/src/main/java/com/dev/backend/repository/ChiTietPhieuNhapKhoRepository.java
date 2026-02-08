@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Repository
 public interface ChiTietPhieuNhapKhoRepository extends JpaRepository<ChiTietPhieuNhapKho, Integer>, JpaSpecificationExecutor<ChiTietPhieuNhapKho> {
@@ -20,6 +21,11 @@ public interface ChiTietPhieuNhapKhoRepository extends JpaRepository<ChiTietPhie
     BigDecimal sumSoLuongDaKhaiBao(
             @Param("phieuNhapKhoId") Integer phieuNhapKhoId,
             @Param("bienTheSanPhamId") Integer bienTheSanPhamId
+    );
+    Optional<ChiTietPhieuNhapKho>
+    findFirstByPhieuNhapKho_IdAndBienTheSanPham_IdAndLoHangIsNull(
+            Integer phieuNhapKhoId,
+            Integer bienTheSanPhamId
     );
 
 }

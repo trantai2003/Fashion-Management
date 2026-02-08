@@ -1,6 +1,7 @@
 package com.dev.backend.services.impl.entities;
 
 import com.dev.backend.dto.request.ChiTietPhieuNhapKhoCreating;
+import com.dev.backend.dto.request.KhaiBaoLoRequest;
 import com.dev.backend.dto.request.PhieuNhapKhoCreating;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoDto;
 import com.dev.backend.dto.response.entities.PhieuNhapKhoItemDto;
@@ -27,6 +28,8 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     @Autowired
     private ChiTietPhieuNhapKhoRepository chiTietPhieuNhapKhoRepository;
 
+    @Autowired
+    private LoHangRepository loHangRepository;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -136,7 +139,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                                     .sku(ct.getBienTheSanPham().getMaSku())
                                     .tenBienThe(ct.getBienTheSanPham().getSanPham().getTenSanPham())
                                     .soLuongCanNhap(soLuongCanNhap)
-                                    .soLuongDaNhap(soLuongDaKhaiBaoLo)
+                                    .soLuongDaKhaiBao(soLuongDaKhaiBaoLo)
                                     .daDuLo(daDuLo)
                                     .build();
                         })
@@ -169,12 +172,69 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         if (phieuNhapKho.getTrangThai() == 2) {
             throw new RuntimeException("Phiếu nhập đã bị huỷ trước đó");
         }
-        System.out.println("BEFORE = " + phieuNhapKho.getTrangThai());
         phieuNhapKho.setTrangThai(2);
         repository.save(phieuNhapKho);
         repository.flush();
-        System.out.println("AFTER = " + phieuNhapKho.getTrangThai());
     }
+
+    @Transactional
+    public void khaiBaoLo(Integer phieuNhapKhoId, KhaiBaoLoRequest request) {
+
+        PhieuNhapKho phieu = repository.findById(phieuNhapKhoId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
+
+        if (phieu.getTrangThai() != 0) {
+            throw new RuntimeException("Chỉ được khai báo lô khi phiếu ở trạng thái nháp");
+        }
+
+        // 1️⃣ Lấy dòng draft (lo_hang_id = null)
+        ChiTietPhieuNhapKho dongDraft =
+                chiTietPhieuNhapKhoRepository
+                        .findFirstByPhieuNhapKho_IdAndBienTheSanPham_IdAndLoHangIsNull(
+                                phieuNhapKhoId,
+                                request.getBienTheSanPhamId()
+                        )
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy dòng nhập ban đầu"));
+
+        BigDecimal soLuongCanNhap = dongDraft.getSoLuongNhap();
+
+        // 2️⃣ Tổng SL đã khai báo (các dòng có lo_hang_id != null)
+        BigDecimal soLuongDaKhaiBao =
+                chiTietPhieuNhapKhoRepository.sumSoLuongDaKhaiBao(
+                        phieuNhapKhoId,
+                        request.getBienTheSanPhamId()
+                );
+
+        if (soLuongDaKhaiBao.add(request.getSoLuongNhap()).compareTo(soLuongCanNhap) > 0) {
+            throw new RuntimeException("Số lượng khai báo vượt quá số lượng cần nhập");
+        }
+
+        // 3️⃣ Tạo lô hàng
+        LoHang loHang = loHangRepository.save(
+                LoHang.builder()
+                        .bienTheSanPham(dongDraft.getBienTheSanPham())
+                        .maLo(request.getMaLo())
+                        .ngaySanXuat(request.getNgaySanXuat())
+                        .giaVon(dongDraft.getDonGia()) // lấy từ PO / draft
+                        .nhaCungCap(phieu.getNhaCungCap())
+                        .ghiChu(request.getGhiChu())
+                        .build()
+        );
+
+        // 4️⃣ INSERT DÒNG MỚI (KHÔNG ĐỤNG DÒNG DRAFT)
+        chiTietPhieuNhapKhoRepository.save(
+                ChiTietPhieuNhapKho.builder()
+                        .phieuNhapKho(phieu)
+                        .bienTheSanPham(dongDraft.getBienTheSanPham())
+                        .loHang(loHang)
+                        .soLuongNhap(request.getSoLuongNhap()) // SL của LÔ
+                        .donGia(dongDraft.getDonGia())
+                        .ghiChu(request.getGhiChu())
+                        .build()
+        );
+    }
+
+
 
     private String generateSoPhieu() {
             String dateStr = java.time.LocalDate.now()
