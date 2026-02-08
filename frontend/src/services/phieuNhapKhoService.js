@@ -15,5 +15,9 @@ export const phieuNhapKhoService = {
     },
     async cancel(id) {
         return apiClient.put(`/api/v1/phieu-nhap-kho/${id}/cancel`);
+    },
+    async khaiBaoLo(phieuNhapKhoId, payload) {
+        const res = await apiClient.post(`/api/v1/phieu-nhap-kho/${phieuNhapKhoId}/khai-bao-lo`,payload);
+        return res.data;
     }
 };

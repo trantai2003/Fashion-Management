@@ -175,23 +175,21 @@ export default function PhieuNhapKhoDetail() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-center">
-                                            {!item.daDuLo && (
-                                                <button
-                                                    disabled={data.trangThai !== 0}
-                                                    onClick={() =>
-                                                        navigate(
-                                                            `/phieu-nhap-kho/${data.id}/khai-bao-lo/${item.bienTheSanPhamId}`
-                                                        )
-                                                    }
-                                                    className={`px-3 py-1.5 text-sm rounded-md
+                                            <button
+                                                disabled={data.trangThai === 2}
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/goods-receipts/${data.id}/lot-input/${item.bienTheSanPhamId}`
+                                                    )
+                                                }
+                                                className={`px-3 py-1.5 text-sm rounded-md
                                                         ${data.trangThai === 0
-                                                            ? "bg-purple-600 text-white hover:bg-purple-700"
-                                                            : "bg-gray-300 text-white cursor-not-allowed"}
+                                                        ? "bg-purple-600 text-white hover:bg-purple-700"
+                                                        : "bg-gray-300 text-white cursor-not-allowed"}
                                                     `}
-                                                >
-                                                    Khai báo lô
-                                                </button>
-                                            )}
+                                            >
+                                                Khai báo lô
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
