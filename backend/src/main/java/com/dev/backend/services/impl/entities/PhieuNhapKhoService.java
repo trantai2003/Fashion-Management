@@ -121,6 +121,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
 
         List<PhieuNhapKhoItemDto> items =
                 phieuNhapKho.getChiTietPhieuNhapKhos().stream()
+                        .filter(ct -> ct.getLoHang() == null)
                         .map(ct -> {
 
                             BigDecimal soLuongCanNhap = ct.getSoLuongNhap();
