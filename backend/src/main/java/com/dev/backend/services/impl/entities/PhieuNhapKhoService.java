@@ -3,6 +3,7 @@ package com.dev.backend.services.impl.entities;
 import com.dev.backend.dto.request.ChiTietPhieuNhapKhoCreating;
 import com.dev.backend.dto.request.KhaiBaoLoRequest;
 import com.dev.backend.dto.request.PhieuNhapKhoCreating;
+import com.dev.backend.dto.response.customize.LoHangKhaiBaoDto;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoDto;
 import com.dev.backend.dto.response.entities.PhieuNhapKhoItemDto;
 import com.dev.backend.entities.*;
@@ -234,6 +235,32 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                         .build()
         );
     }
+
+    @Transactional(readOnly = true)
+    public List<LoHangKhaiBaoDto> getDanhSachLoDaKhaiBao(
+            Integer phieuNhapKhoId,
+            Integer bienTheSanPhamId
+    ) {
+        List<ChiTietPhieuNhapKho> list =
+                chiTietPhieuNhapKhoRepository.findDeclaredLots(
+                        phieuNhapKhoId,
+                        bienTheSanPhamId
+                );
+
+        return list.stream()
+                .map(ct -> LoHangKhaiBaoDto.builder()
+                        .chiTietPhieuNhapKhoId(ct.getId())
+                        .loHangId(ct.getLoHang().getId())
+                        .maLo(ct.getLoHang().getMaLo())
+                        .ngaySanXuat(ct.getLoHang().getNgaySanXuat())
+                        .soLuongNhap(ct.getSoLuongNhap())
+                        .ghiChu(ct.getGhiChu())
+                        .build()
+                )
+                .toList();
+    }
+
+
 
 
 

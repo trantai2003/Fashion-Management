@@ -7,6 +7,7 @@ import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.KhaiBaoLoRequest;
 import com.dev.backend.dto.request.PhieuNhapKhoCreating;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.customize.LoHangKhaiBaoDto;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoDto;
 import com.dev.backend.dto.response.entities.PhieuNhapKhoDto;
 import com.dev.backend.entities.PhieuNhapKho;
@@ -17,6 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/phieu-nhap-kho")
@@ -121,5 +124,26 @@ public class PhieuNhapKhoController {
                         .build()
         );
     }
+
+    @GetMapping("/{phieuNhapKhoId}/bien-the/{bienTheSanPhamId}/lo-hang")
+    public ResponseEntity<ResponseData<List<LoHangKhaiBaoDto>>> getDanhSachLoDaKhaiBao(
+            @PathVariable Integer phieuNhapKhoId,
+            @PathVariable Integer bienTheSanPhamId
+    ) {
+        List<LoHangKhaiBaoDto> data =
+                phieuNhapKhoService.getDanhSachLoDaKhaiBao(
+                        phieuNhapKhoId,
+                        bienTheSanPhamId
+                );
+
+        return ResponseEntity.ok(
+                ResponseData.<List<LoHangKhaiBaoDto>>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(data)
+                        .message("OK")
+                        .build()
+        );
+    }
+
 
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,6 +27,19 @@ public interface ChiTietPhieuNhapKhoRepository extends JpaRepository<ChiTietPhie
     findFirstByPhieuNhapKho_IdAndBienTheSanPham_IdAndLoHangIsNull(
             Integer phieuNhapKhoId,
             Integer bienTheSanPhamId
+    );
+
+    @Query("""
+    select ct
+    from ChiTietPhieuNhapKho ct
+    where ct.phieuNhapKho.id = :phieuId
+      and ct.bienTheSanPham.id = :bienTheId
+      and ct.loHang is not null
+    order by ct.id asc
+""")
+    List<ChiTietPhieuNhapKho> findDeclaredLots(
+            @Param("phieuId") Integer phieuId,
+            @Param("bienTheId") Integer bienTheId
     );
 
 }
