@@ -19,5 +19,9 @@ export const phieuNhapKhoService = {
     async khaiBaoLo(phieuNhapKhoId, payload) {
         const res = await apiClient.post(`/api/v1/phieu-nhap-kho/${phieuNhapKhoId}/khai-bao-lo`,payload);
         return res.data;
+    },
+    async getLotInput(phieuNhapKhoId, bienTheSanPhamId) {
+        const res = await apiClient.get(`/api/v1/phieu-nhap-kho/${phieuNhapKhoId}/bien-the/${bienTheSanPhamId}/lo-hang`);
+        return res.data;
     }
 };

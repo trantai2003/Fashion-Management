@@ -13,7 +13,8 @@ export default function KhaiBaoLo() {
     // form
     const [maLo, setMaLo] = useState("");
     const [nsx, setNsx] = useState("");
-    const [soLuongNhap, setSoLuongNhap] = useState("");
+    const onChangeSoLuongNhap = (e) => setSoLuongNhap(Number(e.target.value));
+    const [soLuongNhap, setSoLuongNhap] = useState(0);
     const [ghiChu, setGhiChu] = useState("");
 
     // TODO: sau này lấy từ API read lot
@@ -21,7 +22,14 @@ export default function KhaiBaoLo() {
 
     useEffect(() => {
         fetchDetail();
-    }, []);
+    }, [phieuNhapKhoId, bienTheSanPhamId]);
+
+    useEffect(() => {
+        setMaLo("");
+        setNsx("");
+        setSoLuongNhap(0);
+        setGhiChu("");
+    }, [bienTheSanPhamId]);
 
     async function fetchDetail() {
         try {
@@ -38,10 +46,14 @@ export default function KhaiBaoLo() {
 
             setDetail({ phieu: res, item });
 
-            // TODO: replace bằng API getLots()
-            setLotList([]); // mặc định chưa có lô
-        } catch {
-            toast.error("Không tải được dữ liệu");
+            const resp = await phieuNhapKhoService.getLotInput(
+                phieuNhapKhoId,
+                Number(bienTheSanPhamId)
+            );
+            const lots = Array.isArray(resp?.data) ? resp.data : [];
+            setLotList(lots);
+        } catch (e) {
+            toast.error("fetchDetail error", e);
         }
     }
 
@@ -62,7 +74,13 @@ export default function KhaiBaoLo() {
             });
 
             toast.success("Khai báo lô thành công");
-            navigate(`/goods-receipts/${phieuNhapKhoId}`);
+            // reload lot list
+            await fetchDetail();
+            // clear form
+            setMaLo("");
+            setNsx("");
+            setSoLuongNhap("");
+            setGhiChu("");
         } catch (e) {
             toast.error(e?.response?.data?.message || "Không thể khai báo lô");
         } finally {
@@ -127,36 +145,44 @@ export default function KhaiBaoLo() {
                         <table className="w-full text-sm">
                             <thead className="bg-gray-50 text-gray-500">
                                 <tr>
-                                    <th className="px-4 py-3">Mã lô</th>
-                                    <th className="px-4 py-3">NSX</th>
-                                    <th className="px-4 py-3">Số lượng</th>
-                                    <th className="px-4 py-3">Ghi chú</th>
+                                    <th className="px-4 py-3 text-left">Mã lô</th>
+                                    <th className="px-4 py-3 text-center">NSX</th>
+                                    <th className="px-4 py-3 text-center">Số lượng</th>
+                                    <th className="px-4 py-3 text-center">Ghi chú</th>
                                     <th className="px-4 py-3 text-right">Action</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                {lotList.length === 0 && (
-                                    <tr className="border-t">
+                                {Array.isArray(lotList) && lotList.length === 0 && (
+                                    <tr key="empty" className="border-t">
                                         <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
                                             Chưa có lô nào
                                         </td>
                                     </tr>
                                 )}
 
-                                {lotList.map((lo) => (
-                                    <tr key={lo.id} className="border-t">
-                                        <td className="px-4 py-3">{lo.maLo}</td>
-                                        <td className="px-4 py-3">{lo.nsx}</td>
-                                        <td className="px-4 py-3 text-center">{lo.soLuong}</td>
-                                        <td className="px-4 py-3">{lo.ghiChu}</td>
-                                        <td className="px-4 py-3 text-right">
-                                            <button className="text-red-600 text-sm">
-                                                Xóa
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {Array.isArray(lotList) &&
+                                    lotList.map((lo) => (
+                                        <tr key={lo.loHangId} className="border-t">
+                                            <td className="px-4 py-3">{lo.maLo}</td>
+                                            <td className="px-4 py-3 text-center">
+                                                {lo.ngaySanXuat
+                                                    ? new Date(lo.ngaySanXuat).toLocaleDateString("vi-VN")
+                                                    : "-"}
+                                            </td>
+                                            <td className="px-4 py-3 text-center">{lo.soLuongNhap}</td>
+                                            <td className="px-4 py-3 text-center">{lo.ghiChu || "-"}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button
+                                                    className="text-red-600 text-sm hover:underline"
+                                                    onClick={() => toast.info("TODO: Xóa lô")}
+                                                >
+                                                    Xóa
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
                             </tbody>
                         </table>
                     </section>
@@ -204,7 +230,7 @@ export default function KhaiBaoLo() {
                                     Đã đủ số lượng lô bạn có thể chỉnh sửa lại thông tin lô nếu cần
                                 </div>
                             )}
-                            
+
                             <button
                                 onClick={() => {
                                     setMaLo("");
@@ -220,7 +246,10 @@ export default function KhaiBaoLo() {
                             <button
                                 disabled={loading}
                                 onClick={handleSaveLot}
-                                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                                className={`px-4 py-2 rounded-md
+                                ${loading ? "bg-gray-300 cursor-not-allowed"
+                                        : "bg-purple-600 hover:bg-purple-700 text-white"}
+                            `}
                             >
                                 Save Lot
                             </button>
