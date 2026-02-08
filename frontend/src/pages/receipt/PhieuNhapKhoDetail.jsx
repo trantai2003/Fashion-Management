@@ -71,26 +71,26 @@ export default function PhieuNhapKhoDetail() {
 
                         {/* Cancel */}
                         {!isNhanVienKho && (
-                        <button
-                            className="px-4 py-2 rounded-md text-sm
+                            <button
+                                className="px-4 py-2 rounded-md text-sm
                                            border border-red-200 text-red-600
                                            hover:bg-red-50"
-                            onClick={() => {
-                                if (data.trangThai === 1) {
-                                    toast.error("Phiếu nhập đã hoàn thành, không thể huỷ");
-                                    return;
-                                }
-                                if (data.trangThai === 2) {
-                                    toast.error("Phiếu nhập đã bị huỷ trước đó");
-                                    return;
-                                }
-                                setShowCancelConfirm(true)
-                            }}
-                        >
-                            Huỷ phiếu nhập
-                        </button>
+                                onClick={() => {
+                                    if (data.trangThai === 1) {
+                                        toast.error("Phiếu nhập đã hoàn thành, không thể huỷ");
+                                        return;
+                                    }
+                                    if (data.trangThai === 2) {
+                                        toast.error("Phiếu nhập đã bị huỷ trước đó");
+                                        return;
+                                    }
+                                    setShowCancelConfirm(true)
+                                }}
+                            >
+                                Huỷ phiếu nhập
+                            </button>
                         )}
-                        
+
                         {/* Complete */}
                         <button
                             disabled={!isAllDuLo || data.trangThai !== 0}
@@ -177,12 +177,17 @@ export default function PhieuNhapKhoDetail() {
                                         <td className="px-4 py-3 text-center">
                                             {!item.daDuLo && (
                                                 <button
+                                                    disabled={data.trangThai !== 0}
                                                     onClick={() =>
                                                         navigate(
                                                             `/phieu-nhap-kho/${data.id}/khai-bao-lo/${item.bienTheSanPhamId}`
                                                         )
                                                     }
-                                                    className="px-3 py-1.5 text-sm rounded-md bg-purple-600 text-white hover:bg-purple-700"
+                                                    className={`px-3 py-1.5 text-sm rounded-md
+                                                        ${data.trangThai === 0
+                                                            ? "bg-purple-600 text-white hover:bg-purple-700"
+                                                            : "bg-gray-300 text-white cursor-not-allowed"}
+                                                    `}
                                                 >
                                                     Khai báo lô
                                                 </button>
