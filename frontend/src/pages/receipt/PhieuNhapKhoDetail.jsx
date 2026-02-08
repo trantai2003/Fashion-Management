@@ -165,7 +165,9 @@ export default function PhieuNhapKhoDetail() {
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             {item.daDuLo ? (
-                                                <span className="text-green-600 text-lg">✅</span>
+                                                <span className="px-2 py-1 text-xs rounded bg-green-50 text-green-700">
+                                                    Đã đủ lô
+                                                </span>
                                             ) : (
                                                 <span className="px-2 py-1 text-xs rounded bg-amber-50 text-amber-700">
                                                     Chưa đủ lô
