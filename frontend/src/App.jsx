@@ -26,6 +26,7 @@ import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
 import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
 import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
 import KhaiBaoLo from "./pages/receipt/KhaiBaoLo.jsx";
+import PhieuXuatKhoList from "./pages/issue/PhieuXuatKhoList.jsx";
 export default function App() {
   return (
     <BrowserRouter>
@@ -85,9 +86,10 @@ export default function App() {
           <Route path="/goods-receipts/create" element={<PhieuNhapKhoCreate />} />
           <Route path="/goods-receipts" element={<PhieuNhapKhoList />} />
           <Route path="/goods-receipts/:id" element={<PhieuNhapKhoDetail />} />
-          <Route path="/goods-receipts/:phieuNhapKhoId/lot-input/:bienTheSanPhamId"
-            element={<KhaiBaoLo/>}
-          />
+          <Route path="/goods-receipts/:phieuNhapKhoId/lot-input/:bienTheSanPhamId" element={<KhaiBaoLo />} />
+
+          {/* Issue */}
+          <Route path="/goods-issues" element={<PhieuXuatKhoList />} />
         </Route>
 
         {/* ========== 404 ========== */}
