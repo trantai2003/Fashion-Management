@@ -196,7 +196,7 @@ export default function KhaiBaoLo() {
                         <div className="mt-4 flex justify-end items-center gap-3">
                             {isEnough && (
                                 <span className="text-sm text-green-600 bg-green-50 px-3 py-2 rounded-md border border-green-200">
-                                    Đã đủ số lượng cần nhập
+                                    Đã khai báo đủ số lượng - Có thể chỉnh sửa nếu cần
                                 </span>
                             )}
                             <button onClick={resetForm} className="px-4 py-2 border rounded-md hover:bg-gray-50">Clear</button>

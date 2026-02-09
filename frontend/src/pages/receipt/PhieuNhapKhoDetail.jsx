@@ -260,7 +260,7 @@ export default function PhieuNhapKhoDetail() {
                                     onClick={() => setShowCancelConfirm(false)}
                                     className="px-4 py-2 rounded-md border text-sm hover:bg-gray-50"
                                 >
-                                    Cancel
+                                    Hủy
                                 </button>
 
                                 <button
@@ -279,7 +279,7 @@ export default function PhieuNhapKhoDetail() {
                                     }}
                                     className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
                                 >
-                                    Confirm & Cancel
+                                    Hủy phiếu nhập
                                 </button>
                             </div>
 
