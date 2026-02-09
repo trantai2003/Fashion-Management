@@ -38,9 +38,8 @@ public class ChiTietPhieuXuatKho {
     @JoinColumn(name = "bien_the_san_pham_id", nullable = false)
     BienTheSanPham bienTheSanPham;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "lo_hang_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lo_hang_id", nullable = true)
     LoHang loHang;
 
     @NotNull
