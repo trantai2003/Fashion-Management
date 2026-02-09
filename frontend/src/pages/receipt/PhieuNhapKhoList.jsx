@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const STATUS_MAP = {
     0: { label: "Nháp", className: "bg-amber-50 text-amber-700" },
@@ -9,6 +9,7 @@ const STATUS_MAP = {
 };
 
 export default function PhieuNhapKhoList() {
+    const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -221,7 +222,6 @@ export default function PhieuNhapKhoList() {
                                     <th className="px-4 py-3 text-left">Kho</th>
                                     <th className="px-4 py-3 text-left">Ngày nhập</th>
                                     <th className="px-4 py-3 text-left">Trạng thái</th>
-                                    <th className="text-right py-3 px-4">Actions</th>
                                 </tr>
                             </thead>
 
@@ -234,8 +234,11 @@ export default function PhieuNhapKhoList() {
                                     </tr>
                                 ) : (
                                     data.map((item) => (
-                                        <tr key={item.id} className="border-t">
-                                            <td className="px-4 py-3 font-semibold">
+                                        <tr key={item.id}
+                                            onClick={() => navigate(`/goods-receipts/${item.id}`)}
+                                            className="border-t cursor-pointer hover:bg-gray-50 transition-colors"
+                                        >
+                                            <td className="px-4 py-3 font-semibold text-purple-600">
                                                 {item.soPhieuNhap}
                                             </td>
                                             <td className="px-4 py-3">{item.soDonMua}</td>
@@ -248,14 +251,6 @@ export default function PhieuNhapKhoList() {
                                                 <span className={`px-2 py-1 text-xs rounded ${STATUS_MAP[item.trangThai].className}`}>
                                                     {STATUS_MAP[item.trangThai].label}
                                                 </span>
-                                            </td>
-                                            <td className="py-3 px-4 text-right">
-                                                <Link
-                                                    to={`/goods-receipts/${item.id}`}
-                                                    className="text-sm font-semibold text-purple-600 hover:text-purple-700"
-                                                >
-                                                    View
-                                                </Link>
                                             </td>
                                         </tr>
                                     ))
