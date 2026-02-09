@@ -25,6 +25,8 @@ export default function KhaiBaoLo() {
     const [selectedLot, setSelectedLot] = useState(null);
 
     const resetForm = useCallback(() => setForm(DEFAULT_FORM), []);
+    const isCompleted = detail?.phieu?.trangThai === 1;
+    const isCancelled = detail?.phieu?.trangThai === 2;
 
     const fetchDetail = useCallback(async () => {
         try {
@@ -166,9 +168,17 @@ export default function KhaiBaoLo() {
                                             <td className="px-4 py-3 text-center text-gray-500">{lo.ghiChu || "-"}</td>
                                             <td className="px-4 py-3 text-right">
                                                 <button
-                                                    className="text-red-600 hover:text-red-800"
+                                                    className={`text-sm ${isCompleted
+                                                        ? "text-gray-400 cursor-not-allowed"
+                                                        : "text-red-600 hover:text-red-800"
+                                                        }`}
                                                     onClick={(e) => {
-                                                        e.stopPropagation(); // Ngăn sự kiện click dòng
+                                                        e.stopPropagation();
+
+                                                        if (isCompleted) {
+                                                            toast.error("Không thể xoá lô vì phiếu nhập đã hoàn thành");
+                                                            return;
+                                                        }
                                                         setSelectedLot(lo);
                                                         setShowDeleteConfirm(true);
                                                     }}
@@ -184,31 +194,33 @@ export default function KhaiBaoLo() {
                     </section>
 
                     {/* FORM THÊM LÔ */}
-                    <section className="bg-white border rounded-xl shadow-sm p-4">
-                        <h3 className="font-semibold mb-3">Thêm / chỉnh sửa lô</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                            <input name="maLo" placeholder="Mã lô" value={form.maLo} onChange={handleInputChange} className="h-11 px-3 border rounded-md" />
-                            <input name="nsx" type="date" value={form.nsx} onChange={handleInputChange} className="h-11 px-3 border rounded-md" />
-                            <input name="soLuongNhap" type="number" placeholder="Số lượng" value={form.soLuongNhap} onChange={handleInputChange} className="h-11 px-3 border rounded-md" />
-                            <input name="ghiChu" placeholder="Ghi chú" value={form.ghiChu} onChange={handleInputChange} className="h-11 px-3 border rounded-md" />
-                        </div>
+                    {!isCompleted && (
+                        <section className="bg-white border rounded-xl shadow-sm p-4">
+                            <h3 className="font-semibold mb-3">Thêm / chỉnh sửa lô</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <input name="maLo" placeholder="Mã lô" value={form.maLo} onChange={handleInputChange} className="h-11 px-3 border rounded-md" />
+                                <input name="nsx" type="date" value={form.nsx} onChange={handleInputChange} className="h-11 px-3 border rounded-md" />
+                                <input name="soLuongNhap" type="number" placeholder="Số lượng" value={form.soLuongNhap} onChange={handleInputChange} className="h-11 px-3 border rounded-md" />
+                                <input name="ghiChu" placeholder="Ghi chú" value={form.ghiChu} onChange={handleInputChange} className="h-11 px-3 border rounded-md" />
+                            </div>
 
-                        <div className="mt-4 flex justify-end items-center gap-3">
-                            {isEnough && (
-                                <span className="text-sm text-green-600 bg-green-50 px-3 py-2 rounded-md border border-green-200">
-                                    Đã khai báo đủ số lượng - Có thể chỉnh sửa nếu cần
-                                </span>
-                            )}
-                            <button onClick={resetForm} className="px-4 py-2 border rounded-md hover:bg-gray-50">Clear</button>
-                            <button
-                                disabled={loading}
-                                onClick={handleSaveLot}
-                                className={`px-4 py-2 rounded-md text-white ${loading ? "bg-gray-300" : "bg-purple-600 hover:bg-purple-700"}`}
-                            >
-                                {loading ? "Saving..." : "Save Lot"}
-                            </button>
-                        </div>
-                    </section>
+                            <div className="mt-4 flex justify-end items-center gap-3">
+                                {isEnough && (
+                                    <span className="text-sm text-green-600 bg-green-50 px-3 py-2 rounded-md border border-green-200">
+                                        Đã khai báo đủ số lượng - Có thể chỉnh sửa nếu cần
+                                    </span>
+                                )}
+                                <button onClick={resetForm} className="px-4 py-2 border rounded-md hover:bg-gray-50">Clear</button>
+                                <button
+                                    disabled={loading}
+                                    onClick={handleSaveLot}
+                                    className={`px-4 py-2 rounded-md text-white ${loading ? "bg-gray-300" : "bg-purple-600 hover:bg-purple-700"}`}
+                                >
+                                    {loading ? "Saving..." : "Save Lot"}
+                                </button>
+                            </div>
+                        </section>
+                    )}
                 </div>
 
                 {/* MODAL DELETE */}

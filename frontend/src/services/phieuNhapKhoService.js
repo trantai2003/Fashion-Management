@@ -26,6 +26,9 @@ export const phieuNhapKhoService = {
     },
     async deleteLo(phieuNhapKhoId, chiTietPhieuNhapKhoId) {
         return apiClient.delete(`/api/v1/phieu-nhap-kho/${phieuNhapKhoId}/lo-hang/${chiTietPhieuNhapKhoId}`);
+    },
+    async complete(id) {
+        const res = await apiClient.put(`/api/v1/phieu-nhap-kho/${id}/complete`);
+        return res.data;
     }
-
 };

@@ -183,7 +183,7 @@ export default function PhieuNhapKhoDetail() {
                                                     )
                                                 }
                                                 className={`px-3 py-1.5 text-sm rounded-md
-                                                        ${data.trangThai === 0
+                                                        ${data.trangThai !== 2
                                                         ? "bg-purple-600 text-white hover:bg-purple-700"
                                                         : "bg-gray-300 text-white cursor-not-allowed"}
                                                     `}
@@ -225,7 +225,19 @@ export default function PhieuNhapKhoDetail() {
                                 </button>
 
                                 <button
-                                    onClick={() => alert("TODO: gọi API hoàn thành")}
+                                    onClick={async () => {
+                                        try {
+                                            await phieuNhapKhoService.complete(data.id);
+                                            setShowConfirm(false);
+                                            toast.success("Hoàn thành phiếu nhập thành công");
+                                            navigate("/goods-receipts");
+                                        } catch (e) {
+                                            toast.error(
+                                                e?.response?.data?.message ||
+                                                "Không thể hoàn thành phiếu nhập"
+                                            );
+                                        }
+                                    }}
                                     className="px-4 py-2 rounded-md bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700"
                                 >
                                     Confirm & Complete
