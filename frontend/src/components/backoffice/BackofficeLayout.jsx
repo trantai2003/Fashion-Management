@@ -104,6 +104,12 @@ export default function BackofficeLayout() {
             match: (path) => path === "/goods-issues",
             title: "Quản lý phiếu xuất kho",
             subtitle: "Danh sách phiếu xuất kho",
+        },
+        {
+            key: "GOODS_ISSUES_CREATE",
+            match: (path) => path === "/goods-issues/create",
+            title: "Tạo phiếu xuất kho",
+            subtitle: "Tạo mới phiếu xuất kho từ đơn bán hàng (SO)",
         }
     ];
 
