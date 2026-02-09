@@ -145,5 +145,21 @@ public class PhieuNhapKhoController {
         );
     }
 
+    @DeleteMapping("/{phieuNhapId}/lo-hang/{chiTietId}")
+    public ResponseEntity<ResponseData<String>> xoaLo(
+            @PathVariable Integer phieuNhapId,
+            @PathVariable Integer chiTietId
+    ) {
+        phieuNhapKhoService.xoaLo(phieuNhapId, chiTietId);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(200)
+                        .message("Xoá lô thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+
+
 
 }

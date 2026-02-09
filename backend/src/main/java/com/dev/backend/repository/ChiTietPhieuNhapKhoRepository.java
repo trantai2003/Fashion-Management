@@ -28,6 +28,16 @@ public interface ChiTietPhieuNhapKhoRepository extends JpaRepository<ChiTietPhie
             Integer phieuNhapKhoId,
             Integer bienTheSanPhamId
     );
+    Optional<ChiTietPhieuNhapKho>
+    findByPhieuNhapKho_IdAndBienTheSanPham_IdAndLoHang_MaLo(
+            Integer phieuNhapKhoId,
+            Integer bienTheSanPhamId,
+            String maLo
+    );
+    Optional<ChiTietPhieuNhapKho> findByIdAndPhieuNhapKho_Id(
+            Integer id,
+            Integer phieuNhapKhoId
+    );
 
     @Query("""
     select ct
