@@ -14,8 +14,6 @@ import com.dev.backend.repository.DonMuaHangRepository;
 import com.dev.backend.services.EmailService;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,7 +59,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
     @Transactional
     public ResponseEntity<ResponseData<DonMuaHangDto>> create(DonMuaHangCreating creating) {
-        NguoiDungAuthInfo authInfo = SecurityContextHolder.getUser();
+
         NhaCungCap nhaCungCap = nhaCungCapService.getOne(creating.getNhaCungCapId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy nhà cung cấp id: " + creating.getNhaCungCapId())
         );
@@ -69,6 +67,9 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         Kho khoNhap = khoService.getOne(SecurityContextHolder.getKhoId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy kho id: " + SecurityContextHolder.getKhoId())
         );
+
+
+        NguoiDungAuthInfo authInfo = SecurityContextHolder.getUser();
 
         NguoiDung nguoiTao = nguoiDungService.getOne(authInfo.getId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy người dùng id :" + authInfo.getId())
@@ -81,7 +82,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                 .ngayDatHang(creating.getNgayDatHang())
                 .ngayGiaoDuKien(creating.getNgayGiaoDuKien())
                 .trangThai(nguoiTao.getVaiTro().equals(IRoleType.quan_tri_vien) ? creating.getTrangThai() : 1)
-                .tongTien(creating.getTongTien())
+                .tongTien(BigDecimal.ZERO)
                 .ghiChu(creating.getGhiChu())
                 .nguoiTao(nguoiTao)
                 .nguoiDuyet(nguoiTao.getVaiTro().equals(IRoleType.quan_tri_vien) ? nguoiTao : null)
@@ -90,6 +91,10 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         donMuaHang = create(donMuaHang);
 
         BigDecimal tongTien = BigDecimal.ZERO;
+        int stt = creating.getChiTietDonMuaHangs().size();
+        BigDecimal tongSoLuong = BigDecimal.ZERO;
+
+        List<ChiTietDonMuaHang> chiTietDonMuaHangs = new ArrayList<>();
 
         for (ChiTietDonMuaHangCreating ctdmhCreating : creating.getChiTietDonMuaHangs()) {
             BienTheSanPham bienTheSanPham = bienTheSanPhamService.getOne(ctdmhCreating.getBienTheSanPhamId()).orElseThrow(
@@ -101,35 +106,19 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                     .soLuongDat(ctdmhCreating.getSoLuongDat())
                     .soLuongDaNhan(ctdmhCreating.getSoLuongDaNhan())
                     .donGia(ctdmhCreating.getDonGia())
-                    .thanhTien(ctdmhCreating.getThanhTien())
                     .ghiChu(ctdmhCreating.getGhiChu())
                     .build();
+            chiTietDonMuaHangs.add(chiTietDonMuaHang);
             chiTietDonMuaHang = chiTietDonMuaHangService.create(chiTietDonMuaHang);
+            tongSoLuong = tongSoLuong.add(chiTietDonMuaHang.getSoLuongDat());
             tongTien = tongTien.add(chiTietDonMuaHang.getThanhTien());
         }
         donMuaHang.setTongTien(tongTien);
-        donMuaHang = update(donMuaHang.getId(), donMuaHang);
-
-        int stt = 0;
-        BigDecimal tongSoLuong = BigDecimal.ZERO;
-        List<ChiTietDonMuaHangMail> chiTietDonMuaHangs = new ArrayList<>();
-        for (ChiTietDonMuaHang chiTietDonMuaHang : donMuaHang.getChiTietDonMuaHangs()) {
-            String tenBienThe = chiTietDonMuaHang.getBienTheSanPham().getSanPham().getTenSanPham() +
-                    " " + chiTietDonMuaHang.getBienTheSanPham().getChatLieu().getTenChatLieu() +
-                    " " + chiTietDonMuaHang.getBienTheSanPham().getMauSac().getTenMau() +
-                    " " + chiTietDonMuaHang.getBienTheSanPham().getSize().getMaSize();
-            chiTietDonMuaHangs.add(
-                    ChiTietDonMuaHangMail.builder()
-                            .stt(++stt)
-                            .tenBienThe(tenBienThe)
-                            .soLuong(chiTietDonMuaHang.getSoLuongDaNhan())
-                            .donGia(chiTietDonMuaHang.getDonGia())
-                            .ghiChu(chiTietDonMuaHang.getGhiChu())
-                            .build()
-            );
-
-            tongSoLuong = tongSoLuong.add(chiTietDonMuaHang.getSoLuongDaNhan());
-        }
+        donMuaHang.setChiTietDonMuaHangs(chiTietDonMuaHangs);
+        update(donMuaHang.getId(), donMuaHang);
+        donMuaHang = getOne(donMuaHang.getId()).orElseThrow(
+                () -> new CommonException("Không tìm thấy đơn mua hàng : " + creating.getSoDonMua())
+        );
 
         if (donMuaHang.getTrangThai() == 3) {
             Date now = new Date();
@@ -141,17 +130,16 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
             String trangThaiText = "";
             if (donMuaHang.getTrangThai() == 3) {
-                trangThaiText = "Quản lý đã duyệt và gửi mail";
+                trangThaiText = " Quản lý đã duyệt và gửi mail";
             }
             params.put("trangThaiText", trangThaiText);
-            params.put("nguoiDuyet", donMuaHang.getNguoiDuyet().getHoTen());
-            params.put("khoNhap", donMuaHang.getKhoNhap().getTenKho());
+            params.put("tenKho", donMuaHang.getKhoNhap().getTenKho());
             params.put("diaChiKho", donMuaHang.getKhoNhap().getDiaChi());
             params.put("tenNhaCungCap", donMuaHang.getNhaCungCap().getTenNhaCungCap());
             params.put("maNhaCungCap", donMuaHang.getNhaCungCap().getMaNhaCungCap());
+            params.put("nguoiLienHe", donMuaHang.getNhaCungCap().getNguoiLienHe());
+            params.put("soDienThoai", donMuaHang.getNhaCungCap().getSoDienThoai());
             params.put("email", donMuaHang.getNhaCungCap().getEmail());
-            params.put("diaChiNCC", donMuaHang.getNhaCungCap().getDiaChi());
-            params.put("chiTietDonMuaHangs", chiTietDonMuaHangs);
             params.put("tongSoMatHang", stt);
             params.put("tongSoLuong", tongSoLuong);
             params.put("tongTien", donMuaHang.getTongTien());
@@ -159,8 +147,6 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             params.put("ngayDatHang", donMuaHang.getNgayDatHang());
             params.put("ngayGiaoDuKien", donMuaHang.getNgayGiaoDuKien());
             params.put("hanPheDuyet", donMuaHang.getNgayGiaoDuKien());
-            params.put("nguoiDuyet", donMuaHang.getNguoiDuyet().getHoTen());
-            params.put("nguoiTao", donMuaHang.getNguoiTao().getHoTen());
 
             emailService.sendHtmlEmailFromTemplate(
                     donMuaHang.getNhaCungCap().getEmail(),
@@ -170,9 +156,6 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             );
 
         }
-        donMuaHang = getOne(donMuaHang.getId()).orElseThrow(
-                () -> new CommonException("Không tìm thấy đơn mua hàng :" +creating.getSoDonMua())
-        );
 
         return ResponseEntity.ok(
                 ResponseData.<DonMuaHangDto>builder()
@@ -184,17 +167,17 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         );
     }
 
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Getter
-    @Setter
-    @Builder
-    @FieldDefaults(level = AccessLevel.PRIVATE)
-    private static class ChiTietDonMuaHangMail {
-        Integer stt;
-        String tenBienThe;
-        BigDecimal soLuong;
-        BigDecimal donGia;
-        String ghiChu;
-    }
+//    @AllArgsConstructor
+//    @NoArgsConstructor
+//    @Getter
+//    @Setter
+//    @Builder
+//    @FieldDefaults(level = AccessLevel.PRIVATE)
+//    private static class ChiTietDonMuaHangMail {
+//        Integer stt;
+//        String tenBienThe;
+//        BigDecimal soLuong;
+//        BigDecimal donGia;
+//        String ghiChu;
+//    }
 }
