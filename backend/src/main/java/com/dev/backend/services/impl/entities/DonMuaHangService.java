@@ -170,6 +170,9 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             );
 
         }
+        donMuaHang = getOne(donMuaHang.getId()).orElseThrow(
+                () -> new CommonException("Không tìm thấy đơn mua hàng :" +creating.getSoDonMua())
+        );
 
         return ResponseEntity.ok(
                 ResponseData.<DonMuaHangDto>builder()
