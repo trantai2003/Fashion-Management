@@ -17,11 +17,15 @@ export const phieuNhapKhoService = {
         return apiClient.put(`/api/v1/phieu-nhap-kho/${id}/cancel`);
     },
     async khaiBaoLo(phieuNhapKhoId, payload) {
-        const res = await apiClient.post(`/api/v1/phieu-nhap-kho/${phieuNhapKhoId}/khai-bao-lo`,payload);
+        const res = await apiClient.post(`/api/v1/phieu-nhap-kho/${phieuNhapKhoId}/khai-bao-lo`, payload);
         return res.data;
     },
     async getLotInput(phieuNhapKhoId, bienTheSanPhamId) {
         const res = await apiClient.get(`/api/v1/phieu-nhap-kho/${phieuNhapKhoId}/bien-the/${bienTheSanPhamId}/lo-hang`);
         return res.data;
+    },
+    async deleteLo(phieuNhapKhoId, chiTietPhieuNhapKhoId) {
+        return apiClient.delete(`/api/v1/phieu-nhap-kho/${phieuNhapKhoId}/lo-hang/${chiTietPhieuNhapKhoId}`);
     }
+
 };
