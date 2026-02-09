@@ -52,4 +52,28 @@ public interface ChiTietPhieuNhapKhoRepository extends JpaRepository<ChiTietPhie
             @Param("bienTheId") Integer bienTheId
     );
 
+    @Query("""
+        select ct
+        from ChiTietPhieuNhapKho ct
+        where ct.phieuNhapKho.id = :phieuId
+          and ct.loHang is not null
+    """)
+    List<ChiTietPhieuNhapKho> findAllByPhieuNhapKhoIdAndCoLo(Integer phieuId);
+
+    @Query("""
+    select count(ctDraft)
+    from ChiTietPhieuNhapKho ctDraft
+    where ctDraft.phieuNhapKho.id = :phieuId
+      and ctDraft.loHang is null
+      and (
+        select coalesce(sum(ct.soLuongNhap), 0)
+        from ChiTietPhieuNhapKho ct
+        where ct.phieuNhapKho.id = :phieuId
+          and ct.bienTheSanPham.id = ctDraft.bienTheSanPham.id
+          and ct.loHang is not null
+      ) < ctDraft.soLuongNhap
+""")
+    long countBienTheChuaDuLo(@Param("phieuId") Integer phieuId);
+
+
 }

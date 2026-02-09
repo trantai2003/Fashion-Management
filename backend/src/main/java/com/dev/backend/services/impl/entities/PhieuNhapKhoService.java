@@ -33,6 +33,9 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     @Autowired
     private LoHangRepository loHangRepository;
 
+    @Autowired
+    private TonKhoTheoLoRepository tonKhoTheoLoRepository;
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -319,6 +322,74 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         loHangRepository.delete(loHang);
     }
 
+    @Transactional
+    public void completePhieuNhap(Integer phieuNhapKhoId) {
+
+        PhieuNhapKho phieu = repository.findById(phieuNhapKhoId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
+        //Validate trạng thái
+        if (phieu.getTrangThai() == 1) {
+            throw new RuntimeException("Phiếu nhập đã hoàn thành");
+        }
+        if (phieu.getTrangThai() == 2) {
+            throw new RuntimeException("Phiếu nhập đã bị huỷ");
+        }
+        //Kiểm tra đã khai báo đủ lô chưa
+        long chuaDuLo =
+                chiTietPhieuNhapKhoRepository
+                        .countBienTheChuaDuLo(phieuNhapKhoId);
+
+        if (chuaDuLo > 0) {
+            throw new RuntimeException("Chưa khai báo đủ lô cho tất cả sản phẩm");
+        }
+        //Lấy tất cả dòng chi tiết có lô
+        List<ChiTietPhieuNhapKho> danhSachNhapTheoLo =
+                chiTietPhieuNhapKhoRepository
+                        .findAllByPhieuNhapKhoIdAndCoLo(phieuNhapKhoId);
+        Kho kho = phieu.getKho();
+        //CỘNG TỒN KHO THEO LÔ
+        for (ChiTietPhieuNhapKho ct : danhSachNhapTheoLo) {
+
+            LoHang loHang = ct.getLoHang();
+            BigDecimal soLuongNhap = ct.getSoLuongNhap();
+
+            TonKhoTheoLo tonKho =
+                    tonKhoTheoLoRepository
+                            .findByKho_IdAndLoHang_Id(
+                                    kho.getId(),
+                                    loHang.getId()
+                            )
+                            .orElse(
+                                    TonKhoTheoLo.builder()
+                                            .kho(kho)
+                                            .loHang(loHang)
+                                            .soLuongTon(BigDecimal.ZERO)
+                                            .soLuongDaDat(BigDecimal.ZERO)
+                                            .build()
+                            );
+            // cộng tồn
+            tonKho.setSoLuongTon(
+                    tonKho.getSoLuongTon().add(soLuongNhap)
+            );
+            tonKho.setNgayNhapGanNhat(Instant.now());
+            tonKho.setLanCapNhatCuoi(Instant.now());
+            tonKhoTheoLoRepository.save(tonKho);
+        }
+
+        // ===== TÍNH TỔNG TIỀN =====
+        BigDecimal tongTien = BigDecimal.ZERO;
+        for (ChiTietPhieuNhapKho ct : danhSachNhapTheoLo) {
+            BigDecimal thanhTienDong =
+                    ct.getSoLuongNhap().multiply(ct.getDonGia());
+
+            tongTien = tongTien.add(thanhTienDong);
+        }
+        phieu.setTongTien(tongTien);
+
+        //Chuyển trạng thái phiếu → HOÀN THÀNH
+        phieu.setTrangThai(1);
+        repository.save(phieu);
+    }
 
     private String generateSoPhieu() {
             String dateStr = java.time.LocalDate.now()

@@ -55,7 +55,6 @@ public class PhieuNhapKho {
     Integer trangThai;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "tong_tien", precision = 15, scale = 2)
     BigDecimal tongTien;
 

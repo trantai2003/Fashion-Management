@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TonKhoTheoLoRepository extends JpaRepository<TonKhoTheoLo, Integer>, JpaSpecificationExecutor<TonKhoTheoLo> {
@@ -228,4 +229,8 @@ public interface TonKhoTheoLoRepository extends JpaRepository<TonKhoTheoLo, Inte
                 ORDER BY COALESCE(SUM(tk.soLuongTon), 0)
             """)
     List<TonKhoChiTietDTO> findTonKhoThapByKho(@Param("khoId") Integer khoId);
+    Optional<TonKhoTheoLo> findByKho_IdAndLoHang_Id(
+            Integer khoId,
+            Integer loHangId
+    );
 }

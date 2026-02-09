@@ -160,6 +160,27 @@ public class PhieuNhapKhoController {
         );
     }
 
+    @PutMapping("/{id}/complete")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho
+            },
+            permissions = { IPermissionType.duyet_phieu_nhap },
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> completePhieuNhap(
+            @PathVariable Integer id
+    ) {
+        phieuNhapKhoService.completePhieuNhap(id);
 
-
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Hoàn thành phiếu nhập kho thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
 }
