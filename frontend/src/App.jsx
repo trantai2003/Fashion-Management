@@ -23,10 +23,11 @@ import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
 import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
 import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
 import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
-import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
-import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
 import KhaiBaoLo from "./pages/receipt/KhaiBaoLo.jsx";
 import PhieuXuatKhoList from "./pages/issue/PhieuXuatKhoList.jsx";
+import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
+import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
+import SkuBuilder from "./pages/product/SkuBuilder";
 export default function App() {
   return (
     <BrowserRouter>
@@ -62,6 +63,7 @@ export default function App() {
 
           {/* Product */}
           <Route path="/products" element={<ProductList />} />
+          <Route path="/sku-builder" element={<SkuBuilder />} />
 
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />
