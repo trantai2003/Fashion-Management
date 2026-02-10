@@ -9,6 +9,12 @@ export const phieuNhapKhoService = {
         const res = await apiClient.post("/api/v1/phieu-nhap-kho/create", payload);
         return res.data;
     },
+    async sendToApprove(id) {
+        return apiClient.put(`/api/v1/phieu-nhap-kho/${id}/send-to-approve`);
+    },
+    async approve(id) {
+        return apiClient.put(`/api/v1/phieu-nhap-kho/${id}/approve`);
+    },
     async getDetail(id) {
         const res = await apiClient.get(`/api/v1/phieu-nhap-kho/${id}/detail`);
         return res.data;

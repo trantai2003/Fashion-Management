@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
+import purchaseOrderService from "@/services/purchaseOrderService"; // Import service mới
+import { toast } from "sonner"; // Hoặc alert tùy bạn
 
 export default function PhieuNhapKhoCreate() {
     const navigate = useNavigate();
@@ -10,66 +12,72 @@ export default function PhieuNhapKhoCreate() {
     const [poId, setPoId] = useState("");
     const [selectedPO, setSelectedPO] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [poList, setPoList] = useState([]); // State lưu danh sách PO từ API
 
-    // ===== MOCK DATA (TẠM) =====
-    const poListMock = [
-        {
-            id: 1,
-            soDonMua: "PO2024010001",
-            tenNhaCungCap: "Công ty A",
-            khoNhapId: 1,
-            tenKho: "Kho Hà Nội",
-        },
-        {
-            id: 2,
-            soDonMua: "PO2024020002",
-            tenNhaCungCap: "Công ty B",
-            khoNhapId: 2,
-            tenKho: "Kho HCM",
-        },
-    ];
-
-    const poDetailMock = selectedPO
-        ? {
-            tenNhaCungCap: selectedPO.tenNhaCungCap,
-            chiTietDonMuaHangs: [
-                {
-                    id: 1,
-                    sku: "SKU-001",
-                    tenSanPham: "Áo thun nam",
-                    soLuong: 100,
-                    donGia: 120000,
-                },
-                {
-                    id: 2,
-                    sku: "SKU-002",
-                    tenSanPham: "Quần jean",
-                    soLuong: 50,
-                    donGia: 350000,
-                },
-            ],
-        }
-        : null;
+    // ===== EFFECT: LOAD DANH SÁCH PO KHI MOUNT =====
+    useEffect(() => {
+        const fetchPOs = async () => {
+            try {
+                // Gọi API filter lấy các PO (có thể thêm filter trạng thái nếu cần)
+                const res = await purchaseOrderService.filter({
+                    page: 0,
+                    size: 100,
+                    filters: [],
+                    sorts: [{ fieldName: "id", direction: "DESC" }]
+                });
+                setPoList(res.data?.content || []);
+            } catch (error) {
+                console.error("Lỗi load PO:", error);
+            }
+        };
+        fetchPOs();
+    }, []);
 
     // ===== HANDLERS =====
-    const handleSelectPO = (id) => {
-        const po = poListMock.find((p) => String(p.id) === String(id));
+    const handleSelectPO = async (id) => {
+        if (!id) {
+            setPoId("");
+            setSelectedPO(null);
+            return;
+        }
+        
         setPoId(id);
-        setSelectedPO(po);
+        setLoading(true);
+        try {
+            // Gọi API lấy chi tiết PO theo ID
+            const res = await purchaseOrderService.getById(id);
+            setSelectedPO(res.data);
+        } catch (error) {
+            console.error("Lỗi lấy chi tiết PO:", error);
+            alert("Không thể tải chi tiết đơn mua hàng");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        console.log("[MOCK] Selected PO:", po);
+    // Hàm cập nhật số lượng nhập ngay trên dòng sản phẩm
+    const handleQtyChange = (bienTheId, value) => {
+        setSelectedPO(prev => ({
+            ...prev,
+            chiTietDonMuaHangs: prev.chiTietDonMuaHangs.map(item => 
+                item.bienTheSanPham.id === bienTheId 
+                ? { ...item, soLuongNhapTay: Number(value) } 
+                : item
+            )
+        }));
     };
 
     const handleSaveDraft = async () => {
-        if (!selectedPO || !poDetailMock) {
+        if (!selectedPO) {
             alert("Vui lòng chọn đơn mua hàng (PO)");
             return;
         }
 
-        //Mock chi tiết phiếu nhập kho từ chi tiết PO
-        const chiTietPhieuNhapKhos = poDetailMock.chiTietDonMuaHangs.map((ct) => ({
-            bienTheSanPhamId: ct.id,       //mock
-            soLuongDuKienNhap: ct.soLuong  //mặc định = sl PO
+        // Tạo danh sách chi tiết từ selectedPO
+        const chiTietPhieuNhapKhos = selectedPO.chiTietDonMuaHangs.map((ct) => ({
+            bienTheSanPhamId: ct.bienTheSanPham.id,
+            // Ưu tiên lấy số lượng đã sửa, nếu không lấy mặc định từ PO
+            soLuongDuKienNhap: ct.soLuongNhapTay ?? ct.soLuong 
         }));
 
         if (chiTietPhieuNhapKhos.length === 0) {
@@ -79,48 +87,24 @@ export default function PhieuNhapKhoCreate() {
 
         const payload = {
             donMuaHangId: selectedPO.id,
-            khoId: selectedPO.khoNhapId, //lay từ PO
             ngayNhap: ngayNhap ? `${ngayNhap}T00:00:00Z` : null,
-            ghiChu: "Tạo phiếu nhập kho (MOCK)",
+            ghiChu: "Tạo phiếu nhập kho từ PO " + selectedPO.soDonMua,
             chiTietPhieuNhapKhos
         };
 
-        //mock mode để test giao diện
-        console.log("🚧 [MOCK MODE] CREATE GOODS RECEIPT PAYLOAD");
-        console.table(chiTietPhieuNhapKhos);
-        console.log(payload);
-
-        alert(
-            "Đang ở MOCK MODE.\n" +
-            "Phiếu nhập chưa được tạo trong DB.\n" +
-            "Khi cắm API PO thật → bật lại createDraft."
-        );
-
-        //tam thời kh gọi api
-        return;
-
-        /*
-        // ===== BẬT LẠI KHI CÓ PO THẬT =====
         setLoading(true);
         try {
-            await phieuNhapKhoService.create(payload);
-    
-            navigate("/goods-receipts", {
-                state: {
-                    success: true,
-                    message: "Tạo phiếu nhập kho thành công",
-                },
-            });
+            // GỌI API THẬT
+            const res = await phieuNhapKhoService.create(payload);
+            toast.success("Tạo phiếu nhập kho thành công");
+            navigate("/goods-receipts"); // Quay lại danh sách
         } catch (e) {
             console.error("Create receipt failed", e);
-            alert("Có lỗi khi tạo phiếu nhập kho");
+            alert(e?.response?.data?.message || "Có lỗi khi tạo phiếu nhập kho");
         } finally {
             setLoading(false);
         }
-        */
     };
-
-
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -163,7 +147,7 @@ export default function PhieuNhapKhoCreate() {
                                 </label>
                                 <input
                                     disabled
-                                    value={selectedPO?.tenKho || ""}
+                                    value={selectedPO?.khoNhap?.tenKho || ""}
                                     className="mt-1 w-full h-11 px-3 border rounded-md bg-gray-100"
                                 />
                             </div>
@@ -187,9 +171,9 @@ export default function PhieuNhapKhoCreate() {
                                     className="mt-1 w-full h-11 px-3 border rounded-md bg-white"
                                 >
                                     <option value="">-- Chọn PO --</option>
-                                    {poListMock.map((po) => (
+                                    {poList.map((po) => (
                                         <option key={po.id} value={po.id}>
-                                            {po.soDonMua} | {po.tenNhaCungCap}
+                                            {po.soDonMua} | {po.nhaCungCap?.tenNhaCungCap}
                                         </option>
                                     ))}
                                 </select>
@@ -201,7 +185,7 @@ export default function PhieuNhapKhoCreate() {
                                 </label>
                                 <input
                                     disabled
-                                    value={poDetailMock?.tenNhaCungCap || ""}
+                                    value={selectedPO?.nhaCungCap?.tenNhaCungCap || ""}
                                     className="mt-1 w-full h-11 px-3 border rounded-md bg-gray-100"
                                 />
                             </div>
@@ -215,7 +199,7 @@ export default function PhieuNhapKhoCreate() {
                                 Danh sách sản phẩm
                             </span>
                             <span className="text-xs text-gray-500">
-                                {poDetailMock?.chiTietDonMuaHangs?.length || 0} dòng
+                                {selectedPO?.chiTietDonMuaHangs?.length || 0} dòng
                             </span>
                         </div>
 
@@ -231,19 +215,21 @@ export default function PhieuNhapKhoCreate() {
                             </thead>
 
                             <tbody>
-                                {poDetailMock?.chiTietDonMuaHangs?.map((ct) => (
+                                {selectedPO?.chiTietDonMuaHangs?.map((ct) => (
                                     <tr key={ct.id} className="border-t">
-                                        <td className="px-4 py-3 font-semibold">{ct.sku}</td>
-                                        <td className="px-4 py-3">{ct.tenSanPham}</td>
-                                        <td className="px-4 py-3">{ct.soLuong}</td>
+                                        <td className="px-4 py-3 font-semibold">{ct.bienTheSanPham?.maSku}</td>
+                                        <td className="px-4 py-3">{ct.bienTheSanPham?.tenBienThe || ct.bienTheSanPham?.maSku}</td>
+                                        <td className="px-4 py-3">{ct.soLuongDat}</td>
                                         <td className="px-4 py-3">
                                             <input
+                                                type="number"
                                                 defaultValue={ct.soLuong}
+                                                onChange={(e) => handleQtyChange(ct.bienTheSanPham.id, e.target.value)}
                                                 className="w-24 h-9 px-2 border rounded-md"
                                             />
                                         </td>
                                         <td className="px-4 py-3">
-                                            {ct.donGia.toLocaleString("vi-VN")}
+                                            {ct.donGia?.toLocaleString("vi-VN")}
                                         </td>
                                     </tr>
                                 ))}
@@ -261,32 +247,21 @@ export default function PhieuNhapKhoCreate() {
                         </Link>
 
                         <div className="flex gap-2">
-                            {/* Save Draft */}
                             <button
                                 onClick={handleSaveDraft}
                                 disabled={loading}
-                                className="
-            px-4 py-2 rounded-md border bg-white
-            hover:bg-gray-50
-            text-sm
-            disabled:opacity-50
-        "
+                                className="px-4 py-2 rounded-md border bg-white hover:bg-gray-50 text-sm disabled:opacity-50"
                             >
                                 {loading ? "Saving..." : "Save Draft"}
                             </button>
 
-                            {/* Continue */}
                             <button
                                 type="button"
-                                className="
-            px-4 py-2 rounded-md
-            bg-purple-600 text-white
-            text-sm font-semibold
-            hover:bg-purple-700
-        "
+                                disabled={!selectedPO}
+                                className={`px-4 py-2 rounded-md text-white text-sm font-semibold ${!selectedPO ? 'bg-gray-300' : 'bg-purple-600 hover:bg-purple-700'}`}
                                 onClick={() => {
-                                    // tạm thời log – sau này chuyển sang receipt detail / input lot
-                                    console.log("Continue to Goods Receipt Detail");
+                                    // Logic Continue: Lưu rồi nhảy sang detail luôn
+                                    handleSaveDraft();
                                 }}
                             >
                                 Continue
