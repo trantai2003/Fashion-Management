@@ -238,7 +238,26 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
         if (phieu.getTrangThai() == 3) throw new RuntimeException("Phiếu đã xuất kho, không thể hủy");
         if (phieu.getTrangThai() == 4) throw new RuntimeException("Phiếu đã bị hủy trước đó");
-
+        if (phieu.getTrangThai() == 2) {
+            // Lấy tất cả chi tiết đã được pick lô
+            List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository.findAll().stream()
+                    .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
+                    .toList();
+            for (ChiTietPhieuXuatKho pick : detailedPicks) {
+                // Tìm bản ghi tồn kho của lô đó tại kho xuất
+                TonKhoTheoLo tonKho = tonKhoTheoLoRepository
+                        .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
+                        .orElse(null);
+                if (tonKho != null) {
+                    BigDecimal currentDaDat = tonKho.getSoLuongDaDat() != null ? tonKho.getSoLuongDaDat() : BigDecimal.ZERO;
+                    // Trừ số lượng đã đặt
+                    BigDecimal extensionDaDat = currentDaDat.subtract(pick.getSoLuongXuat());
+                    // Đảm bảo không bị âm do lỗi logic dữ liệu
+                    tonKho.setSoLuongDaDat(extensionDaDat.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : extensionDaDat);
+                    tonKhoTheoLoRepository.save(tonKho);
+                }
+            }
+        }
         phieu.setTrangThai(4); // Đã hủy
         repository.save(phieu);
     }
