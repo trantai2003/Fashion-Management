@@ -16,5 +16,6 @@ public class PhieuXuatKhoDto {
     String tenKhoChuyenDen;
     Instant ngayXuat;
     Integer trangThai;
+    String ghiChu;
 }
 

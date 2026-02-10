@@ -143,6 +143,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .tenKhoChuyenDen(tenKhoChuyenDen)
                 .ngayXuat(phieu.getNgayXuat())
                 .trangThai(phieu.getTrangThai())
+                .ghiChu(phieu.getGhiChu())
                 .build();
         List<ChiTietPhieuXuatKho> chiTietList =
                 chiTietPhieuXuatKhoRepository
