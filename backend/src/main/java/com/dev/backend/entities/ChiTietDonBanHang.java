@@ -43,7 +43,6 @@ public class ChiTietDonBanHang {
 
     @ColumnDefault("0.000")
     @Column(name = "so_luong_da_giao", precision = 15, scale = 3)
-    @Generated(event = EventType.INSERT)
     BigDecimal soLuongDaGiao;
 
     @NotNull

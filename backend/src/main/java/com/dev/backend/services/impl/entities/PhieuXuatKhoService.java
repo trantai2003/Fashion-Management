@@ -212,7 +212,9 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             lichSuGiaoDichKhoRepository.save(lichSu);
 
             // 3. Cập nhật đơn bán
-            updateSoLuongDaGiao(phieu.getDonBanHang(), pick);
+            if (phieu.getDonBanHang() != null) {
+                updateSoLuongDaGiao(phieu.getDonBanHang().getId(), pick.getBienTheSanPham().getId(), soLuongXuat);
+            }
         }
 
         phieu.setTrangThai(3); // Đã xuất (Completed)
@@ -221,16 +223,17 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         repository.save(phieu);
     }
 
-    private void updateSoLuongDaGiao(DonBanHang donBanHang, ChiTietPhieuXuatKho pick) {
-        if (donBanHang == null) return;
-        chiTietDonBanHangRepository.findByDonBanHangId(donBanHang.getId()).stream()
-                .filter(ct -> ct.getBienTheSanPham().getId().equals(pick.getBienTheSanPham().getId()))
+    private void updateSoLuongDaGiao(Integer donHangId, Integer bienTheId, BigDecimal qtyShipped) {
+        List<ChiTietDonBanHang> listCtSO = chiTietDonBanHangRepository.findByDonBanHangId(donHangId);
+        ChiTietDonBanHang ctSO = listCtSO.stream()
+                .filter(ct -> ct.getBienTheSanPham().getId().equals(bienTheId))
                 .findFirst()
-                .ifPresent(ctSO -> {
-                    BigDecimal hienTai = ctSO.getSoLuongDaGiao() != null ? ctSO.getSoLuongDaGiao() : BigDecimal.ZERO;
-                    ctSO.setSoLuongDaGiao(hienTai.add(pick.getSoLuongXuat()));
-                    chiTietDonBanHangRepository.save(ctSO);
-                });
+                .orElse(null);
+        if (ctSO != null) {
+            BigDecimal hienTai = ctSO.getSoLuongDaGiao() != null ? ctSO.getSoLuongDaGiao() : BigDecimal.ZERO;
+            ctSO.setSoLuongDaGiao(hienTai.add(qtyShipped));
+            chiTietDonBanHangRepository.save(ctSO);
+        }
     }
 
     @Transactional
