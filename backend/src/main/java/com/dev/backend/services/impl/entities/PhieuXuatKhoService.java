@@ -206,7 +206,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                     .soLuongTruoc(soLuongTruoc)
                     .soLuongSau(tonKho.getSoLuongTon())
                     .giaVon(pick.getLoHang().getGiaVon())
-                    .nguoiDung(phieu.getNguoiXuat())
+                    .nguoiDung(nguoiXuat)
                     .ghiChu("Xuất kho cho phiếu: " + phieu.getSoPhieuXuat())
                     .build();
             lichSuGiaoDichKhoRepository.save(lichSu);

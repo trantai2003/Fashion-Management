@@ -40,6 +40,9 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     @Autowired
     private NguoiDungRepository nguoiDungRepository;
 
+    @Autowired
+    private LichSuGiaoDichKhoRepository lichSuGiaoDichKhoRepository;
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -154,25 +157,52 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         BigDecimal tongTien = BigDecimal.ZERO;
 
         for (ChiTietPhieuNhapKho ct : danhSachNhapTheoLo) {
-            TonKhoTheoLo tonKho = tonKhoTheoLoRepository.findByKho_IdAndLoHang_Id(kho.getId(), ct.getLoHang().getId())
+            LoHang loHang = ct.getLoHang();
+            BigDecimal soLuongNhap = ct.getSoLuongNhap();
+
+            // 1. Lấy thông tin tồn kho hiện tại (để lấy số lượng trước khi nhập)
+            TonKhoTheoLo tonKho = tonKhoTheoLoRepository.findByKho_IdAndLoHang_Id(kho.getId(), loHang.getId())
                     .orElse(TonKhoTheoLo.builder()
                             .kho(kho)
-                            .loHang(ct.getLoHang())
+                            .loHang(loHang)
                             .soLuongTon(BigDecimal.ZERO)
                             .soLuongDaDat(BigDecimal.ZERO)
                             .build());
 
-            tonKho.setSoLuongTon(tonKho.getSoLuongTon().add(ct.getSoLuongNhap()));
+            BigDecimal soLuongTruoc = tonKho.getSoLuongTon(); // Số lượng TRƯỚC
+            BigDecimal soLuongSau = soLuongTruoc.add(soLuongNhap); // Số lượng SAU
+
+            // 2. Cập nhật tồn kho
+            tonKho.setSoLuongTon(soLuongSau);
             tonKho.setNgayNhapGanNhat(Instant.now());
             tonKho.setLanCapNhatCuoi(Instant.now());
             tonKhoTheoLoRepository.save(tonKho);
 
-            tongTien = tongTien.add(ct.getSoLuongNhap().multiply(ct.getDonGia()));
+            // 3. GHI LỊCH SỬ GIAO DỊCH KHO (Mới bổ sung)
+            LichSuGiaoDichKho history = LichSuGiaoDichKho.builder()
+                    .ngayGiaoDich(Instant.now())
+                    .loaiGiaoDich("nhap_kho") // Khớp với Enum trong DB của bạn
+                    .loaiThamChieu("phieu_nhap_kho")
+                    .idThamChieu(phieu.getId())
+                    .bienTheSanPham(ct.getBienTheSanPham())
+                    .loHang(loHang)
+                    .kho(kho)
+                    .soLuong(soLuongNhap)
+                    .soLuongTruoc(soLuongTruoc)
+                    .soLuongSau(soLuongSau)
+                    .giaVon(ct.getDonGia()) // Giá vốn lúc nhập
+                    .nguoiDung(nguoiNhap)
+                    .ghiChu("Nhập kho từ phiếu: " + phieu.getSoPhieuNhap())
+                    .build();
+            lichSuGiaoDichKhoRepository.save(history);
+
+            // Cộng tổng tiền cho phiếu
+            tongTien = tongTien.add(soLuongNhap.multiply(ct.getDonGia()));
         }
 
         phieu.setTongTien(tongTien);
         phieu.setTrangThai(TrangThaiPhieuNhap.COMPLETED.getValue());
-        phieu.setNguoiNhap(nguoiNhap); // Gán người bấm nút Hoàn tất
+        phieu.setNguoiNhap(nguoiNhap);
         phieu.setNgayNhap(Instant.now());
         repository.save(phieu);
     }
