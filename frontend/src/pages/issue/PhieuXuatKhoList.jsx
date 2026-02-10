@@ -90,10 +90,12 @@ export default function PhieuXuatKhoList() {
             if (filters.ngayXuat) {
                 list = list.filter((item) => {
                     if (!item.ngayXuat) return false;
-                    const d = new Date(item.ngayXuat)
-                        .toISOString()
-                        .slice(0, 10);
-                    return d === filters.ngayXuat;
+                    const date = new Date(item.ngayXuat);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const itemDateLocal = `${year}-${month}-${day}`;
+                    return itemDateLocal === filters.ngayXuat;
                 });
             }
 
@@ -138,7 +140,7 @@ export default function PhieuXuatKhoList() {
                     <div className="grid md:grid-cols-4 gap-3">
                         <div>
                             <label className="text-xs text-gray-600">
-                                Số phiếu/SO
+                                Số phiếu / SO
                             </label>
                             <input
                                 value={filters.keyword}
@@ -148,7 +150,7 @@ export default function PhieuXuatKhoList() {
                                         keyword: e.target.value,
                                     }))
                                 }
-                                placeholder="Số phiếu / SO"
+                                placeholder="Nhập số phiếu hoặc SO"
                                 className="mt-1 w-full h-11 px-3 rounded-md border
                            focus:ring-2 focus:ring-purple-500"
                             />
@@ -216,7 +218,7 @@ export default function PhieuXuatKhoList() {
                             onClick={handleReset}
                             className="px-3 py-2 text-sm transition-all duration-300 hover:bg-black hover:text-white border border-gray-300 rounded-md"
                         >
-                            Reset
+                            Reset Bộ Lọc
                         </button>
                     </div>
                 </section>
@@ -236,7 +238,7 @@ export default function PhieuXuatKhoList() {
                                 to="/goods-issues/create"
                                 className="px-3 py-2 text-sm text-white rounded-md bg-purple-600"
                             >
-                                + Create Issue
+                                + Tạo Phiếu Xuất Kho
                             </Link>
                         </div>
                     </div>
@@ -303,7 +305,7 @@ export default function PhieuXuatKhoList() {
                     <div className="p-4 border-t flex-none bg-white">
                         <div className="flex items-center justify-between">
                             <span className="text-xs text-gray-500">
-                                Showing {data.length} / {total}
+                                Đang hiển thị {data.length} / {total}
                             </span>
 
                             <div className="flex items-center gap-4">
@@ -340,7 +342,7 @@ export default function PhieuXuatKhoList() {
                                         }
                                         className="px-3 py-1 text-sm border rounded disabled:opacity-50"
                                     >
-                                        Prev
+                                        Trước
                                     </button>
 
                                     {/* Pages */}
@@ -393,7 +395,7 @@ export default function PhieuXuatKhoList() {
                                         }
                                         className="px-3 py-1 text-sm border rounded disabled:opacity-50"
                                     >
-                                        Next
+                                        Sau
                                     </button>
                                 </div>
                             </div>
