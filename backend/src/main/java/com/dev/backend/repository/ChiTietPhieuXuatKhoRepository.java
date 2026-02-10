@@ -4,6 +4,7 @@ import com.dev.backend.dto.response.customize.PickedLotDto;
 import com.dev.backend.entities.ChiTietPhieuXuatKho;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,17 +27,6 @@ public interface ChiTietPhieuXuatKhoRepository extends JpaRepository<ChiTietPhie
             @Param("bienTheId") Integer bienTheId
     );
     @Query("""
-    select coalesce(sum(ct.soLuongXuat), 0)
-    from ChiTietPhieuXuatKho ct
-    where ct.phieuXuatKho.id = :phieuXuatKhoId
-      and ct.bienTheSanPham.id = :bienTheSanPhamId
-      and ct.loHang is not null
-""")
-    BigDecimal sumPickedQuantity(
-            @Param("phieuXuatKhoId") Integer phieuXuatKhoId,
-            @Param("bienTheSanPhamId") Integer bienTheSanPhamId
-    );
-    @Query("""
         select new com.dev.backend.dto.response.customize.PickedLotDto(
             ct.loHang.id,
             sum(ct.soLuongXuat)
@@ -50,5 +40,16 @@ public interface ChiTietPhieuXuatKhoRepository extends JpaRepository<ChiTietPhie
     List<PickedLotDto> findPickedLots(
             Integer phieuXuatKhoId,
             Integer bienTheSanPhamId
+    );
+    @Modifying
+    @Query("""
+        delete from ChiTietPhieuXuatKho ct
+        where ct.phieuXuatKho.id = :phieuXuatKhoId
+          and ct.bienTheSanPham.id = :bienTheSanPhamId
+          and ct.loHang is not null
+    """)
+    void deletePickedByPhieuAndBienThe(
+            @Param("phieuXuatKhoId") Integer phieuXuatKhoId,
+            @Param("bienTheSanPhamId") Integer bienTheSanPhamId
     );
 }

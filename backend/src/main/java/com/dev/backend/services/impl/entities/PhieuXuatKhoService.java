@@ -162,7 +162,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                             BigDecimal soLuongCanXuat = ct.getSoLuongXuat();
                             // 2. Tổng số lượng đã pick (từ các dòng đã có lô)
                             BigDecimal soLuongDaPick =
-                                    chiTietPhieuXuatKhoRepository.sumPickedQuantity(
+                                    chiTietPhieuXuatKhoRepository.sumSoLuongDaPick(
                                             phieu.getId(),
                                             ct.getBienTheSanPham().getId()
                                     );
@@ -212,48 +212,54 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             Integer phieuXuatKhoId,
             PickLoHangRequest request
     ) {
-        // 1. Lấy dòng gốc
+        /* ========= 1. LẤY DÒNG GỐC ========= */
         ChiTietPhieuXuatKho ctGoc =
-                chiTietPhieuXuatKhoRepository.findById(
-                        request.getChiTietPhieuXuatKhoId()
-                ).orElseThrow(() ->
-                        new RuntimeException("Không tìm thấy dòng phiếu xuất")
-                );
-        // 2. Check dòng gốc
+                chiTietPhieuXuatKhoRepository
+                        .findById(request.getChiTietPhieuXuatKhoId())
+                        .orElseThrow(() ->
+                                new RuntimeException("Không tìm thấy dòng phiếu xuất")
+                        );
+
+        /* ========= 2. VALIDATE DÒNG GỐC ========= */
         if (ctGoc.getLoHang() != null) {
             throw new RuntimeException(
                     "Chỉ được pick lô từ dòng gốc (lo_hang_id = null)"
             );
         }
-        // 3. CHECK QUAN TRỌNG – DÒNG PHẢI THUỘC PHIẾU XUẤT
+
         if (!ctGoc.getPhieuXuatKho().getId().equals(phieuXuatKhoId)) {
             throw new RuntimeException(
                     "Chi tiết phiếu xuất không thuộc phiếu xuất này"
             );
         }
-        // 4. Tổng pick lần này
-        BigDecimal tongPickLanNay = request.getLoHangPicks().stream()
-                .map(PickLoHangRequest.Item::getSoLuongXuat)
-                .filter(sl -> sl != null && sl.compareTo(BigDecimal.ZERO) > 0)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        /* ========= 3. TÍNH TỔNG PICK LẦN NÀY ========= */
+        BigDecimal tongPickLanNay =
+                request.getLoHangPicks().stream()
+                        .map(PickLoHangRequest.Item::getSoLuongXuat)
+                        .filter(sl -> sl != null && sl.compareTo(BigDecimal.ZERO) > 0)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (tongPickLanNay.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Số lượng pick phải > 0");
         }
-        // 5. Tổng đã pick trước đó
-        BigDecimal daPickTruocDo =
-                chiTietPhieuXuatKhoRepository.sumSoLuongDaPick(
-                        phieuXuatKhoId,
-                        ctGoc.getBienTheSanPham().getId()
-                );
-        // 6. Validate không vượt
-        if (daPickTruocDo.add(tongPickLanNay)
-                .compareTo(ctGoc.getSoLuongXuat()) > 0) {
+
+        /* ========= 4. VALIDATE KHÔNG VƯỢT SL CẦN XUẤT ========= */
+        if (tongPickLanNay.compareTo(ctGoc.getSoLuongXuat()) > 0) {
             throw new RuntimeException(
                     "Tổng số lượng pick vượt quá số lượng cần xuất"
             );
         }
-        // 7. Pick từng lô
+
+        /* ========= 5. REPLACE LOGIC ========= */
+        // 5.1. XÓA TOÀN BỘ PICK CŨ CỦA BIẾN THỂ
+        chiTietPhieuXuatKhoRepository
+                .deletePickedByPhieuAndBienThe(
+                        phieuXuatKhoId,
+                        ctGoc.getBienTheSanPham().getId()
+                );
+
+        /* ========= 6. INSERT LẠI PICK MỚI ========= */
         for (PickLoHangRequest.Item item : request.getLoHangPicks()) {
 
             if (item.getSoLuongXuat() == null
