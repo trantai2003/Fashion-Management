@@ -126,6 +126,15 @@ public class PhieuNhapKhoController {
     }
 
     @GetMapping("/{phieuNhapKhoId}/bien-the/{bienTheSanPhamId}/lo-hang")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho
+            },
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
     public ResponseEntity<ResponseData<List<LoHangKhaiBaoDto>>> getDanhSachLoDaKhaiBao(
             @PathVariable Integer phieuNhapKhoId,
             @PathVariable Integer bienTheSanPhamId
@@ -146,6 +155,15 @@ public class PhieuNhapKhoController {
     }
 
     @DeleteMapping("/{phieuNhapId}/lo-hang/{chiTietId}")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho
+            },
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
     public ResponseEntity<ResponseData<String>> xoaLo(
             @PathVariable Integer phieuNhapId,
             @PathVariable Integer chiTietId
