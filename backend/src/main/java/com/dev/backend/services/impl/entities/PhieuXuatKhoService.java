@@ -37,6 +37,12 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     @Autowired
     private TonKhoTheoLoRepository tonKhoTheoLoRepository;
 
+    @Autowired
+    private NguoiDungRepository nguoiDungRepository;
+
+    @Autowired
+    private LichSuGiaoDichKhoRepository lichSuGiaoDichKhoRepository;
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -113,57 +119,118 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         validatePickedQuantity(id);
 
         phieu.setTrangThai(1); // Chờ duyệt
+        repository.save(phieu);
     }
 
     @Transactional
-    public void approve(Integer id) {
+    public void approve(Integer id, Integer nguoiDuyetId) {
         PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
         if (phieu.getTrangThai() != 1) throw new RuntimeException("Chỉ được duyệt phiếu ở trạng thái Chờ duyệt");
+        NguoiDung nguoiDuyet = nguoiDungRepository.findById(nguoiDuyetId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người duyệt"));
+        //Lấy toàn bộ danh sách các dòng đã pick lô của phiếu này
+        List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository
+                .findAll()
+                .stream()
+                .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
+                .toList();
+
+        if (detailedPicks.isEmpty()) {
+            throw new RuntimeException("Phiếu chưa được pick lô hàng, không thể duyệt");
+        }
+
+        //Kiểm tra tồn khả dụng của từng lô TRƯỚC khi thực hiện thay đổi
+        for (ChiTietPhieuXuatKho pick : detailedPicks) {
+            TonKhoTheoLo tonKho = tonKhoTheoLoRepository
+                    .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy dữ liệu tồn kho cho lô: " + pick.getLoHang().getMaLo()));
+
+            //Tồn khả dụng hiện tại có đủ để đáp ứng số lượng xuất không?
+            if (tonKho.getSoLuongKhaDung().compareTo(pick.getSoLuongXuat()) < 0) {
+                throw new RuntimeException("Lô [" + pick.getLoHang().getMaLo() + "] của biến thể ["
+                        + pick.getBienTheSanPham().getMaSku() + "] hiện không còn đủ tồn khả dụng (Chỉ còn: "
+                        + tonKho.getSoLuongKhaDung() + "). Vui lòng yêu cầu nhân viên kho chọn lại lô khác.");
+            }
+        }
+
+        //Nếu tất cả đều đủ tiến hành tăng so_luong_da_dat để giữ hàng
+        for (ChiTietPhieuXuatKho pick : detailedPicks) {
+            TonKhoTheoLo tonKho = tonKhoTheoLoRepository
+                    .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
+                    .get();
+
+            BigDecimal currentDaDat = tonKho.getSoLuongDaDat() != null ? tonKho.getSoLuongDaDat() : BigDecimal.ZERO;
+            tonKho.setSoLuongDaDat(currentDaDat.add(pick.getSoLuongXuat()));
+
+            tonKhoTheoLoRepository.save(tonKho);
+        }
         phieu.setTrangThai(2); // Đã duyệt
+        phieu.setNguoiDuyet(nguoiDuyet);
+        repository.save(phieu);
     }
 
     @Transactional
-    public void complete(Integer id) {
+    public void complete(Integer id, Integer nguoiXuatId) {
         PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
-        if (phieu.getTrangThai() != 2) throw new RuntimeException("Chỉ được hoàn thành phiếu đã được duyệt");
-
-        // Lấy tất cả các dòng chi tiết đã pick lô
+        if (phieu.getTrangThai() != 2) throw new RuntimeException("Chỉ phiếu đã duyệt mới có thể xuất kho");
+        NguoiDung nguoiXuat = nguoiDungRepository.findById(nguoiXuatId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người xuất"));
         List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository.findAll().stream()
                 .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
                 .toList();
 
         for (ChiTietPhieuXuatKho pick : detailedPicks) {
-            // 1. Cập nhật tồn kho theo lô
             TonKhoTheoLo tonKho = tonKhoTheoLoRepository
                     .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tồn kho cho lô: " + pick.getLoHang().getMaLo()));
+                    .orElseThrow(() -> new RuntimeException("Lỗi dữ liệu tồn kho"));
 
-            if (tonKho.getSoLuongTon().compareTo(pick.getSoLuongXuat()) < 0) {
-                throw new RuntimeException("Lô " + pick.getLoHang().getMaLo() + " không đủ tồn kho thực tế");
-            }
+            BigDecimal soLuongTruoc = tonKho.getSoLuongTon();
+            BigDecimal soLuongXuat = pick.getSoLuongXuat();
 
-            tonKho.setSoLuongTon(tonKho.getSoLuongTon().subtract(pick.getSoLuongXuat()));
+            // 1. Cập nhật tồn kho
+            tonKho.setSoLuongTon(soLuongTruoc.subtract(soLuongXuat));
+            tonKho.setSoLuongDaDat(tonKho.getSoLuongDaDat().subtract(soLuongXuat));
             tonKho.setNgayXuatGanNhat(Instant.now());
             tonKhoTheoLoRepository.save(tonKho);
 
-            // 2. Cập nhật số lượng đã giao trên đơn bán (SO)
-            if (phieu.getDonBanHang() != null) {
-                ChiTietDonBanHang ctSO = chiTietDonBanHangRepository.findByDonBanHangId(phieu.getDonBanHang().getId())
-                        .stream()
-                        .filter(ct -> ct.getBienTheSanPham().getId().equals(pick.getBienTheSanPham().getId()))
-                        .findFirst()
-                        .orElse(null);
+            // 2. GHI LỊCH SỬ GIAO DỊCH KHO
+            LichSuGiaoDichKho lichSu = LichSuGiaoDichKho.builder()
+                    .ngayGiaoDich(Instant.now())
+                    .loaiGiaoDich("xuat_kho")
+                    .loaiThamChieu("phieu_xuat_kho")
+                    .idThamChieu(phieu.getId())
+                    .bienTheSanPham(pick.getBienTheSanPham())
+                    .loHang(pick.getLoHang())
+                    .kho(phieu.getKho())
+                    .soLuong(soLuongXuat)
+                    .soLuongTruoc(soLuongTruoc)
+                    .soLuongSau(tonKho.getSoLuongTon())
+                    .giaVon(pick.getLoHang().getGiaVon())
+                    .nguoiDung(phieu.getNguoiXuat())
+                    .ghiChu("Xuất kho cho phiếu: " + phieu.getSoPhieuXuat())
+                    .build();
+            lichSuGiaoDichKhoRepository.save(lichSu);
 
-                if (ctSO != null) {
-                    BigDecimal hienTai = ctSO.getSoLuongDaGiao() != null ? ctSO.getSoLuongDaGiao() : BigDecimal.ZERO;
-                    ctSO.setSoLuongDaGiao(hienTai.add(pick.getSoLuongXuat()));
-                    chiTietDonBanHangRepository.save(ctSO);
-                }
-            }
+            // 3. Cập nhật đơn bán
+            updateSoLuongDaGiao(phieu.getDonBanHang(), pick);
         }
 
         phieu.setTrangThai(3); // Đã xuất (Completed)
+        phieu.setNguoiXuat(nguoiXuat);
         phieu.setNgayXuat(Instant.now());
+        repository.save(phieu);
+    }
+
+    private void updateSoLuongDaGiao(DonBanHang donBanHang, ChiTietPhieuXuatKho pick) {
+        if (donBanHang == null) return;
+        chiTietDonBanHangRepository.findByDonBanHangId(donBanHang.getId()).stream()
+                .filter(ct -> ct.getBienTheSanPham().getId().equals(pick.getBienTheSanPham().getId()))
+                .findFirst()
+                .ifPresent(ctSO -> {
+                    BigDecimal hienTai = ctSO.getSoLuongDaGiao() != null ? ctSO.getSoLuongDaGiao() : BigDecimal.ZERO;
+                    ctSO.setSoLuongDaGiao(hienTai.add(pick.getSoLuongXuat()));
+                    chiTietDonBanHangRepository.save(ctSO);
+                });
     }
 
     @Transactional
@@ -173,6 +240,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         if (phieu.getTrangThai() == 4) throw new RuntimeException("Phiếu đã bị hủy trước đó");
 
         phieu.setTrangThai(4); // Đã hủy
+        repository.save(phieu);
     }
 
     @Transactional

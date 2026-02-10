@@ -40,7 +40,6 @@ public class TonKhoTheoLo {
     BigDecimal soLuongTon;
 
     @ColumnDefault("0.000")
-    @Generated(event = EventType.INSERT)
     @Column(name = "so_luong_da_dat", precision = 15, scale = 3)
     BigDecimal soLuongDaDat;
 

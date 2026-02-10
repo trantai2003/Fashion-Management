@@ -1,5 +1,6 @@
 package com.dev.backend.controller;
 
+import com.dev.backend.config.SecurityContextHolder;
 import com.dev.backend.constant.variables.IPermissionType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
@@ -94,7 +95,8 @@ public class PhieuXuatKhoController {
             rolesLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<String>> approve(@PathVariable Integer id) {
-        phieuXuatKhoService.approve(id);
+        Integer managerId = SecurityContextHolder.getUser().getId();
+        phieuXuatKhoService.approve(id, managerId);
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
@@ -111,7 +113,8 @@ public class PhieuXuatKhoController {
             rolesLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<String>> complete(@PathVariable Integer id) {
-        phieuXuatKhoService.complete(id);
+        Integer staffId = SecurityContextHolder.getUser().getId();
+        phieuXuatKhoService.complete(id, staffId);
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
