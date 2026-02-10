@@ -13,6 +13,10 @@ export default function PickLot() {
     const sku = state?.sku || "-";
     const tenBienThe = state?.tenBienThe || "-";
     const soLuongCanXuat = Number(state?.soLuongXuat ?? 0);
+    const phieuTrangThai = state?.phieuTrangThai;
+
+    // Logic ReadOnly: Nếu trạng thái phiếu khác 0 (Nháp) thì chỉ cho xem
+    const isReadOnly = phieuTrangThai !== 0;
 
     /* ===== LOCAL STATE ===== */
     const [loading, setLoading] = useState(false);
@@ -63,6 +67,8 @@ export default function PickLot() {
 
     /* ===== INPUT ===== */
     function handleChange(loHangId, rawValue) {
+        if (isReadOnly) return; // Không cho phép sửa nếu là ReadOnly
+
         if (rawValue === "") {
             setPickMap((prev) => ({ ...prev, [loHangId]: "" }));
             return;
@@ -77,6 +83,8 @@ export default function PickLot() {
 
     /* ===== SAVE ===== */
     async function handleSave() {
+        if (isReadOnly) return;
+
         const entries = Object.entries(pickMap).filter(([, v]) => Number(v) > 0);
 
         if (entries.length === 0) {
@@ -128,6 +136,11 @@ export default function PickLot() {
                 <Link to={`/goods-issues/${phieuXuatKhoId}`} className="text-sm text-gray-500 hover:text-gray-900">
                     ← Back to Issue Detail
                 </Link>
+                {isReadOnly && (
+                    <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full border border-gray-200">
+                        Chế độ xem
+                    </span>
+                )}
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -159,9 +172,9 @@ export default function PickLot() {
                             <tr>
                                 <th className="px-4 py-3 text-left">Mã lô</th>
                                 <th className="px-4 py-3 text-center">Ngày nhập</th>
-                                <th className="px-4 py-3 text-center">Tồn khả dụng</th>
+                                {!isReadOnly && <th className="px-4 py-3 text-center">Tồn khả dụng</th>}
                                 <th className="px-4 py-3 text-center">Số lượng xuất</th>
-                                <th className="px-4 py-3 text-center">Trạng thái</th>
+                                {!isReadOnly && <th className="px-4 py-3 text-center">Trạng thái</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -204,22 +217,31 @@ export default function PickLot() {
                                                 ? new Date(lot.ngayNhapGanNhat).toLocaleDateString("vi-VN")
                                                 : "-"}
                                         </td>
-                                        <td className="px-4 py-3 text-center">
-                                            {tonKhaDung}
-                                        </td>
+                                        {!isReadOnly && (
+                                            <td className="px-4 py-3 text-center">
+                                                {tonKhaDung}
+                                            </td>
+                                        )}
                                         <td className="px-4 py-3 text-center">
                                             <input
                                                 type="text"
                                                 inputMode="numeric"
+                                                readOnly={isReadOnly}
                                                 value={displayValue}
                                                 onChange={(e) => handleChange(lot.loHangId, e.target.value)}
                                                 placeholder="0"
-                                                className="w-20 h-9 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all bg-gray-50/50 focus:bg-white"
+                                                className={`w-20 h-9 border rounded-md text-center outline-none transition-all ${
+                                                    isReadOnly 
+                                                    ? "bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed" 
+                                                    : "border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-gray-50/50 focus:bg-white"
+                                                }`}
                                             />
                                         </td>
-                                        <td className="px-4 py-3 text-center">
-                                            {statusBadge}
-                                        </td>
+                                        {!isReadOnly && (
+                                            <td className="px-4 py-3 text-center">
+                                                {statusBadge}
+                                            </td>
+                                        )}
                                     </tr>
                                 );
                             })}
@@ -227,7 +249,7 @@ export default function PickLot() {
                             {lots.length === 0 && !loading && (
                                 <tr>
                                     <td
-                                        colSpan={5}
+                                        colSpan={isReadOnly ? 3 : 5}
                                         className="p-6 text-center text-gray-500"
                                     >
                                         Không có lô khả dụng
@@ -240,13 +262,15 @@ export default function PickLot() {
 
                 {/* ACTION */}
                 <div className="mt-4 flex justify-end gap-3">
-                    <button
-                        disabled={loading || tongPickMoi <= 0}
-                        onClick={handleSave}
-                        className="px-4 py-2 rounded-md bg-purple-600 text-white disabled:opacity-50"
-                    >
-                        {loading ? "Saving..." : "Save Pick"}
-                    </button>
+                    {!isReadOnly && (
+                        <button
+                            disabled={loading || tongPickMoi <= 0}
+                            onClick={handleSave}
+                            className="px-4 py-2 rounded-md bg-purple-600 text-white disabled:opacity-50"
+                        >
+                            {loading ? "Saving..." : "Save Pick"}
+                        </button>
+                    )}
                 </div>
             </div>
         </main>

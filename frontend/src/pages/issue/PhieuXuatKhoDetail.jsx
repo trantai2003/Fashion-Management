@@ -211,7 +211,7 @@ export default function PhieuXuatKhoDetail() {
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <button
-                                                disabled={phieu.trangThai !== 0}
+                                                disabled={phieu.trangThai === 4}
                                                 onClick={() =>
                                                     navigate(
                                                         `/goods-issues/${phieu.id}/pick-lot/${ct.id}`,
@@ -222,6 +222,7 @@ export default function PhieuXuatKhoDetail() {
                                                                 tenBienThe: ct.tenBienThe,
                                                                 soLuongXuat: ct.soLuongCanXuat,
                                                                 soLuongDaPick: ct.soLuongDaPick,
+                                                                phieuTrangThai: phieu.trangThai,
                                                             },
                                                         }
                                                     )
@@ -229,10 +230,13 @@ export default function PhieuXuatKhoDetail() {
                                                 className={`px-3 py-1.5 text-sm rounded-md font-medium
                                                     ${phieu.trangThai === 0
                                                         ? "bg-purple-600 text-white hover:bg-purple-700"
-                                                        : "bg-gray-300 text-white cursor-not-allowed"}
+                                                        : phieu.trangThai === 4
+                                                        ? "bg-gray-300 text-white cursor-not-allowed"
+                                                        : "bg-blue-600 text-white hover:bg-blue-700"
+                                                    }
                                                 `}
                                             >
-                                                Pick lot →
+                                                {phieu.trangThai === 0 ? "Pick lot →" : "Xem lô →"}
                                             </button>
                                         </td>
                                     </tr>

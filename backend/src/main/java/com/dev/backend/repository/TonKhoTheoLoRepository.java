@@ -238,11 +238,19 @@ public interface TonKhoTheoLoRepository extends JpaRepository<TonKhoTheoLo, Inte
         from TonKhoTheoLo t
         where t.kho.id = :khoId
           and t.loHang.bienTheSanPham.id = :bienTheSanPhamId
-          and t.soLuongKhaDung > 0
+          and (
+            t.soLuongKhaDung > 0 
+            or exists (
+                select 1 from ChiTietPhieuXuatKho ct 
+                where ct.phieuXuatKho.id = :phieuId 
+                and ct.loHang.id = t.loHang.id
+            )
+          )
         order by t.ngayNhapGanNhat asc
     """)
     List<TonKhoTheoLo> findAvailableLots(
             @Param("khoId") Integer khoId,
-            @Param("bienTheSanPhamId") Integer bienTheSanPhamId
+            @Param("bienTheSanPhamId") Integer bienTheSanPhamId,
+            @Param("phieuId") Integer phieuId
     );
 }
