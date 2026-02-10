@@ -22,10 +22,10 @@ import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
 import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
-
 import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
 import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
 import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
+import SkuBuilder from "./pages/product/SkuBuilder";
 export default function App() {
   return (
     <BrowserRouter>
@@ -68,6 +68,7 @@ export default function App() {
 
           {/* Product */}
           <Route path="/products" element={<ProductList />} />
+          <Route path="/sku-builder" element={<SkuBuilder />} />
 
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />

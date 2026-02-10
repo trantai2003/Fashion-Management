@@ -34,6 +34,17 @@ export const productService = {
         return apiClient.delete(`/api/v1/san-pham-quan-ao/soft-delete/${id}`);
     },
 
+    updateStatus: (id, status) => {
+        return apiClient.patch(`/api/v1/san-pham-quan-ao/status/${id}?status=${status}`);
+    },
+
+    updateSkuPrice: (skuId, giaBan, giaVon) => {
+        let query = `/api/v1/san-pham-quan-ao/sku/${skuId}/price?`;
+        if (giaBan !== undefined) query += `price=${giaBan}&`;
+        if (giaVon !== undefined) query += `cost=${giaVon}`;
+        return apiClient.patch(query);
+    },
+
     toggleProductStatus: (id) => {
         return apiClient.post(`/api/v1/products/${id}/toggle-status`);
     },

@@ -24,105 +24,113 @@ import java.util.List;
 @RequestMapping("/api/v1/san-pham-quan-ao")
 public class SanPhamQuanAoController {
 
-    @Autowired
-    private SanPhamQuanAoService sanPhamQuanAoService;
-    @Autowired
-    private SanPhamQuanAoMapper sanPhamQuanAoMapper;
+        @Autowired
+        private SanPhamQuanAoService sanPhamQuanAoService;
+        @Autowired
+        private SanPhamQuanAoMapper sanPhamQuanAoMapper;
 
+        @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        @RequireAuth(roles = { IRoleType.quan_tri_vien, IRoleType.quan_ly_kho })
+        public ResponseEntity<ResponseData<SanPhamQuanAoDto>> create(
+                        @RequestPart("creating") SanPhamQuanAoCreating creating,
+                        @RequestPart(value = "anhSanPhams", required = false) List<MultipartFile> anhSanPhams,
+                        @RequestPart(value = "anhBienThes", required = false) List<MultipartFile> anhBienThes) {
+                return sanPhamQuanAoService.create(creating, anhSanPhams, anhBienThes);
 
-    @PostMapping(
-            value = "/create",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}
-    )
-    public ResponseEntity<ResponseData<SanPhamQuanAoDto>> create(
-            @RequestPart("creating") SanPhamQuanAoCreating creating,
-            @RequestPart(value = "anhSanPhams", required = false) List<MultipartFile> anhSanPhams,
-            @RequestPart(value = "anhBienThes", required = false) List<MultipartFile> anhBienThes) {
-        return sanPhamQuanAoService.create(creating, anhSanPhams, anhBienThes);
+        }
 
-    }
+        @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        @RequireAuth(roles = { IRoleType.quan_tri_vien, IRoleType.quan_ly_kho })
+        public ResponseEntity<ResponseData<SanPhamQuanAoDto>> update(
+                        @RequestPart SanPhamQuanAoUpdating updating,
+                        @RequestPart(value = "anhSanPhams", required = false) List<MultipartFile> anhSanPhams,
+                        @RequestPart(value = "anhBienThes", required = false) List<MultipartFile> anhBienThes) {
+                return sanPhamQuanAoService.update(updating, anhSanPhams, anhBienThes);
+        }
 
-    @PutMapping(
-            value = "/update",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}
-    )
-    public ResponseEntity<ResponseData<SanPhamQuanAoDto>> update(
-            @RequestPart SanPhamQuanAoUpdating updating,
-            @RequestPart(value = "anhSanPhams", required = false) List<MultipartFile> anhSanPhams,
-            @RequestPart(value = "anhBienThes", required = false) List<MultipartFile> anhBienThes) {
-        return sanPhamQuanAoService.update(updating, anhSanPhams, anhBienThes);
-    }
+        @GetMapping("/get-by-id/{id}")
+        @RequireAuth(roles = {
+                        IRoleType.quan_tri_vien,
+                        IRoleType.quan_ly_kho,
+                        IRoleType.nhan_vien_kho,
+                        IRoleType.nhan_vien_ban_hang,
+                        IRoleType.nhan_vien_mua_hang
+        })
+        public ResponseEntity<ResponseData<SanPhamQuanAoDto>> getById(@PathVariable Integer id) {
+                return ResponseEntity.ok(
+                                ResponseData.<SanPhamQuanAoDto>builder()
+                                                .status(HttpStatus.OK.value())
+                                                .data(
+                                                                sanPhamQuanAoMapper.toDto(
+                                                                                sanPhamQuanAoService.getOne(id)
+                                                                                                .orElseThrow(
+                                                                                                                () -> new CommonException(
+                                                                                                                                "Không tìm thây sản phẩm quần áo"
+                                                                                                                                                + id)
 
-    @GetMapping("/get-by-id/{id}")
-    @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho,
-                    IRoleType.nhan_vien_ban_hang,
-                    IRoleType.nhan_vien_mua_hang
-            }
-    )
-    public ResponseEntity<ResponseData<SanPhamQuanAoDto>> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(
-                ResponseData.<SanPhamQuanAoDto>builder()
-                        .status(HttpStatus.OK.value())
-                        .data(
-                                sanPhamQuanAoMapper.toDto(
-                                        sanPhamQuanAoService.getOne(id).orElseThrow(
-                                                () -> new CommonException("Không tìm thây sản phẩm quần áo" + id)
+                                                                                                )))
+                                                .message("Success")
+                                                .build());
+        }
 
-                                        ))
-                        )
-                        .message("Success")
-                        .build()
-        );
-    }
+        @PostMapping("/filter")
+        @RequireAuth(roles = {
+                        IRoleType.quan_tri_vien,
+                        IRoleType.quan_ly_kho,
+                        IRoleType.nhan_vien_kho,
+                        IRoleType.nhan_vien_ban_hang,
+                        IRoleType.nhan_vien_mua_hang
+        })
+        public ResponseEntity<ResponseData<Page<SanPhamQuanAoDto>>> filter(@RequestBody BaseFilterRequest filter) {
+                return ResponseEntity.ok(
+                                ResponseData.<Page<SanPhamQuanAoDto>>builder()
+                                                .status(HttpStatus.OK.value())
+                                                .data(sanPhamQuanAoMapper
+                                                                .toDtoPage(sanPhamQuanAoService.filter(filter)))
+                                                .build());
+        }
 
-    @PostMapping("/filter")
-    @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho,
-                    IRoleType.nhan_vien_ban_hang,
-                    IRoleType.nhan_vien_mua_hang
-            }
-    )
-    public ResponseEntity<ResponseData<Page<SanPhamQuanAoDto>>> filter(@RequestBody BaseFilterRequest filter) {
-        return ResponseEntity.ok(
-                ResponseData.<Page<SanPhamQuanAoDto>>builder()
-                        .status(HttpStatus.OK.value())
-                        .data(sanPhamQuanAoMapper.toDtoPage(sanPhamQuanAoService.filter(filter)))
-                        .build()
-        );
-    }
+        @DeleteMapping("/soft-delete/{id}")
+        @RequireAuth(roles = {
+                        IRoleType.quan_tri_vien,
+                        IRoleType.quan_ly_kho,
+                        IRoleType.nhan_vien_kho,
+                        IRoleType.nhan_vien_ban_hang,
+                        IRoleType.nhan_vien_mua_hang
+        })
+        public ResponseEntity<ResponseData<String>> softDelete(@PathVariable Integer id) {
+                sanPhamQuanAoService.changeStatus(id, 0);
+                return ResponseEntity.ok(
+                                ResponseData.<String>builder()
+                                                .status(HttpStatus.OK.value())
+                                                .data("Success")
+                                                .message("Success")
+                                                .build());
+        }
 
+        @PatchMapping("/status/{id}")
+        @RequireAuth(roles = { IRoleType.quan_tri_vien, IRoleType.quan_ly_kho })
+        public ResponseEntity<ResponseData<String>> updateStatus(@PathVariable Integer id,
+                        @RequestParam Integer status) {
+                sanPhamQuanAoService.changeStatus(id, status);
+                return ResponseEntity.ok(ResponseData.<String>builder()
+                                .status(HttpStatus.OK.value())
+                                .data("Success")
+                                .message("Cập nhật trạng thái thành công")
+                                .build());
+        }
 
-    @DeleteMapping("/soft-delete/{id}")
-    @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho,
-                    IRoleType.nhan_vien_ban_hang,
-                    IRoleType.nhan_vien_mua_hang
-            }
-    )
-    public ResponseEntity<ResponseData<String>> softDelete(@PathVariable Integer id) {
-        sanPhamQuanAoService.changeStatus(id, 0);
-        return ResponseEntity.ok(
-                ResponseData.<String>builder()
-                        .status(HttpStatus.OK.value())
-                        .data("Success")
-                        .message("Success")
-                        .build()
-        );
-    }
+        @PatchMapping("/sku/{id}/price")
+        @RequireAuth(roles = { IRoleType.quan_tri_vien, IRoleType.quan_ly_kho })
+        public ResponseEntity<ResponseData<String>> updateSkuPrice(
+                        @PathVariable Integer id,
+                        @RequestParam(required = false) java.math.BigDecimal price,
+                        @RequestParam(required = false) java.math.BigDecimal cost) {
+                sanPhamQuanAoService.updateSkuPrice(id, price, cost);
+                return ResponseEntity.ok(ResponseData.<String>builder()
+                                .status(HttpStatus.OK.value())
+                                .data("Success")
+                                .message("Cập nhật giá thành công")
+                                .build());
+        }
 }
