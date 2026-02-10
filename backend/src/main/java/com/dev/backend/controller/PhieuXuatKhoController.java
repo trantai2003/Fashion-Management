@@ -26,6 +26,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/phieu-xuat-kho")
 public class PhieuXuatKhoController {
+
     @Autowired
     private PhieuXuatKhoService phieuXuatKhoService;
 
@@ -34,39 +35,24 @@ public class PhieuXuatKhoController {
 
     @PostMapping("/filter")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
-    public Page<PhieuXuatKhoDto> filter(
-            @RequestBody BaseFilterRequest request
-    ) {
-        Page<PhieuXuatKho> pageEntity =
-                phieuXuatKhoService.filter(request);
-
+    public Page<PhieuXuatKhoDto> filter(@RequestBody BaseFilterRequest request) {
+        Page<PhieuXuatKho> pageEntity = phieuXuatKhoService.filter(request);
         return pageEntity.map(phieuXuatKhoMapper::toDto);
     }
 
     @PostMapping("/create")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             permissions = {IPermissionType.tao_phieu_xuat},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
-    public Map<String, Object> create(
-            @RequestBody PhieuXuatKhoCreating request
-    ) {
-        PhieuXuatKho phieu =
-                phieuXuatKhoService.createFromSO(request);
+    public Map<String, Object> create(@RequestBody PhieuXuatKhoCreating request) {
+        PhieuXuatKho phieu = phieuXuatKhoService.createFromSO(request);
         return Map.of(
                 "id", phieu.getId(),
                 "soPhieuXuat", phieu.getSoPhieuXuat()
@@ -75,11 +61,7 @@ public class PhieuXuatKhoController {
 
     @GetMapping("/{id}")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
@@ -87,12 +69,61 @@ public class PhieuXuatKhoController {
         return phieuXuatKhoService.getDetail(id);
     }
 
+    @PutMapping("/{id}/submit")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> submit(@PathVariable Integer id) {
+        phieuXuatKhoService.submit(id);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Gửi duyệt phiếu xuất thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+
+    @PutMapping("/{id}/approve")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
+            permissions = {IPermissionType.duyet_phieu_xuat},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> approve(@PathVariable Integer id) {
+        phieuXuatKhoService.approve(id);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Phê duyệt phiếu xuất thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+
+    @PutMapping("/{id}/complete")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> complete(@PathVariable Integer id) {
+        phieuXuatKhoService.complete(id);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Xác nhận xuất kho thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+
     @PutMapping("/{id}/cancel")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
             permissions = {IPermissionType.huy_phieu_xuat},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
@@ -110,11 +141,7 @@ public class PhieuXuatKhoController {
 
     @PostMapping("/{phieuXuatKhoId}/pick-lo")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
@@ -134,11 +161,7 @@ public class PhieuXuatKhoController {
 
     @GetMapping("/{phieuXuatKhoId}/available-lots")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
@@ -158,7 +181,13 @@ public class PhieuXuatKhoController {
                         .build()
         );
     }
+
     @GetMapping("/{phieuXuatKhoId}/picked-lots/{chiTietPhieuXuatKhoId}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
     public List<PickedLotDto> getPickedLots(
             @PathVariable Integer phieuXuatKhoId,
             @PathVariable Integer chiTietPhieuXuatKhoId
