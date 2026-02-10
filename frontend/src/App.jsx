@@ -25,6 +25,7 @@ import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
 
 import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
 import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
+import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
 export default function App() {
   return (
     <BrowserRouter>
@@ -79,6 +80,7 @@ export default function App() {
 
           {/* Purchase Order */}
           <Route path="/purchase-orders" element={<PurchaseOrder />} />
+          <Route path="/purchase-orders/create" element={<PurchaseOrderCreate />} />
           <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
 
           {/* Supplier */}
