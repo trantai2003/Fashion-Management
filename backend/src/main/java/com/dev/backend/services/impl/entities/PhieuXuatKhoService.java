@@ -2,8 +2,12 @@ package com.dev.backend.services.impl.entities;
 
 import com.dev.backend.dto.request.ChiTietPhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
+import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
+import com.dev.backend.dto.response.entities.ChiTietPhieuXuatKhoDto;
+import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
 import com.dev.backend.entities.*;
 import com.dev.backend.repository.ChiTietDonBanHangRepository;
+import com.dev.backend.repository.ChiTietPhieuXuatKhoRepository;
 import com.dev.backend.repository.PhieuXuatKhoRepository;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
@@ -106,6 +110,67 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 throw ex;
             }
         }
+    }
+
+    @Autowired
+    private ChiTietPhieuXuatKhoRepository chiTietPhieuXuatKhoRepository;
+
+    @Transactional(readOnly = true)
+    public ChiTietPhieuNhapKhoResponse getDetail(Integer id) {
+
+        PhieuXuatKho phieu = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu xuất"));
+
+        // Header – reuse DTO
+        PhieuXuatKhoDto phieuDto = PhieuXuatKhoDto.builder()
+                .id(phieu.getId())
+                .soPhieuXuat(phieu.getSoPhieuXuat())
+                .soDonHang(phieu.getDonBanHang().getSoDonHang())
+                .tenKho(phieu.getKho().getTenKho())
+                .ngayXuat(phieu.getNgayXuat())
+                .trangThai(phieu.getTrangThai())
+                .build();
+        List<ChiTietPhieuXuatKho> chiTietList =
+                chiTietPhieuXuatKhoRepository
+                        .findByPhieuXuatKhoIdAndLoHangIsNull(phieu.getId());
+
+        List<ChiTietPhieuXuatKhoDto> chiTietDtos =
+                chiTietList.stream()
+                        .map(ct -> ChiTietPhieuXuatKhoDto.builder()
+                                .id(ct.getId())
+                                .bienTheSanPhamId(ct.getBienTheSanPham().getId())
+                                .sku(ct.getBienTheSanPham().getMaSku())
+                                .tenBienThe((ct.getBienTheSanPham().getSanPham().getTenSanPham() +" /"
+                                        + ct.getBienTheSanPham().getMauSac().getTenMau() +" /"
+                                        + ct.getBienTheSanPham().getSize().getTenSize() +" /"
+                                        + ct.getBienTheSanPham().getChatLieu().getTenChatLieu()))
+                                .soLuongCanXuat(ct.getSoLuongXuat())
+                                .soLuongDaPick(BigDecimal.ZERO) // chưa pick lô
+                                .duSoLuong(false)
+                                .build()
+                        )
+                        .toList();
+
+        return ChiTietPhieuNhapKhoResponse.builder()
+                .phieu(phieuDto)
+                .chiTiet(chiTietDtos)
+                .build();
+    }
+
+    @Transactional
+    public void cancel(Integer id) {
+
+        PhieuXuatKho phieu = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu xuất"));
+
+        if (phieu.getTrangThai() == 1) {
+            throw new RuntimeException("Phiếu xuất đã hoàn thành, không thể huỷ");
+        }
+
+        if (phieu.getTrangThai() == 2) {
+            throw new RuntimeException("Phiếu xuất đã bị huỷ trước đó");
+        }
+        phieu.setTrangThai(2);
     }
     private String generateSoPhieu() {
         String dateStr = java.time.LocalDate.now()
