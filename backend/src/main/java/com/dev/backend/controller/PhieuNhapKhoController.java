@@ -1,5 +1,6 @@
 package com.dev.backend.controller;
 
+import com.dev.backend.config.SecurityContextHolder;
 import com.dev.backend.constant.variables.IPermissionType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
@@ -31,49 +32,32 @@ public class PhieuNhapKhoController {
     @Autowired
     private PhieuNhapKhoMapper phieuNhapKhoMapper;
 
-    //Goods Receipt List
     @PostMapping("/filter")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
-    public Page<PhieuNhapKhoDto> filter(
-            @RequestBody BaseFilterRequest request) {
+    public Page<PhieuNhapKhoDto> filter(@RequestBody BaseFilterRequest request) {
         Page<PhieuNhapKho> pageEntity = phieuNhapKhoService.filter(request);
         return pageEntity.map(phieuNhapKhoMapper::toDto);
     }
 
-    //Goods Receipt Create
     @PostMapping("/create")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             permissions = {IPermissionType.tao_phieu_nhap},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
-    public PhieuNhapKhoDto create(
-            @RequestBody PhieuNhapKhoCreating creating
-    ) {
+    public PhieuNhapKhoDto create(@RequestBody PhieuNhapKhoCreating creating) {
         PhieuNhapKho entity = phieuNhapKhoService.createDraft(creating);
         return phieuNhapKhoMapper.toDto(entity);
     }
 
     @GetMapping("/{id}/detail")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
@@ -81,12 +65,63 @@ public class PhieuNhapKhoController {
         return phieuNhapKhoService.getDetail(id);
     }
 
+    @PutMapping("/{id}/send-to-approve")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> guiDuyet(@PathVariable Integer id) {
+        phieuNhapKhoService.guiDuyet(id);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Đã gửi phiếu nhập để chờ phê duyệt")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+
+    @PutMapping("/{id}/approve")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
+            permissions = {IPermissionType.duyet_phieu_nhap},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> approve(@PathVariable Integer id) {
+        Integer managerId = SecurityContextHolder.getUser().getId();
+        phieuNhapKhoService.approvePhieu(id, managerId);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Phê duyệt phiếu nhập thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+
+    @PutMapping("/{id}/complete")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> completePhieuNhap(@PathVariable Integer id) {
+        Integer staffId = SecurityContextHolder.getUser().getId();
+        phieuNhapKhoService.completePhieuNhap(id, staffId);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Hoàn tất nhập kho thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+
     @PutMapping("/{id}/cancel")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
             permissions = {IPermissionType.huy_phieu_nhap},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
@@ -101,21 +136,14 @@ public class PhieuNhapKhoController {
                         .build()
         );
     }
+
     @PostMapping("/{id}/khai-bao-lo")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             inWarehouse = true
     )
-    public ResponseEntity<ResponseData<String>> khaiBaoLo(
-            @PathVariable Integer id,
-            @RequestBody KhaiBaoLoRequest request
-    ) {
-        phieuNhapKhoService.khaiBaoLo(id, request);
-
+    public ResponseEntity<ResponseData<String>> khaiBaoLo(@PathVariable Integer id, @RequestBody KhaiBaoLoRequest requestDto) {
+        phieuNhapKhoService.khaiBaoLo(id, requestDto);
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
@@ -127,11 +155,7 @@ public class PhieuNhapKhoController {
 
     @GetMapping("/{phieuNhapKhoId}/bien-the/{bienTheSanPhamId}/lo-hang")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
@@ -139,64 +163,28 @@ public class PhieuNhapKhoController {
             @PathVariable Integer phieuNhapKhoId,
             @PathVariable Integer bienTheSanPhamId
     ) {
-        List<LoHangKhaiBaoDto> data =
-                phieuNhapKhoService.getDanhSachLoDaKhaiBao(
-                        phieuNhapKhoId,
-                        bienTheSanPhamId
-                );
-
+        List<LoHangKhaiBaoDto> data = phieuNhapKhoService.getDanhSachLoDaKhaiBao(phieuNhapKhoId, bienTheSanPhamId);
         return ResponseEntity.ok(
                 ResponseData.<List<LoHangKhaiBaoDto>>builder()
                         .status(HttpStatus.OK.value())
-                        .data(data)
                         .message("OK")
+                        .data(data)
                         .build()
         );
     }
 
     @DeleteMapping("/{phieuNhapId}/lo-hang/{chiTietId}")
     @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
-    public ResponseEntity<ResponseData<String>> xoaLo(
-            @PathVariable Integer phieuNhapId,
-            @PathVariable Integer chiTietId
-    ) {
+    public ResponseEntity<ResponseData<String>> xoaLo(@PathVariable Integer phieuNhapId, @PathVariable Integer chiTietId) {
         phieuNhapKhoService.xoaLo(phieuNhapId, chiTietId);
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
-                        .status(200)
-                        .message("Xoá lô thành công")
-                        .data("SUCCESS")
-                        .build()
-        );
-    }
-
-    @PutMapping("/{id}/complete")
-    @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho
-            },
-            permissions = { IPermissionType.duyet_phieu_nhap },
-            inWarehouse = true,
-            rolesLogic = RequireAuth.LogicType.OR
-    )
-    public ResponseEntity<ResponseData<String>> completePhieuNhap(
-            @PathVariable Integer id
-    ) {
-        phieuNhapKhoService.completePhieuNhap(id);
-
-        return ResponseEntity.ok(
-                ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
-                        .message("Hoàn thành phiếu nhập kho thành công")
+                        .message("Xoá lô thành công")
                         .data("SUCCESS")
                         .build()
         );

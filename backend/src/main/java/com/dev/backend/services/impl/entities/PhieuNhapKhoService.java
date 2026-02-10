@@ -1,5 +1,6 @@
 package com.dev.backend.services.impl.entities;
 
+import com.dev.backend.constant.enums.TrangThaiPhieuNhap;
 import com.dev.backend.dto.request.ChiTietPhieuNhapKhoCreating;
 import com.dev.backend.dto.request.KhaiBaoLoRequest;
 import com.dev.backend.dto.request.PhieuNhapKhoCreating;
@@ -36,6 +37,9 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     @Autowired
     private TonKhoTheoLoRepository tonKhoTheoLoRepository;
 
+    @Autowired
+    private NguoiDungRepository nguoiDungRepository;
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -45,13 +49,8 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         super(repository);
     }
 
-    /**
-     * CREATE GOODS RECEIPT (DRAFT)
-     * Đúng luồng: chỉ tạo phiếu, không nhập lô, không cập nhật tồn kho
-     */
     @Transactional
     public PhieuNhapKho createDraft(PhieuNhapKhoCreating request) {
-
         if (request.getChiTietPhieuNhapKhos() == null || request.getChiTietPhieuNhapKhos().isEmpty()) {
             throw new RuntimeException("Danh sách sản phẩm nhập không được rỗng");
         }
@@ -68,227 +67,187 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                         .donMuaHang(donMuaHang)
                         .nhaCungCap(donMuaHang.getNhaCungCap())
                         .kho(donMuaHang.getKhoNhap())
-                        .ngayNhap(
-                                request.getNgayNhap() != null
-                                        ? request.getNgayNhap()
-                                        : Instant.now()
-                        )
+                        .ngayNhap(request.getNgayNhap() != null ? request.getNgayNhap() : Instant.now())
                         .ghiChu(request.getGhiChu())
-                        .trangThai(0)
+                        .trangThai(TrangThaiPhieuNhap.DRAFT.getValue())
                         .tongTien(BigDecimal.ZERO)
                         .build();
 
                 phieuNhapKho = repository.save(phieuNhapKho);
 
                 for (ChiTietPhieuNhapKhoCreating item : request.getChiTietPhieuNhapKhos()) {
-                    ChiTietDonMuaHang ctPo =
-                            donMuaHang.getChiTietDonMuaHangs().stream()
-                                    .filter(poItem ->
-                                            poItem.getBienTheSanPham().getId()
-                                                    .equals(item.getBienTheSanPhamId())
-                                    )
-                                    .findFirst()
-                                    .orElseThrow(() ->
-                                            new RuntimeException("Không tìm thấy sản phẩm trong PO")
-                                    );
+                    ChiTietDonMuaHang ctPo = donMuaHang.getChiTietDonMuaHangs().stream()
+                            .filter(poItem -> poItem.getBienTheSanPham().getId().equals(item.getBienTheSanPhamId()))
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("Sản phẩm không thuộc PO"));
 
                     ChiTietPhieuNhapKho ct = ChiTietPhieuNhapKho.builder()
                             .phieuNhapKho(phieuNhapKho)
                             .bienTheSanPham(ctPo.getBienTheSanPham())
                             .soLuongNhap(item.getSoLuongDuKienNhap())
-                            .donGia(ctPo.getDonGia())   // lấy tu PO
-                            .loHang(null)               // Draft chưa có lô
+                            .donGia(ctPo.getDonGia())
+                            .loHang(null)
                             .build();
 
                     chiTietPhieuNhapKhoRepository.save(ct);
                 }
-
                 return phieuNhapKho;
             } catch (org.springframework.dao.DataIntegrityViolationException ex) {
-
-                // 👉 chỉ retry khi trùng so_phieu_nhap
                 if (isDuplicateSoPhieu(ex) && retry < maxRetry) {
                     retry++;
                     continue;
                 }
-
                 throw ex;
             }
         }
     }
 
-    // ================= DETAIL =================
-    @Transactional(readOnly = true)
-    public ChiTietPhieuNhapKhoDto getDetail(Integer id) {
-
-        PhieuNhapKho phieuNhapKho = repository.findById(id)
+    @Transactional
+    public void guiDuyet(Integer id) {
+        PhieuNhapKho phieu = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
 
-        List<PhieuNhapKhoItemDto> items =
-                phieuNhapKho.getChiTietPhieuNhapKhos().stream()
-                        .filter(ct -> ct.getLoHang() == null)
-                        .map(ct -> {
+        if (phieu.getTrangThai() != TrangThaiPhieuNhap.DRAFT.getValue()) {
+            throw new RuntimeException("Chỉ phiếu Nháp mới có thể gửi duyệt");
+        }
 
-                            BigDecimal soLuongCanNhap = ct.getSoLuongNhap();
+        long chuaDuLo = chiTietPhieuNhapKhoRepository.countBienTheChuaDuLo(id);
+        if (chuaDuLo > 0) {
+            throw new RuntimeException("Vui lòng khai báo đủ lô cho sản phẩm trước khi gửi duyệt");
+        }
 
-                            BigDecimal soLuongDaKhaiBaoLo =
-                                    chiTietPhieuNhapKhoRepository.sumSoLuongDaKhaiBao(
-                                            phieuNhapKho.getId(),
-                                            ct.getBienTheSanPham().getId()
-                                    );
+        phieu.setTrangThai(TrangThaiPhieuNhap.PENDING.getValue());
+        repository.save(phieu);
+    }
 
-                            boolean daDuLo =
-                                    soLuongDaKhaiBaoLo.compareTo(soLuongCanNhap) >= 0;
+    @Transactional
+    public void approvePhieu(Integer id, Integer nguoiDuyetId) {
+        PhieuNhapKho phieu = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
 
-                            return PhieuNhapKhoItemDto.builder()
-                                    .bienTheSanPhamId(ct.getBienTheSanPham().getId())
-                                    .sku(ct.getBienTheSanPham().getMaSku())
-                                    .tenBienThe(ct.getBienTheSanPham().getSanPham().getTenSanPham())
-                                    .soLuongCanNhap(soLuongCanNhap)
-                                    .soLuongDaKhaiBao(soLuongDaKhaiBaoLo)
-                                    .daDuLo(daDuLo)
-                                    .build();
-                        })
-                        .toList();
+        if (phieu.getTrangThai() != TrangThaiPhieuNhap.PENDING.getValue()) {
+            throw new RuntimeException("Phiếu không ở trạng thái chờ duyệt");
+        }
 
-        return ChiTietPhieuNhapKhoDto.builder()
-                .id(phieuNhapKho.getId())
-                .soPhieuNhap(phieuNhapKho.getSoPhieuNhap())
-                .trangThai(phieuNhapKho.getTrangThai())
-                .ngayNhap(phieuNhapKho.getNgayNhap())
-                .donMuaHangId(phieuNhapKho.getDonMuaHang().getId())
-                .soDonMua(phieuNhapKho.getDonMuaHang().getSoDonMua())
-                .nhaCungCapId(phieuNhapKho.getNhaCungCap().getId())
-                .tenNhaCungCap(phieuNhapKho.getNhaCungCap().getTenNhaCungCap())
-                .khoId(phieuNhapKho.getKho().getId())
-                .tenKho(phieuNhapKho.getKho().getTenKho())
-                .items(items)
-                .build();
+        NguoiDung nguoiDuyet = nguoiDungRepository.findById(nguoiDuyetId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người duyệt"));
+
+        phieu.setTrangThai(TrangThaiPhieuNhap.APPROVED.getValue());
+        phieu.setNguoiDuyet(nguoiDuyet);
+        repository.save(phieu);
+    }
+
+    @Transactional
+    public void completePhieuNhap(Integer phieuNhapKhoId, Integer nguoiNhapId) {
+        PhieuNhapKho phieu = repository.findById(phieuNhapKhoId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
+
+        if (phieu.getTrangThai() != TrangThaiPhieuNhap.APPROVED.getValue()) {
+            throw new RuntimeException("Chỉ phiếu đã duyệt mới có thể hoàn tất nhập kho");
+        }
+
+        NguoiDung nguoiNhap = nguoiDungRepository.findById(nguoiNhapId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người nhập"));
+
+        List<ChiTietPhieuNhapKho> danhSachNhapTheoLo = chiTietPhieuNhapKhoRepository.findAllByPhieuNhapKhoIdAndCoLo(phieuNhapKhoId);
+        Kho kho = phieu.getKho();
+        BigDecimal tongTien = BigDecimal.ZERO;
+
+        for (ChiTietPhieuNhapKho ct : danhSachNhapTheoLo) {
+            TonKhoTheoLo tonKho = tonKhoTheoLoRepository.findByKho_IdAndLoHang_Id(kho.getId(), ct.getLoHang().getId())
+                    .orElse(TonKhoTheoLo.builder()
+                            .kho(kho)
+                            .loHang(ct.getLoHang())
+                            .soLuongTon(BigDecimal.ZERO)
+                            .soLuongDaDat(BigDecimal.ZERO)
+                            .build());
+
+            tonKho.setSoLuongTon(tonKho.getSoLuongTon().add(ct.getSoLuongNhap()));
+            tonKho.setNgayNhapGanNhat(Instant.now());
+            tonKho.setLanCapNhatCuoi(Instant.now());
+            tonKhoTheoLoRepository.save(tonKho);
+
+            tongTien = tongTien.add(ct.getSoLuongNhap().multiply(ct.getDonGia()));
+        }
+
+        phieu.setTongTien(tongTien);
+        phieu.setTrangThai(TrangThaiPhieuNhap.COMPLETED.getValue());
+        phieu.setNguoiNhap(nguoiNhap); // Gán người bấm nút Hoàn tất
+        phieu.setNgayNhap(Instant.now());
+        repository.save(phieu);
     }
 
     @Transactional
     public void huyPhieuNhap(Integer id) {
-        PhieuNhapKho phieuNhapKho = repository.findById(id)
+        PhieuNhapKho phieu = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
 
-        if (phieuNhapKho.getTrangThai() == 1) {
-            throw new RuntimeException("Phiếu nhập đã hoàn thành, không thể huỷ");
+        if (phieu.getTrangThai() == TrangThaiPhieuNhap.COMPLETED.getValue()) {
+            throw new RuntimeException("Phiếu đã hoàn thành, không thể huỷ");
         }
 
-        if (phieuNhapKho.getTrangThai() == 2) {
-            throw new RuntimeException("Phiếu nhập đã bị huỷ trước đó");
-        }
-        phieuNhapKho.setTrangThai(2);
-        repository.save(phieuNhapKho);
-        repository.flush();
+        phieu.setTrangThai(TrangThaiPhieuNhap.CANCELLED.getValue());
+        repository.save(phieu);
     }
 
     @Transactional
     public void khaiBaoLo(Integer phieuNhapKhoId, KhaiBaoLoRequest request) {
-
         PhieuNhapKho phieu = repository.findById(phieuNhapKhoId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
 
-        if (phieu.getTrangThai() != 0) {
-            throw new RuntimeException("Chỉ được khai báo lô khi phiếu ở trạng thái nháp");
+        if (phieu.getTrangThai() != TrangThaiPhieuNhap.DRAFT.getValue()) {
+            throw new RuntimeException("Chỉ được khai báo lô ở trạng thái Nháp");
         }
 
-        // dòng draft (lo_hang = null)
-        ChiTietPhieuNhapKho dongDraft =
-                chiTietPhieuNhapKhoRepository
-                        .findFirstByPhieuNhapKho_IdAndBienTheSanPham_IdAndLoHangIsNull(
-                                phieuNhapKhoId,
-                                request.getBienTheSanPhamId()
-                        )
-                        .orElseThrow(() ->
-                                new RuntimeException("Biến thể không thuộc phiếu nhập")
-                        );
+        ChiTietPhieuNhapKho dongDraft = chiTietPhieuNhapKhoRepository
+                .findFirstByPhieuNhapKho_IdAndBienTheSanPham_IdAndLoHangIsNull(phieuNhapKhoId, request.getBienTheSanPhamId())
+                .orElseThrow(() -> new RuntimeException("Sản phẩm không thuộc phiếu này"));
 
         BigDecimal soLuongCanNhap = dongDraft.getSoLuongNhap();
+        BigDecimal soLuongDaKhaiBao = chiTietPhieuNhapKhoRepository.sumSoLuongDaKhaiBao(phieuNhapKhoId, request.getBienTheSanPhamId());
 
-        // tổng đã khai báo (KHÔNG tính draft)
-        BigDecimal soLuongDaKhaiBao =
-                chiTietPhieuNhapKhoRepository.sumSoLuongDaKhaiBao(
-                        phieuNhapKhoId,
-                        request.getBienTheSanPhamId()
-                );
+        Optional<ChiTietPhieuNhapKho> existingCtOpt = chiTietPhieuNhapKhoRepository
+                .findByPhieuNhapKho_IdAndBienTheSanPham_IdAndLoHang_MaLo(phieuNhapKhoId, request.getBienTheSanPhamId(), request.getMaLo());
 
-        // === CHECK: nếu là update thì phải trừ số lượng cũ ===
-        Optional<ChiTietPhieuNhapKho> existingCtOpt =
-                chiTietPhieuNhapKhoRepository
-                        .findByPhieuNhapKho_IdAndBienTheSanPham_IdAndLoHang_MaLo(
-                                phieuNhapKhoId,
-                                request.getBienTheSanPhamId(),
-                                request.getMaLo()
-                        );
-
-        BigDecimal soLuongCu = BigDecimal.ZERO;
-        if (existingCtOpt.isPresent()) {
-            soLuongCu = existingCtOpt.get().getSoLuongNhap();
-        }
-
-        BigDecimal tongSauKhaiBao =
-                soLuongDaKhaiBao
-                        .subtract(soLuongCu)
-                        .add(request.getSoLuongNhap());
+        BigDecimal soLuongCu = existingCtOpt.map(ChiTietPhieuNhapKho::getSoLuongNhap).orElse(BigDecimal.ZERO);
+        BigDecimal tongSauKhaiBao = soLuongDaKhaiBao.subtract(soLuongCu).add(request.getSoLuongNhap());
 
         if (tongSauKhaiBao.compareTo(soLuongCanNhap) > 0) {
             throw new RuntimeException("Số lượng khai báo vượt quá số lượng cần nhập");
         }
 
-        // === CREATE / UPDATE LO ===
-        ChiTietPhieuNhapKho ct;
-
         if (existingCtOpt.isPresent()) {
-            // ===== UPDATE =====
-            ct = existingCtOpt.get();
-
+            ChiTietPhieuNhapKho ct = existingCtOpt.get();
             ct.setSoLuongNhap(request.getSoLuongNhap());
             ct.setGhiChu(request.getGhiChu());
-
             LoHang lo = ct.getLoHang();
             lo.setNgaySanXuat(request.getNgaySanXuat());
             lo.setGhiChu(request.getGhiChu());
-
+            chiTietPhieuNhapKhoRepository.save(ct);
         } else {
-            // ===== CREATE =====
-            LoHang loHang = loHangRepository.save(
-                    LoHang.builder()
-                            .bienTheSanPham(dongDraft.getBienTheSanPham())
-                            .maLo(request.getMaLo())
-                            .ngaySanXuat(request.getNgaySanXuat())
-                            .giaVon(dongDraft.getDonGia()) // lấy từ PO
-                            .nhaCungCap(phieu.getNhaCungCap())
-                            .ghiChu(request.getGhiChu())
-                            .build()
-            );
+            LoHang loHang = loHangRepository.save(LoHang.builder()
+                    .bienTheSanPham(dongDraft.getBienTheSanPham())
+                    .maLo(request.getMaLo())
+                    .ngaySanXuat(request.getNgaySanXuat())
+                    .giaVon(dongDraft.getDonGia())
+                    .nhaCungCap(phieu.getNhaCungCap())
+                    .ghiChu(request.getGhiChu())
+                    .build());
 
-            ct = ChiTietPhieuNhapKho.builder()
+            chiTietPhieuNhapKhoRepository.save(ChiTietPhieuNhapKho.builder()
                     .phieuNhapKho(phieu)
                     .bienTheSanPham(dongDraft.getBienTheSanPham())
                     .loHang(loHang)
                     .soLuongNhap(request.getSoLuongNhap())
                     .donGia(dongDraft.getDonGia())
                     .ghiChu(request.getGhiChu())
-                    .build();
+                    .build());
         }
-
-        chiTietPhieuNhapKhoRepository.save(ct);
     }
 
-
     @Transactional(readOnly = true)
-    public List<LoHangKhaiBaoDto> getDanhSachLoDaKhaiBao(
-            Integer phieuNhapKhoId,
-            Integer bienTheSanPhamId
-    ) {
-        List<ChiTietPhieuNhapKho> list =
-                chiTietPhieuNhapKhoRepository.findDeclaredLots(
-                        phieuNhapKhoId,
-                        bienTheSanPhamId
-                );
-
-        return list.stream()
+    public List<LoHangKhaiBaoDto> getDanhSachLoDaKhaiBao(Integer phieuNhapKhoId, Integer bienTheSanPhamId) {
+        return chiTietPhieuNhapKhoRepository.findDeclaredLots(phieuNhapKhoId, bienTheSanPhamId).stream()
                 .map(ct -> LoHangKhaiBaoDto.builder()
                         .chiTietPhieuNhapKhoId(ct.getId())
                         .loHangId(ct.getLoHang().getId())
@@ -296,125 +255,65 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                         .ngaySanXuat(ct.getLoHang().getNgaySanXuat())
                         .soLuongNhap(ct.getSoLuongNhap())
                         .ghiChu(ct.getGhiChu())
-                        .build()
-                )
+                        .build())
                 .toList();
     }
 
     @Transactional
-    public void xoaLo(Integer phieuNhapKhoId, Integer chiTietPhieuNhapKhoId) {
+    public void xoaLo(Integer phieuNhapKhoId, Integer chiTietId) {
         PhieuNhapKho phieu = repository.findById(phieuNhapKhoId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
-        if (phieu.getTrangThai() != 0) {
-            throw new RuntimeException("Chỉ được xoá lô khi phiếu ở trạng thái nháp");
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
+        if (phieu.getTrangThai() != TrangThaiPhieuNhap.DRAFT.getValue()) {
+            throw new RuntimeException("Chỉ được xóa lô ở trạng thái Nháp");
         }
-        ChiTietPhieuNhapKho ct =
-                chiTietPhieuNhapKhoRepository
-                        .findByIdAndPhieuNhapKho_Id(chiTietPhieuNhapKhoId, phieuNhapKhoId)
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy lô cần xoá"));
-        if (ct.getLoHang() == null) {
-            throw new RuntimeException("Dòng này không phải lô đã khai báo");
-        }
-        LoHang loHang = ct.getLoHang();
-        //xoá chi tiết phiếu nhập trước
+        ChiTietPhieuNhapKho ct = chiTietPhieuNhapKhoRepository.findByIdAndPhieuNhapKho_Id(chiTietId, phieuNhapKhoId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lô"));
+        LoHang lo = ct.getLoHang();
         chiTietPhieuNhapKhoRepository.delete(ct);
-        // xoá lô hàng
-        loHangRepository.delete(loHang);
+        loHangRepository.delete(lo);
     }
 
-    @Transactional
-    public void completePhieuNhap(Integer phieuNhapKhoId) {
+    @Transactional(readOnly = true)
+    public ChiTietPhieuNhapKhoDto getDetail(Integer id) {
+        PhieuNhapKho phieu = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
 
-        PhieuNhapKho phieu = repository.findById(phieuNhapKhoId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
-        //Validate trạng thái
-        if (phieu.getTrangThai() == 1) {
-            throw new RuntimeException("Phiếu nhập đã hoàn thành");
-        }
-        if (phieu.getTrangThai() == 2) {
-            throw new RuntimeException("Phiếu nhập đã bị huỷ");
-        }
-        //Kiểm tra đã khai báo đủ lô chưa
-        long chuaDuLo =
-                chiTietPhieuNhapKhoRepository
-                        .countBienTheChuaDuLo(phieuNhapKhoId);
+        List<PhieuNhapKhoItemDto> items = phieu.getChiTietPhieuNhapKhos().stream()
+                .filter(ct -> ct.getLoHang() == null)
+                .map(ct -> {
+                    BigDecimal soLuongDaKhaiBao = chiTietPhieuNhapKhoRepository.sumSoLuongDaKhaiBao(id, ct.getBienTheSanPham().getId());
+                    return PhieuNhapKhoItemDto.builder()
+                            .bienTheSanPhamId(ct.getBienTheSanPham().getId())
+                            .sku(ct.getBienTheSanPham().getMaSku())
+                            .tenBienThe(ct.getBienTheSanPham().getSanPham().getTenSanPham())
+                            .soLuongCanNhap(ct.getSoLuongNhap())
+                            .soLuongDaKhaiBao(soLuongDaKhaiBao)
+                            .daDuLo(soLuongDaKhaiBao.compareTo(ct.getSoLuongNhap()) >= 0)
+                            .build();
+                }).toList();
 
-        if (chuaDuLo > 0) {
-            throw new RuntimeException("Chưa khai báo đủ lô cho tất cả sản phẩm");
-        }
-        //Lấy tất cả dòng chi tiết có lô
-        List<ChiTietPhieuNhapKho> danhSachNhapTheoLo =
-                chiTietPhieuNhapKhoRepository
-                        .findAllByPhieuNhapKhoIdAndCoLo(phieuNhapKhoId);
-        Kho kho = phieu.getKho();
-        //CỘNG TỒN KHO THEO LÔ
-        for (ChiTietPhieuNhapKho ct : danhSachNhapTheoLo) {
-
-            LoHang loHang = ct.getLoHang();
-            BigDecimal soLuongNhap = ct.getSoLuongNhap();
-
-            TonKhoTheoLo tonKho =
-                    tonKhoTheoLoRepository
-                            .findByKho_IdAndLoHang_Id(
-                                    kho.getId(),
-                                    loHang.getId()
-                            )
-                            .orElse(
-                                    TonKhoTheoLo.builder()
-                                            .kho(kho)
-                                            .loHang(loHang)
-                                            .soLuongTon(BigDecimal.ZERO)
-                                            .soLuongDaDat(BigDecimal.ZERO)
-                                            .build()
-                            );
-            // cộng tồn
-            tonKho.setSoLuongTon(
-                    tonKho.getSoLuongTon().add(soLuongNhap)
-            );
-            tonKho.setNgayNhapGanNhat(Instant.now());
-            tonKho.setLanCapNhatCuoi(Instant.now());
-            tonKhoTheoLoRepository.save(tonKho);
-        }
-
-        // ===== TÍNH TỔNG TIỀN =====
-        BigDecimal tongTien = BigDecimal.ZERO;
-        for (ChiTietPhieuNhapKho ct : danhSachNhapTheoLo) {
-            BigDecimal thanhTienDong =
-                    ct.getSoLuongNhap().multiply(ct.getDonGia());
-
-            tongTien = tongTien.add(thanhTienDong);
-        }
-        phieu.setTongTien(tongTien);
-
-        //Chuyển trạng thái phiếu → HOÀN THÀNH
-        phieu.setTrangThai(1);
-        repository.save(phieu);
+        return ChiTietPhieuNhapKhoDto.builder()
+                .id(phieu.getId()).soPhieuNhap(phieu.getSoPhieuNhap()).trangThai(phieu.getTrangThai())
+                .ngayNhap(phieu.getNgayNhap()).donMuaHangId(phieu.getDonMuaHang().getId())
+                .soDonMua(phieu.getDonMuaHang().getSoDonMua()).nhaCungCapId(phieu.getNhaCungCap().getId())
+                .tenNhaCungCap(phieu.getNhaCungCap().getTenNhaCungCap()).khoId(phieu.getKho().getId())
+                .tenKho(phieu.getKho().getTenKho())
+                .items(items).build();
     }
 
     private String generateSoPhieu() {
-            String dateStr = java.time.LocalDate.now()
-                    .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
-
-            String prefix = "PN" + dateStr;
-
-            long countToday = ((PhieuNhapKhoRepository) repository)
-                    .countBySoPhieuPrefix(prefix);
-
-            long stt = countToday + 1;
-
-            return prefix + stt;
+        String dateStr = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+        String prefix = "PN" + dateStr;
+        long countToday = ((PhieuNhapKhoRepository) repository).countBySoPhieuPrefix(prefix);
+        return prefix + (countToday + 1);
     }
 
     private boolean isDuplicateSoPhieu(Exception ex) {
         Throwable cause = ex;
         while (cause != null) {
-            if (cause.getMessage() != null &&
-                    cause.getMessage().contains("uk_phieu_nhap_kho_so_phieu")) {
-                return true;
-            }
+            if (cause.getMessage() != null && cause.getMessage().contains("uk_phieu_nhap_kho_so_phieu")) return true;
             cause = cause.getCause();
         }
         return false;
     }
-
-    }
+}
