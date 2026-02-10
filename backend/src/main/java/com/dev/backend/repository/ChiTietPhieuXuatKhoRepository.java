@@ -1,5 +1,6 @@
 package com.dev.backend.repository;
 
+import com.dev.backend.dto.response.customize.PickedLotDto;
 import com.dev.backend.entities.ChiTietPhieuXuatKho;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -35,5 +36,19 @@ public interface ChiTietPhieuXuatKhoRepository extends JpaRepository<ChiTietPhie
             @Param("phieuXuatKhoId") Integer phieuXuatKhoId,
             @Param("bienTheSanPhamId") Integer bienTheSanPhamId
     );
-
+    @Query("""
+        select new com.dev.backend.dto.response.customize.PickedLotDto(
+            ct.loHang.id,
+            sum(ct.soLuongXuat)
+        )
+        from ChiTietPhieuXuatKho ct
+        where ct.phieuXuatKho.id = :phieuXuatKhoId
+          and ct.bienTheSanPham.id = :bienTheSanPhamId
+          and ct.loHang is not null
+        group by ct.loHang.id
+    """)
+    List<PickedLotDto> findPickedLots(
+            Integer phieuXuatKhoId,
+            Integer bienTheSanPhamId
+    );
 }

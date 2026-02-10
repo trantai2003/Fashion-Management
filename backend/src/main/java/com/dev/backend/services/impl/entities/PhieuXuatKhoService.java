@@ -3,6 +3,7 @@ package com.dev.backend.services.impl.entities;
 import com.dev.backend.dto.request.ChiTietPhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
+import com.dev.backend.dto.response.customize.PickedLotDto;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
 import com.dev.backend.dto.response.entities.ChiTietPhieuXuatKhoDto;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
@@ -335,6 +336,27 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                         .build()
                 )
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PickedLotDto> getPickedLots(
+            Integer phieuXuatKhoId,
+            Integer chiTietPhieuXuatKhoId
+    ) {
+
+        ChiTietPhieuXuatKho ct =
+                chiTietPhieuXuatKhoRepository.findById(chiTietPhieuXuatKhoId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Không tìm thấy chi tiết phiếu xuất"));
+        // đảm bảo chi tiết thuộc đúng phiếu
+        if (!ct.getPhieuXuatKho().getId().equals(phieuXuatKhoId)) {
+            throw new RuntimeException("Chi tiết không thuộc phiếu xuất kho này");
+        }
+
+        return chiTietPhieuXuatKhoRepository.findPickedLots(
+                phieuXuatKhoId,
+                ct.getBienTheSanPham().getId()
+        );
     }
     private String generateSoPhieu() {
         String dateStr = java.time.LocalDate.now()

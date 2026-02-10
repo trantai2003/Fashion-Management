@@ -7,9 +7,8 @@ import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
 import com.dev.backend.dto.response.ResponseData;
-import com.dev.backend.dto.response.customize.LoHangKhaiBaoDto;
+import com.dev.backend.dto.response.customize.PickedLotDto;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
-import com.dev.backend.dto.response.entities.ChiTietPhieuXuatKhoDto;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
 import com.dev.backend.dto.response.entities.TonKhoTheoLoDto;
 import com.dev.backend.entities.PhieuXuatKho;
@@ -157,6 +156,16 @@ public class PhieuXuatKhoController {
                         .data(data)
                         .message("OK")
                         .build()
+        );
+    }
+    @GetMapping("/{phieuXuatKhoId}/picked-lots/{chiTietPhieuXuatKhoId}")
+    public List<PickedLotDto> getPickedLots(
+            @PathVariable Integer phieuXuatKhoId,
+            @PathVariable Integer chiTietPhieuXuatKhoId
+    ) {
+        return phieuXuatKhoService.getPickedLots(
+                phieuXuatKhoId,
+                chiTietPhieuXuatKhoId
         );
     }
 }
