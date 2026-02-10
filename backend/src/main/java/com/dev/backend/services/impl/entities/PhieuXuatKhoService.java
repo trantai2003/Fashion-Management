@@ -6,6 +6,7 @@ import com.dev.backend.dto.request.PickLoHangRequest;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
 import com.dev.backend.dto.response.entities.ChiTietPhieuXuatKhoDto;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
+import com.dev.backend.dto.response.entities.TonKhoTheoLoDto;
 import com.dev.backend.entities.*;
 import com.dev.backend.repository.*;
 import com.dev.backend.services.impl.BaseServiceImpl;
@@ -153,24 +154,36 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         List<ChiTietPhieuXuatKho> chiTietList =
                 chiTietPhieuXuatKhoRepository
                         .findByPhieuXuatKhoIdAndLoHangIsNull(phieu.getId());
-
         List<ChiTietPhieuXuatKhoDto> chiTietDtos =
                 chiTietList.stream()
-                        .map(ct -> ChiTietPhieuXuatKhoDto.builder()
-                                .id(ct.getId())
-                                .bienTheSanPhamId(ct.getBienTheSanPham().getId())
-                                .sku(ct.getBienTheSanPham().getMaSku())
-                                .tenBienThe((ct.getBienTheSanPham().getSanPham().getTenSanPham() +" /"
-                                        + ct.getBienTheSanPham().getMauSac().getTenMau() +" /"
-                                        + ct.getBienTheSanPham().getSize().getTenSize() +" /"
-                                        + ct.getBienTheSanPham().getChatLieu().getTenChatLieu()))
-                                .soLuongCanXuat(ct.getSoLuongXuat())
-                                .soLuongDaPick(BigDecimal.ZERO) // chưa pick lô
-                                .duSoLuong(false)
-                                .build()
-                        )
+                        .map(ct -> {
+                            // 1. Số lượng cần xuất (theo phiếu)
+                            BigDecimal soLuongCanXuat = ct.getSoLuongXuat();
+                            // 2. Tổng số lượng đã pick (từ các dòng đã có lô)
+                            BigDecimal soLuongDaPick =
+                                    chiTietPhieuXuatKhoRepository.sumPickedQuantity(
+                                            phieu.getId(),
+                                            ct.getBienTheSanPham().getId()
+                                    );
+                            // 3. Đủ số lượng chưa?
+                            boolean duSoLuong =
+                                    soLuongDaPick.compareTo(soLuongCanXuat) >= 0;
+                            return ChiTietPhieuXuatKhoDto.builder()
+                                    .id(ct.getId())
+                                    .bienTheSanPhamId(ct.getBienTheSanPham().getId())
+                                    .sku(ct.getBienTheSanPham().getMaSku())
+                                    .tenBienThe(
+                                            ct.getBienTheSanPham().getSanPham().getTenSanPham() + " / "
+                                                    + ct.getBienTheSanPham().getMauSac().getTenMau() + " / "
+                                                    + ct.getBienTheSanPham().getSize().getTenSize() + " / "
+                                                    + ct.getBienTheSanPham().getChatLieu().getTenChatLieu()
+                                    )
+                                    .soLuongCanXuat(soLuongCanXuat)
+                                    .soLuongDaPick(soLuongDaPick)
+                                    .duSoLuong(duSoLuong)
+                                    .build();
+                        })
                         .toList();
-
         return ChiTietPhieuNhapKhoResponse.builder()
                 .phieu(phieuDto)
                 .chiTiet(chiTietDtos)

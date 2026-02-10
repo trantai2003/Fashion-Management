@@ -24,4 +24,16 @@ public interface ChiTietPhieuXuatKhoRepository extends JpaRepository<ChiTietPhie
             @Param("phieuId") Integer phieuId,
             @Param("bienTheId") Integer bienTheId
     );
+    @Query("""
+    select coalesce(sum(ct.soLuongXuat), 0)
+    from ChiTietPhieuXuatKho ct
+    where ct.phieuXuatKho.id = :phieuXuatKhoId
+      and ct.bienTheSanPham.id = :bienTheSanPhamId
+      and ct.loHang is not null
+""")
+    BigDecimal sumPickedQuantity(
+            @Param("phieuXuatKhoId") Integer phieuXuatKhoId,
+            @Param("bienTheSanPhamId") Integer bienTheSanPhamId
+    );
+
 }
