@@ -27,6 +27,7 @@ import KhaiBaoLo from "./pages/receipt/KhaiBaoLo.jsx";
 import PhieuXuatKhoList from "./pages/issue/PhieuXuatKhoList.jsx";
 import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
 import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
+import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
 import SkuBuilder from "./pages/product/SkuBuilder";
 import PhieuXuatKhoCreate from "./pages/issue/PhieuXuatKhoCreate.jsx";
 import PhieuXuatKhoDetail from "./pages/issue/PhieuXuatKhoDetail.jsx";
@@ -79,6 +80,7 @@ export default function App() {
 
           {/* Purchase Order */}
           <Route path="/purchase-orders" element={<PurchaseOrder />} />
+          <Route path="/purchase-orders/create" element={<PurchaseOrderCreate />} />
           <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
 
           {/* Supplier */}
