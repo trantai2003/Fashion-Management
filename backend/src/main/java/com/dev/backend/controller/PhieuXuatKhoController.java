@@ -5,6 +5,7 @@ import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
+import com.dev.backend.dto.request.PickLoHangRequest;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
 import com.dev.backend.dto.response.entities.ChiTietPhieuXuatKhoDto;
@@ -104,4 +105,29 @@ public class PhieuXuatKhoController {
                         .build()
         );
     }
+
+    @PostMapping("/{phieuXuatKhoId}/pick-lo")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho
+            },
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> pickLoHang(
+            @PathVariable Integer phieuXuatKhoId,
+            @RequestBody PickLoHangRequest request
+    ) {
+        phieuXuatKhoService.pickLoHang(phieuXuatKhoId, request);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Pick lô thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+
 }
