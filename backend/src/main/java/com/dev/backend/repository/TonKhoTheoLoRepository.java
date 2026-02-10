@@ -233,4 +233,16 @@ public interface TonKhoTheoLoRepository extends JpaRepository<TonKhoTheoLo, Inte
             Integer khoId,
             Integer loHangId
     );
+    @Query("""
+        select t
+        from TonKhoTheoLo t
+        where t.kho.id = :khoId
+          and t.loHang.bienTheSanPham.id = :bienTheSanPhamId
+          and t.soLuongKhaDung > 0
+        order by t.ngayNhapGanNhat asc
+    """)
+    List<TonKhoTheoLo> findAvailableLots(
+            @Param("khoId") Integer khoId,
+            @Param("bienTheSanPhamId") Integer bienTheSanPhamId
+    );
 }

@@ -302,6 +302,40 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             chiTietPhieuXuatKhoRepository.save(ctPick);
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<TonKhoTheoLoDto> getAvailableLots(
+            Integer phieuXuatKhoId,
+            Integer bienTheSanPhamId
+    ) {
+
+        // 1. Lấy phiếu xuất
+        PhieuXuatKho phieuXuatKho =
+                repository.findById(phieuXuatKhoId)
+                        .orElseThrow(() ->
+                                new RuntimeException("Không tìm thấy phiếu xuất kho")
+                        );
+
+        Integer khoXuatId = phieuXuatKho.getKho().getId();
+
+        // 2. Query tồn kho theo lô
+        List<TonKhoTheoLo> tonKhoList =
+                tonKhoTheoLoRepository.findAvailableLots(
+                        khoXuatId,
+                        bienTheSanPhamId
+                );
+
+        // 3. Map sang DTO
+        return tonKhoList.stream()
+                .map(t -> TonKhoTheoLoDto.builder()
+                        .loHangId(t.getLoHang().getId())
+                        .maLo(t.getLoHang().getMaLo())
+                        .ngayNhapGanNhat(t.getNgayNhapGanNhat())
+                        .soLuongKhaDung(t.getSoLuongKhaDung())
+                        .build()
+                )
+                .toList();
+    }
     private String generateSoPhieu() {
         String dateStr = java.time.LocalDate.now()
                 .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);

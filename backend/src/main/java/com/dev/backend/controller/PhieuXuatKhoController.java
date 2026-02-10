@@ -7,9 +7,11 @@ import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.customize.LoHangKhaiBaoDto;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
 import com.dev.backend.dto.response.entities.ChiTietPhieuXuatKhoDto;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
+import com.dev.backend.dto.response.entities.TonKhoTheoLoDto;
 import com.dev.backend.entities.PhieuXuatKho;
 import com.dev.backend.mapper.PhieuXuatKhoMapper;
 import com.dev.backend.services.impl.entities.PhieuXuatKhoService;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -130,4 +133,30 @@ public class PhieuXuatKhoController {
         );
     }
 
+    @GetMapping("/{phieuXuatKhoId}/available-lots")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho
+            },
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<List<TonKhoTheoLoDto>>> getAvailableLots(
+            @PathVariable Integer phieuXuatKhoId,
+            @RequestParam Integer bienTheSanPhamId
+    ) {
+        List<TonKhoTheoLoDto> data = phieuXuatKhoService.getAvailableLots(
+                phieuXuatKhoId,
+                bienTheSanPhamId
+        );
+        return ResponseEntity.ok(
+                ResponseData.<List<TonKhoTheoLoDto>>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(data)
+                        .message("OK")
+                        .build()
+        );
+    }
 }
