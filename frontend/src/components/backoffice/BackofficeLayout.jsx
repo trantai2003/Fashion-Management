@@ -116,6 +116,12 @@ export default function BackofficeLayout() {
             match: (path) => /^\/goods-issues\/\d+$/.test(path),
             title: "Chi tiết phiếu xuất kho",
             subtitle: "Xem chi tiết phiếu xuất kho",
+        },
+        {
+            key: "PICK_LOT",
+            match: (path) => /^\/goods-issues\/\d+\/pick-lot\/\d+$/.test(path),
+            title: "Chọn lô hàng",
+            subtitle: "Chọn lô hàng để xuất kho",
         }
     ];
 

@@ -30,6 +30,7 @@ import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
 import SkuBuilder from "./pages/product/SkuBuilder";
 import PhieuXuatKhoCreate from "./pages/issue/PhieuXuatKhoCreate.jsx";
 import PhieuXuatKhoDetail from "./pages/issue/PhieuXuatKhoDetail.jsx";
+import PickLot from "./pages/issue/PickLot.jsx";
 export default function App() {
   return (
     <BrowserRouter>
@@ -96,6 +97,7 @@ export default function App() {
           <Route path="/goods-issues" element={<PhieuXuatKhoList />} />
           <Route path="/goods-issues/create" element={<PhieuXuatKhoCreate />} />
           <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
+          <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />}/>
         </Route>
 
         {/* ========== 404 ========== */}

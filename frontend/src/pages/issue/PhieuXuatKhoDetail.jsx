@@ -45,7 +45,9 @@ export default function PhieuXuatKhoDetail() {
     }
 
     const { phieu, chiTiet } = data;
-    const isAllPicked = chiTiet.every((ct) => ct.duSoLuong === true);
+    const isAllPicked = Array.isArray(chiTiet)
+        && chiTiet.length > 0
+        && chiTiet.every(ct => ct.duSoLuong === true);
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -169,7 +171,20 @@ export default function PhieuXuatKhoDetail() {
                                         <td className="px-4 py-3 text-center">
                                             <button
                                                 disabled={phieu.trangThai !== 0}
-                                                onClick={() => navigate(`/goods-issues/${phieu.id}/pick/${ct.id}`)}
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/goods-issues/${phieu.id}/pick-lot/${ct.id}`,
+                                                        {
+                                                            state: {
+                                                                bienTheSanPhamId: ct.bienTheSanPhamId,
+                                                                sku: ct.sku,
+                                                                tenBienThe: ct.tenBienThe,
+                                                                soLuongXuat: ct.soLuongCanXuat,
+                                                                soLuongDaPick: ct.soLuongDaPick,
+                                                            },
+                                                        }
+                                                    )
+                                                }
                                                 className={`px-3 py-1.5 text-sm rounded-md font-medium
                                                     ${phieu.trangThai === 0
                                                         ? "bg-purple-600 text-white hover:bg-purple-700"
