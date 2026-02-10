@@ -5,8 +5,10 @@ import { toast } from "sonner";
 
 const STATUS_MAP = {
     0: { label: "Nháp", className: "bg-amber-50 text-amber-700" },
-    1: { label: "Hoàn thành", className: "bg-green-50 text-green-700" },
-    2: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
+    1: { label: "Chờ duyệt", className: "bg-blue-50 text-blue-700" },
+    2: { label: "Đã duyệt", className: "bg-indigo-50 text-indigo-700" },
+    3: { label: "Đã xuất", className: "bg-green-50 text-green-700" },
+    4: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
 };
 
 export default function PhieuXuatKhoDetail() {
@@ -33,6 +35,20 @@ export default function PhieuXuatKhoDetail() {
             toast.error("Không thể tải chi tiết phiếu xuất");
         } finally {
             setLoading(false);
+        }
+    }
+
+    // Hàm xử lý chung cho Gửi duyệt và Phê duyệt (vì không cần qua modal xác nhận)
+    async function handleStatusChange(actionFn, successMsg) {
+        setIsProcessing(true);
+        try {
+            await actionFn(id);
+            toast.success(successMsg);
+            fetchDetail(); // Load lại dữ liệu
+        } catch (e) {
+            toast.error(e?.response?.data?.message || "Thao tác thất bại");
+        } finally {
+            setIsProcessing(false);
         }
     }
 
@@ -70,9 +86,10 @@ export default function PhieuXuatKhoDetail() {
                             {STATUS_MAP[phieu.trangThai]?.label}
                         </span>
 
-                        {/* Cancel Button */}
-                        {phieu.trangThai === 0 && (
+                        {/* Cancel Button - Hiện cho các trạng thái chưa hoàn thành/hủy */}
+                        {[0, 1, 2].includes(phieu.trangThai) && (
                             <button
+                                disabled={isProcessing}
                                 className="px-4 py-2 rounded-md text-sm border border-red-200 text-red-600 hover:bg-red-50"
                                 onClick={() => setShowCancelConfirm(true)}
                             >
@@ -80,19 +97,43 @@ export default function PhieuXuatKhoDetail() {
                             </button>
                         )}
 
-                        {/* Complete Button */}
-                        <button
-                            disabled={!isAllPicked || phieu.trangThai !== 0}
-                            onClick={() => setShowConfirm(true)}
-                            className={`
-                                px-4 py-2 rounded-md text-sm font-semibold
-                                ${isAllPicked && phieu.trangThai === 0
-                                    ? "bg-purple-600 text-white hover:bg-purple-700"
-                                    : "bg-gray-300 text-white cursor-not-allowed"}
-                            `}
-                        >
-                            Hoàn thành phiếu xuất
-                        </button>
+                        {/* 1. Nút Gửi duyệt (Chỉ hiện ở trạng thái Nháp - 0) */}
+                        {phieu.trangThai === 0 && (
+                            <button
+                                disabled={!isAllPicked || isProcessing}
+                                onClick={() => handleStatusChange(phieuXuatKhoService.submit, "Đã gửi duyệt phiếu xuất")}
+                                className={`
+                                    px-4 py-2 rounded-md text-sm font-semibold
+                                    ${isAllPicked && !isProcessing
+                                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                                        : "bg-gray-300 text-white cursor-not-allowed"}
+                                `}
+                            >
+                                Gửi duyệt
+                            </button>
+                        )}
+
+                        {/* 2. Nút Phê duyệt (Chỉ hiện ở trạng thái Chờ duyệt - 1) */}
+                        {phieu.trangThai === 1 && (
+                            <button
+                                disabled={isProcessing}
+                                onClick={() => handleStatusChange(phieuXuatKhoService.approve, "Đã phê duyệt phiếu xuất")}
+                                className="px-4 py-2 rounded-md text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
+                            >
+                                Phê duyệt
+                            </button>
+                        )}
+
+                        {/* 3. Nút Hoàn thành (Chỉ hiện ở trạng thái Đã duyệt - 2) */}
+                        {phieu.trangThai === 2 && (
+                            <button
+                                disabled={isProcessing}
+                                onClick={() => setShowConfirm(true)}
+                                className="px-4 py-2 rounded-md text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700"
+                            >
+                                Hoàn thành xuất kho
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -231,7 +272,7 @@ export default function PhieuXuatKhoDetail() {
                                             toast.success("Hoàn thành phiếu xuất thành công");
                                             navigate("/goods-issues");
                                         } catch (e) {
-                                            toast.error("Không thể hoàn thành phiếu xuất");
+                                            toast.error(e?.response?.data?.message || "Không thể hoàn thành phiếu xuất");
                                         } finally {
                                             setIsProcessing(false);
                                             setShowConfirm(false);
@@ -277,7 +318,7 @@ export default function PhieuXuatKhoDetail() {
                                             toast.success("Huỷ phiếu xuất thành công");
                                             navigate("/goods-issues");
                                         } catch (e) {
-                                            toast.error("Không thể huỷ phiếu xuất");
+                                            toast.error(e?.response?.data?.message || "Không thể huỷ phiếu xuất");
                                         } finally {
                                             setIsProcessing(false);
                                             setShowCancelConfirm(false);
