@@ -121,12 +121,26 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuXuatKho phieu = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu xuất"));
 
-        // Header – reuse DTO
+        String soDonHang = null;
+        String tenKhoChuyenDen = null;
+
+        if ("ban_hang".equals(phieu.getLoaiXuat())
+                && phieu.getDonBanHang() != null) {
+            soDonHang = phieu.getDonBanHang().getSoDonHang();
+        }
+
+        if ("chuyen_kho".equals(phieu.getLoaiXuat())
+                && phieu.getKhoChuyenDen() != null) {
+            tenKhoChuyenDen = phieu.getKhoChuyenDen().getTenKho();
+        }
+
         PhieuXuatKhoDto phieuDto = PhieuXuatKhoDto.builder()
                 .id(phieu.getId())
                 .soPhieuXuat(phieu.getSoPhieuXuat())
-                .soDonHang(phieu.getDonBanHang().getSoDonHang())
+                .loaiXuat(phieu.getLoaiXuat())
+                .soDonHang(soDonHang)
                 .tenKho(phieu.getKho().getTenKho())
+                .tenKhoChuyenDen(tenKhoChuyenDen)
                 .ngayXuat(phieu.getNgayXuat())
                 .trangThai(phieu.getTrangThai())
                 .build();

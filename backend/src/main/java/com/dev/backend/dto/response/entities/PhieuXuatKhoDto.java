@@ -10,8 +10,10 @@ import java.time.Instant;
 public class PhieuXuatKhoDto {
     Integer id;
     String soPhieuXuat;
+    String loaiXuat;
     String soDonHang;
     String tenKho;
+    String tenKhoChuyenDen;
     Instant ngayXuat;
     Integer trangThai;
 }
