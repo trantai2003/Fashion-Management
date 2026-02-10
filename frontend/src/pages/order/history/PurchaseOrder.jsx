@@ -17,16 +17,24 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
     ChevronLeft,
     ChevronRight,
     ChevronDown,
     Search,
-    FileText,
     Calendar,
     Package,
     Filter,
@@ -36,7 +44,19 @@ import {
     RefreshCw,
     Building2,
     Warehouse,
+    Edit,
+    Trash2,
+    CheckCircle,
+    XCircle,
+    Clock,
+    FileText,
+    Loader2,
+    DollarSign,
+    MoreVertical,
+    AlertCircle,
+    Send,
 } from "lucide-react";
+import purchaseOrderService from "../../../services/purchaseOrderService";
 
 export default function PurchaseOrderList() {
     const navigate = useNavigate();
@@ -46,6 +66,12 @@ export default function PurchaseOrderList() {
     const [loading, setLoading] = useState(false);
     const [suppliers, setSuppliers] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showApproveDialog, setShowApproveDialog] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
 
     // Pagination state
     const [pagination, setPagination] = useState({
@@ -58,20 +84,49 @@ export default function PurchaseOrderList() {
     // Filter state
     const [filters, setFilters] = useState({
         soDonMua: '',
-        maNhaCungCap: '',
-        maKho: '',
+        nhaCungCapId: '',
+        khoId: '',
         trangThai: '',
-        tuNgay: '',
-        denNgay: '',
+    });
+
+    // Date range filter state
+    const [dateRange, setDateRange] = useState({
+        from: '',
+        to: '',
     });
 
     // Trạng thái đơn hàng configuration
     const statusConfig = {
-        0: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-        1: { label: 'Đã duyệt', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-        2: { label: 'Đang giao', color: 'bg-purple-100 text-purple-800 border-purple-200' },
-        3: { label: 'Đã hủy', color: 'bg-red-100 text-red-800 border-red-200' },
-        4: { label: 'Hoàn thành', color: 'bg-green-100 text-green-800 border-green-200' },
+        0: {
+            label: 'Chờ duyệt',
+            color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+            icon: Clock,
+            description: 'Đơn hàng đang chờ phê duyệt'
+        },
+        1: {
+            label: 'Đã duyệt',
+            color: 'bg-blue-100 text-blue-800 border-blue-200',
+            icon: CheckCircle,
+            description: 'Đơn hàng đã được phê duyệt'
+        },
+        2: {
+            label: 'Đang giao',
+            color: 'bg-purple-100 text-purple-800 border-purple-200',
+            icon: Send,
+            description: 'Đơn hàng đang được giao'
+        },
+        3: {
+            label: 'Đã hủy',
+            color: 'bg-red-100 text-red-800 border-red-200',
+            icon: XCircle,
+            description: 'Đơn hàng đã bị hủy'
+        },
+        4: {
+            label: 'Hoàn thành',
+            color: 'bg-green-100 text-green-800 border-green-200',
+            icon: CheckCircle,
+            description: 'Đơn hàng đã hoàn thành'
+        },
     };
 
     // Format currency
@@ -79,7 +134,7 @@ export default function PurchaseOrderList() {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND',
-        }).format(amount);
+        }).format(amount || 0);
     };
 
     // Format date
@@ -92,25 +147,27 @@ export default function PurchaseOrderList() {
         });
     };
 
-    // Format datetime
-    const formatDateTime = (dateString) => {
-        if (!dateString) return '-';
-        return new Date(dateString).toLocaleString('vi-VN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
+    // Show notification
+    const showNotification = (type, message) => {
+        if (type === 'success') {
+            setSuccess(message);
+            setError(null);
+            setTimeout(() => setSuccess(null), 5000);
+        } else {
+            setError(message);
+            setSuccess(null);
+            setTimeout(() => setError(null), 5000);
+        }
     };
 
     // Fetch purchase orders from API
     const fetchPurchaseOrders = async (page = 0, size = 10) => {
         setLoading(true);
+        setError(null);
         try {
-            // Build filters array
             const filterArray = [];
 
+            // Filter theo số đơn mua
             if (filters.soDonMua) {
                 filterArray.push({
                     fieldName: "soDonMua",
@@ -120,29 +177,51 @@ export default function PurchaseOrderList() {
                 });
             }
 
-            if (filters.maNhaCungCap && filters.maNhaCungCap !== 'all') {
+            // Filter theo nhà cung cấp - Sử dụng ID từ relation
+            if (filters.nhaCungCapId && filters.nhaCungCapId !== 'all') {
                 filterArray.push({
-                    fieldName: "nhaCungCap.maNhaCungCap",
+                    fieldName: "nhaCungCap.id",
                     operation: "EQUALS",
-                    value: filters.maNhaCungCap,
+                    value: parseInt(filters.nhaCungCapId), // Convert to Integer
                     logicType: "AND"
                 });
             }
 
-            if (filters.maKho && filters.maKho !== 'all') {
+            // Filter theo kho
+            if (filters.khoId && filters.khoId !== 'all') {
                 filterArray.push({
-                    fieldName: "khoNhap.maKho",
+                    fieldName: "khoNhap.id",
                     operation: "EQUALS",
-                    value: filters.maKho,
+                    value: parseInt(filters.khoId), // Convert to Integer
                     logicType: "AND"
                 });
             }
 
+            // Filter theo trạng thái
             if (filters.trangThai !== '' && filters.trangThai !== 'all') {
                 filterArray.push({
                     fieldName: "trangThai",
                     operation: "EQUALS",
-                    value: filters.trangThai,
+                    value: parseInt(filters.trangThai),
+                    logicType: "AND"
+                });
+            }
+
+            // Filter theo khoảng thời gian
+            if (dateRange.from) {
+                filterArray.push({
+                    fieldName: "ngayDatHang",
+                    operation: "GREATER_THAN_OR_EQUAL",
+                    value: new Date(dateRange.from).toISOString(),
+                    logicType: "AND"
+                });
+            }
+
+            if (dateRange.to) {
+                filterArray.push({
+                    fieldName: "ngayDatHang",
+                    operation: "LESS_THAN_OR_EQUAL",
+                    value: new Date(dateRange.to).toISOString(),
                     logicType: "AND"
                 });
             }
@@ -159,227 +238,60 @@ export default function PurchaseOrderList() {
                 size: size
             };
 
-            /*
-            const response = await fetch('/api/v1/don-mua-hang/filter', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            });
+            console.log('📤 Filter request:', requestBody);
 
-            const result = await response.json();
-            */
+            const response = await purchaseOrderService.filter(requestBody);
 
-            const result = {
-                "status": 200,
-                "data": {
-                    "content": [
-                        {
-                            "id": 8,
-                            "soDonMua": "PO2024030003",
-                            "nhaCungCap": {
-                                "id": 1,
-                                "maNhaCungCap": "NCC001",
-                                "tenNhaCungCap": "Công ty Trung Quốc",
-                                "nguoiLienHe": "Nguyễn Văn 3",
-                                "soDienThoai": "0241234567",
-                                "email": "trantai171003@gmail.com",
-                                "diaChi": "Số 10, Đường Lê Lợi, Quận Hoàn Kiếm, Hà Nộii",
-                                "trangThai": 0,
-                                "ngayTao": "2026-01-21T13:53:09Z",
-                                "ngayCapNhat": "2026-02-02T16:24:23Z"
-                            },
-                            "khoNhap": {
-                                "id": 1,
-                                "maKho": "KHO01",
-                                "tenKho": "Kho Hà Nội - Updated",
-                                "diaChi": "Cầu Giấy, Hà Nội",
-                                "quanLy": {
-                                    "id": 4,
-                                    "tenDangNhap": "warehouse1",
-                                    "hoTen": "Phạm Văn Hùng",
-                                    "email": "hung.pham@fashion.vn",
-                                    "soDienThoai": "0934567890",
-                                    "vaiTro": "nhan_vien_kho",
-                                    "trangThai": 1,
-                                    "ngayTao": "2026-01-21T13:53:09Z",
-                                    "ngayCapNhat": "2026-01-21T13:53:09Z",
-                                    "khoPhuTrach": null
-                                },
-                                "trangThai": 1,
-                                "ngayTao": "2026-01-21T13:53:10Z"
-                            },
-                            "ngayDatHang": "2026-02-02T16:17:33Z",
-                            "ngayGiaoDuKien": "2026-03-02T16:17:33Z",
-                            "trangThai": 0,
-                            "tongTien": 0,
-                            "ghiChu": "Đơn nhập phụ kiện",
-                            "nguoiTao": {
-                                "id": 1,
-                                "tenDangNhap": "admin",
-                                "hoTen": "Trần Đức Tài",
-                                "email": "trantai17102003@gmail.com",
-                                "soDienThoai": "0901234567",
-                                "vaiTro": "quan_tri_vien",
-                                "trangThai": 1,
-                                "ngayTao": "2026-01-21T13:53:09Z",
-                                "ngayCapNhat": "2026-02-02T13:08:40Z",
-                                "khoPhuTrach": null
-                            },
-                            "nguoiDuyet": {
-                                "id": 1,
-                                "tenDangNhap": "admin",
-                                "hoTen": "Trần Đức Tài",
-                                "email": "trantai17102003@gmail.com",
-                                "soDienThoai": "0901234567",
-                                "vaiTro": "quan_tri_vien",
-                                "trangThai": 1,
-                                "ngayTao": "2026-01-21T13:53:09Z",
-                                "ngayCapNhat": "2026-02-02T13:08:40Z",
-                                "khoPhuTrach": null
-                            },
-                            "ngayTao": "2026-02-02T17:16:57Z",
-                            "ngayCapNhat": "2026-02-02T17:16:57Z",
-                            "chiTietDonMuaHangs": [
-                                {
-                                    "id": 18,
-                                    "bienTheSanPham": {
-                                        "id": 14,
-                                        "mauSac": {
-                                            "id": 11,
-                                            "maMau": "M011",
-                                            "tenMau": "Hồng",
-                                            "maMauHex": "#FFC0CB",
-                                            "ngayTao": "2026-01-21T13:53:09Z"
-                                        },
-                                        "size": {
-                                            "id": 4,
-                                            "maSize": "XL",
-                                            "tenSize": "Size XL",
-                                            "loaiSize": "chu",
-                                            "thuTuSapXep": 4,
-                                            "moTa": "Size rất lớn",
-                                            "ngayTao": "2026-01-21T13:53:10Z"
-                                        },
-                                        "chatLieu": {
-                                            "id": 1,
-                                            "maChatLieu": "CL001",
-                                            "tenChatLieu": "Cotton 100%",
-                                            "moTa": "Vải cotton tự nhiên 100%, thấm hút tốt.",
-                                            "ngayTao": "2026-01-21T13:53:09Z"
-                                        },
-                                        "maSku": "HSQEQQ123",
-                                        "maVachSku": "HSQEQQ123",
-                                        "giaVon": 1000000,
-                                        "giaBan": 1213000,
-                                        "trangThai": 1,
-                                        "ngayTao": null,
-                                        "ngayCapNhat": "2026-01-25T16:29:58Z",
-                                        "anhBienThe": {
-                                            "id": 1,
-                                            "tepTin": {
-                                                "id": 2,
-                                                "tenTepGoc": "bien_the_san_pham_ao-hong_1769358586239_0",
-                                                "tenTaiLen": "bien_the_san_pham_ao-hong_1769358586239_0",
-                                                "tenLuuTru": "bien_the_san_pham_ao-hong_1769358586239_0",
-                                                "duongDan": "http://171.244.142.43:9000/fashion/bien_the_san_pham_ao-hong_1769358586239_0",
-                                                "loaiTepTin": "IMAGE",
-                                                "duoiTep": ".jpg",
-                                                "kichCo": null,
-                                                "moTa": null,
-                                                "ngayTao": "2026-01-25T16:29:46Z",
-                                                "ngayCapNhat": null,
-                                                "trangThai": 1
-                                            },
-                                            "trangThai": 1,
-                                            "ngayTao": "2026-01-25T16:29:46Z",
-                                            "ngayCapNhat": null
-                                        }
-                                    },
-                                    "soLuongDat": 50,
-                                    "soLuongDaNhan": 0,
-                                    "donGia": 300000,
-                                    "thanhTien": 15000000,
-                                    "ghiChu": "Test"
-                                }
-                            ]
-                        }
-                    ],
-                    "pageable": {
-                        "pageNumber": 0,
-                        "pageSize": 10,
-                        "sort": {
-                            "empty": false,
-                            "sorted": true,
-                            "unsorted": false
-                        },
-                        "offset": 0,
-                        "paged": true,
-                        "unpaged": false
-                    },
-                    "last": true,
-                    "totalElements": 1,
-                    "totalPages": 1,
-                    "first": true,
-                    "size": 10,
-                    "number": 0,
-                    "sort": {
-                        "empty": false,
-                        "sorted": true,
-                        "unsorted": false
-                    },
-                    "numberOfElements": 1,
-                    "empty": false
-                },
-                "error": null,
-                "message": "Success",
-                "timestamp": "2026-02-03T07:32:53.679+00:00",
-                "path": "/api/v1/don-mua-hang/filter"
-            };
+            console.log('📥 Response:', response);
 
-            if (result.status === 200 && result.data) {
-                setPurchaseOrders(result.data.content || []);
+            if (response && response.data) {
+                setPurchaseOrders(response.data.content || []);
                 setPagination({
-                    pageNumber: result.data.number || 0,
-                    pageSize: result.data.size || 10,
-                    totalElements: result.data.totalElements || 0,
-                    totalPages: result.data.totalPages || 0,
+                    pageNumber: response.data.number || 0,
+                    pageSize: response.data.size || 10,
+                    totalElements: response.data.totalElements || 0,
+                    totalPages: response.data.totalPages || 0,
                 });
             }
         } catch (error) {
-            console.error('Error fetching purchase orders:', error);
+            console.error('❌ Error fetching purchase orders:', error);
+            showNotification('error', 'Không thể tải danh sách đơn mua hàng. Vui lòng thử lại!');
         } finally {
             setLoading(false);
         }
     };
 
-    // Fetch suppliers for filter
+    // Fetch suppliers for filter - Từ purchase orders
     const fetchSuppliers = async () => {
         try {
-            // TODO: Replace with actual API endpoint
-            const mockSuppliers = [
-                { id: 1, maNhaCungCap: 'NCC001', tenNhaCungCap: 'Công ty Trung Quốc' },
-                { id: 2, maNhaCungCap: 'NCC002', tenNhaCungCap: 'Công ty Việt Nam' },
-            ];
-            setSuppliers(mockSuppliers);
+            console.log('📤 Fetching unique suppliers from purchase orders...');
+            const suppliers = await purchaseOrderService.getUniqueSuppliers();
+            console.log('✅ Suppliers loaded:', suppliers.length, 'items');
+            setSuppliers(suppliers);
+
+            if (suppliers.length === 0) {
+                console.warn('⚠️ No suppliers found in orders');
+            }
         } catch (error) {
-            console.error('Error fetching suppliers:', error);
+            console.error('❌ Error fetching suppliers:', error);
+            showNotification('error', 'Không thể tải danh sách nhà cung cấp');
         }
     };
 
-    // Fetch warehouses for filter
+    // Fetch warehouses for filter - Từ purchase orders
     const fetchWarehouses = async () => {
         try {
-            // TODO: Replace with actual API endpoint
-            const mockWarehouses = [
-                { id: 1, maKho: 'KHO01', tenKho: 'Kho Hà Nội' },
-                { id: 2, maKho: 'KHO02', tenKho: 'Kho Miền Nam' },
-                { id: 3, maKho: 'KHO03', tenKho: 'Kho Miền Trung' },
-            ];
-            setWarehouses(mockWarehouses);
+            console.log('📤 Fetching unique warehouses from purchase orders...');
+            const warehouses = await purchaseOrderService.getUniqueWarehouses();
+            console.log('✅ Warehouses loaded:', warehouses.length, 'items');
+            setWarehouses(warehouses);
+
+            if (warehouses.length === 0) {
+                console.warn('⚠️ No warehouses found in orders');
+            }
         } catch (error) {
-            console.error('Error fetching warehouses:', error);
+            console.error('❌ Error fetching warehouses:', error);
+            showNotification('error', 'Không thể tải danh sách kho');
         }
     };
 
@@ -392,11 +304,19 @@ export default function PurchaseOrderList() {
 
     // Handle filter change
     const handleFilterChange = (field, value) => {
+        console.log(`🔄 Filter changed - ${field}:`, value);
         setFilters(prev => ({ ...prev, [field]: value }));
+    };
+
+    // Handle date range change
+    const handleDateRangeChange = (field, value) => {
+        setDateRange(prev => ({ ...prev, [field]: value }));
     };
 
     // Handle search
     const handleSearch = () => {
+        console.log('🔍 Current filters:', filters);
+        console.log('📅 Date range:', dateRange);
         fetchPurchaseOrders(0, pagination.pageSize);
     };
 
@@ -404,13 +324,14 @@ export default function PurchaseOrderList() {
     const handleResetFilters = () => {
         setFilters({
             soDonMua: '',
-            maNhaCungCap: '',
-            maKho: '',
+            nhaCungCapId: '',
+            khoId: '',
             trangThai: '',
-            tuNgay: '',
-            denNgay: '',
         });
-        // Fetch with empty filters
+        setDateRange({
+            from: '',
+            to: '',
+        });
         setTimeout(() => {
             fetchPurchaseOrders(0, pagination.pageSize);
         }, 100);
@@ -418,7 +339,9 @@ export default function PurchaseOrderList() {
 
     // Handle page change
     const handlePageChange = (newPage) => {
-        fetchPurchaseOrders(newPage, pagination.pageSize);
+        if (newPage >= 0 && newPage < pagination.totalPages) {
+            fetchPurchaseOrders(newPage, pagination.pageSize);
+        }
     };
 
     // Handle page size change
@@ -432,124 +355,298 @@ export default function PurchaseOrderList() {
         navigate(`/purchase-orders/${orderId}`);
     };
 
+    // Handle edit order
+    const handleEditOrder = (order, event) => {
+        event.stopPropagation();
+        if (order.trangThai === 0) {
+            navigate(`/purchase-orders/edit/${order.id}`);
+        } else {
+            showNotification('error', 'Chỉ có thể chỉnh sửa đơn hàng đang chờ duyệt!');
+        }
+    };
+
+    // Handle delete order
+    const handleDeleteOrder = (order, event) => {
+        event.stopPropagation();
+        setSelectedOrder(order);
+        setShowDeleteDialog(true);
+    };
+
+    // Confirm delete
+    const confirmDelete = async () => {
+        if (!selectedOrder) return;
+
+        setActionLoading(true);
+        try {
+            // TODO: Implement delete API
+            // await purchaseOrderService.delete(selectedOrder.id);
+
+            showNotification('success', `Đã xóa đơn hàng ${selectedOrder.soDonMua} thành công!`);
+            setShowDeleteDialog(false);
+            setSelectedOrder(null);
+            fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
+        } catch (error) {
+            console.error('Error deleting order:', error);
+            showNotification('error', 'Không thể xóa đơn hàng. Vui lòng thử lại!');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Handle approve order
+    const handleApproveOrder = (order, event) => {
+        event.stopPropagation();
+        setSelectedOrder(order);
+        setShowApproveDialog(true);
+    };
+
+    // Confirm approve
+    const confirmApprove = async () => {
+        if (!selectedOrder) return;
+
+        setActionLoading(true);
+        try {
+            // TODO: Implement approve API
+            // await purchaseOrderService.approve(selectedOrder.id);
+
+            showNotification('success', `Đã phê duyệt đơn hàng ${selectedOrder.soDonMua} thành công!`);
+            setShowApproveDialog(false);
+            setSelectedOrder(null);
+            fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
+        } catch (error) {
+            console.error('Error approving order:', error);
+            showNotification('error', 'Không thể phê duyệt đơn hàng. Vui lòng thử lại!');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Handle cancel order
+    const handleCancelOrder = async (order, event) => {
+        event.stopPropagation();
+
+        setActionLoading(true);
+        try {
+            // TODO: Implement cancel API
+            // await purchaseOrderService.cancel(order.id);
+
+            showNotification('success', `Đã hủy đơn hàng ${order.soDonMua} thành công!`);
+            fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
+        } catch (error) {
+            console.error('Error canceling order:', error);
+            showNotification('error', 'Không thể hủy đơn hàng. Vui lòng thử lại!');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Export to Excel
+    const handleExportExcel = async () => {
+        try {
+            // TODO: Implement export API
+            showNotification('success', 'Đang xuất file Excel...');
+        } catch (error) {
+            console.error('Error exporting:', error);
+            showNotification('error', 'Không thể xuất file. Vui lòng thử lại!');
+        }
+    };
+
     // Calculate statistics
     const stats = {
         total: pagination.totalElements,
         totalValue: purchaseOrders.reduce((sum, order) => sum + (order.tongTien || 0), 0),
         pending: purchaseOrders.filter(o => o.trangThai === 0).length,
+        approved: purchaseOrders.filter(o => o.trangThai === 1).length,
+        inDelivery: purchaseOrders.filter(o => o.trangThai === 2).length,
         completed: purchaseOrders.filter(o => o.trangThai === 4).length,
+        cancelled: purchaseOrders.filter(o => o.trangThai === 3).length,
+    };
+
+    // Get status icon
+    const getStatusIcon = (status) => {
+        const StatusIcon = statusConfig[status]?.icon || Clock;
+        return <StatusIcon className="h-4 w-4" />;
+    };
+
+    // Get selected supplier name
+    const getSelectedSupplierName = () => {
+        if (!filters.nhaCungCapId || filters.nhaCungCapId === 'all') {
+            return "Tất cả nhà cung cấp";
+        }
+        const supplier = suppliers.find(s => s.id === parseInt(filters.nhaCungCapId));
+        return supplier ? supplier.tenNhaCungCap : "Đang tải...";
+    };
+
+    // Get selected warehouse name
+    const getSelectedWarehouseName = () => {
+        if (!filters.khoId || filters.khoId === 'all') {
+            return "Tất cả kho";
+        }
+        const warehouse = warehouses.find(w => w.id === parseInt(filters.khoId));
+        return warehouse ? warehouse.tenKho : "Đang tải...";
+    };
+
+    // Render action buttons based on order status
+    const renderActionButtons = (order) => {
+        return (
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleViewDetail(order.id)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Xem chi tiết
+                    </DropdownMenuItem>
+
+                    {order.trangThai === 0 && (
+                        <>
+                            <DropdownMenuItem onClick={(e) => handleEditOrder(order, e)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Chỉnh sửa
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => handleApproveOrder(order, e)}>
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Phê duyệt
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={(e) => handleDeleteOrder(order, e)}
+                                className="text-red-600"
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Xóa
+                            </DropdownMenuItem>
+                        </>
+                    )}
+
+                    {(order.trangThai === 1 || order.trangThai === 2) && (
+                        <DropdownMenuItem
+                            onClick={(e) => handleCancelOrder(order, e)}
+                            className="text-red-600"
+                        >
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Hủy đơn
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        );
     };
 
     return (
-        <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+            {/* Notifications */}
+            {success && (
+                <Alert className="bg-green-50 border-green-200 animate-in slide-in-from-top-2 duration-300">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">{success}</AlertDescription>
+                </Alert>
+            )}
+
+            {error && (
+                <Alert className="bg-red-50 border-red-200 animate-in slide-in-from-top-2 duration-300">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800">{error}</AlertDescription>
+                </Alert>
+            )}
+
             {/* Header Section */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900">
-                        Danh sách đơn đặt mua hàng
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+                        Quản lý đơn mua hàng
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                        Quản lý và theo dõi các đơn đặt mua hàng từ nhà cung cấp
+                    <p className="text-sm text-gray-600 mt-1">
+                        Theo dõi và quản lý các đơn đặt hàng từ nhà cung cấp
                     </p>
                 </div>
                 <div className="flex gap-2">
                     <Button
                         variant="outline"
-                        className="gap-2"
+                        className="gap-2 hover:bg-white transition-all duration-200"
                         onClick={() => fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize)}
                     >
                         <RefreshCw className="h-4 w-4" />
                         Làm mới
                     </Button>
                     <Button
-                        variant="outline"
-                        className="gap-2"
-                    >
-                        <Download className="h-4 w-4" />
-                        Xuất Excel
-                    </Button>
-                    <Button
-                        className="gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                        className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg shadow-indigo-200 transition-all duration-200"
                         onClick={() => navigate('/purchase-orders/create')}
                     >
                         <Plus className="h-4 w-4" />
-                        Tạo đơn mới
+                        Tạo đơn mua
                     </Button>
                 </div>
             </div>
 
             {/* Statistics Cards */}
-            {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="border-0 shadow-md bg-gradient-to-br from-purple-50 to-purple-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-purple-600 font-medium">Tổng đơn hàng</p>
-                                <p className="text-2xl font-bold text-purple-900 mt-1">
-                                    {stats.total}
-                                </p>
+                                <p className="text-sm font-medium text-gray-600">Tổng đơn hàng</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
                             </div>
-                            <div className="h-12 w-12 bg-purple-600 rounded-lg flex items-center justify-center">
-                                <FileText className="h-6 w-6 text-white" />
+                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <FileText className="h-6 w-6 text-blue-600" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-blue-600 font-medium">Tổng giá trị</p>
-                                <p className="text-2xl font-bold text-blue-900 mt-1">
+                                <p className="text-sm font-medium text-gray-600">Tổng giá trị</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">
                                     {formatCurrency(stats.totalValue)}
                                 </p>
                             </div>
-                            <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                                <Package className="h-6 w-6 text-white" />
+                            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <DollarSign className="h-6 w-6 text-green-600" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-0 shadow-md bg-gradient-to-br from-yellow-50 to-yellow-100">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-yellow-50 to-white">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-yellow-600 font-medium">Chờ duyệt</p>
-                                <p className="text-2xl font-bold text-yellow-900 mt-1">
-                                    {stats.pending}
-                                </p>
+                                <p className="text-sm font-medium text-gray-600">Chờ duyệt</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.pending}</p>
                             </div>
-                            <div className="h-12 w-12 bg-yellow-600 rounded-lg flex items-center justify-center">
-                                <Calendar className="h-6 w-6 text-white" />
+                            <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                                <Clock className="h-6 w-6 text-yellow-600" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-green-100">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-white">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-green-600 font-medium">Hoàn thành</p>
-                                <p className="text-2xl font-bold text-green-900 mt-1">
-                                    {stats.completed}
-                                </p>
+                                <p className="text-sm font-medium text-gray-600">Hoàn thành</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.completed}</p>
                             </div>
-                            <div className="h-12 w-12 bg-green-600 rounded-lg flex items-center justify-center">
-                                <Package className="h-6 w-6 text-white" />
+                            <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                <CheckCircle className="h-6 w-6 text-purple-600" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-            </div> */}
+            </div>
 
             {/* Filter Section */}
-            <Card className="border-0 shadow-md">
-                <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                        <Filter className="h-5 w-5 text-purple-600" />
+            <Card className="border-0 shadow-lg bg-white">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                        <Filter className="h-5 w-5 text-indigo-600" />
                         Bộ lọc tìm kiếm
                     </CardTitle>
                 </CardHeader>
@@ -565,7 +662,7 @@ export default function PurchaseOrderList() {
                                 <Input
                                     id="soDonMua"
                                     placeholder="Tìm số đơn..."
-                                    className="pl-9"
+                                    className="pl-9 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
                                     value={filters.soDonMua}
                                     onChange={(e) => handleFilterChange('soDonMua', e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -573,72 +670,124 @@ export default function PurchaseOrderList() {
                             </div>
                         </div>
 
-                        {/* Nhà cung cấp */}
+                        {/* Nhà cung cấp - FIXED & IMPROVED */}
                         <div className="space-y-2">
                             <Label htmlFor="nhaCungCap" className="text-gray-700 font-medium">
-                                Nhà cung cấp
+                                Nhà cung cấp {suppliers.length > 0 && `(${suppliers.length})`}
                             </Label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-between font-normal bg-white">
-                                        <div className="flex items-center">
-                                            <Building2 className="h-4 w-4 mr-2 text-gray-400" />
-                                            <span className="truncate ml-2">
-                                                {filters.maNhaCungCap && filters.maNhaCungCap !== 'all'
-                                                    ? (suppliers.find(s => s.maNhaCungCap === filters.maNhaCungCap)?.tenNhaCungCap || filters.maNhaCungCap)
-                                                    : "Tất cả nhà cung cấp"}
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between font-normal bg-white border-gray-200 hover:bg-gray-50"
+                                        disabled={suppliers.length === 0}
+                                    >
+                                        <div className="flex items-center overflow-hidden">
+                                            <Building2 className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                                            <span className="truncate">
+                                                {getSelectedSupplierName()}
                                             </span>
                                         </div>
-                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                        <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[250px] bg-white">
-                                    <DropdownMenuItem onClick={() => handleFilterChange('maNhaCungCap', 'all')}>
+                                <DropdownMenuContent className="w-[280px] bg-white max-h-[400px] overflow-y-auto">
+                                    <DropdownMenuItem
+                                        onClick={() => handleFilterChange('nhaCungCapId', 'all')}
+                                        className="font-medium hover:bg-indigo-50"
+                                    >
                                         Tất cả nhà cung cấp
                                     </DropdownMenuItem>
-                                    {suppliers.map((supplier) => (
-                                        <DropdownMenuItem
-                                            key={supplier.id}
-                                            onClick={() => handleFilterChange('maNhaCungCap', supplier.maNhaCungCap)}
-                                        >
-                                            {supplier.tenNhaCungCap} ({supplier.maNhaCungCap})
+                                    {suppliers.length === 0 ? (
+                                        <DropdownMenuItem disabled className="text-gray-500 italic">
+                                            Không có nhà cung cấp nào
                                         </DropdownMenuItem>
-                                    ))}
+                                    ) : (
+                                        suppliers.map((supplier) => (
+                                            <DropdownMenuItem
+                                                key={supplier.id}
+                                                onClick={() => handleFilterChange('nhaCungCapId', supplier.id)}
+                                                className="cursor-pointer hover:bg-indigo-50 py-3"
+                                            >
+                                                <div className="flex flex-col w-full gap-1">
+                                                    <span className="font-medium text-gray-900">
+                                                        {supplier.tenNhaCungCap}
+                                                    </span>
+                                                    <div className="flex items-center justify-between text-xs">
+                                                        <span className="text-gray-500">
+                                                            Mã: {supplier.maNhaCungCap}
+                                                        </span>
+                                                        {supplier.soDienThoai && (
+                                                            <span className="text-gray-400">
+                                                                {supplier.soDienThoai}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </DropdownMenuItem>
+                                        ))
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
 
-                        {/* Kho nhập */}
+                        {/* Kho nhập - IMPROVED */}
                         <div className="space-y-2">
                             <Label htmlFor="khoNhap" className="text-gray-700 font-medium">
-                                Kho nhập
+                                Kho nhập {warehouses.length > 0 && `(${warehouses.length})`}
                             </Label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-between font-normal bg-white">
-                                        <div className="flex items-center">
-                                            <Warehouse className="h-4 w-4 mr-2 text-gray-400" />
-                                            <span className="truncate ml-2">
-                                                {filters.maKho && filters.maKho !== 'all'
-                                                    ? (warehouses.find(w => w.maKho === filters.maKho)?.tenKho || filters.maKho)
-                                                    : "Tất cả kho"}
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between font-normal bg-white border-gray-200 hover:bg-gray-50"
+                                        disabled={warehouses.length === 0}
+                                    >
+                                        <div className="flex items-center overflow-hidden">
+                                            <Warehouse className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                                            <span className="truncate">
+                                                {getSelectedWarehouseName()}
                                             </span>
                                         </div>
-                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                        <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[250px] bg-white">
-                                    <DropdownMenuItem onClick={() => handleFilterChange('maKho', 'all')}>
+                                <DropdownMenuContent className="w-[280px] bg-white max-h-[400px] overflow-y-auto">
+                                    <DropdownMenuItem
+                                        onClick={() => handleFilterChange('khoId', 'all')}
+                                        className="font-medium hover:bg-indigo-50"
+                                    >
                                         Tất cả kho
                                     </DropdownMenuItem>
-                                    {warehouses.map((warehouse) => (
-                                        <DropdownMenuItem
-                                            key={warehouse.id}
-                                            onClick={() => handleFilterChange('maKho', warehouse.maKho)}
-                                        >
-                                            {warehouse.tenKho} ({warehouse.maKho})
+                                    {warehouses.length === 0 ? (
+                                        <DropdownMenuItem disabled className="text-gray-500 italic">
+                                            Không có kho nào
                                         </DropdownMenuItem>
-                                    ))}
+                                    ) : (
+                                        warehouses.map((warehouse) => (
+                                            <DropdownMenuItem
+                                                key={warehouse.id}
+                                                onClick={() => handleFilterChange('khoId', warehouse.id)}
+                                                className="cursor-pointer hover:bg-indigo-50 py-3"
+                                            >
+                                                <div className="flex flex-col w-full gap-1">
+                                                    <span className="font-medium text-gray-900">
+                                                        {warehouse.tenKho}
+                                                    </span>
+                                                    <div className="flex items-center justify-between text-xs">
+                                                        <span className="text-gray-500">
+                                                            Mã: {warehouse.maKho}
+                                                        </span>
+                                                        {warehouse.diaChi && (
+                                                            <span className="text-gray-400 truncate max-w-[140px]">
+                                                                {warehouse.diaChi}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </DropdownMenuItem>
+                                        ))
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -650,9 +799,9 @@ export default function PurchaseOrderList() {
                             </Label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-between font-normal bg-white">
+                                    <Button variant="outline" className="w-full justify-between font-normal bg-white border-gray-200 hover:bg-gray-50">
                                         <span className="truncate">
-                                            {filters.trangThai && filters.trangThai !== 'all'
+                                            {filters.trangThai !== '' && filters.trangThai !== 'all'
                                                 ? statusConfig[filters.trangThai]?.label
                                                 : "Tất cả trạng thái"}
                                         </span>
@@ -660,24 +809,68 @@ export default function PurchaseOrderList() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[200px] bg-white">
-                                    <DropdownMenuItem onClick={() => handleFilterChange('trangThai', 'all')}>
+                                    <DropdownMenuItem
+                                        onClick={() => handleFilterChange('trangThai', 'all')}
+                                        className="font-medium hover:bg-indigo-50"
+                                    >
                                         Tất cả trạng thái
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleFilterChange('trangThai', '0')}>Chờ duyệt</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleFilterChange('trangThai', '1')}>Đã duyệt</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleFilterChange('trangThai', '2')}>Đang giao</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleFilterChange('trangThai', '3')}>Đã hủy</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleFilterChange('trangThai', '4')}>Hoàn thành</DropdownMenuItem>
+                                    {Object.entries(statusConfig).map(([key, config]) => (
+                                        <DropdownMenuItem
+                                            key={key}
+                                            onClick={() => handleFilterChange('trangThai', key)}
+                                            className="cursor-pointer hover:bg-indigo-50"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                {getStatusIcon(parseInt(key))}
+                                                {config.label}
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
+                        </div>
+
+                        {/* Từ ngày */}
+                        <div className="space-y-2">
+                            <Label htmlFor="tuNgay" className="text-gray-700 font-medium">
+                                Từ ngày
+                            </Label>
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Input
+                                    id="tuNgay"
+                                    type="date"
+                                    className="pl-9 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+                                    value={dateRange.from}
+                                    onChange={(e) => handleDateRangeChange('from', e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Đến ngày */}
+                        <div className="space-y-2">
+                            <Label htmlFor="denNgay" className="text-gray-700 font-medium">
+                                Đến ngày
+                            </Label>
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Input
+                                    id="denNgay"
+                                    type="date"
+                                    className="pl-9 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+                                    value={dateRange.to}
+                                    onChange={(e) => handleDateRangeChange('to', e.target.value)}
+                                />
+                            </div>
                         </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex gap-2 mt-6">
                         <Button
                             onClick={handleSearch}
-                            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                            className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-md"
                         >
                             <Search className="h-4 w-4 mr-2" />
                             Tìm kiếm
@@ -685,6 +878,7 @@ export default function PurchaseOrderList() {
                         <Button
                             variant="outline"
                             onClick={handleResetFilters}
+                            className="border-gray-200 hover:bg-gray-50"
                         >
                             Đặt lại
                         </Button>
@@ -693,12 +887,12 @@ export default function PurchaseOrderList() {
             </Card>
 
             {/* Table Section */}
-            <Card className="border-0 shadow-md">
+            <Card className="border-0 shadow-lg bg-white">
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-gray-50 hover:bg-gray-50">
+                                <TableRow className="bg-gradient-to-r from-gray-50 to-slate-50 hover:from-gray-50 hover:to-slate-50 border-b border-gray-200">
                                     <TableHead className="font-semibold text-gray-700 w-[130px]">
                                         Số đơn mua
                                     </TableHead>
@@ -714,13 +908,13 @@ export default function PurchaseOrderList() {
                                     <TableHead className="font-semibold text-gray-700 w-[110px]">
                                         Ngày giao DK
                                     </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 w-[120px]">
+                                    <TableHead className="font-semibold text-gray-700 w-[140px]">
                                         Trạng thái
                                     </TableHead>
                                     <TableHead className="font-semibold text-gray-700 text-right w-[140px]">
                                         Tổng tiền
                                     </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 w-[100px] text-center">
+                                    <TableHead className="font-semibold text-gray-700 text-center w-[80px]">
                                         Thao tác
                                     </TableHead>
                                 </TableRow>
@@ -728,30 +922,41 @@ export default function PurchaseOrderList() {
                             <TableBody>
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="text-center py-8">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <RefreshCw className="h-5 w-5 animate-spin text-purple-600" />
-                                                <span className="text-gray-500">Đang tải dữ liệu...</span>
+                                        <TableCell colSpan={8} className="text-center py-12">
+                                            <div className="flex flex-col items-center justify-center gap-3">
+                                                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                                                <span className="text-gray-500 font-medium">Đang tải dữ liệu...</span>
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : purchaseOrders.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="text-center py-8">
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Package className="h-12 w-12 text-gray-300" />
-                                                <p className="text-gray-500">Không có dữ liệu</p>
+                                        <TableCell colSpan={8} className="text-center py-12">
+                                            <div className="flex flex-col items-center gap-3">
+                                                <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center">
+                                                    <Package className="h-8 w-8 text-gray-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-900 font-medium">Không tìm thấy đơn hàng</p>
+                                                    <p className="text-sm text-gray-500 mt-1">
+                                                        Thử điều chỉnh bộ lọc hoặc tạo đơn hàng mới
+                                                    </p>
+                                                </div>
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    purchaseOrders.map((order) => (
+                                    purchaseOrders.map((order, index) => (
                                         <TableRow
                                             key={order.id}
-                                            className="hover:bg-purple-50/50 transition-colors cursor-pointer"
+                                            className="hover:bg-indigo-50/50 transition-all duration-150 cursor-pointer border-b border-gray-100"
                                             onClick={() => handleViewDetail(order.id)}
+                                            style={{
+                                                animationDelay: `${index * 50}ms`,
+                                                animation: 'fadeIn 0.3s ease-in-out forwards',
+                                            }}
                                         >
-                                            <TableCell className="font-medium text-purple-600">
+                                            <TableCell className="font-semibold text-indigo-600">
                                                 {order.soDonMua}
                                             </TableCell>
                                             <TableCell>
@@ -777,38 +982,31 @@ export default function PurchaseOrderList() {
                                             <TableCell className="text-gray-600">
                                                 <div className="flex items-center gap-1.5">
                                                     <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                                                    {formatDate(order.ngayDatHang)}
+                                                    <span className="text-sm">{formatDate(order.ngayDatHang)}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-gray-600">
                                                 <div className="flex items-center gap-1.5">
                                                     <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                                                    {formatDate(order.ngayGiaoDuKien)}
+                                                    <span className="text-sm">{formatDate(order.ngayGiaoDuKien)}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge
                                                     variant="outline"
-                                                    className={`${statusConfig[order.trangThai]?.color} border`}
+                                                    className={`${statusConfig[order.trangThai]?.color} border font-medium flex items-center gap-1.5 w-fit`}
                                                 >
+                                                    {getStatusIcon(order.trangThai)}
                                                     {statusConfig[order.trangThai]?.label}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-right font-semibold text-gray-900">
-                                                {formatCurrency(order.tongTien || 0)}
+                                            <TableCell className="text-right">
+                                                <span className="font-semibold text-gray-900">
+                                                    {formatCurrency(order.tongTien || 0)}
+                                                </span>
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleViewDetail(order.id);
-                                                    }}
-                                                    className="hover:bg-purple-100 hover:text-purple-700"
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
+                                                {renderActionButtons(order)}
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -820,34 +1018,45 @@ export default function PurchaseOrderList() {
             </Card>
 
             {/* Pagination Section */}
-            <Card className="border-0 shadow-md">
+            <Card className="border-0 shadow-md bg-white">
                 <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                         {/* Left side - Page size selector */}
                         <div className="flex items-center gap-2">
-                            <Label className="text-sm text-gray-600">Hiển thị:</Label>
+                            <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-[120px] justify-between font-normal bg-white">
+                                    <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
                                         {pagination.pageSize} dòng
                                         <ChevronDown className="h-4 w-4 opacity-50" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[120px] bg-white">
-                                    <DropdownMenuItem onClick={() => handlePageSizeChange(5)}>5 dòng</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handlePageSizeChange(10)}>10 dòng</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handlePageSizeChange(20)}>20 dòng</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handlePageSizeChange(50)}>50 dòng</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handlePageSizeChange(100)}>100 dòng</DropdownMenuItem>
+                                    {[5, 10, 20, 50, 100].map(size => (
+                                        <DropdownMenuItem
+                                            key={size}
+                                            onClick={() => handlePageSizeChange(size)}
+                                            className="cursor-pointer"
+                                        >
+                                            {size} dòng
+                                        </DropdownMenuItem>
+                                    ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
 
                         {/* Center - Page info */}
                         <div className="text-sm text-gray-600">
-                            Hiển thị {pagination.pageNumber * pagination.pageSize + 1} -{' '}
-                            {Math.min((pagination.pageNumber + 1) * pagination.pageSize, pagination.totalElements)} của{' '}
-                            <span className="font-semibold text-purple-600">{pagination.totalElements}</span> kết quả
+                            Hiển thị{' '}
+                            <span className="font-semibold text-gray-900">
+                                {pagination.pageNumber * pagination.pageSize + 1}
+                            </span>
+                            {' '}-{' '}
+                            <span className="font-semibold text-gray-900">
+                                {Math.min((pagination.pageNumber + 1) * pagination.pageSize, pagination.totalElements)}
+                            </span>
+                            {' '}trong tổng số{' '}
+                            <span className="font-semibold text-indigo-600">{pagination.totalElements}</span> kết quả
                         </div>
 
                         {/* Right side - Navigation buttons */}
@@ -857,14 +1066,14 @@ export default function PurchaseOrderList() {
                                 size="sm"
                                 onClick={() => handlePageChange(pagination.pageNumber - 1)}
                                 disabled={pagination.pageNumber === 0}
-                                className="gap-1"
+                                className="gap-1 disabled:opacity-50"
                             >
                                 <ChevronLeft className="h-4 w-4" />
                                 Trước
                             </Button>
 
                             {/* Page numbers */}
-                            <div className="flex gap-1">
+                            <div className="hidden sm:flex gap-1">
                                 {[...Array(Math.min(5, pagination.totalPages))].map((_, idx) => {
                                     let pageNum;
                                     if (pagination.totalPages <= 5) {
@@ -885,8 +1094,8 @@ export default function PurchaseOrderList() {
                                             onClick={() => handlePageChange(pageNum)}
                                             className={
                                                 pagination.pageNumber === pageNum
-                                                    ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                                                    : ""
+                                                    ? "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+                                                    : "border-gray-200"
                                             }
                                         >
                                             {pageNum + 1}
@@ -900,7 +1109,7 @@ export default function PurchaseOrderList() {
                                 size="sm"
                                 onClick={() => handlePageChange(pagination.pageNumber + 1)}
                                 disabled={pagination.pageNumber >= pagination.totalPages - 1}
-                                className="gap-1"
+                                className="gap-1 disabled:opacity-50"
                             >
                                 Sau
                                 <ChevronRight className="h-4 w-4" />
@@ -909,6 +1118,105 @@ export default function PurchaseOrderList() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                            <AlertCircle className="h-5 w-5" />
+                            Xác nhận xóa đơn hàng
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-600">
+                            Bạn có chắc chắn muốn xóa đơn hàng{' '}
+                            <span className="font-semibold text-gray-900">{selectedOrder?.soDonMua}</span>?
+                            <br />
+                            Hành động này không thể hoàn tác.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={actionLoading}>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            disabled={actionLoading}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {actionLoading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Đang xóa...
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Xóa
+                                </>
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Approve Confirmation Dialog */}
+            <AlertDialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-green-600">
+                            <CheckCircle className="h-5 w-5" />
+                            Xác nhận phê duyệt đơn hàng
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-600">
+                            Bạn có chắc chắn muốn phê duyệt đơn hàng{' '}
+                            <span className="font-semibold text-gray-900">{selectedOrder?.soDonMua}</span>?
+                            <br />
+                            <br />
+                            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
+                                <p className="text-sm text-blue-900">
+                                    <strong>Nhà cung cấp:</strong> {selectedOrder?.nhaCungCap?.tenNhaCungCap}
+                                    <br />
+                                    <strong>Kho nhập:</strong> {selectedOrder?.khoNhap?.tenKho}
+                                    <br />
+                                    <strong>Tổng tiền:</strong> {formatCurrency(selectedOrder?.tongTien || 0)}
+                                </p>
+                            </div>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={actionLoading}>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmApprove}
+                            disabled={actionLoading}
+                            className="bg-green-600 hover:bg-green-700"
+                        >
+                            {actionLoading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Đang phê duyệt...
+                                </>
+                            ) : (
+                                <>
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Phê duyệt
+                                </>
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* CSS Animation */}
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            `}</style>
         </div>
     );
 }
