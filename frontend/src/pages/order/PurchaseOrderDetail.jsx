@@ -43,6 +43,8 @@ import {
     ShoppingCart,
 } from "lucide-react";
 
+import purchaseOrderDetailService from '@/services/purchaseOrderDetailService';
+
 export default function PurchaseOrderDetail() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -123,6 +125,21 @@ export default function PurchaseOrderDetail() {
 
     // Fetch order detail
     const fetchOrderDetail = async () => {
+        setLoading(true);
+        try {
+            const result = await purchaseOrderDetailService.getById(id);
+            if (result && result.status === 200 && result.data) {
+                setOrderData(result.data);
+            }
+        } catch (error) {
+            console.error('Error fetching order detail:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Mock implementation (Deprecated)
+    const fetchOrderDetailMock = async () => {
         setLoading(true);
         try {
             /*
