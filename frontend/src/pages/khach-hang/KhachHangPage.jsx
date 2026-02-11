@@ -42,7 +42,9 @@ import {
     X,
     Mail,
     Phone,
-    MapPin
+    MapPin,
+    AlertCircle,
+    CheckCircle2
 } from "lucide-react";
 
 // Service xử lý API calls
@@ -53,12 +55,12 @@ const khachHangService = {
     },
 
     getById: async (id) => {
-        const response = await apiClient.get(`/api/v1/khach-hang/${id}`);
+        const response = await apiClient.get(`/api/v1/khach-hang/get-by-id/${id}`);
         return response.data.data;
     },
 
     create: async (data) => {
-        const response = await apiClient.post("/api/v1/khach-hang", data);
+        const response = await apiClient.post("/api/v1/khach-hang/create", data);
         return response.data;
     },
 
@@ -67,8 +69,8 @@ const khachHangService = {
         return response.data;
     },
 
-    delete: async (id) => {
-        const response = await apiClient.delete(`/api/v1/khach-hang/${id}`);
+    softDelete: async (id) => {
+        const response = await apiClient.delete(`/api/v1/khach-hang/soft-delete/${id}`);
         return response.data;
     }
 };
@@ -90,7 +92,22 @@ export default function KhachHangPage() {
     // Dialog states
     const [showDetailDialog, setShowDetailDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [selectedKhachHang, setSelectedKhachHang] = useState(null);
+
+    // Form state for create
+    const [formData, setFormData] = useState({
+        maKhachHang: "",
+        tenKhachHang: "",
+        nguoiLienHe: "",
+        soDienThoai: "",
+        email: "",
+        diaChi: "",
+        loaiKhachHang: "le"
+    });
+
+    const [formErrors, setFormErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Alert state
     const [alert, setAlert] = useState({ show: false, message: "", type: "success" });
@@ -211,7 +228,7 @@ export default function KhachHangPage() {
 
     const handleDeleteConfirm = async () => {
         try {
-            await khachHangService.delete(selectedKhachHang.id);
+            await khachHangService.softDelete(selectedKhachHang.id);
             showAlert("Xóa khách hàng thành công");
             setShowDeleteDialog(false);
             loadKhachHangs();
@@ -220,11 +237,76 @@ export default function KhachHangPage() {
         }
     };
 
+    // Create dialog handlers
+    const handleOpenCreateDialog = () => {
+        setFormData({
+            maKhachHang: "",
+            tenKhachHang: "",
+            nguoiLienHe: "",
+            soDienThoai: "",
+            email: "",
+            diaChi: "",
+            loaiKhachHang: "le"
+        });
+        setFormErrors({});
+        setShowCreateDialog(true);
+    };
+
+    const handleFormChange = (field, value) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+        // Clear error for this field when user starts typing
+        if (formErrors[field]) {
+            setFormErrors(prev => ({ ...prev, [field]: "" }));
+        }
+    };
+
+    const validateForm = () => {
+        const errors = {};
+
+        if (!formData.maKhachHang.trim()) {
+            errors.maKhachHang = "Mã khách hàng là bắt buộc";
+        }
+
+        if (!formData.tenKhachHang.trim()) {
+            errors.tenKhachHang = "Tên khách hàng là bắt buộc";
+        }
+
+        if (formData.soDienThoai && !/^[0-9]{10,11}$/.test(formData.soDienThoai)) {
+            errors.soDienThoai = "Số điện thoại không hợp lệ (10-11 chữ số)";
+        }
+
+        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            errors.email = "Email không hợp lệ";
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleCreateSubmit = async () => {
+        if (!validateForm()) {
+            showAlert("Vui lòng kiểm tra lại thông tin", "error");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await khachHangService.create(formData);
+            showAlert("Thêm khách hàng thành công");
+            setShowCreateDialog(false);
+            loadKhachHangs();
+        } catch (error) {
+            showAlert("Lỗi khi thêm khách hàng: " + error.message, "error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     // Render helpers
     const getTrangThaiBadge = (trangThai) => {
         const statusMap = {
-            0: { label: "Hoạt động", variant: "success", icon: UserCheck },
-            1: { label: "Ngưng hoạt động", variant: "destructive", icon: UserX }
+            1: { label: "Hoạt động", variant: "success", icon: UserCheck },
+            0: { label: "Ngưng hoạt động", variant: "red", icon: UserX }
         };
         
         const status = statusMap[trangThai] || statusMap[0];
@@ -277,7 +359,16 @@ export default function KhachHangPage() {
             {/* Alert */}
             {alert.show && (
                 <Alert className={alert.type === "error" ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}>
-                    <AlertDescription>{alert.message}</AlertDescription>
+                    <div className="flex items-center gap-2">
+                        {alert.type === "error" ? (
+                            <AlertCircle className="w-4 h-4 text-red-600" />
+                        ) : (
+                            <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        )}
+                        <AlertDescription className={alert.type === "error" ? "text-red-800" : "text-green-800"}>
+                            {alert.message}
+                        </AlertDescription>
+                    </div>
                 </Alert>
             )}
 
@@ -286,7 +377,10 @@ export default function KhachHangPage() {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-2xl font-bold">Quản lý khách hàng</CardTitle>
-                        <Button className="bg-purple-600 hover:bg-purple-700">
+                        <Button 
+                            onClick={handleOpenCreateDialog}
+                            className="bg-purple-600 hover:bg-purple-700"
+                        >
                             <Plus className="w-4 h-4 mr-2" />
                             Thêm khách hàng
                         </Button>
@@ -349,8 +443,8 @@ export default function KhachHangPage() {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="all">Tất cả</SelectItem>
-                                            <SelectItem value="0">Hoạt động</SelectItem>
-                                            <SelectItem value="1">Ngưng hoạt động</SelectItem>
+                                            <SelectItem value="1">Hoạt động</SelectItem>
+                                            <SelectItem value="0">Ngưng hoạt động</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -426,13 +520,13 @@ export default function KhachHangPage() {
                                                         <Eye className="w-4 h-4" />
                                                     </Button>
                                                     
-                                                    <Button
+                                                    {/* <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         className="hover:bg-yellow-50 hover:text-yellow-600"
                                                     >
                                                         <Edit className="w-4 h-4" />
-                                                    </Button>
+                                                    </Button> */}
                                                     
                                                     <Button
                                                         variant="ghost"
@@ -465,9 +559,184 @@ export default function KhachHangPage() {
                 </CardContent>
             </Card>
 
+            {/* Create Dialog */}
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogContent className="sm:max-w-[900px]
+    max-h-[90vh]
+    bg-white text-gray-900
+    border border-gray-200
+    rounded-xl shadow-sm
+    dark:bg-white dark:text-gray-900">
+                    <DialogHeader className="border-b pb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-100 rounded-lg">
+                                <Plus className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <DialogTitle className="text-xl text-gray-900">Thêm khách hàng mới</DialogTitle>
+                        </div>
+                    </DialogHeader>
+                    
+                    <div className="space-y-6 py-4">
+                        {/* Thông tin cơ bản */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide border-l-4 border-purple-600 pl-3">
+                                Thông tin cơ bản
+                            </h3>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="maKhachHang" className="text-sm font-medium text-gray-700">
+                                        Mã khách hàng <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="maKhachHang"
+                                        value={formData.maKhachHang}
+                                        onChange={(e) => handleFormChange("maKhachHang", e.target.value)}
+                                        placeholder="VD: KH001"
+                                        className={formErrors.maKhachHang ? "border-red-500" : ""}
+                                    />
+                                    {formErrors.maKhachHang && (
+                                        <p className="text-xs text-red-500">{formErrors.maKhachHang}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="tenKhachHang" className="text-sm font-medium text-gray-700">
+                                        Tên khách hàng <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="tenKhachHang"
+                                        value={formData.tenKhachHang}
+                                        onChange={(e) => handleFormChange("tenKhachHang", e.target.value)}
+                                        placeholder="VD: Nguyễn Văn A"
+                                        className={formErrors.tenKhachHang ? "border-red-500" : ""}
+                                    />
+                                    {formErrors.tenKhachHang && (
+                                        <p className="text-xs text-red-500">{formErrors.tenKhachHang}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="nguoiLienHe" className="text-sm font-medium text-gray-700">
+                                        Người liên hệ
+                                    </Label>
+                                    <Input
+                                        id="nguoiLienHe"
+                                        value={formData.nguoiLienHe}
+                                        onChange={(e) => handleFormChange("nguoiLienHe", e.target.value)}
+                                        placeholder="VD: Trần Thị B"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="loaiKhachHang" className="text-sm font-medium text-gray-700">
+                                        Loại khách hàng
+                                    </Label>
+                                    <Select 
+                                        value={formData.loaiKhachHang} 
+                                        onValueChange={(value) => handleFormChange("loaiKhachHang", value)}
+                                    >
+                                        <SelectTrigger id="loaiKhachHang">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="le">Khách lẻ</SelectItem>
+                                            <SelectItem value="doanh_nghiep">Doanh nghiệp</SelectItem>
+                                            <SelectItem value="si">Khách sỉ</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Thông tin liên hệ */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide border-l-4 border-purple-600 pl-3">
+                                Thông tin liên hệ
+                            </h3>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="soDienThoai" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                                        <Phone className="w-3 h-3" />
+                                        Số điện thoại
+                                    </Label>
+                                    <Input
+                                        id="soDienThoai"
+                                        value={formData.soDienThoai}
+                                        onChange={(e) => handleFormChange("soDienThoai", e.target.value)}
+                                        placeholder="VD: 0123456789"
+                                        className={formErrors.soDienThoai ? "border-red-500" : ""}
+                                    />
+                                    {formErrors.soDienThoai && (
+                                        <p className="text-xs text-red-500">{formErrors.soDienThoai}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                                        <Mail className="w-3 h-3" />
+                                        Email
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => handleFormChange("email", e.target.value)}
+                                        placeholder="VD: example@email.com"
+                                        className={formErrors.email ? "border-red-500" : ""}
+                                    />
+                                    {formErrors.email && (
+                                        <p className="text-xs text-red-500">{formErrors.email}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="diaChi" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    Địa chỉ
+                                </Label>
+                                <Input
+                                    id="diaChi"
+                                    value={formData.diaChi}
+                                    onChange={(e) => handleFormChange("diaChi", e.target.value)}
+                                    placeholder="VD: 123 Đường ABC, Quận XYZ, TP. HCM"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="border-t border-gray-200 pt-4 flex gap-2">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setShowCreateDialog(false)}
+                            disabled={isSubmitting}
+                            className="flex-1"
+                        >
+                            Hủy
+                        </Button>
+                        <Button 
+                            onClick={handleCreateSubmit}
+                            disabled={isSubmitting}
+                            className="flex-1 bg-purple-600 hover:bg-purple-700"
+                        >
+                            {isSubmitting ? "Đang xử lý..." : "Thêm khách hàng"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             {/* Detail Dialog */}
             <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-                <DialogContent className="sm:max-w-[900px] max-h-[90vh] bg-white text-gray-900 border border-gray-200 rounded-xl shadow-sm dark:bg-white dark:text-gray-900">
+                <DialogContent className="sm:max-w-[900px]
+    max-h-[90vh]
+    bg-white text-gray-900
+    border border-gray-200
+    rounded-xl shadow-sm
+    dark:bg-white dark:text-gray-900">
                     <DialogHeader className="border-b pb-4">
                         <div className="flex items-center justify-between">
                             <DialogTitle className="flex items-center gap-2 text-xl">
@@ -582,19 +851,43 @@ export default function KhachHangPage() {
 
             {/* Delete Dialog */}
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[900px]
+    max-h-[90vh]
+    bg-white text-gray-900
+    border border-gray-200
+    rounded-xl shadow-sm
+    dark:bg-white dark:text-gray-900">
                     <DialogHeader>
-                        <DialogTitle>Xác nhận xóa</DialogTitle>
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-red-100 rounded-lg">
+                                <AlertCircle className="w-5 h-5 text-red-600" />
+                            </div>
+                            <DialogTitle className="text-xl text-gray-900">Xác nhận xóa</DialogTitle>
+                        </div>
                     </DialogHeader>
-                    <p>Bạn có chắc chắn muốn xóa khách hàng <strong>{selectedKhachHang?.tenKhachHang}</strong>?</p>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                    
+                    <div className="py-4">
+                        <p className="text-gray-700">
+                            Bạn có chắc chắn muốn xóa khách hàng{" "}
+                            <span className="font-semibold text-gray-900">{selectedKhachHang?.tenKhachHang}</span>?
+                        </p>
+                        <p className="text-sm text-gray-500 mt-2">
+                            Khách hàng sẽ được chuyển sang trạng thái "Ngưng hoạt động".
+                        </p>
+                    </div>
+                    
+                    <DialogFooter className="gap-2">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setShowDeleteDialog(false)}
+                            className="flex-1"
+                        >
                             Hủy
                         </Button>
                         <Button 
                             variant="destructive" 
                             onClick={handleDeleteConfirm}
-                            className="bg-red-600 hover:bg-red-700"
+                            className="flex-1 bg-red-600 hover:bg-red-700"
                         >
                             Xóa
                         </Button>

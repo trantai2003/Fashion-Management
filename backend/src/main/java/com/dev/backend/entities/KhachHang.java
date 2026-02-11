@@ -57,10 +57,10 @@ public class KhachHang {
     @Column(name = "loai_khach_hang")
     String loaiKhachHang;
 
+    @Builder.Default
     @ColumnDefault("0")
-    @Generated(event = EventType.INSERT)
     @Column(name = "trang_thai")
-    Integer trangThai;
+    Integer trangThai = 0;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Generated(event = EventType.INSERT)
@@ -68,7 +68,7 @@ public class KhachHang {
     Instant ngayTao;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
-    @Generated(event = EventType.INSERT)
+    @Generated(event = EventType.UPDATE)
     @Column(name = "ngay_cap_nhat")
     Instant ngayCapNhat;
 
