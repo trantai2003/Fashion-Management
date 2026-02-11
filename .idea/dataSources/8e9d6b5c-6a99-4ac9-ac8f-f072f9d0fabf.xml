@@ -1,0 +1,4677 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="fashion_system@171.244.142.43">
+  <database-model serializer="dbm" dbms="MYSQL" family-id="MYSQL" format-version="4.53">
+    <root id="1">
+      <DefaultCasing>exact</DefaultCasing>
+      <DefaultEngine>InnoDB</DefaultEngine>
+      <DefaultTmpEngine>InnoDB</DefaultTmpEngine>
+      <Grants>|root||root||ALLOW_NONEXISTENT_DEFINER|G
+|root||root|localhost|ALLOW_NONEXISTENT_DEFINER|G
+|root||root||ALTER|G
+|root||root|localhost|ALTER|G
+|root||root||ALTER ROUTINE|G
+|root||root|localhost|ALTER ROUTINE|G
+|root||root||APPLICATION_PASSWORD_ADMIN|G
+|root||root|localhost|APPLICATION_PASSWORD_ADMIN|G
+|root||mysql.infoschema|localhost|AUDIT_ABORT_EXEMPT|G
+|root||mysql.session|localhost|AUDIT_ABORT_EXEMPT|G
+|root||mysql.sys|localhost|AUDIT_ABORT_EXEMPT|G
+|root||root||AUDIT_ABORT_EXEMPT|G
+|root||root|localhost|AUDIT_ABORT_EXEMPT|G
+|root||root||AUDIT_ADMIN|G
+|root||root|localhost|AUDIT_ADMIN|G
+|root||mysql.session|localhost|AUTHENTICATION_POLICY_ADMIN|G
+|root||root||AUTHENTICATION_POLICY_ADMIN|G
+|root||root|localhost|AUTHENTICATION_POLICY_ADMIN|G
+|root||mysql.session|localhost|BACKUP_ADMIN|G
+|root||root||BACKUP_ADMIN|G
+|root||root|localhost|BACKUP_ADMIN|G
+|root||root||BINLOG_ADMIN|G
+|root||root|localhost|BINLOG_ADMIN|G
+|root||root||BINLOG_ENCRYPTION_ADMIN|G
+|root||root|localhost|BINLOG_ENCRYPTION_ADMIN|G
+|root||mysql.session|localhost|CLONE_ADMIN|G
+|root||root||CLONE_ADMIN|G
+|root||root|localhost|CLONE_ADMIN|G
+|root||mysql.session|localhost|CONNECTION_ADMIN|G
+|root||root||CONNECTION_ADMIN|G
+|root||root|localhost|CONNECTION_ADMIN|G
+|root||root||CREATE|G
+|root||root|localhost|CREATE|G
+|root||root||CREATE ROLE|G
+|root||root|localhost|CREATE ROLE|G
+|root||root||CREATE ROUTINE|G
+|root||root|localhost|CREATE ROUTINE|G
+|root||root||CREATE TABLESPACE|G
+|root||root|localhost|CREATE TABLESPACE|G
+|root||root||CREATE TEMPORARY TABLES|G
+|root||root|localhost|CREATE TEMPORARY TABLES|G
+|root||root||CREATE USER|G
+|root||root|localhost|CREATE USER|G
+|root||root||CREATE VIEW|G
+|root||root|localhost|CREATE VIEW|G
+|root||root||CREATE_SPATIAL_REFERENCE_SYSTEM|G
+|root||root|localhost|CREATE_SPATIAL_REFERENCE_SYSTEM|G
+|root||root||DELETE|G
+|root||root|localhost|DELETE|G
+|root||root||DROP|G
+|root||root|localhost|DROP|G
+|root||root||DROP ROLE|G
+|root||root|localhost|DROP ROLE|G
+|root||root||ENCRYPTION_KEY_ADMIN|G
+|root||root|localhost|ENCRYPTION_KEY_ADMIN|G
+|root||root||EVENT|G
+|root||root|localhost|EVENT|G
+|root||root||EXECUTE|G
+|root||root|localhost|EXECUTE|G
+|root||root||FILE|G
+|root||root|localhost|FILE|G
+|root||mysql.infoschema|localhost|FIREWALL_EXEMPT|G
+|root||mysql.session|localhost|FIREWALL_EXEMPT|G
+|root||mysql.sys|localhost|FIREWALL_EXEMPT|G
+|root||root||FIREWALL_EXEMPT|G
+|root||root|localhost|FIREWALL_EXEMPT|G
+|root||root||FLUSH_OPTIMIZER_COSTS|G
+|root||root|localhost|FLUSH_OPTIMIZER_COSTS|G
+|root||root||FLUSH_PRIVILEGES|G
+|root||root|localhost|FLUSH_PRIVILEGES|G
+|root||root||FLUSH_STATUS|G
+|root||root|localhost|FLUSH_STATUS|G
+|root||root||FLUSH_TABLES|G
+|root||root|localhost|FLUSH_TABLES|G
+|root||root||FLUSH_USER_RESOURCES|G
+|root||root|localhost|FLUSH_USER_RESOURCES|G
+|root||root||GROUP_REPLICATION_ADMIN|G
+|root||root|localhost|GROUP_REPLICATION_ADMIN|G
+|root||root||GROUP_REPLICATION_STREAM|G
+|root||root|localhost|GROUP_REPLICATION_STREAM|G
+|root||root||INDEX|G
+|root||root|localhost|INDEX|G
+|root||root||INNODB_REDO_LOG_ARCHIVE|G
+|root||root|localhost|INNODB_REDO_LOG_ARCHIVE|G
+|root||root||INNODB_REDO_LOG_ENABLE|G
+|root||root|localhost|INNODB_REDO_LOG_ENABLE|G
+|root||root||INSERT|G
+|root||root|localhost|INSERT|G
+|root||root||LOCK TABLES|G
+|root||root|localhost|LOCK TABLES|G
+|root||root||OPTIMIZE_LOCAL_TABLE|G
+|root||root|localhost|OPTIMIZE_LOCAL_TABLE|G
+|root||root||PASSWORDLESS_USER_ADMIN|G
+|root||root|localhost|PASSWORDLESS_USER_ADMIN|G
+|root||mysql.session|localhost|PERSIST_RO_VARIABLES_ADMIN|G
+|root||root||PERSIST_RO_VARIABLES_ADMIN|G
+|root||root|localhost|PERSIST_RO_VARIABLES_ADMIN|G
+|root||root||PROCESS|G
+|root||root|localhost|PROCESS|G
+|root||root||REFERENCES|G
+|root||root|localhost|REFERENCES|G
+|root||root||RELOAD|G
+|root||root|localhost|RELOAD|G
+|root||root||REPLICATION CLIENT|G
+|root||root|localhost|REPLICATION CLIENT|G
+|root||root||REPLICATION SLAVE|G
+|root||root|localhost|REPLICATION SLAVE|G
+|root||root||REPLICATION_APPLIER|G
+|root||root|localhost|REPLICATION_APPLIER|G
+|root||root||REPLICATION_SLAVE_ADMIN|G
+|root||root|localhost|REPLICATION_SLAVE_ADMIN|G
+|root||root||RESOURCE_GROUP_ADMIN|G
+|root||root|localhost|RESOURCE_GROUP_ADMIN|G
+|root||root||RESOURCE_GROUP_USER|G
+|root||root|localhost|RESOURCE_GROUP_USER|G
+|root||root||ROLE_ADMIN|G
+|root||root|localhost|ROLE_ADMIN|G
+|root||mysql.infoschema|localhost|SELECT|G
+|root||root||SELECT|G
+|root||root|localhost|SELECT|G
+|root||root||SENSITIVE_VARIABLES_OBSERVER|G
+|root||root|localhost|SENSITIVE_VARIABLES_OBSERVER|G
+|root||root||SERVICE_CONNECTION_ADMIN|G
+|root||root|localhost|SERVICE_CONNECTION_ADMIN|G
+|root||mysql.session|localhost|SESSION_VARIABLES_ADMIN|G
+|root||root||SESSION_VARIABLES_ADMIN|G
+|root||root|localhost|SESSION_VARIABLES_ADMIN|G
+|root||root||SET_ANY_DEFINER|G
+|root||root|localhost|SET_ANY_DEFINER|G
+|root||root||SHOW DATABASES|G
+|root||root|localhost|SHOW DATABASES|G
+|root||root||SHOW VIEW|G
+|root||root|localhost|SHOW VIEW|G
+|root||root||SHOW_ROUTINE|G
+|root||root|localhost|SHOW_ROUTINE|G
+|root||mysql.session|localhost|SHUTDOWN|G
+|root||root||SHUTDOWN|G
+|root||root|localhost|SHUTDOWN|G
+|root||mysql.session|localhost|SUPER|G
+|root||root||SUPER|G
+|root||root|localhost|SUPER|G
+|root||mysql.infoschema|localhost|SYSTEM_USER|G
+|root||mysql.session|localhost|SYSTEM_USER|G
+|root||mysql.sys|localhost|SYSTEM_USER|G
+|root||root||SYSTEM_USER|G
+|root||root|localhost|SYSTEM_USER|G
+|root||mysql.session|localhost|SYSTEM_VARIABLES_ADMIN|G
+|root||root||SYSTEM_VARIABLES_ADMIN|G
+|root||root|localhost|SYSTEM_VARIABLES_ADMIN|G
+|root||root||TABLE_ENCRYPTION_ADMIN|G
+|root||root|localhost|TABLE_ENCRYPTION_ADMIN|G
+|root||root||TELEMETRY_LOG_ADMIN|G
+|root||root|localhost|TELEMETRY_LOG_ADMIN|G
+|root||root||TRANSACTION_GTID_TAG|G
+|root||root|localhost|TRANSACTION_GTID_TAG|G
+|root||root||TRIGGER|G
+|root||root|localhost|TRIGGER|G
+|root||root||UPDATE|G
+|root||root|localhost|UPDATE|G
+|root||root||XA_RECOVER_ADMIN|G
+|root||root|localhost|XA_RECOVER_ADMIN|G
+|root||root||grant option|G
+|root||root|localhost|grant option|G
+performance_schema|schema||mysql.session|localhost|SELECT|G
+sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
+      <ServerVersion>9.5.0</ServerVersion>
+    </root>
+    <collation id="2" parent="1" name="armscii8_bin">
+      <Charset>armscii8</Charset>
+    </collation>
+    <collation id="3" parent="1" name="armscii8_general_ci">
+      <Charset>armscii8</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="4" parent="1" name="ascii_bin">
+      <Charset>ascii</Charset>
+    </collation>
+    <collation id="5" parent="1" name="ascii_general_ci">
+      <Charset>ascii</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="6" parent="1" name="big5_bin">
+      <Charset>big5</Charset>
+    </collation>
+    <collation id="7" parent="1" name="big5_chinese_ci">
+      <Charset>big5</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="8" parent="1" name="binary">
+      <Charset>binary</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="9" parent="1" name="cp1250_bin">
+      <Charset>cp1250</Charset>
+    </collation>
+    <collation id="10" parent="1" name="cp1250_croatian_ci">
+      <Charset>cp1250</Charset>
+    </collation>
+    <collation id="11" parent="1" name="cp1250_czech_cs">
+      <Charset>cp1250</Charset>
+    </collation>
+    <collation id="12" parent="1" name="cp1250_general_ci">
+      <Charset>cp1250</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="13" parent="1" name="cp1250_polish_ci">
+      <Charset>cp1250</Charset>
+    </collation>
+    <collation id="14" parent="1" name="cp1251_bin">
+      <Charset>cp1251</Charset>
+    </collation>
+    <collation id="15" parent="1" name="cp1251_bulgarian_ci">
+      <Charset>cp1251</Charset>
+    </collation>
+    <collation id="16" parent="1" name="cp1251_general_ci">
+      <Charset>cp1251</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="17" parent="1" name="cp1251_general_cs">
+      <Charset>cp1251</Charset>
+    </collation>
+    <collation id="18" parent="1" name="cp1251_ukrainian_ci">
+      <Charset>cp1251</Charset>
+    </collation>
+    <collation id="19" parent="1" name="cp1256_bin">
+      <Charset>cp1256</Charset>
+    </collation>
+    <collation id="20" parent="1" name="cp1256_general_ci">
+      <Charset>cp1256</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="21" parent="1" name="cp1257_bin">
+      <Charset>cp1257</Charset>
+    </collation>
+    <collation id="22" parent="1" name="cp1257_general_ci">
+      <Charset>cp1257</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="23" parent="1" name="cp1257_lithuanian_ci">
+      <Charset>cp1257</Charset>
+    </collation>
+    <collation id="24" parent="1" name="cp850_bin">
+      <Charset>cp850</Charset>
+    </collation>
+    <collation id="25" parent="1" name="cp850_general_ci">
+      <Charset>cp850</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="26" parent="1" name="cp852_bin">
+      <Charset>cp852</Charset>
+    </collation>
+    <collation id="27" parent="1" name="cp852_general_ci">
+      <Charset>cp852</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="28" parent="1" name="cp866_bin">
+      <Charset>cp866</Charset>
+    </collation>
+    <collation id="29" parent="1" name="cp866_general_ci">
+      <Charset>cp866</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="30" parent="1" name="cp932_bin">
+      <Charset>cp932</Charset>
+    </collation>
+    <collation id="31" parent="1" name="cp932_japanese_ci">
+      <Charset>cp932</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="32" parent="1" name="dec8_bin">
+      <Charset>dec8</Charset>
+    </collation>
+    <collation id="33" parent="1" name="dec8_swedish_ci">
+      <Charset>dec8</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="34" parent="1" name="eucjpms_bin">
+      <Charset>eucjpms</Charset>
+    </collation>
+    <collation id="35" parent="1" name="eucjpms_japanese_ci">
+      <Charset>eucjpms</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="36" parent="1" name="euckr_bin">
+      <Charset>euckr</Charset>
+    </collation>
+    <collation id="37" parent="1" name="euckr_korean_ci">
+      <Charset>euckr</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="38" parent="1" name="gb18030_bin">
+      <Charset>gb18030</Charset>
+    </collation>
+    <collation id="39" parent="1" name="gb18030_chinese_ci">
+      <Charset>gb18030</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="40" parent="1" name="gb18030_unicode_520_ci">
+      <Charset>gb18030</Charset>
+    </collation>
+    <collation id="41" parent="1" name="gb2312_bin">
+      <Charset>gb2312</Charset>
+    </collation>
+    <collation id="42" parent="1" name="gb2312_chinese_ci">
+      <Charset>gb2312</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="43" parent="1" name="gbk_bin">
+      <Charset>gbk</Charset>
+    </collation>
+    <collation id="44" parent="1" name="gbk_chinese_ci">
+      <Charset>gbk</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="45" parent="1" name="geostd8_bin">
+      <Charset>geostd8</Charset>
+    </collation>
+    <collation id="46" parent="1" name="geostd8_general_ci">
+      <Charset>geostd8</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="47" parent="1" name="greek_bin">
+      <Charset>greek</Charset>
+    </collation>
+    <collation id="48" parent="1" name="greek_general_ci">
+      <Charset>greek</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="49" parent="1" name="hebrew_bin">
+      <Charset>hebrew</Charset>
+    </collation>
+    <collation id="50" parent="1" name="hebrew_general_ci">
+      <Charset>hebrew</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="51" parent="1" name="hp8_bin">
+      <Charset>hp8</Charset>
+    </collation>
+    <collation id="52" parent="1" name="hp8_english_ci">
+      <Charset>hp8</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="53" parent="1" name="keybcs2_bin">
+      <Charset>keybcs2</Charset>
+    </collation>
+    <collation id="54" parent="1" name="keybcs2_general_ci">
+      <Charset>keybcs2</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="55" parent="1" name="koi8r_bin">
+      <Charset>koi8r</Charset>
+    </collation>
+    <collation id="56" parent="1" name="koi8r_general_ci">
+      <Charset>koi8r</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="57" parent="1" name="koi8u_bin">
+      <Charset>koi8u</Charset>
+    </collation>
+    <collation id="58" parent="1" name="koi8u_general_ci">
+      <Charset>koi8u</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="59" parent="1" name="latin1_bin">
+      <Charset>latin1</Charset>
+    </collation>
+    <collation id="60" parent="1" name="latin1_danish_ci">
+      <Charset>latin1</Charset>
+    </collation>
+    <collation id="61" parent="1" name="latin1_general_ci">
+      <Charset>latin1</Charset>
+    </collation>
+    <collation id="62" parent="1" name="latin1_general_cs">
+      <Charset>latin1</Charset>
+    </collation>
+    <collation id="63" parent="1" name="latin1_german1_ci">
+      <Charset>latin1</Charset>
+    </collation>
+    <collation id="64" parent="1" name="latin1_german2_ci">
+      <Charset>latin1</Charset>
+    </collation>
+    <collation id="65" parent="1" name="latin1_spanish_ci">
+      <Charset>latin1</Charset>
+    </collation>
+    <collation id="66" parent="1" name="latin1_swedish_ci">
+      <Charset>latin1</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="67" parent="1" name="latin2_bin">
+      <Charset>latin2</Charset>
+    </collation>
+    <collation id="68" parent="1" name="latin2_croatian_ci">
+      <Charset>latin2</Charset>
+    </collation>
+    <collation id="69" parent="1" name="latin2_czech_cs">
+      <Charset>latin2</Charset>
+    </collation>
+    <collation id="70" parent="1" name="latin2_general_ci">
+      <Charset>latin2</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="71" parent="1" name="latin2_hungarian_ci">
+      <Charset>latin2</Charset>
+    </collation>
+    <collation id="72" parent="1" name="latin5_bin">
+      <Charset>latin5</Charset>
+    </collation>
+    <collation id="73" parent="1" name="latin5_turkish_ci">
+      <Charset>latin5</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="74" parent="1" name="latin7_bin">
+      <Charset>latin7</Charset>
+    </collation>
+    <collation id="75" parent="1" name="latin7_estonian_cs">
+      <Charset>latin7</Charset>
+    </collation>
+    <collation id="76" parent="1" name="latin7_general_ci">
+      <Charset>latin7</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="77" parent="1" name="latin7_general_cs">
+      <Charset>latin7</Charset>
+    </collation>
+    <collation id="78" parent="1" name="macce_bin">
+      <Charset>macce</Charset>
+    </collation>
+    <collation id="79" parent="1" name="macce_general_ci">
+      <Charset>macce</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="80" parent="1" name="macroman_bin">
+      <Charset>macroman</Charset>
+    </collation>
+    <collation id="81" parent="1" name="macroman_general_ci">
+      <Charset>macroman</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="82" parent="1" name="sjis_bin">
+      <Charset>sjis</Charset>
+    </collation>
+    <collation id="83" parent="1" name="sjis_japanese_ci">
+      <Charset>sjis</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="84" parent="1" name="swe7_bin">
+      <Charset>swe7</Charset>
+    </collation>
+    <collation id="85" parent="1" name="swe7_swedish_ci">
+      <Charset>swe7</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="86" parent="1" name="tis620_bin">
+      <Charset>tis620</Charset>
+    </collation>
+    <collation id="87" parent="1" name="tis620_thai_ci">
+      <Charset>tis620</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="88" parent="1" name="ucs2_bin">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="89" parent="1" name="ucs2_croatian_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="90" parent="1" name="ucs2_czech_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="91" parent="1" name="ucs2_danish_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="92" parent="1" name="ucs2_esperanto_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="93" parent="1" name="ucs2_estonian_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="94" parent="1" name="ucs2_general_ci">
+      <Charset>ucs2</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="95" parent="1" name="ucs2_general_mysql500_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="96" parent="1" name="ucs2_german2_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="97" parent="1" name="ucs2_hungarian_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="98" parent="1" name="ucs2_icelandic_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="99" parent="1" name="ucs2_latvian_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="100" parent="1" name="ucs2_lithuanian_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="101" parent="1" name="ucs2_persian_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="102" parent="1" name="ucs2_polish_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="103" parent="1" name="ucs2_roman_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="104" parent="1" name="ucs2_romanian_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="105" parent="1" name="ucs2_sinhala_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="106" parent="1" name="ucs2_slovak_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="107" parent="1" name="ucs2_slovenian_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="108" parent="1" name="ucs2_spanish2_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="109" parent="1" name="ucs2_spanish_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="110" parent="1" name="ucs2_swedish_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="111" parent="1" name="ucs2_turkish_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="112" parent="1" name="ucs2_unicode_520_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="113" parent="1" name="ucs2_unicode_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="114" parent="1" name="ucs2_vietnamese_ci">
+      <Charset>ucs2</Charset>
+    </collation>
+    <collation id="115" parent="1" name="ujis_bin">
+      <Charset>ujis</Charset>
+    </collation>
+    <collation id="116" parent="1" name="ujis_japanese_ci">
+      <Charset>ujis</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="117" parent="1" name="utf16_bin">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="118" parent="1" name="utf16_croatian_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="119" parent="1" name="utf16_czech_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="120" parent="1" name="utf16_danish_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="121" parent="1" name="utf16_esperanto_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="122" parent="1" name="utf16_estonian_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="123" parent="1" name="utf16_general_ci">
+      <Charset>utf16</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="124" parent="1" name="utf16_german2_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="125" parent="1" name="utf16_hungarian_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="126" parent="1" name="utf16_icelandic_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="127" parent="1" name="utf16_latvian_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="128" parent="1" name="utf16_lithuanian_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="129" parent="1" name="utf16_persian_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="130" parent="1" name="utf16_polish_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="131" parent="1" name="utf16_roman_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="132" parent="1" name="utf16_romanian_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="133" parent="1" name="utf16_sinhala_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="134" parent="1" name="utf16_slovak_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="135" parent="1" name="utf16_slovenian_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="136" parent="1" name="utf16_spanish2_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="137" parent="1" name="utf16_spanish_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="138" parent="1" name="utf16_swedish_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="139" parent="1" name="utf16_turkish_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="140" parent="1" name="utf16_unicode_520_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="141" parent="1" name="utf16_unicode_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="142" parent="1" name="utf16_vietnamese_ci">
+      <Charset>utf16</Charset>
+    </collation>
+    <collation id="143" parent="1" name="utf16le_bin">
+      <Charset>utf16le</Charset>
+    </collation>
+    <collation id="144" parent="1" name="utf16le_general_ci">
+      <Charset>utf16le</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="145" parent="1" name="utf32_bin">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="146" parent="1" name="utf32_croatian_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="147" parent="1" name="utf32_czech_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="148" parent="1" name="utf32_danish_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="149" parent="1" name="utf32_esperanto_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="150" parent="1" name="utf32_estonian_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="151" parent="1" name="utf32_general_ci">
+      <Charset>utf32</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="152" parent="1" name="utf32_german2_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="153" parent="1" name="utf32_hungarian_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="154" parent="1" name="utf32_icelandic_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="155" parent="1" name="utf32_latvian_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="156" parent="1" name="utf32_lithuanian_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="157" parent="1" name="utf32_persian_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="158" parent="1" name="utf32_polish_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="159" parent="1" name="utf32_roman_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="160" parent="1" name="utf32_romanian_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="161" parent="1" name="utf32_sinhala_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="162" parent="1" name="utf32_slovak_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="163" parent="1" name="utf32_slovenian_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="164" parent="1" name="utf32_spanish2_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="165" parent="1" name="utf32_spanish_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="166" parent="1" name="utf32_swedish_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="167" parent="1" name="utf32_turkish_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="168" parent="1" name="utf32_unicode_520_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="169" parent="1" name="utf32_unicode_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="170" parent="1" name="utf32_vietnamese_ci">
+      <Charset>utf32</Charset>
+    </collation>
+    <collation id="171" parent="1" name="utf8mb3_bin">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="172" parent="1" name="utf8mb3_croatian_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="173" parent="1" name="utf8mb3_czech_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="174" parent="1" name="utf8mb3_danish_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="175" parent="1" name="utf8mb3_esperanto_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="176" parent="1" name="utf8mb3_estonian_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="177" parent="1" name="utf8mb3_general_ci">
+      <Charset>utf8mb3</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="178" parent="1" name="utf8mb3_general_mysql500_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="179" parent="1" name="utf8mb3_german2_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="180" parent="1" name="utf8mb3_hungarian_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="181" parent="1" name="utf8mb3_icelandic_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="182" parent="1" name="utf8mb3_latvian_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="183" parent="1" name="utf8mb3_lithuanian_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="184" parent="1" name="utf8mb3_persian_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="185" parent="1" name="utf8mb3_polish_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="186" parent="1" name="utf8mb3_roman_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="187" parent="1" name="utf8mb3_romanian_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="188" parent="1" name="utf8mb3_sinhala_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="189" parent="1" name="utf8mb3_slovak_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="190" parent="1" name="utf8mb3_slovenian_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="191" parent="1" name="utf8mb3_spanish2_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="192" parent="1" name="utf8mb3_spanish_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="193" parent="1" name="utf8mb3_swedish_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="194" parent="1" name="utf8mb3_tolower_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="195" parent="1" name="utf8mb3_turkish_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="196" parent="1" name="utf8mb3_unicode_520_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="197" parent="1" name="utf8mb3_unicode_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="198" parent="1" name="utf8mb3_vietnamese_ci">
+      <Charset>utf8mb3</Charset>
+    </collation>
+    <collation id="199" parent="1" name="utf8mb4_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+      <DefaultForCharset>1</DefaultForCharset>
+    </collation>
+    <collation id="200" parent="1" name="utf8mb4_0900_as_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="201" parent="1" name="utf8mb4_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="202" parent="1" name="utf8mb4_0900_bin">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="203" parent="1" name="utf8mb4_bg_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="204" parent="1" name="utf8mb4_bg_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="205" parent="1" name="utf8mb4_bin">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="206" parent="1" name="utf8mb4_bs_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="207" parent="1" name="utf8mb4_bs_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="208" parent="1" name="utf8mb4_croatian_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="209" parent="1" name="utf8mb4_cs_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="210" parent="1" name="utf8mb4_cs_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="211" parent="1" name="utf8mb4_czech_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="212" parent="1" name="utf8mb4_da_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="213" parent="1" name="utf8mb4_da_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="214" parent="1" name="utf8mb4_danish_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="215" parent="1" name="utf8mb4_de_pb_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="216" parent="1" name="utf8mb4_de_pb_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="217" parent="1" name="utf8mb4_eo_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="218" parent="1" name="utf8mb4_eo_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="219" parent="1" name="utf8mb4_es_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="220" parent="1" name="utf8mb4_es_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="221" parent="1" name="utf8mb4_es_trad_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="222" parent="1" name="utf8mb4_es_trad_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="223" parent="1" name="utf8mb4_esperanto_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="224" parent="1" name="utf8mb4_estonian_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="225" parent="1" name="utf8mb4_et_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="226" parent="1" name="utf8mb4_et_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="227" parent="1" name="utf8mb4_general_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="228" parent="1" name="utf8mb4_german2_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="229" parent="1" name="utf8mb4_gl_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="230" parent="1" name="utf8mb4_gl_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="231" parent="1" name="utf8mb4_hr_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="232" parent="1" name="utf8mb4_hr_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="233" parent="1" name="utf8mb4_hu_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="234" parent="1" name="utf8mb4_hu_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="235" parent="1" name="utf8mb4_hungarian_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="236" parent="1" name="utf8mb4_icelandic_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="237" parent="1" name="utf8mb4_is_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="238" parent="1" name="utf8mb4_is_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="239" parent="1" name="utf8mb4_ja_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="240" parent="1" name="utf8mb4_ja_0900_as_cs_ks">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="241" parent="1" name="utf8mb4_la_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="242" parent="1" name="utf8mb4_la_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="243" parent="1" name="utf8mb4_latvian_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="244" parent="1" name="utf8mb4_lithuanian_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="245" parent="1" name="utf8mb4_lt_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="246" parent="1" name="utf8mb4_lt_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="247" parent="1" name="utf8mb4_lv_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="248" parent="1" name="utf8mb4_lv_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="249" parent="1" name="utf8mb4_mn_cyrl_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="250" parent="1" name="utf8mb4_mn_cyrl_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="251" parent="1" name="utf8mb4_nb_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="252" parent="1" name="utf8mb4_nb_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="253" parent="1" name="utf8mb4_nn_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="254" parent="1" name="utf8mb4_nn_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="255" parent="1" name="utf8mb4_persian_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="256" parent="1" name="utf8mb4_pl_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="257" parent="1" name="utf8mb4_pl_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="258" parent="1" name="utf8mb4_polish_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="259" parent="1" name="utf8mb4_ro_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="260" parent="1" name="utf8mb4_ro_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="261" parent="1" name="utf8mb4_roman_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="262" parent="1" name="utf8mb4_romanian_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="263" parent="1" name="utf8mb4_ru_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="264" parent="1" name="utf8mb4_ru_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="265" parent="1" name="utf8mb4_sinhala_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="266" parent="1" name="utf8mb4_sk_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="267" parent="1" name="utf8mb4_sk_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="268" parent="1" name="utf8mb4_sl_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="269" parent="1" name="utf8mb4_sl_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="270" parent="1" name="utf8mb4_slovak_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="271" parent="1" name="utf8mb4_slovenian_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="272" parent="1" name="utf8mb4_spanish2_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="273" parent="1" name="utf8mb4_spanish_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="274" parent="1" name="utf8mb4_sr_latn_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="275" parent="1" name="utf8mb4_sr_latn_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="276" parent="1" name="utf8mb4_sv_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="277" parent="1" name="utf8mb4_sv_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="278" parent="1" name="utf8mb4_swedish_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="279" parent="1" name="utf8mb4_tr_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="280" parent="1" name="utf8mb4_tr_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="281" parent="1" name="utf8mb4_turkish_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="282" parent="1" name="utf8mb4_unicode_520_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="283" parent="1" name="utf8mb4_unicode_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="284" parent="1" name="utf8mb4_vi_0900_ai_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="285" parent="1" name="utf8mb4_vi_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="286" parent="1" name="utf8mb4_vietnamese_ci">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <collation id="287" parent="1" name="utf8mb4_zh_0900_as_cs">
+      <Charset>utf8mb4</Charset>
+    </collation>
+    <schema id="288" parent="1" name="fashion_system">
+      <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
+      <Current>1</Current>
+      <LastIntrospectionLevel>3</LastIntrospectionLevel>
+      <LastIntrospectionLocalTimestamp>2026-02-11.16:11:33</LastIntrospectionLocalTimestamp>
+      <CollationName>utf8mb4_0900_ai_ci</CollationName>
+    </schema>
+    <schema id="289" parent="1" name="information_schema">
+      <CollationName>utf8mb3_general_ci</CollationName>
+    </schema>
+    <schema id="290" parent="1" name="mysql">
+      <CollationName>utf8mb4_0900_ai_ci</CollationName>
+    </schema>
+    <schema id="291" parent="1" name="performance_schema">
+      <CollationName>utf8mb4_0900_ai_ci</CollationName>
+    </schema>
+    <schema id="292" parent="1" name="sys">
+      <CollationName>utf8mb4_0900_ai_ci</CollationName>
+    </schema>
+    <user id="293" parent="1" name="mysql.infoschema">
+      <CanLogin>0</CanLogin>
+      <Host>localhost</Host>
+      <Plugin>caching_sha2_password</Plugin>
+    </user>
+    <user id="294" parent="1" name="mysql.session">
+      <CanLogin>0</CanLogin>
+      <Host>localhost</Host>
+      <Plugin>caching_sha2_password</Plugin>
+    </user>
+    <user id="295" parent="1" name="mysql.sys">
+      <CanLogin>0</CanLogin>
+      <Host>localhost</Host>
+      <Plugin>caching_sha2_password</Plugin>
+    </user>
+    <user id="296" parent="1" name="root">
+      <Plugin>caching_sha2_password</Plugin>
+    </user>
+    <user id="297" parent="1" name="root">
+      <Host>localhost</Host>
+      <Plugin>caching_sha2_password</Plugin>
+    </user>
+    <table id="298" parent="288" name="anh_bien_the">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="299" parent="288" name="anh_kiem_ke">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="300" parent="288" name="anh_quan_ao">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="301" parent="288" name="bien_the_san_pham">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="302" parent="288" name="canh_bao">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="303" parent="288" name="chat_lieu">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="304" parent="288" name="chi_tiet_don_ban_hang">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="305" parent="288" name="chi_tiet_don_mua_hang">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="306" parent="288" name="chi_tiet_kiem_ke">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="307" parent="288" name="chi_tiet_phieu_dieu_chinh">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="308" parent="288" name="chi_tiet_phieu_nhap_kho">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="309" parent="288" name="chi_tiet_phieu_xuat_kho">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="310" parent="288" name="chi_tiet_quyen_kho">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="311" parent="288" name="danh_muc_quan_ao">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="312" parent="288" name="don_ban_hang">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="313" parent="288" name="don_mua_hang">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="314" parent="288" name="dot_kiem_ke">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="315" parent="288" name="khach_hang">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="316" parent="288" name="kho">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="317" parent="288" name="lich_su_giao_dich_kho">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="318" parent="288" name="lich_su_kiem_ke">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="319" parent="288" name="lich_su_thay_doi">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="320" parent="288" name="lo_hang">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="321" parent="288" name="mau_sac">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="322" parent="288" name="nguoi_dung">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="323" parent="288" name="nha_cung_cap">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="324" parent="288" name="phan_quyen_nguoi_dung_kho">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="325" parent="288" name="phieu_dieu_chinh_kho">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="326" parent="288" name="phieu_nhap_kho">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="327" parent="288" name="phieu_xuat_kho">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="328" parent="288" name="quyen_han">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="329" parent="288" name="san_pham_quan_ao">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="330" parent="288" name="size">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="331" parent="288" name="tep_tin">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="332" parent="288" name="thanh_vien_kiem_ke">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <table id="333" parent="288" name="ton_kho_theo_lo">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_unicode_ci</CollationName>
+    </table>
+    <column id="334" parent="298" name="id">
+      <AutoIncrement>9</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="335" parent="298" name="bien_the_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="336" parent="298" name="tep_tin_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="337" parent="298" name="trang_thai">
+      <Comment>0: Ngừng hoạt động, 1: Hoạt động</Comment>
+      <DefaultExpression>1</DefaultExpression>
+      <Position>4</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="338" parent="298" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="339" parent="298" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="340" parent="298" name="anh_bien_the_ibfk_1">
+      <ColNames>bien_the_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <OnUpdate>cascade</OnUpdate>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <foreign-key id="341" parent="298" name="anh_bien_the_ibfk_2">
+      <ColNames>tep_tin_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <OnUpdate>cascade</OnUpdate>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tep_tin</RefTableName>
+    </foreign-key>
+    <index id="342" parent="298" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="343" parent="298" name="bien_the_id">
+      <ColNames>bien_the_id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="344" parent="298" name="tep_tin_id">
+      <ColNames>tep_tin_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="345" parent="298" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="346" parent="298" name="bien_the_id">
+      <UnderlyingIndexName>bien_the_id</UnderlyingIndexName>
+    </key>
+    <column id="347" parent="299" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="348" parent="299" name="chi_tiet_kiem_ke_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="349" parent="299" name="tep_tin_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="350" parent="299" name="loai_anh">
+      <DefaultExpression>&apos;chi_tiet&apos;</DefaultExpression>
+      <Position>4</Position>
+      <StoredType>enum(&apos;tong_quan&apos;, &apos;chi_tiet&apos;, &apos;van_de&apos;)|0e</StoredType>
+    </column>
+    <column id="351" parent="299" name="mo_ta">
+      <Position>5</Position>
+      <StoredType>varchar(500)|0s</StoredType>
+    </column>
+    <column id="352" parent="299" name="ngay_chup">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="353" parent="299" name="nguoi_chup_id">
+      <Position>7</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <foreign-key id="354" parent="299" name="anh_kiem_ke_ibfk_1">
+      <ColNames>chi_tiet_kiem_ke_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>chi_tiet_kiem_ke</RefTableName>
+    </foreign-key>
+    <foreign-key id="355" parent="299" name="anh_kiem_ke_ibfk_2">
+      <ColNames>tep_tin_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tep_tin</RefTableName>
+    </foreign-key>
+    <foreign-key id="356" parent="299" name="anh_kiem_ke_ibfk_3">
+      <ColNames>nguoi_chup_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="357" parent="299" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="358" parent="299" name="idx_chi_tiet">
+      <ColNames>chi_tiet_kiem_ke_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="359" parent="299" name="tep_tin_id">
+      <ColNames>tep_tin_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="360" parent="299" name="nguoi_chup_id">
+      <ColNames>nguoi_chup_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="361" parent="299" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="362" parent="300" name="id">
+      <AutoIncrement>9</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="363" parent="300" name="quan_ao_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="364" parent="300" name="tep_tin_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="365" parent="300" name="anh_chinh">
+      <Comment>0: Ảnh phụ, 1: Ảnh chính</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>4</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="366" parent="300" name="trang_thai">
+      <Comment>0: Ngừng hoạt động, 1: Hoạt động</Comment>
+      <DefaultExpression>1</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="367" parent="300" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="368" parent="300" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>7</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="369" parent="300" name="anh_quan_ao_ibfk_1">
+      <ColNames>quan_ao_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <OnUpdate>cascade</OnUpdate>
+      <RefColNames>id</RefColNames>
+      <RefTableName>san_pham_quan_ao</RefTableName>
+    </foreign-key>
+    <foreign-key id="370" parent="300" name="anh_quan_ao_ibfk_2">
+      <ColNames>tep_tin_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <OnUpdate>cascade</OnUpdate>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tep_tin</RefTableName>
+    </foreign-key>
+    <index id="371" parent="300" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="372" parent="300" name="quan_ao_id">
+      <ColNames>quan_ao_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="373" parent="300" name="tep_tin_id">
+      <ColNames>tep_tin_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="374" parent="300" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="375" parent="301" name="id">
+      <AutoIncrement>70</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="376" parent="301" name="san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="377" parent="301" name="mau_sac_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="378" parent="301" name="size_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="379" parent="301" name="chat_lieu_id">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="380" parent="301" name="ma_sku">
+      <Comment>Mã SKU: VD AT001-DEN-L-COTTON</Comment>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="381" parent="301" name="ma_vach_sku">
+      <Comment>Mã vạch riêng cho SKU</Comment>
+      <Position>7</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="382" parent="301" name="gia_von">
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="383" parent="301" name="gia_ban">
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="384" parent="301" name="trang_thai">
+      <Comment>0: Ngừng kinh doanh, 1: Hoạt động</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>10</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="385" parent="301" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>11</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="386" parent="301" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>12</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="387" parent="301" name="bien_the_san_pham_ibfk_1">
+      <ColNames>san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>san_pham_quan_ao</RefTableName>
+    </foreign-key>
+    <foreign-key id="388" parent="301" name="bien_the_san_pham_ibfk_2">
+      <ColNames>mau_sac_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>mau_sac</RefTableName>
+    </foreign-key>
+    <foreign-key id="389" parent="301" name="bien_the_san_pham_ibfk_3">
+      <ColNames>size_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>size</RefTableName>
+    </foreign-key>
+    <foreign-key id="390" parent="301" name="bien_the_san_pham_ibfk_4">
+      <ColNames>chat_lieu_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>chat_lieu</RefTableName>
+    </foreign-key>
+    <index id="391" parent="301" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="392" parent="301" name="unique_bien_the">
+      <ColNames>san_pham_id
+mau_sac_id
+size_id
+chat_lieu_id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="393" parent="301" name="ma_sku">
+      <ColNames>ma_sku</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="394" parent="301" name="idx_san_pham_mau">
+      <ColNames>san_pham_id
+mau_sac_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="395" parent="301" name="idx_san_pham_size">
+      <ColNames>san_pham_id
+size_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="396" parent="301" name="mau_sac_id">
+      <ColNames>mau_sac_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="397" parent="301" name="size_id">
+      <ColNames>size_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="398" parent="301" name="chat_lieu_id">
+      <ColNames>chat_lieu_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="399" parent="301" name="idx_ma_sku">
+      <ColNames>ma_sku</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="400" parent="301" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="401" parent="301" name="unique_bien_the">
+      <UnderlyingIndexName>unique_bien_the</UnderlyingIndexName>
+    </key>
+    <key id="402" parent="301" name="ma_sku">
+      <UnderlyingIndexName>ma_sku</UnderlyingIndexName>
+    </key>
+    <column id="403" parent="302" name="id">
+      <AutoIncrement>4</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="404" parent="302" name="loai_canh_bao">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>enum(&apos;ton_kho_thap&apos;, &apos;ton_kho_qua_muc&apos;)|0e</StoredType>
+    </column>
+    <column id="405" parent="302" name="bien_the_san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="406" parent="302" name="kho_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="407" parent="302" name="lo_hang_id">
+      <Comment>Null nếu cảnh báo chung, có giá trị nếu cảnh báo lô cụ thể</Comment>
+      <Position>5</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="408" parent="302" name="so_luong_hien_tai">
+      <Position>6</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="409" parent="302" name="nguong_canh_bao">
+      <Position>7</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="410" parent="302" name="ngay_canh_bao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="411" parent="302" name="trang_thai">
+      <Comment>0: Chờ xử lý, 1: Đã xử lý, 2: Bỏ qua</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="412" parent="302" name="ngay_xu_ly">
+      <Position>10</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="413" parent="302" name="nguoi_xu_ly_id">
+      <Position>11</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <foreign-key id="414" parent="302" name="canh_bao_ibfk_1">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <foreign-key id="415" parent="302" name="canh_bao_ibfk_2">
+      <ColNames>kho_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="416" parent="302" name="canh_bao_ibfk_3">
+      <ColNames>lo_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>lo_hang</RefTableName>
+    </foreign-key>
+    <foreign-key id="417" parent="302" name="canh_bao_ibfk_4">
+      <ColNames>nguoi_xu_ly_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="418" parent="302" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="419" parent="302" name="idx_loai">
+      <ColNames>loai_canh_bao</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="420" parent="302" name="bien_the_san_pham_id">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="421" parent="302" name="kho_id">
+      <ColNames>kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="422" parent="302" name="lo_hang_id">
+      <ColNames>lo_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="423" parent="302" name="idx_trang_thai">
+      <ColNames>trang_thai
+ngay_canh_bao</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="424" parent="302" name="nguoi_xu_ly_id">
+      <ColNames>nguoi_xu_ly_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="425" parent="302" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="426" parent="303" name="id">
+      <AutoIncrement>33</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="427" parent="303" name="ma_chat_lieu">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="428" parent="303" name="ten_chat_lieu">
+      <Comment>Cotton, Vải jean, Kaki, Polyester, Lụa...</Comment>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="429" parent="303" name="mo_ta">
+      <Position>4</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="430" parent="303" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <index id="431" parent="303" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="432" parent="303" name="ma_chat_lieu">
+      <ColNames>ma_chat_lieu</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="433" parent="303" name="idx_ma_chat_lieu">
+      <ColNames>ma_chat_lieu</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="434" parent="303" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="435" parent="303" name="ma_chat_lieu">
+      <UnderlyingIndexName>ma_chat_lieu</UnderlyingIndexName>
+    </key>
+    <column id="436" parent="304" name="id">
+      <AutoIncrement>22</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="437" parent="304" name="don_ban_hang_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="438" parent="304" name="bien_the_san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="439" parent="304" name="so_luong_dat">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="440" parent="304" name="so_luong_da_giao">
+      <DefaultExpression>0.000</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="441" parent="304" name="don_gia">
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="442" parent="304" name="thanh_tien">
+      <ColumnKind>generated-stored</ColumnKind>
+      <DefaultExpression>(`so_luong_dat` * `don_gia`)</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="443" parent="304" name="ghi_chu">
+      <Position>8</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <foreign-key id="444" parent="304" name="chi_tiet_don_ban_hang_ibfk_1">
+      <ColNames>don_ban_hang_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>don_ban_hang</RefTableName>
+    </foreign-key>
+    <foreign-key id="445" parent="304" name="chi_tiet_don_ban_hang_ibfk_2">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <index id="446" parent="304" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="447" parent="304" name="idx_don_bien_the">
+      <ColNames>don_ban_hang_id
+bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="448" parent="304" name="bien_the_san_pham_id">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="449" parent="304" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="450" parent="305" name="id">
+      <AutoIncrement>41</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="451" parent="305" name="don_mua_hang_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="452" parent="305" name="bien_the_san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="453" parent="305" name="so_luong_dat">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="454" parent="305" name="so_luong_da_nhan">
+      <DefaultExpression>0.000</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="455" parent="305" name="don_gia">
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="456" parent="305" name="thanh_tien">
+      <ColumnKind>generated-stored</ColumnKind>
+      <DefaultExpression>(`so_luong_dat` * `don_gia`)</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="457" parent="305" name="ghi_chu">
+      <Position>8</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <foreign-key id="458" parent="305" name="chi_tiet_don_mua_hang_ibfk_1">
+      <ColNames>don_mua_hang_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>don_mua_hang</RefTableName>
+    </foreign-key>
+    <foreign-key id="459" parent="305" name="chi_tiet_don_mua_hang_ibfk_2">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <index id="460" parent="305" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="461" parent="305" name="idx_don_bien_the">
+      <ColNames>don_mua_hang_id
+bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="462" parent="305" name="bien_the_san_pham_id">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="463" parent="305" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="464" parent="306" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="465" parent="306" name="dot_kiem_ke_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="466" parent="306" name="bien_the_san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="467" parent="306" name="lo_hang_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="468" parent="306" name="so_luong_he_thong">
+      <Comment>Số lượng theo sổ sách</Comment>
+      <DefaultExpression>0.000</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="469" parent="306" name="gia_von_he_thong">
+      <Comment>Giá vốn theo hệ thống</Comment>
+      <Position>6</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="470" parent="306" name="so_luong_thuc_te">
+      <Comment>Số lượng kiểm đếm thực tế</Comment>
+      <DefaultExpression>0.000</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="471" parent="306" name="gia_von_thuc_te">
+      <Comment>Giá vốn thực tế (nếu có điều chỉnh)</Comment>
+      <Position>8</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="472" parent="306" name="chenh_lech_so_luong">
+      <Comment>so_luong_thuc_te - so_luong_he_thong</Comment>
+      <DefaultExpression>0.000</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="473" parent="306" name="ti_le_chenh_lech">
+      <Comment>% chênh lệch</Comment>
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>10</Position>
+      <StoredType>decimal(10,2 digit)|0s</StoredType>
+    </column>
+    <column id="474" parent="306" name="gia_tri_chenh_lech">
+      <Comment>Giá trị tiền chênh lệch</Comment>
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>11</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="475" parent="306" name="loai_chenh_lech">
+      <Comment>Phân loại chênh lệch</Comment>
+      <Position>12</Position>
+      <StoredType>enum(&apos;thieu&apos;, &apos;thua&apos;, &apos;khop&apos;)|0e</StoredType>
+    </column>
+    <column id="476" parent="306" name="vi_tri_kho">
+      <Comment>Vị trí cụ thể trong kho: kệ, ngăn, tầng</Comment>
+      <Position>13</Position>
+      <StoredType>varchar(200)|0s</StoredType>
+    </column>
+    <column id="477" parent="306" name="lan_kiem_dem">
+      <Comment>Lần kiểm đếm thứ mấy</Comment>
+      <DefaultExpression>1</DefaultExpression>
+      <Position>14</Position>
+      <StoredType>tinyint|0s</StoredType>
+    </column>
+    <column id="478" parent="306" name="nguoi_kiem_dem_id">
+      <Comment>Người thực hiện kiểm đếm</Comment>
+      <Position>15</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="479" parent="306" name="ngay_kiem_dem">
+      <Position>16</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="480" parent="306" name="trang_thai">
+      <Comment>0: Chưa kiểm, 1: Đã kiểm, 2: Cần kiểm lại, 3: Đã xác nhận</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>17</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="481" parent="306" name="ly_do_chenh_lech">
+      <Comment>Giải trình nguyên nhân chênh lệch</Comment>
+      <Position>18</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="482" parent="306" name="bien_phap_xu_ly">
+      <Comment>Biện pháp xử lý đối với chênh lệch</Comment>
+      <Position>19</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="483" parent="306" name="ghi_chu">
+      <Position>20</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="484" parent="306" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>21</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="485" parent="306" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>22</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="486" parent="306" name="chi_tiet_kiem_ke_ibfk_1">
+      <ColNames>dot_kiem_ke_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>dot_kiem_ke</RefTableName>
+    </foreign-key>
+    <foreign-key id="487" parent="306" name="chi_tiet_kiem_ke_ibfk_2">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <foreign-key id="488" parent="306" name="chi_tiet_kiem_ke_ibfk_3">
+      <ColNames>lo_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>lo_hang</RefTableName>
+    </foreign-key>
+    <foreign-key id="489" parent="306" name="chi_tiet_kiem_ke_ibfk_4">
+      <ColNames>nguoi_kiem_dem_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="490" parent="306" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="491" parent="306" name="unique_dot_bien_the_lo">
+      <ColNames>dot_kiem_ke_id
+bien_the_san_pham_id
+lo_hang_id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="492" parent="306" name="idx_dot_kiem_ke">
+      <ColNames>dot_kiem_ke_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="493" parent="306" name="bien_the_san_pham_id">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="494" parent="306" name="lo_hang_id">
+      <ColNames>lo_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="495" parent="306" name="idx_chenh_lech">
+      <ColNames>chenh_lech_so_luong</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="496" parent="306" name="idx_loai_chenh_lech">
+      <ColNames>loai_chenh_lech</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="497" parent="306" name="nguoi_kiem_dem_id">
+      <ColNames>nguoi_kiem_dem_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="498" parent="306" name="idx_trang_thai">
+      <ColNames>trang_thai</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="499" parent="306" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="500" parent="306" name="unique_dot_bien_the_lo">
+      <UnderlyingIndexName>unique_dot_bien_the_lo</UnderlyingIndexName>
+    </key>
+    <column id="501" parent="307" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="502" parent="307" name="phieu_dieu_chinh_kho_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="503" parent="307" name="chi_tiet_kiem_ke_id">
+      <Comment>Tham chiếu đến chi tiết kiểm kê</Comment>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="504" parent="307" name="bien_the_san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="505" parent="307" name="lo_hang_id">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="506" parent="307" name="so_luong_dieu_chinh">
+      <Comment>Số dương = tăng, số âm = giảm</Comment>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="507" parent="307" name="gia_von">
+      <NotNull>1</NotNull>
+      <Position>7</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="508" parent="307" name="thanh_tien">
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="509" parent="307" name="loai_dieu_chinh">
+      <Position>9</Position>
+      <StoredType>enum(&apos;tang&apos;, &apos;giam&apos;)|0e</StoredType>
+    </column>
+    <column id="510" parent="307" name="ghi_chu">
+      <Position>10</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="511" parent="307" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>11</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="512" parent="307" name="chi_tiet_phieu_dieu_chinh_ibfk_1">
+      <ColNames>phieu_dieu_chinh_kho_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>phieu_dieu_chinh_kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="513" parent="307" name="chi_tiet_phieu_dieu_chinh_ibfk_2">
+      <ColNames>chi_tiet_kiem_ke_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>chi_tiet_kiem_ke</RefTableName>
+    </foreign-key>
+    <foreign-key id="514" parent="307" name="chi_tiet_phieu_dieu_chinh_ibfk_3">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <foreign-key id="515" parent="307" name="chi_tiet_phieu_dieu_chinh_ibfk_4">
+      <ColNames>lo_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>lo_hang</RefTableName>
+    </foreign-key>
+    <index id="516" parent="307" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="517" parent="307" name="idx_phieu">
+      <ColNames>phieu_dieu_chinh_kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="518" parent="307" name="chi_tiet_kiem_ke_id">
+      <ColNames>chi_tiet_kiem_ke_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="519" parent="307" name="bien_the_san_pham_id">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="520" parent="307" name="lo_hang_id">
+      <ColNames>lo_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="521" parent="307" name="idx_loai">
+      <ColNames>loai_dieu_chinh</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="522" parent="307" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="523" parent="308" name="id">
+      <AutoIncrement>51</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="524" parent="308" name="phieu_nhap_kho_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="525" parent="308" name="bien_the_san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="526" parent="308" name="lo_hang_id">
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="527" parent="308" name="so_luong_nhap">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="528" parent="308" name="don_gia">
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="529" parent="308" name="thanh_tien">
+      <ColumnKind>generated-stored</ColumnKind>
+      <DefaultExpression>(`so_luong_nhap` * `don_gia`)</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="530" parent="308" name="ghi_chu">
+      <Position>8</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="531" parent="308" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="532" parent="308" name="chi_tiet_phieu_nhap_kho_ibfk_1">
+      <ColNames>phieu_nhap_kho_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>phieu_nhap_kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="533" parent="308" name="chi_tiet_phieu_nhap_kho_ibfk_2">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <foreign-key id="534" parent="308" name="chi_tiet_phieu_nhap_kho_ibfk_3">
+      <ColNames>lo_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>lo_hang</RefTableName>
+    </foreign-key>
+    <index id="535" parent="308" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="536" parent="308" name="idx_phieu_bien_the">
+      <ColNames>phieu_nhap_kho_id
+bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="537" parent="308" name="bien_the_san_pham_id">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="538" parent="308" name="lo_hang_id">
+      <ColNames>lo_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="539" parent="308" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="540" parent="309" name="id">
+      <AutoIncrement>30</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="541" parent="309" name="phieu_xuat_kho_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="542" parent="309" name="bien_the_san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="543" parent="309" name="lo_hang_id">
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="544" parent="309" name="so_luong_xuat">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="545" parent="309" name="gia_von">
+      <Comment>Giá vốn tại thời điểm xuất</Comment>
+      <Position>6</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="546" parent="309" name="ghi_chu">
+      <Position>7</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="547" parent="309" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="548" parent="309" name="chi_tiet_phieu_xuat_kho_ibfk_1">
+      <ColNames>phieu_xuat_kho_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>phieu_xuat_kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="549" parent="309" name="chi_tiet_phieu_xuat_kho_ibfk_2">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <foreign-key id="550" parent="309" name="chi_tiet_phieu_xuat_kho_ibfk_3">
+      <ColNames>lo_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>lo_hang</RefTableName>
+    </foreign-key>
+    <index id="551" parent="309" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="552" parent="309" name="idx_phieu_bien_the">
+      <ColNames>phieu_xuat_kho_id
+bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="553" parent="309" name="bien_the_san_pham_id">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="554" parent="309" name="lo_hang_id">
+      <ColNames>lo_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="555" parent="309" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="556" parent="310" name="id">
+      <AutoIncrement>260</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="557" parent="310" name="phan_quyen_nguoi_dung_kho_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="558" parent="310" name="quyen_han_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="559" parent="310" name="trang_thai">
+      <Comment>1 = được phép, 0 = bị từ chối</Comment>
+      <DefaultExpression>1</DefaultExpression>
+      <Position>4</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="560" parent="310" name="ngay_cap">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="561" parent="310" name="nguoi_cap_id">
+      <Comment>Người cấp quyền này</Comment>
+      <Position>6</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <foreign-key id="562" parent="310" name="chi_tiet_quyen_kho_ibfk_1">
+      <ColNames>phan_quyen_nguoi_dung_kho_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>phan_quyen_nguoi_dung_kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="563" parent="310" name="chi_tiet_quyen_kho_ibfk_2">
+      <ColNames>quyen_han_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>quyen_han</RefTableName>
+    </foreign-key>
+    <foreign-key id="564" parent="310" name="chi_tiet_quyen_kho_ibfk_3">
+      <ColNames>nguoi_cap_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="565" parent="310" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="566" parent="310" name="unique_phan_quyen_quyen_han">
+      <ColNames>phan_quyen_nguoi_dung_kho_id
+quyen_han_id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="567" parent="310" name="idx_phan_quyen">
+      <ColNames>phan_quyen_nguoi_dung_kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="568" parent="310" name="idx_quyen_han">
+      <ColNames>quyen_han_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="569" parent="310" name="nguoi_cap_id">
+      <ColNames>nguoi_cap_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="570" parent="310" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="571" parent="310" name="unique_phan_quyen_quyen_han">
+      <UnderlyingIndexName>unique_phan_quyen_quyen_han</UnderlyingIndexName>
+    </key>
+    <column id="572" parent="311" name="id">
+      <AutoIncrement>17</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="573" parent="311" name="ma_danh_muc">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="574" parent="311" name="ten_danh_muc">
+      <Comment>Áo thun, Quần jean, Váy, Áo khoác...</Comment>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="575" parent="311" name="danh_muc_cha_id">
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="576" parent="311" name="mo_ta">
+      <Position>5</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="577" parent="311" name="trang_thai">
+      <Comment>0: Ngừng kinh doanh, 1: Hoạt động</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>6</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="578" parent="311" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="579" parent="311" name="danh_muc_quan_ao_ibfk_1">
+      <ColNames>danh_muc_cha_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>danh_muc_quan_ao</RefTableName>
+    </foreign-key>
+    <index id="580" parent="311" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="581" parent="311" name="ma_danh_muc">
+      <ColNames>ma_danh_muc</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="582" parent="311" name="idx_ma_danh_muc">
+      <ColNames>ma_danh_muc</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="583" parent="311" name="danh_muc_cha_id">
+      <ColNames>danh_muc_cha_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="584" parent="311" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="585" parent="311" name="ma_danh_muc">
+      <UnderlyingIndexName>ma_danh_muc</UnderlyingIndexName>
+    </key>
+    <column id="586" parent="312" name="id">
+      <AutoIncrement>10</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="587" parent="312" name="so_don_hang">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="588" parent="312" name="khach_hang_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="589" parent="312" name="kho_xuat_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="590" parent="312" name="ngay_dat_hang">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="591" parent="312" name="ngay_giao_hang">
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="592" parent="312" name="trang_thai">
+      <Comment>0: Nháp, 1: Đã xác nhận, 2: Đang lấy hàng, 3: Đã giao, 4: Đã hủy</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="593" parent="312" name="tien_hang">
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="594" parent="312" name="phi_van_chuyen">
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="595" parent="312" name="tong_cong">
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>10</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="596" parent="312" name="trang_thai_thanh_toan">
+      <DefaultExpression>&apos;chua_thanh_toan&apos;</DefaultExpression>
+      <Position>11</Position>
+      <StoredType>enum(&apos;chua_thanh_toan&apos;, &apos;da_thanh_toan&apos;)|0e</StoredType>
+    </column>
+    <column id="597" parent="312" name="dia_chi_giao_hang">
+      <Position>12</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="598" parent="312" name="ghi_chu">
+      <Position>13</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="599" parent="312" name="nguoi_tao_id">
+      <Position>14</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="600" parent="312" name="nguoi_duyet_id">
+      <Position>15</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="601" parent="312" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>16</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="602" parent="312" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>17</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="603" parent="312" name="don_ban_hang_ibfk_1">
+      <ColNames>khach_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>khach_hang</RefTableName>
+    </foreign-key>
+    <foreign-key id="604" parent="312" name="don_ban_hang_ibfk_2">
+      <ColNames>kho_xuat_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="605" parent="312" name="don_ban_hang_ibfk_3">
+      <ColNames>nguoi_tao_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <foreign-key id="606" parent="312" name="don_ban_hang_ibfk_4">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="607" parent="312" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="608" parent="312" name="so_don_hang">
+      <ColNames>so_don_hang</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="609" parent="312" name="idx_so_don_hang">
+      <ColNames>so_don_hang</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="610" parent="312" name="khach_hang_id">
+      <ColNames>khach_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="611" parent="312" name="kho_xuat_id">
+      <ColNames>kho_xuat_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="612" parent="312" name="idx_trang_thai">
+      <ColNames>trang_thai</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="613" parent="312" name="nguoi_tao_id">
+      <ColNames>nguoi_tao_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="614" parent="312" name="nguoi_duyet_id">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="615" parent="312" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="616" parent="312" name="so_don_hang">
+      <UnderlyingIndexName>so_don_hang</UnderlyingIndexName>
+    </key>
+    <column id="617" parent="313" name="id">
+      <AutoIncrement>44</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="618" parent="313" name="so_don_mua">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="619" parent="313" name="nha_cung_cap_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="620" parent="313" name="kho_nhap_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="621" parent="313" name="ngay_dat_hang">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="622" parent="313" name="ngay_giao_du_kien">
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="623" parent="313" name="trang_thai">
+      <Comment>0: Nháp, 1: Đã gửi, 2: Đã duyệt, 3: Nhận một phần, 4: Đã nhận, 5: Đã hủy</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="624" parent="313" name="tong_tien">
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="625" parent="313" name="ghi_chu">
+      <Position>9</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="626" parent="313" name="nguoi_tao_id">
+      <Position>10</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="627" parent="313" name="nguoi_duyet_id">
+      <Position>11</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="628" parent="313" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>12</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="629" parent="313" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>13</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="630" parent="313" name="don_mua_hang_ibfk_1">
+      <ColNames>nha_cung_cap_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nha_cung_cap</RefTableName>
+    </foreign-key>
+    <foreign-key id="631" parent="313" name="don_mua_hang_ibfk_2">
+      <ColNames>kho_nhap_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="632" parent="313" name="don_mua_hang_ibfk_3">
+      <ColNames>nguoi_tao_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <foreign-key id="633" parent="313" name="don_mua_hang_ibfk_4">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="634" parent="313" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="635" parent="313" name="so_don_mua">
+      <ColNames>so_don_mua</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="636" parent="313" name="idx_so_don_mua">
+      <ColNames>so_don_mua</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="637" parent="313" name="nha_cung_cap_id">
+      <ColNames>nha_cung_cap_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="638" parent="313" name="kho_nhap_id">
+      <ColNames>kho_nhap_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="639" parent="313" name="idx_trang_thai">
+      <ColNames>trang_thai</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="640" parent="313" name="nguoi_tao_id">
+      <ColNames>nguoi_tao_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="641" parent="313" name="nguoi_duyet_id">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="642" parent="313" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="643" parent="313" name="so_don_mua">
+      <UnderlyingIndexName>so_don_mua</UnderlyingIndexName>
+    </key>
+    <column id="644" parent="314" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="645" parent="314" name="ma_dot_kiem_ke">
+      <Comment>VD: KK2024001</Comment>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="646" parent="314" name="ten_dot_kiem_ke">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(200)|0s</StoredType>
+    </column>
+    <column id="647" parent="314" name="kho_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="648" parent="314" name="loai_kiem_ke">
+      <DefaultExpression>&apos;toan_bo&apos;</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>enum(&apos;toan_bo&apos;, &apos;theo_danh_muc&apos;, &apos;theo_khu_vuc&apos;, &apos;dot_xuat&apos;)|0e</StoredType>
+    </column>
+    <column id="649" parent="314" name="ngay_bat_dau">
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="650" parent="314" name="ngay_ket_thuc">
+      <Position>7</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="651" parent="314" name="ngay_hoan_thanh">
+      <Comment>Ngày thực tế hoàn thành kiểm kê</Comment>
+      <Position>8</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="652" parent="314" name="trang_thai">
+      <Comment>0: Nháp, 1: Đang kiểm kê, 2: Hoàn thành, 3: Đã duyệt, 4: Đã hủy</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="653" parent="314" name="nguoi_chu_tri_id">
+      <Comment>Người chịu trách nhiệm chính</Comment>
+      <NotNull>1</NotNull>
+      <Position>10</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="654" parent="314" name="nguoi_duyet_id">
+      <Comment>Người phê duyệt kết quả kiểm kê</Comment>
+      <Position>11</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="655" parent="314" name="ngay_duyet">
+      <Position>12</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="656" parent="314" name="mo_ta">
+      <Position>13</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="657" parent="314" name="ly_do">
+      <Comment>Lý do tổ chức kiểm kê</Comment>
+      <Position>14</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="658" parent="314" name="ghi_chu">
+      <Position>15</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="659" parent="314" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>16</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="660" parent="314" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>17</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="661" parent="314" name="dot_kiem_ke_ibfk_1">
+      <ColNames>kho_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="662" parent="314" name="dot_kiem_ke_ibfk_2">
+      <ColNames>nguoi_chu_tri_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <foreign-key id="663" parent="314" name="dot_kiem_ke_ibfk_3">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="664" parent="314" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="665" parent="314" name="ma_dot_kiem_ke">
+      <ColNames>ma_dot_kiem_ke</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="666" parent="314" name="idx_ma_dot">
+      <ColNames>ma_dot_kiem_ke</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="667" parent="314" name="idx_kho_trang_thai">
+      <ColNames>kho_id
+trang_thai</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="668" parent="314" name="idx_ngay_bat_dau">
+      <ColNames>ngay_bat_dau</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="669" parent="314" name="nguoi_chu_tri_id">
+      <ColNames>nguoi_chu_tri_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="670" parent="314" name="nguoi_duyet_id">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="671" parent="314" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="672" parent="314" name="ma_dot_kiem_ke">
+      <UnderlyingIndexName>ma_dot_kiem_ke</UnderlyingIndexName>
+    </key>
+    <column id="673" parent="315" name="id">
+      <AutoIncrement>21</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="674" parent="315" name="ma_khach_hang">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="675" parent="315" name="ten_khach_hang">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(200)|0s</StoredType>
+    </column>
+    <column id="676" parent="315" name="nguoi_lien_he">
+      <Position>4</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="677" parent="315" name="so_dien_thoai">
+      <Position>5</Position>
+      <StoredType>varchar(20)|0s</StoredType>
+    </column>
+    <column id="678" parent="315" name="email">
+      <Position>6</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="679" parent="315" name="dia_chi">
+      <Position>7</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="680" parent="315" name="loai_khach_hang">
+      <DefaultExpression>&apos;le&apos;</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>enum(&apos;le&apos;, &apos;si&apos;, &apos;doanh_nghiep&apos;)|0e</StoredType>
+    </column>
+    <column id="681" parent="315" name="trang_thai">
+      <Comment>0: Không hoạt động, 1: Hoạt động</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="682" parent="315" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>10</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="683" parent="315" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>11</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <index id="684" parent="315" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="685" parent="315" name="ma_khach_hang">
+      <ColNames>ma_khach_hang</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="686" parent="315" name="idx_ma_kh">
+      <ColNames>ma_khach_hang</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="687" parent="315" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="688" parent="315" name="ma_khach_hang">
+      <UnderlyingIndexName>ma_khach_hang</UnderlyingIndexName>
+    </key>
+    <column id="689" parent="316" name="id">
+      <AutoIncrement>20</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="690" parent="316" name="ma_kho">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="691" parent="316" name="ten_kho">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="692" parent="316" name="dia_chi">
+      <Position>4</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="693" parent="316" name="quan_ly_id">
+      <Position>5</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="694" parent="316" name="trang_thai">
+      <Comment>0: Không hoạt động, 1: Hoạt động</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>6</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="695" parent="316" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="696" parent="316" name="kho_ibfk_1">
+      <ColNames>quan_ly_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="697" parent="316" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="698" parent="316" name="ma_kho">
+      <ColNames>ma_kho</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="699" parent="316" name="idx_ma_kho">
+      <ColNames>ma_kho</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="700" parent="316" name="quan_ly_id">
+      <ColNames>quan_ly_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="701" parent="316" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="702" parent="316" name="ma_kho">
+      <UnderlyingIndexName>ma_kho</UnderlyingIndexName>
+    </key>
+    <column id="703" parent="317" name="id">
+      <AutoIncrement>21</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="704" parent="317" name="ngay_giao_dich">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>2</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="705" parent="317" name="loai_giao_dich">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>enum(&apos;nhap_kho&apos;, &apos;xuat_kho&apos;, &apos;chuyen_kho&apos;, &apos;dieu_chinh&apos;)|0e</StoredType>
+    </column>
+    <column id="706" parent="317" name="loai_tham_chieu">
+      <Comment>Tên bảng: phieu_nhap_kho, phieu_xuat_kho, etc</Comment>
+      <Position>4</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="707" parent="317" name="id_tham_chieu">
+      <Comment>ID của phiếu</Comment>
+      <Position>5</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="708" parent="317" name="bien_the_san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="709" parent="317" name="lo_hang_id">
+      <NotNull>1</NotNull>
+      <Position>7</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="710" parent="317" name="kho_id">
+      <Comment>Kho nguồn (nhập vào hoặc xuất ra)</Comment>
+      <NotNull>1</NotNull>
+      <Position>8</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="711" parent="317" name="kho_chuyen_den_id">
+      <Comment>Kho đích (chỉ dùng khi chuyển kho)</Comment>
+      <Position>9</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="712" parent="317" name="so_luong">
+      <Comment>Số dương = nhập, số âm = xuất</Comment>
+      <NotNull>1</NotNull>
+      <Position>10</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="713" parent="317" name="so_luong_truoc">
+      <Position>11</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="714" parent="317" name="so_luong_sau">
+      <Position>12</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="715" parent="317" name="gia_von">
+      <Position>13</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="716" parent="317" name="nguoi_dung_id">
+      <Position>14</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="717" parent="317" name="ghi_chu">
+      <Position>15</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <foreign-key id="718" parent="317" name="lich_su_giao_dich_kho_ibfk_1">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <foreign-key id="719" parent="317" name="lich_su_giao_dich_kho_ibfk_2">
+      <ColNames>lo_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>lo_hang</RefTableName>
+    </foreign-key>
+    <foreign-key id="720" parent="317" name="lich_su_giao_dich_kho_ibfk_3">
+      <ColNames>kho_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="721" parent="317" name="lich_su_giao_dich_kho_ibfk_4">
+      <ColNames>kho_chuyen_den_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="722" parent="317" name="lich_su_giao_dich_kho_ibfk_5">
+      <ColNames>nguoi_dung_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="723" parent="317" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="724" parent="317" name="idx_ngay_giao_dich">
+      <ColNames>ngay_giao_dich</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="725" parent="317" name="idx_tham_chieu">
+      <ColNames>loai_tham_chieu
+id_tham_chieu</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="726" parent="317" name="idx_bien_the_lo_kho">
+      <ColNames>bien_the_san_pham_id
+lo_hang_id
+kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="727" parent="317" name="lo_hang_id">
+      <ColNames>lo_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="728" parent="317" name="kho_id">
+      <ColNames>kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="729" parent="317" name="kho_chuyen_den_id">
+      <ColNames>kho_chuyen_den_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="730" parent="317" name="nguoi_dung_id">
+      <ColNames>nguoi_dung_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="731" parent="317" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="732" parent="318" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="733" parent="318" name="dot_kiem_ke_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="734" parent="318" name="hanh_dong">
+      <Comment>Tạo mới, Bắt đầu kiểm kê, Hoàn thành, Phê duyệt, Hủy, etc</Comment>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="735" parent="318" name="noi_dung">
+      <Position>4</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="736" parent="318" name="nguoi_thuc_hien_id">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="737" parent="318" name="ngay_thuc_hien">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="738" parent="318" name="lich_su_kiem_ke_ibfk_1">
+      <ColNames>dot_kiem_ke_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>dot_kiem_ke</RefTableName>
+    </foreign-key>
+    <foreign-key id="739" parent="318" name="lich_su_kiem_ke_ibfk_2">
+      <ColNames>nguoi_thuc_hien_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="740" parent="318" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="741" parent="318" name="idx_dot_kiem_ke">
+      <ColNames>dot_kiem_ke_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="742" parent="318" name="nguoi_thuc_hien_id">
+      <ColNames>nguoi_thuc_hien_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="743" parent="318" name="idx_ngay">
+      <ColNames>ngay_thuc_hien</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="744" parent="318" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="745" parent="319" name="id">
+      <AutoIncrement>33</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="746" parent="319" name="loai_tham_chieu">
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="747" parent="319" name="id_tham_chieu">
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="748" parent="319" name="kho_id">
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="749" parent="319" name="hanh_dong">
+      <Position>5</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="750" parent="319" name="gia_tri_cu">
+      <Comment>JSON lưu giá trị cũ</Comment>
+      <Position>6</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="751" parent="319" name="gia_tri_moi">
+      <Comment>JSON lưu giá trị mới</Comment>
+      <Position>7</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="752" parent="319" name="nguoi_thuc_hien_id">
+      <NotNull>1</NotNull>
+      <Position>8</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="753" parent="319" name="ngay_thuc_hien">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="754" parent="319" name="ghi_chu">
+      <Position>10</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <foreign-key id="755" parent="319" name="lich_su_thay_doi_ibfk_1">
+      <ColNames>kho_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="756" parent="319" name="lich_su_thay_doi_ibfk_2">
+      <ColNames>nguoi_thuc_hien_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="757" parent="319" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="758" parent="319" name="kho_id">
+      <ColNames>kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="759" parent="319" name="idx_hanh_dong">
+      <ColNames>hanh_dong</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="760" parent="319" name="nguoi_thuc_hien_id">
+      <ColNames>nguoi_thuc_hien_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="761" parent="319" name="idx_ngay_thuc_hien">
+      <ColNames>ngay_thuc_hien</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="762" parent="319" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="763" parent="320" name="id">
+      <AutoIncrement>45</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="764" parent="320" name="bien_the_san_pham_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="765" parent="320" name="ma_lo">
+      <Comment>Mã lô nhập hàng</Comment>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="766" parent="320" name="ngay_san_xuat">
+      <Comment>Ngày sản xuất</Comment>
+      <Position>4</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="767" parent="320" name="nha_cung_cap_id">
+      <Comment>Nhà cung cấp của lô hàng này</Comment>
+      <Position>5</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="768" parent="320" name="gia_von">
+      <Comment>Giá vốn của lô này</Comment>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="769" parent="320" name="ghi_chu">
+      <Position>7</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="770" parent="320" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="771" parent="320" name="lo_hang_ibfk_1">
+      <ColNames>bien_the_san_pham_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>bien_the_san_pham</RefTableName>
+    </foreign-key>
+    <foreign-key id="772" parent="320" name="lo_hang_ibfk_2">
+      <ColNames>nha_cung_cap_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nha_cung_cap</RefTableName>
+    </foreign-key>
+    <index id="773" parent="320" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="774" parent="320" name="unique_bien_the_lo">
+      <ColNames>bien_the_san_pham_id
+ma_lo
+ngay_san_xuat</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="775" parent="320" name="idx_ma_lo">
+      <ColNames>ma_lo</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="776" parent="320" name="nha_cung_cap_id">
+      <ColNames>nha_cung_cap_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="777" parent="320" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="778" parent="320" name="unique_bien_the_lo">
+      <UnderlyingIndexName>unique_bien_the_lo</UnderlyingIndexName>
+    </key>
+    <column id="779" parent="321" name="id">
+      <AutoIncrement>23</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="780" parent="321" name="ma_mau">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="781" parent="321" name="ten_mau">
+      <Comment>Đen, Trắng, Xanh navy, Đỏ đô...</Comment>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="782" parent="321" name="ma_mau_hex">
+      <Comment>Mã màu hex (#000000)</Comment>
+      <Position>4</Position>
+      <StoredType>varchar(7)|0s</StoredType>
+    </column>
+    <column id="783" parent="321" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <index id="784" parent="321" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="785" parent="321" name="ma_mau">
+      <ColNames>ma_mau</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="786" parent="321" name="idx_ma_mau">
+      <ColNames>ma_mau</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="787" parent="321" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="788" parent="321" name="ma_mau">
+      <UnderlyingIndexName>ma_mau</UnderlyingIndexName>
+    </key>
+    <column id="789" parent="322" name="id">
+      <AutoIncrement>31</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="790" parent="322" name="ten_dang_nhap">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="791" parent="322" name="mat_khau_hash">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <column id="792" parent="322" name="ho_ten">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="793" parent="322" name="email">
+      <Position>5</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="794" parent="322" name="so_dien_thoai">
+      <Position>6</Position>
+      <StoredType>varchar(20)|0s</StoredType>
+    </column>
+    <column id="795" parent="322" name="vai_tro">
+      <NotNull>1</NotNull>
+      <Position>7</Position>
+      <StoredType>enum(&apos;quan_tri_vien&apos;, &apos;quan_ly_kho&apos;, &apos;nhan_vien_kho&apos;, &apos;nhan_vien_ban_hang&apos;, &apos;nhan_vien_mua_hang&apos;, &apos;khach_hang&apos;)|0e</StoredType>
+    </column>
+    <column id="796" parent="322" name="trang_thai">
+      <Comment>0: Không hoạt động, 1: Hoạt động</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="797" parent="322" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="798" parent="322" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>10</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <index id="799" parent="322" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="800" parent="322" name="ten_dang_nhap">
+      <ColNames>ten_dang_nhap</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="801" parent="322" name="email">
+      <ColNames>email</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="802" parent="322" name="idx_vai_tro">
+      <ColNames>vai_tro</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="803" parent="322" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="804" parent="322" name="ten_dang_nhap">
+      <UnderlyingIndexName>ten_dang_nhap</UnderlyingIndexName>
+    </key>
+    <key id="805" parent="322" name="email">
+      <UnderlyingIndexName>email</UnderlyingIndexName>
+    </key>
+    <column id="806" parent="323" name="id">
+      <AutoIncrement>10</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="807" parent="323" name="ma_nha_cung_cap">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="808" parent="323" name="ten_nha_cung_cap">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(200)|0s</StoredType>
+    </column>
+    <column id="809" parent="323" name="nguoi_lien_he">
+      <Position>4</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="810" parent="323" name="so_dien_thoai">
+      <Position>5</Position>
+      <StoredType>varchar(20)|0s</StoredType>
+    </column>
+    <column id="811" parent="323" name="email">
+      <Position>6</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="812" parent="323" name="dia_chi">
+      <Position>7</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="813" parent="323" name="trang_thai">
+      <Comment>0: Không hoạt động, 1: Hoạt động</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="814" parent="323" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="815" parent="323" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>10</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <index id="816" parent="323" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="817" parent="323" name="ma_nha_cung_cap">
+      <ColNames>ma_nha_cung_cap</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="818" parent="323" name="idx_ma_ncc">
+      <ColNames>ma_nha_cung_cap</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="819" parent="323" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="820" parent="323" name="ma_nha_cung_cap">
+      <UnderlyingIndexName>ma_nha_cung_cap</UnderlyingIndexName>
+    </key>
+    <column id="821" parent="324" name="id">
+      <AutoIncrement>25</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="822" parent="324" name="nguoi_dung_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="823" parent="324" name="kho_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="824" parent="324" name="la_quan_ly_kho">
+      <Comment>Có phải là quản lý chính của kho này không</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>4</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="825" parent="324" name="trang_thai">
+      <Comment>0: Không hoạt động, 1: Hoạt động</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="826" parent="324" name="ngay_bat_dau">
+      <Comment>Ngày bắt đầu có quyền</Comment>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="827" parent="324" name="ngay_ket_thuc">
+      <Comment>Ngày hết quyền (NULL = vô thời hạn)</Comment>
+      <Position>7</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="828" parent="324" name="nguoi_cap_quyen_id">
+      <Comment>Admin cấp quyền</Comment>
+      <Position>8</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="829" parent="324" name="ghi_chu">
+      <Position>9</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="830" parent="324" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>10</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="831" parent="324" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>11</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="832" parent="324" name="phan_quyen_nguoi_dung_kho_ibfk_1">
+      <ColNames>nguoi_dung_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <foreign-key id="833" parent="324" name="phan_quyen_nguoi_dung_kho_ibfk_2">
+      <ColNames>kho_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="834" parent="324" name="phan_quyen_nguoi_dung_kho_ibfk_3">
+      <ColNames>nguoi_cap_quyen_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="835" parent="324" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="836" parent="324" name="unique_nguoi_dung_kho">
+      <ColNames>nguoi_dung_id
+kho_id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="837" parent="324" name="idx_nguoi_dung">
+      <ColNames>nguoi_dung_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="838" parent="324" name="idx_kho">
+      <ColNames>kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="839" parent="324" name="idx_trang_thai">
+      <ColNames>trang_thai</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="840" parent="324" name="nguoi_cap_quyen_id">
+      <ColNames>nguoi_cap_quyen_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="841" parent="324" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="842" parent="324" name="unique_nguoi_dung_kho">
+      <UnderlyingIndexName>unique_nguoi_dung_kho</UnderlyingIndexName>
+    </key>
+    <column id="843" parent="325" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="844" parent="325" name="so_phieu">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="845" parent="325" name="dot_kiem_ke_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="846" parent="325" name="kho_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="847" parent="325" name="loai_dieu_chinh">
+      <DefaultExpression>&apos;ca_hai&apos;</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>enum(&apos;tang&apos;, &apos;giam&apos;, &apos;ca_hai&apos;)|0e</StoredType>
+    </column>
+    <column id="848" parent="325" name="ngay_dieu_chinh">
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="849" parent="325" name="trang_thai">
+      <Comment>0: Nháp, 1: Đã duyệt, 2: Đã áp dụng, 3: Đã hủy</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="850" parent="325" name="tong_gia_tri_tang">
+      <Comment>Tổng giá trị hàng thừa</Comment>
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="851" parent="325" name="tong_gia_tri_giam">
+      <Comment>Tổng giá trị hàng thiếu</Comment>
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="852" parent="325" name="gia_tri_chenh_lech_thuan">
+      <Comment>tang - giam</Comment>
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>10</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="853" parent="325" name="ly_do">
+      <Position>11</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="854" parent="325" name="nguoi_lap_id">
+      <NotNull>1</NotNull>
+      <Position>12</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="855" parent="325" name="nguoi_duyet_id">
+      <Position>13</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="856" parent="325" name="ngay_duyet">
+      <Position>14</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="857" parent="325" name="ghi_chu">
+      <Position>15</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="858" parent="325" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>16</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="859" parent="325" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>17</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="860" parent="325" name="phieu_dieu_chinh_kho_ibfk_1">
+      <ColNames>dot_kiem_ke_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>dot_kiem_ke</RefTableName>
+    </foreign-key>
+    <foreign-key id="861" parent="325" name="phieu_dieu_chinh_kho_ibfk_2">
+      <ColNames>kho_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="862" parent="325" name="phieu_dieu_chinh_kho_ibfk_3">
+      <ColNames>nguoi_lap_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <foreign-key id="863" parent="325" name="phieu_dieu_chinh_kho_ibfk_4">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="864" parent="325" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="865" parent="325" name="so_phieu">
+      <ColNames>so_phieu</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="866" parent="325" name="idx_so_phieu">
+      <ColNames>so_phieu</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="867" parent="325" name="idx_dot_kiem_ke">
+      <ColNames>dot_kiem_ke_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="868" parent="325" name="kho_id">
+      <ColNames>kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="869" parent="325" name="idx_trang_thai">
+      <ColNames>trang_thai</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="870" parent="325" name="nguoi_lap_id">
+      <ColNames>nguoi_lap_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="871" parent="325" name="nguoi_duyet_id">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="872" parent="325" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="873" parent="325" name="so_phieu">
+      <UnderlyingIndexName>so_phieu</UnderlyingIndexName>
+    </key>
+    <column id="874" parent="326" name="id">
+      <AutoIncrement>29</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="875" parent="326" name="so_phieu_nhap">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="876" parent="326" name="don_mua_hang_id">
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="877" parent="326" name="nha_cung_cap_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="878" parent="326" name="kho_id">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="879" parent="326" name="ngay_nhap">
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="880" parent="326" name="trang_thai">
+      <Comment>0: Nháp, 1: Hoàn thành, 2: Đã hủy</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="881" parent="326" name="tong_tien">
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="882" parent="326" name="ghi_chu">
+      <Position>9</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="883" parent="326" name="nguoi_nhap_id">
+      <Position>10</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="884" parent="326" name="nguoi_duyet_id">
+      <Position>11</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="885" parent="326" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>12</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="886" parent="326" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>13</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="887" parent="326" name="phieu_nhap_kho_ibfk_1">
+      <ColNames>don_mua_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>don_mua_hang</RefTableName>
+    </foreign-key>
+    <foreign-key id="888" parent="326" name="phieu_nhap_kho_ibfk_2">
+      <ColNames>nha_cung_cap_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nha_cung_cap</RefTableName>
+    </foreign-key>
+    <foreign-key id="889" parent="326" name="phieu_nhap_kho_ibfk_3">
+      <ColNames>kho_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="890" parent="326" name="phieu_nhap_kho_ibfk_4">
+      <ColNames>nguoi_nhap_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <foreign-key id="891" parent="326" name="phieu_nhap_kho_ibfk_5">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="892" parent="326" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="893" parent="326" name="so_phieu_nhap">
+      <ColNames>so_phieu_nhap</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="894" parent="326" name="uk_phieu_nhap_kho_so_phieu">
+      <ColNames>so_phieu_nhap</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="895" parent="326" name="idx_so_phieu">
+      <ColNames>so_phieu_nhap</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="896" parent="326" name="don_mua_hang_id">
+      <ColNames>don_mua_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="897" parent="326" name="nha_cung_cap_id">
+      <ColNames>nha_cung_cap_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="898" parent="326" name="kho_id">
+      <ColNames>kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="899" parent="326" name="idx_ngay_nhap">
+      <ColNames>ngay_nhap</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="900" parent="326" name="nguoi_nhap_id">
+      <ColNames>nguoi_nhap_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="901" parent="326" name="nguoi_duyet_id">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="902" parent="326" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="903" parent="326" name="so_phieu_nhap">
+      <UnderlyingIndexName>so_phieu_nhap</UnderlyingIndexName>
+    </key>
+    <key id="904" parent="326" name="uk_phieu_nhap_kho_so_phieu">
+      <UnderlyingIndexName>uk_phieu_nhap_kho_so_phieu</UnderlyingIndexName>
+    </key>
+    <column id="905" parent="327" name="id">
+      <AutoIncrement>17</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="906" parent="327" name="so_phieu_xuat">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="907" parent="327" name="don_ban_hang_id">
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="908" parent="327" name="kho_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="909" parent="327" name="ngay_xuat">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="910" parent="327" name="loai_xuat">
+      <DefaultExpression>&apos;ban_hang&apos;</DefaultExpression>
+      <Position>6</Position>
+      <StoredType>enum(&apos;ban_hang&apos;, &apos;chuyen_kho&apos;, &apos;tra_hang&apos;, &apos;dieu_chinh&apos;, &apos;khac&apos;)|0e</StoredType>
+    </column>
+    <column id="911" parent="327" name="kho_chuyen_den_id">
+      <Comment>Chỉ dùng khi loai_xuat = chuyen_kho</Comment>
+      <Position>7</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="912" parent="327" name="trang_thai">
+      <Comment>0: Nháp, 1: Hoàn thành, 2: Đã hủy</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="913" parent="327" name="ghi_chu">
+      <Position>9</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="914" parent="327" name="nguoi_xuat_id">
+      <Position>10</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="915" parent="327" name="nguoi_duyet_id">
+      <Position>11</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="916" parent="327" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>12</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="917" parent="327" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>13</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="918" parent="327" name="phieu_xuat_kho_ibfk_1">
+      <ColNames>don_ban_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>don_ban_hang</RefTableName>
+    </foreign-key>
+    <foreign-key id="919" parent="327" name="phieu_xuat_kho_ibfk_2">
+      <ColNames>kho_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="920" parent="327" name="phieu_xuat_kho_ibfk_3">
+      <ColNames>kho_chuyen_den_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <foreign-key id="921" parent="327" name="phieu_xuat_kho_ibfk_4">
+      <ColNames>nguoi_xuat_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <foreign-key id="922" parent="327" name="phieu_xuat_kho_ibfk_5">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="923" parent="327" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="924" parent="327" name="so_phieu_xuat">
+      <ColNames>so_phieu_xuat</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="925" parent="327" name="idx_so_phieu">
+      <ColNames>so_phieu_xuat</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="926" parent="327" name="don_ban_hang_id">
+      <ColNames>don_ban_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="927" parent="327" name="kho_id">
+      <ColNames>kho_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="928" parent="327" name="idx_ngay_xuat">
+      <ColNames>ngay_xuat</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="929" parent="327" name="idx_loai_xuat">
+      <ColNames>loai_xuat</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="930" parent="327" name="kho_chuyen_den_id">
+      <ColNames>kho_chuyen_den_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="931" parent="327" name="nguoi_xuat_id">
+      <ColNames>nguoi_xuat_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="932" parent="327" name="nguoi_duyet_id">
+      <ColNames>nguoi_duyet_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="933" parent="327" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="934" parent="327" name="so_phieu_xuat">
+      <UnderlyingIndexName>so_phieu_xuat</UnderlyingIndexName>
+    </key>
+    <column id="935" parent="328" name="id">
+      <AutoIncrement>24</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="936" parent="328" name="ma_quyen">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="937" parent="328" name="ten_quyen">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="938" parent="328" name="mo_ta">
+      <Position>4</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="939" parent="328" name="nhom_quyen">
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+      <StoredType>enum(&apos;quan_ly_kho&apos;, &apos;nhap_kho&apos;, &apos;xuat_kho&apos;, &apos;bao_cao&apos;, &apos;cai_dat&apos;)|0e</StoredType>
+    </column>
+    <column id="940" parent="328" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <index id="941" parent="328" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="942" parent="328" name="ma_quyen">
+      <ColNames>ma_quyen</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="943" parent="328" name="idx_ma_quyen">
+      <ColNames>ma_quyen</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="944" parent="328" name="idx_nhom_quyen">
+      <ColNames>nhom_quyen</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="945" parent="328" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="946" parent="328" name="ma_quyen">
+      <UnderlyingIndexName>ma_quyen</UnderlyingIndexName>
+    </key>
+    <column id="947" parent="329" name="id">
+      <AutoIncrement>46</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="948" parent="329" name="ma_san_pham">
+      <Comment>Mã gốc: VD AT001, QJ002</Comment>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="949" parent="329" name="ten_san_pham">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(200)|0s</StoredType>
+    </column>
+    <column id="950" parent="329" name="danh_muc_id">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="951" parent="329" name="mo_ta">
+      <Position>5</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="952" parent="329" name="ma_vach">
+      <Position>6</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="953" parent="329" name="gia_von_mac_dinh">
+      <Comment>Giá vốn tham khảo</Comment>
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="954" parent="329" name="gia_ban_mac_dinh">
+      <Comment>Giá bán tham khảo</Comment>
+      <DefaultExpression>0.00</DefaultExpression>
+      <Position>8</Position>
+      <StoredType>decimal(15,2 digit)|0s</StoredType>
+    </column>
+    <column id="955" parent="329" name="muc_ton_toi_thieu">
+      <DefaultExpression>0</DefaultExpression>
+      <Position>9</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="956" parent="329" name="trang_thai">
+      <Comment>0: Ngừng kinh doanh, 1: Hoạt động</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>10</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="957" parent="329" name="nguoi_tao_id">
+      <Position>11</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="958" parent="329" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>12</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="959" parent="329" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>13</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="960" parent="329" name="san_pham_quan_ao_ibfk_1">
+      <ColNames>danh_muc_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>danh_muc_quan_ao</RefTableName>
+    </foreign-key>
+    <foreign-key id="961" parent="329" name="san_pham_quan_ao_ibfk_2">
+      <ColNames>nguoi_tao_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="962" parent="329" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="963" parent="329" name="ma_san_pham">
+      <ColNames>ma_san_pham</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="964" parent="329" name="idx_ma_san_pham">
+      <ColNames>ma_san_pham</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="965" parent="329" name="danh_muc_id">
+      <ColNames>danh_muc_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="966" parent="329" name="idx_ma_vach">
+      <ColNames>ma_vach</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="967" parent="329" name="nguoi_tao_id">
+      <ColNames>nguoi_tao_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="968" parent="329" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="969" parent="329" name="ma_san_pham">
+      <UnderlyingIndexName>ma_san_pham</UnderlyingIndexName>
+    </key>
+    <column id="970" parent="330" name="id">
+      <AutoIncrement>18</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="971" parent="330" name="ma_size">
+      <Comment>S, M, L, XL, XXL, 38, 39, 40...</Comment>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>varchar(20)|0s</StoredType>
+    </column>
+    <column id="972" parent="330" name="ten_size">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>varchar(50)|0s</StoredType>
+    </column>
+    <column id="973" parent="330" name="loai_size">
+      <Comment>Phân loại: chữ (S/M/L) hoặc số (38/39/40)</Comment>
+      <DefaultExpression>&apos;chu&apos;</DefaultExpression>
+      <Position>4</Position>
+      <StoredType>enum(&apos;chu&apos;, &apos;so&apos;, &apos;khac&apos;)|0e</StoredType>
+    </column>
+    <column id="974" parent="330" name="thu_tu_sap_xep">
+      <Comment>Để sắp xếp size theo thứ tự</Comment>
+      <DefaultExpression>0</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="975" parent="330" name="mo_ta">
+      <Position>6</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="976" parent="330" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <index id="977" parent="330" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="978" parent="330" name="ma_size">
+      <ColNames>ma_size</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="979" parent="330" name="idx_ma_size">
+      <ColNames>ma_size</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="980" parent="330" name="idx_loai_size">
+      <ColNames>loai_size</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="981" parent="330" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="982" parent="330" name="ma_size">
+      <UnderlyingIndexName>ma_size</UnderlyingIndexName>
+    </key>
+    <column id="983" parent="331" name="id">
+      <AutoIncrement>12</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="984" parent="331" name="ten_tep_goc">
+      <Position>2</Position>
+      <StoredType>varchar(1000)|0s</StoredType>
+    </column>
+    <column id="985" parent="331" name="ten_tai_len">
+      <Position>3</Position>
+      <StoredType>varchar(1000)|0s</StoredType>
+    </column>
+    <column id="986" parent="331" name="ten_luu_tru">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <column id="987" parent="331" name="duong_dan">
+      <Position>5</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <column id="988" parent="331" name="loai_tep_tin">
+      <Position>6</Position>
+      <StoredType>varchar(100)|0s</StoredType>
+    </column>
+    <column id="989" parent="331" name="duoi_tep">
+      <Position>7</Position>
+      <StoredType>varchar(10)|0s</StoredType>
+    </column>
+    <column id="990" parent="331" name="kich_co">
+      <Position>8</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="991" parent="331" name="mo_ta">
+      <Position>9</Position>
+      <StoredType>varchar(400)|0s</StoredType>
+    </column>
+    <column id="992" parent="331" name="ngay_tao">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>10</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="993" parent="331" name="ngay_cap_nhat">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>11</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="994" parent="331" name="trang_thai">
+      <DefaultExpression>0</DefaultExpression>
+      <Position>12</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <index id="995" parent="331" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="996" parent="331" name="ten_luu_tru">
+      <ColNames>ten_luu_tru</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <key id="997" parent="331" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="998" parent="331" name="ten_luu_tru">
+      <UnderlyingIndexName>ten_luu_tru</UnderlyingIndexName>
+    </key>
+    <column id="999" parent="332" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="1000" parent="332" name="dot_kiem_ke_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="1001" parent="332" name="nguoi_dung_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="1002" parent="332" name="vai_tro">
+      <DefaultExpression>&apos;thanh_vien&apos;</DefaultExpression>
+      <Position>4</Position>
+      <StoredType>enum(&apos;chu_tri&apos;, &apos;thanh_vien&apos;, &apos;ghi_chep&apos;, &apos;kiem_dem&apos;)|0e</StoredType>
+    </column>
+    <column id="1003" parent="332" name="phan_khu_vuc">
+      <Comment>Khu vực được phân công</Comment>
+      <Position>5</Position>
+      <StoredType>varchar(200)|0s</StoredType>
+    </column>
+    <column id="1004" parent="332" name="ngay_tham_gia">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>6</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="1005" parent="332" name="trang_thai">
+      <Comment>0: Không hoạt động, 1: Đang hoạt động</Comment>
+      <DefaultExpression>1</DefaultExpression>
+      <Position>7</Position>
+      <StoredType>tinyint(1)|0s</StoredType>
+    </column>
+    <column id="1006" parent="332" name="ghi_chu">
+      <Position>8</Position>
+      <StoredType>text|0s</StoredType>
+    </column>
+    <foreign-key id="1007" parent="332" name="thanh_vien_kiem_ke_ibfk_1">
+      <ColNames>dot_kiem_ke_id</ColNames>
+      <OnDelete>cascade</OnDelete>
+      <RefColNames>id</RefColNames>
+      <RefTableName>dot_kiem_ke</RefTableName>
+    </foreign-key>
+    <foreign-key id="1008" parent="332" name="thanh_vien_kiem_ke_ibfk_2">
+      <ColNames>nguoi_dung_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>nguoi_dung</RefTableName>
+    </foreign-key>
+    <index id="1009" parent="332" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="1010" parent="332" name="unique_dot_nguoi_dung">
+      <ColNames>dot_kiem_ke_id
+nguoi_dung_id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="1011" parent="332" name="idx_dot_kiem_ke">
+      <ColNames>dot_kiem_ke_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="1012" parent="332" name="idx_nguoi_dung">
+      <ColNames>nguoi_dung_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="1013" parent="332" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="1014" parent="332" name="unique_dot_nguoi_dung">
+      <UnderlyingIndexName>unique_dot_nguoi_dung</UnderlyingIndexName>
+    </key>
+    <column id="1015" parent="333" name="id">
+      <AutoIncrement>28</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="1016" parent="333" name="lo_hang_id">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="1017" parent="333" name="kho_id">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="1018" parent="333" name="so_luong_ton">
+      <DefaultExpression>0.000</DefaultExpression>
+      <Position>4</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="1019" parent="333" name="so_luong_da_dat">
+      <Comment>Số lượng đã được đặt hàng nhưng chưa xuất</Comment>
+      <DefaultExpression>0.000</DefaultExpression>
+      <Position>5</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="1020" parent="333" name="so_luong_kha_dung">
+      <ColumnKind>generated-stored</ColumnKind>
+      <DefaultExpression>(`so_luong_ton` - `so_luong_da_dat`)</DefaultExpression>
+      <Position>6</Position>
+      <StoredType>decimal(15,3 digit)|0s</StoredType>
+    </column>
+    <column id="1021" parent="333" name="ngay_nhap_gan_nhat">
+      <Position>7</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="1022" parent="333" name="ngay_xuat_gan_nhat">
+      <Position>8</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="1023" parent="333" name="lan_cap_nhat_cuoi">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
+      <Position>9</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <foreign-key id="1024" parent="333" name="ton_kho_theo_lo_ibfk_1">
+      <ColNames>lo_hang_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>lo_hang</RefTableName>
+    </foreign-key>
+    <foreign-key id="1025" parent="333" name="ton_kho_theo_lo_ibfk_2">
+      <ColNames>kho_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>kho</RefTableName>
+    </foreign-key>
+    <index id="1026" parent="333" name="PRIMARY">
+      <ColNames>id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="1027" parent="333" name="unique_lo_kho">
+      <ColNames>lo_hang_id
+kho_id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <index id="1028" parent="333" name="idx_kho_lo">
+      <ColNames>kho_id
+lo_hang_id</ColNames>
+      <Type>btree</Type>
+    </index>
+    <index id="1029" parent="333" name="idx_so_luong_kha_dung">
+      <ColNames>so_luong_kha_dung</ColNames>
+      <Type>btree</Type>
+    </index>
+    <key id="1030" parent="333" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <key id="1031" parent="333" name="unique_lo_kho">
+      <UnderlyingIndexName>unique_lo_kho</UnderlyingIndexName>
+    </key>
+  </database-model>
+</dataSource>
