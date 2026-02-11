@@ -194,44 +194,39 @@ public class PhieuXuatKhoController {
                 chiTietPhieuXuatKhoId
         );
     }
+//    // Bình
+@PostMapping("/filter")
+@RequireAuth(
+        roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+        inWarehouse = true,
+        rolesLogic = RequireAuth.LogicType.OR
+)
+public ResponseEntity<ResponseData<Page<PhieuXuatKhoDto>>> filter(@RequestBody BaseFilterRequest request) {
+    List<FilterCriteria> filters = request.getFilters();
+    if (filters == null) filters = new ArrayList<>();
+    else filters = new ArrayList<>(filters); // Đảm bảo list có thể add thêm
 
-    // Bình
-    @PostMapping("/filter")
-    @RequireAuth(
-            roles = {
-                    IRoleType.quan_tri_vien,
-                    IRoleType.quan_ly_kho,
-                    IRoleType.nhan_vien_kho
-            },
-            inWarehouse = true
-    )
-    public ResponseEntity<ResponseData<Page<PhieuXuatKhoDto>>> filter(@RequestBody BaseFilterRequest filter) {
-        List<FilterCriteria> filters = filter.getFilters();
-        if (filters == null) {
-            filters = new ArrayList<>();
-        }
+    // Tự động add filter theo kho hiện tại của người dùng
+    filters.add(0, FilterCriteria.builder()
+            .fieldName("kho.id")
+            .operation(FilterOperation.EQUALS)
+            .value(SecurityContextHolder.getKhoId())
+            .logicType(FilterLogicType.AND)
+            .build());
+    request.setFilters(filters);
 
-        // Đảm bảo là mutable list
-        if (!(filters instanceof ArrayList)) {
-            filters = new ArrayList<>(filters);
-        }
+    // Gọi service và dùng Mapper để convert sang DTO
+    Page<PhieuXuatKho> pageEntity = phieuXuatKhoService.filter(request);
+    Page<PhieuXuatKhoDto> pageDto = pageEntity.map(phieuXuatKhoMapper::toDto);
 
-        FilterCriteria khoFilter = FilterCriteria.builder()
-                .fieldName("kho.id")
-                .operation(FilterOperation.EQUALS)
-                .value(SecurityContextHolder.getKhoId())
-                .logicType(FilterLogicType.AND)
-                .build();
-
-        filters.add(0, khoFilter);
-        filter.setFilters(filters);
-        return ResponseEntity.ok(
-                ResponseData.<Page<PhieuXuatKhoDto>>builder()
-                        .status(HttpStatus.OK.value())
-                        .data(phieuXuatKhoMapper.toDtoPage(phieuXuatKhoService.filter(filter)))
-                        .build()
-        );
-    }
+    return ResponseEntity.ok(
+            ResponseData.<Page<PhieuXuatKhoDto>>builder()
+                    .status(HttpStatus.OK.value())
+                    .data(pageDto)
+                    .message("Lấy danh sách thành công")
+                    .build()
+    );
+}
 
     @PostMapping("/get-by-id/{id}")
     @RequireAuth(
