@@ -42,7 +42,7 @@ export const SIDEBAR_MENU = [
       "nhan_vien_ban_hang",
     ],
     children: [
-      { label: "Danh mục", to: "/categories" },
+      { label: "Danh mục", to: "/danh-muc-quan-ao" },
       { label: "Màu sắc", to: "/attributes" },
       { label: "Kích cỡ", to: "/attributes" },
       { label: "Chất liệu", to: "/material" },
