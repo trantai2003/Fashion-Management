@@ -74,6 +74,7 @@ export default function App() {
           {/* Product */}
           <Route path="/products" element={<ProductList />} />
           <Route path="/sku-builder" element={<SkuBuilder />} />
+          <Route path="/danh-muc-quan-ao" element={<DanhMucQuanAoTree />} />
 
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />
