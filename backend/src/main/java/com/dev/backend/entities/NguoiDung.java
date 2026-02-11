@@ -3,8 +3,8 @@ package com.dev.backend.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
@@ -12,58 +12,64 @@ import org.hibernate.generator.EventType;
 import java.time.Instant;
 import java.util.List;
 
+@AllArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "nguoi_dung")
 public class NguoiDung {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    Integer id;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "ten_dang_nhap", nullable = false, length = 50)
-    private String tenDangNhap;
+    String tenDangNhap;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "mat_khau_hash", nullable = false)
-    private String matKhauHash;
+    String matKhauHash;
 
     @Size(max = 100)
     @NotNull
     @Column(name = "ho_ten", nullable = false, length = 100)
-    private String hoTen;
+    String hoTen;
 
     @Size(max = 100)
     @Column(name = "email", length = 100)
-    private String email;
+    String email;
 
     @Size(max = 20)
     @Column(name = "so_dien_thoai", length = 20)
-    private String soDienThoai;
+    String soDienThoai;
 
     @NotNull
     @Lob
     @Column(name = "vai_tro", nullable = false)
-    private String vaiTro;
+    String vaiTro;
 
     @ColumnDefault("0")
     @Column(name = "trang_thai")
-    private Integer trangThai;
+    Integer trangThai;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_tao")
     @Generated(event = EventType.INSERT)
-    private Instant ngayTao;
+    Instant ngayTao;
+
     @Transient // Quan trọng: Trường này chỉ tồn tại ở code Java, không lưu xuống DB
-    private List<PhanQuyenNguoiDungKho> khoPhuTrach;
+    List<PhanQuyenNguoiDungKho> khoPhuTrach;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_cap_nhat")
     @Generated(event = EventType.UPDATE)
-    private Instant ngayCapNhat;
+    Instant ngayCapNhat;
 
 
 }

@@ -34,11 +34,7 @@ export default function AuthPage() {
     const validateRegister = () => {
         const newErrors = {};
 
-        if (!registerData.tenDangNhap) {
-            newErrors.tenDangNhap = 'Vui lòng nhập tên đăng nhập';
-        } else if (registerData.tenDangNhap.length < 6 || registerData.tenDangNhap.length > 50) {
-            newErrors.tenDangNhap = 'Tên đăng nhập phải từ 6-50 ký tự';
-        }
+        // Username is auto-generated from email, so no validation needed here.
 
         if (!registerData.matKhau) {
             newErrors.matKhau = 'Vui lòng nhập mật khẩu';
@@ -115,7 +111,7 @@ export default function AuthPage() {
 
                         if (role === 'quan_tri_vien') {
                             console.log("Redirecting to /admin/dashboard");
-                            navigate('/admin/dashboard'); // Redirect to dashboard
+                            navigate('/dashboard'); // Redirect to dashboard
                         } else if (role === 'quan_ly_kho' || role === 'nhan_vien_kho') {
                             console.log("Redirecting to /warehouse");
                             navigate('/warehouse');
@@ -344,24 +340,20 @@ export default function AuthPage() {
                             ) : (
                                 /* Register Form */
                                 <div className="space-y-4">
+
+
                                     <div className="space-y-2">
-                                        <Label htmlFor="reg-username">Tên đăng nhập *</Label>
+                                        <Label htmlFor="reg-username">Tên đăng nhập</Label>
                                         <div className="relative">
                                             <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                             <Input
                                                 id="reg-username"
-                                                placeholder="6-50 ký tự"
-                                                className="pl-10"
+                                                placeholder="Tự động tạo từ email"
+                                                className="pl-10 bg-gray-50"
                                                 value={registerData.tenDangNhap}
-                                                onChange={(e) => setRegisterData({ ...registerData, tenDangNhap: e.target.value })}
+                                                readOnly
                                             />
                                         </div>
-                                        {errors.tenDangNhap && (
-                                            <Alert variant="destructive" className="py-2 bg-red-50 border-red-200 text-red-600">
-                                                <AlertCircle className="h-4 w-4" />
-                                                <AlertDescription className="text-sm ml-2">{errors.tenDangNhap}</AlertDescription>
-                                            </Alert>
-                                        )}
                                     </div>
 
                                     <div className="space-y-2">
@@ -390,9 +382,17 @@ export default function AuthPage() {
                                                 placeholder="example@email.com"
                                                 className="pl-10"
                                                 value={registerData.email}
-                                                onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setRegisterData({
+                                                        ...registerData,
+                                                        email: val,
+                                                        tenDangNhap: val.split('@')[0]
+                                                    });
+                                                }}
                                             />
                                         </div>
+
                                         {errors.email && (
                                             <Alert variant="destructive" className="py-2 bg-red-50 border-red-200 text-red-600">
                                                 <AlertCircle className="h-4 w-4" />

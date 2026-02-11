@@ -1,7 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
-
-import AdminLayout from "./components/admin/adminLayout/AdminLayout";
+import BackofficeLayout from "@/components/backoffice/BackofficeLayout";
 import Login from "./pages/Login";
 import HomePage from "./pages/HomePage";
 import UserDetail from "./pages/UserDetail";
@@ -21,46 +19,104 @@ import ViewUserDetailByAdmin from "@/pages/admin/ViewUserDetailByAdmin.jsx";
 import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx";
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
-import ColorSizeManagement from "@/pages/admin/ColorSizeManagement.jsx";
+import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
+import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
+import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
+import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
+import KhaiBaoLo from "./pages/receipt/KhaiBaoLo.jsx";
+import PhieuXuatKhoList from "./pages/issue/PhieuXuatKhoList.jsx";
+import PurchaseOrderDetail from "./pages/order/PurchaseOrderDetail.jsx";
+import PurchaseOrder from "./pages/order/PurchaseOrder.jsx";
+import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
+import SkuBuilder from "./pages/product/SkuBuilder";
+import PhieuXuatKhoCreate from "./pages/issue/PhieuXuatKhoCreate.jsx";
+import PhieuXuatKhoDetail from "./pages/issue/PhieuXuatKhoDetail.jsx";
+import PickLot from "./pages/issue/PickLot.jsx";
+import QuoteSuccess from "./pages/supplier/pages/Quotesuccess.jsx";
+import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
+import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
 export default function App() {
   return (
     <BrowserRouter>
-      {/* Toaster – tạm thời đặt ở App */}
-      <Toaster
-        position="top-center"
-        richColors
-        closeButton
-        duration={3500}
-      />
 
       <Routes>
+        {/* ========== PUBLIC ROUTES ========== */}
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/" element={<HomePage />} />
+        <Route path="/supplier/quotation" element={<SupplierQuotation />} />
+        <Route path="/quote-success" element={<QuoteSuccess />} />
+        <Route path="/supplier/login" element={<SupplierLogin />} />
         <Route path="/user/:id" element={<UserDetail />} />
-        <Route path="/warehouse" element={<Warehouse />} />
-        <Route path="/products" element={<ProductList />} />
-        <Route path="/material" element={<ChatLieuList />} />
-        <Route path="/material/new" element={<ChatLieuDetail />} />
-        <Route path="/material/view/:id" element={<ChatLieuDetailView />} />
-        <Route path="/material/:id" element={<ChatLieuDetail />} />
 
-        <Route path="/supplier" element={<SupplierList />} />
-        <Route path="/supplier/new" element={<SupplierDetail />} />
-        <Route path="/supplier/view/:id" element={<SupplierDetailView />} />
-        <Route path="/supplier/:id" element={<SupplierDetail />} />
+        {/* ========== BACKOFFICE ROUTES (CÓ SIDEBAR + HEADER) ========== */}
+        <Route element={<BackofficeLayout />}>
+          {/* Dashboard */}
+          <Route path="/dashboard" element={<DashboardByAdmin />} />
 
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route path="users" element={<ViewUserListByAdmin />} />
-          <Route path="users/:id" element={<ViewUserDetailByAdmin />} />
-          <Route path="users/add" element={<AddUserByAdmin />} />
-          <Route path="users/:id/reset-password" element={<ResetUserPasswordByAdmin />} />
-          <Route path="users/:id/edit-role" element={<EditUserRoleByAdmin />} />
-          <Route path="dashboard" element={<DashboardByAdmin />} />
-          <Route path="attributes" element={<ColorSizeManagement />} />
+          {/* User management */}
+          <Route path="/users" element={<ViewUserListByAdmin />} />
+          <Route path="/users/add" element={<AddUserByAdmin />} />
+          <Route path="/admin/users/:id" element={<ViewUserDetailByAdmin />} />
+          <Route
+            path="/users/:id/reset-password"
+            element={<ResetUserPasswordByAdmin />}
+          />
+          <Route
+            path="/users/:id/edit-role"
+            element={<EditUserRoleByAdmin />}
+          />
+
+          {/* Attributes */}
+          <Route path="/attributes" element={<ColorSizeManagement />} />
+
+          {/* Product */}
+          <Route path="/products" element={<ProductList />} />
+          <Route path="/sku-builder" element={<SkuBuilder />} />
+
+          {/* Warehouse */}
+          <Route path="/warehouse" element={<Warehouse />} />
+
+          {/* Material */}
+          <Route path="/material" element={<ChatLieuList />} />
+          <Route path="/material/new" element={<ChatLieuDetail />} />
+          <Route path="/material/view/:id" element={<ChatLieuDetailView />} />
+          <Route path="/material/:id" element={<ChatLieuDetail />} />
+
+          {/* Purchase Order */}
+          <Route path="/purchase-orders" element={<PurchaseOrder />} />
+          <Route path="/purchase-orders/create" element={<PurchaseOrderCreate />} />
+          <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
+
+          {/* Supplier */}
+          <Route path="/supplier" element={<SupplierList />} />
+          <Route path="/supplier/new" element={<SupplierDetail />} />
+          <Route path="/supplier/view/:id" element={<SupplierDetailView />} />
+          <Route path="/supplier/:id" element={<SupplierDetail />} />
+
+          {/* Receipt*/}
+          <Route path="/goods-receipts/create" element={<PhieuNhapKhoCreate />} />
+          <Route path="/goods-receipts" element={<PhieuNhapKhoList />} />
+          <Route path="/goods-receipts/:id" element={<PhieuNhapKhoDetail />} />
+          <Route path="/goods-receipts/:phieuNhapKhoId/lot-input/:bienTheSanPhamId" element={<KhaiBaoLo />} />
+
+          {/* Issue */}
+          <Route path="/goods-issues" element={<PhieuXuatKhoList />} />
+          <Route path="/goods-issues/create" element={<PhieuXuatKhoCreate />} />
+          <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
+          <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
         </Route>
-        <Route path="*" element={<div className="flex items-center justify-center h-screen text-xl font-bold">404 - Page Not Found</div>} />
+
+        {/* ========== 404 ========== */}
+        <Route
+          path="*"
+          element={
+            <div className="flex items-center justify-center h-screen text-xl font-bold">
+              404 - Page Not Found
+            </div>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

@@ -291,9 +291,6 @@ export default function ProductList() {
     return (
         <div className="h-screen w-full bg-gray-50 flex flex-col min-h-0">
             <div className="px-6 py-4 flex-none">
-                <div className="mb-4">
-                    <Label className="text-2xl font-bold text-gray-800">Danh sách sản phẩm</Label>
-                </div>
                 <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
                     <CardContent className="p-4 space-y-3">
                         <div className="grid md:grid-cols-5 gap-4">
@@ -507,7 +504,7 @@ export default function ProductList() {
 
                                             <TableCell className="px-4 py-3">
                                                 <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                                                    {product.anhQuanAos ? (
+                                                    {product.anhQuanAos && product.anhQuanAos.length > 0 && product.anhQuanAos[0]?.tepTin ? (
                                                         <img
                                                             src={product.anhQuanAos[0].tepTin.duongDan}
                                                             alt={product.tenSanPham}

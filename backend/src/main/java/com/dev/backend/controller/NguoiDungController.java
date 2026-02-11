@@ -97,6 +97,15 @@ public class NguoiDungController {
                         .build()
         );
     }
+
+
+    @PostMapping("/change-password")
+    @RequireAuth(
+            roles = {IRoleType.all}
+    )
+    public ResponseEntity<ResponseData<String>> changePassword(@RequestBody ChangePasswordRequest changePass){
+        return nguoiDungService.changePassword(changePass);
+    }
 }
 
 

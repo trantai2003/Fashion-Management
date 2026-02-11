@@ -3,42 +3,46 @@ package com.dev.backend.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
 import org.hibernate.generator.EventType;
 
 import java.time.Instant;
 
+@AllArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "chat_lieu")
 public class ChatLieu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Integer id;
+    Integer id;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "ma_chat_lieu", nullable = false, length = 50)
-    private String maChatLieu;
+    String maChatLieu;
 
     @Size(max = 100)
     @NotNull
     @Column(name = "ten_chat_lieu", nullable = false, length = 100)
-    private String tenChatLieu;
+    String tenChatLieu;
 
     @Lob
     @Column(name = "mo_ta")
-    private String moTa;
+    String moTa;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "ngay_tao")
     @Generated(event = EventType.INSERT)
-    private Instant ngayTao;
+    Instant ngayTao;
 
 
 }
