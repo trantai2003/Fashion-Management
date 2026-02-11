@@ -40,7 +40,7 @@ export default function PhieuNhapKhoCreate() {
             setSelectedPO(null);
             return;
         }
-        
+
         setPoId(id);
         setLoading(true);
         try {
@@ -59,17 +59,28 @@ export default function PhieuNhapKhoCreate() {
     const handleQtyChange = (bienTheId, value) => {
         setSelectedPO(prev => ({
             ...prev,
-            chiTietDonMuaHangs: prev.chiTietDonMuaHangs.map(item => 
-                item.bienTheSanPham.id === bienTheId 
-                ? { ...item, soLuongNhapTay: Number(value) } 
-                : item
+            chiTietDonMuaHangs: prev.chiTietDonMuaHangs.map(item =>
+                item.bienTheSanPham.id === bienTheId
+                    ? { ...item, soLuongNhapTay: Number(value) }
+                    : item
             )
         }));
     };
 
-    const handleSaveDraft = async () => {
+    const handleSaveDraft = async (isContinue = false) => {
         if (!selectedPO) {
             alert("Vui lòng chọn đơn mua hàng (PO)");
+            return;
+        }
+
+        const invalidItems = selectedPO.chiTietDonMuaHangs.filter(ct => {
+            const qtyNhap = ct.soLuongNhapTay ?? ct.soLuong;
+            return qtyNhap > ct.soLuongDat; // Kiểm tra SL nhập > SL đặt
+        });
+
+        if (invalidItems.length > 0) {
+            const itemNames = invalidItems.map(i => i.bienTheSanPham?.tenBienThe || i.bienTheSanPham?.maSku).join(", ");
+            toast.error(`Sản phẩm [${itemNames}] có số lượng nhập vượt quá số lượng đặt!`);
             return;
         }
 
@@ -77,7 +88,7 @@ export default function PhieuNhapKhoCreate() {
         const chiTietPhieuNhapKhos = selectedPO.chiTietDonMuaHangs.map((ct) => ({
             bienTheSanPhamId: ct.bienTheSanPham.id,
             // Ưu tiên lấy số lượng đã sửa, nếu không lấy mặc định từ PO
-            soLuongDuKienNhap: ct.soLuongNhapTay ?? ct.soLuong 
+            soLuongDuKienNhap: ct.soLuongNhapTay ?? ct.soLuong
         }));
 
         if (chiTietPhieuNhapKhos.length === 0) {
@@ -96,8 +107,24 @@ export default function PhieuNhapKhoCreate() {
         try {
             // GỌI API THẬT
             const res = await phieuNhapKhoService.create(payload);
+            console.log("Dữ liệu API trả về:", res); // Dòng này cực kỳ quan trọng để debug
+
+            // Cách 1: Thử lấy ID bằng Optional Chaining để không bị crash
+            // Kiểm tra xem ID nằm ở res.data.id hay chỉ là res.id
+            const newPhieuId = res?.id;
+
+            if (!newPhieuId) {
+                console.error("Dữ liệu trả về không có ID:", res);
+                toast.error("Không tìm thấy ID phiếu mới");
+                return;
+            }
             toast.success("Tạo phiếu nhập kho thành công");
-            navigate("/goods-receipts"); // Quay lại danh sách
+
+            if (isContinue) {
+                navigate(`/goods-receipts/${newPhieuId}`);
+            } else {
+                navigate("/goods-receipts");
+            }
         } catch (e) {
             console.error("Create receipt failed", e);
             alert(e?.response?.data?.message || "Có lỗi khi tạo phiếu nhập kho");
@@ -225,8 +252,14 @@ export default function PhieuNhapKhoCreate() {
                                                 type="number"
                                                 defaultValue={ct.soLuong}
                                                 onChange={(e) => handleQtyChange(ct.bienTheSanPham.id, e.target.value)}
-                                                className="w-24 h-9 px-2 border rounded-md"
+                                                className={`w-24 h-9 px-2 border rounded-md ${(ct.soLuongNhapTay ?? ct.soLuong) > ct.soLuongDat
+                                                    ? "border-red-500 bg-red-50 text-red-600"
+                                                    : "border-gray-300"
+                                                    }`}
                                             />
+                                            {(ct.soLuongNhapTay ?? ct.soLuong) > ct.soLuongDat && (
+                                                <div className="text-[10px] text-red-500 mt-1">Vượt quá SL PO</div>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3">
                                             {ct.donGia?.toLocaleString("vi-VN")}
@@ -248,7 +281,7 @@ export default function PhieuNhapKhoCreate() {
 
                         <div className="flex gap-2">
                             <button
-                                onClick={handleSaveDraft}
+                                onClick={() => handleSaveDraft(false)}
                                 disabled={loading}
                                 className="px-4 py-2 rounded-md border bg-white hover:bg-gray-50 text-sm disabled:opacity-50"
                             >
@@ -259,12 +292,9 @@ export default function PhieuNhapKhoCreate() {
                                 type="button"
                                 disabled={!selectedPO}
                                 className={`px-4 py-2 rounded-md text-white text-sm font-semibold ${!selectedPO ? 'bg-gray-300' : 'bg-purple-600 hover:bg-purple-700'}`}
-                                onClick={() => {
-                                    // Logic Continue: Lưu rồi nhảy sang detail luôn
-                                    handleSaveDraft();
-                                }}
+                                onClick={() => handleSaveDraft(true)}
                             >
-                                Continue
+                                {loading ? "Processing..." : "Continue"}
                             </button>
                         </div>
                     </div>
