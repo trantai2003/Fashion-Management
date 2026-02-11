@@ -56,7 +56,7 @@ import {
     AlertCircle,
     Send,
 } from "lucide-react";
-import purchaseOrderService from "../../../services/purchaseOrderService";
+import purchaseOrderService from "../../services/purchaseOrderService";
 
 export default function PurchaseOrderList() {
     const navigate = useNavigate();
