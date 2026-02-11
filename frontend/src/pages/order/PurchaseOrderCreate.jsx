@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
     Table,
     TableBody,
@@ -49,25 +50,19 @@ import {
     FileText,
 } from "lucide-react";
 
+import purchaseOrderCreateService from '@/services/purchaseOrderCreateService';
+import { khoService } from "@/services/khoService";
+
 export default function PurchaseOrderCreate() {
     const navigate = useNavigate();
 
-    // Mock data
-    const [suppliers] = useState([
-        { id: 1, maNhaCungCap: 'NCC001', tenNhaCungCap: 'Công ty TNHH ABC', nguoiLienHe: 'Nguyễn Văn A', soDienThoai: '0901234567', email: 'abc@example.com', diaChi: 'Hà Nội' },
-        { id: 2, maNhaCungCap: 'NCC002', tenNhaCungCap: 'Công ty CP XYZ', nguoiLienHe: 'Trần Thị B', soDienThoai: '0907654321', email: 'xyz@example.com', diaChi: 'TP HCM' },
-        { id: 3, maNhaCungCap: 'NCC003', tenNhaCungCap: 'Nhà cung cấp DEF', nguoiLienHe: 'Lê Văn C', soDienThoai: '0903456789', email: 'def@example.com', diaChi: 'Đà Nẵng' },
-    ]);
+    // Data State
+    const [suppliers, setSuppliers] = useState([]);
+    const [warehouses, setWarehouses] = useState([]);
+    const [productVariants, setProductVariants] = useState([]);
+    const [isLoadingData, setIsLoadingData] = useState(false);
 
-    const [productVariants] = useState([
-        { id: 1, maBienThe: 'SP001-XL-RED', tenSanPham: 'Áo thun nam', thuocTinh: 'Size XL - Màu Đỏ', donViTinh: 'Cái', tonKho: 50 },
-        { id: 2, maBienThe: 'SP002-M-BLUE', tenSanPham: 'Quần jean nữ', thuocTinh: 'Size M - Màu Xanh', donViTinh: 'Cái', tonKho: 30 },
-        { id: 3, maBienThe: 'SP003-L-BLACK', tenSanPham: 'Áo khoác', thuocTinh: 'Size L - Màu Đen', donViTinh: 'Cái', tonKho: 20 },
-        { id: 4, maBienThe: 'SP004-XL-WHITE', tenSanPham: 'Áo sơ mi', thuocTinh: 'Size XL - Màu Trắng', donViTinh: 'Cái', tonKho: 40 },
-        { id: 5, maBienThe: 'SP005-S-PINK', tenSanPham: 'Váy ngắn', thuocTinh: 'Size S - Màu Hồng', donViTinh: 'Cái', tonKho: 25 },
-    ]);
-
-    // State
+    // Form State
     const [loading, setLoading] = useState(false);
     const [showSendDialog, setShowSendDialog] = useState(false);
     const [showProductDialog, setShowProductDialog] = useState(false);
@@ -76,6 +71,7 @@ export default function PurchaseOrderCreate() {
     const [formData, setFormData] = useState({
         soDonMua: '',
         nhaCungCapId: '',
+        khoId: '',
         ngayDatHang: new Date().toISOString().split('T')[0],
         ngayGiaoDuKien: '',
         ghiChu: '',
@@ -83,7 +79,7 @@ export default function PurchaseOrderCreate() {
 
     const [orderItems, setOrderItems] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredProducts, setFilteredProducts] = useState(productVariants);
+    const [filteredProducts, setFilteredProducts] = useState([]);
 
     const generateOrderNumber = () => {
         const now = new Date();
@@ -94,25 +90,77 @@ export default function PurchaseOrderCreate() {
         return `PO${year}${month}${day}${random}`;
     };
 
+    // Load initial data
     useEffect(() => {
-        setFormData(prev => ({
-            ...prev,
-            soDonMua: generateOrderNumber()
-        }));
+        const loadData = async () => {
+            setIsLoadingData(true);
+            try {
+                // Generate Order Number
+                setFormData(prev => ({
+                    ...prev,
+                    soDonMua: generateOrderNumber()
+                }));
+
+                // Fetch Suppliers, Variants, and Warehouses
+                const [suppliersRes, variantsRes, warehousesRes] = await Promise.all([
+                    purchaseOrderCreateService.getAllSuppliers(),
+                    purchaseOrderCreateService.getAllProductVariants(),
+                    khoService.filter({
+                        page: 0,
+                        size: 100,
+                        filters: [],
+                        sorts: []
+                    })
+                ]);
+
+                // Handle Suppliers Response
+                if (suppliersRes && suppliersRes.data) {
+                    setSuppliers(suppliersRes.data);
+                } else if (Array.isArray(suppliersRes)) {
+                    setSuppliers(suppliersRes);
+                }
+
+                // Handle Variants Response
+                if (variantsRes && variantsRes.data) {
+                    setProductVariants(variantsRes.data);
+                    setFilteredProducts(variantsRes.data);
+                } else if (Array.isArray(variantsRes)) {
+                    setProductVariants(variantsRes);
+                    setFilteredProducts(variantsRes);
+                }
+
+                // Handle Warehouses Response
+                if (warehousesRes && warehousesRes.data && warehousesRes.data.content) {
+                    setWarehouses(warehousesRes.data.content);
+                }
+
+            } catch (error) {
+                console.error("Failed to load initial data:", error);
+                toast.error("Không thể tải dữ liệu ban đầu");
+            } finally {
+                setIsLoadingData(false);
+            }
+        };
+
+        loadData();
     }, []);
 
+    // Filter products
     useEffect(() => {
+        if (!productVariants.length) return;
+
         if (searchTerm.trim() === '') {
             setFilteredProducts(productVariants);
         } else {
+            const lowerTerm = searchTerm.toLowerCase();
             const filtered = productVariants.filter(p =>
-                p.tenSanPham.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.maBienThe.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.thuocTinh.toLowerCase().includes(searchTerm.toLowerCase())
+                (p.tenSanPham?.toLowerCase() || '').includes(lowerTerm) ||
+                (p.maBienThe?.toLowerCase() || '').includes(lowerTerm) ||
+                (p.thuocTinh?.toLowerCase() || '').includes(lowerTerm)
             );
             setFilteredProducts(filtered);
         }
-    }, [searchTerm]);
+    }, [searchTerm, productVariants]);
 
     const showNotification = (type, message) => {
         if (type === 'success') {
@@ -187,6 +235,11 @@ export default function PurchaseOrderCreate() {
             return false;
         }
 
+        if (!formData.khoId) {
+            showNotification('error', 'Vui lòng chọn kho nhập');
+            return false;
+        }
+
         if (!formData.ngayDatHang) {
             showNotification('error', 'Vui lòng chọn ngày đặt hàng');
             return false;
@@ -227,21 +280,25 @@ export default function PurchaseOrderCreate() {
 
         setLoading(true);
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            const purchaseOrder = {
-                ...formData,
-                trangThai: 0,
+            const payload = {
+                soDonMua: formData.soDonMua,
+                nhaCungCapId: Number(formData.nhaCungCapId),
+                ngayDatHang: new Date(formData.ngayDatHang).toISOString(),  // ✅ ISO string
+                ngayGiaoDuKien: new Date(formData.ngayGiaoDuKien).toISOString(),  // ✅ ISO string
+                ghiChu: formData.ghiChu || '',
+                tongTien: calculateTotal(),
+                trangThai: 1,
                 chiTietDonMuaHangs: orderItems.map(item => ({
                     bienTheSanPhamId: item.bienTheSanPhamId,
-                    soLuongDat: item.soLuongDat,
+                    soLuongDat: Number(item.soLuongDat),
                     soLuongDaNhan: 0,
-                    donGia: item.donGia,
-                    ghiChu: item.ghiChu,
+                    donGia: Number(item.donGia),
+                    thanhTien: Number(item.soLuongDat) * Number(item.donGia),
+                    ghiChu: item.ghiChu || '',
                 })),
             };
 
-            console.log('📤 Saving purchase order:', purchaseOrder);
+            await purchaseOrderCreateService.create(payload, formData.khoId);
 
             showNotification('success', 'Lưu đơn mua hàng thành công!');
 
@@ -250,7 +307,8 @@ export default function PurchaseOrderCreate() {
             }, 2000);
         } catch (error) {
             console.error('Error saving order:', error);
-            showNotification('error', 'Không thể lưu đơn hàng. Vui lòng thử lại!');
+            console.error('Response data:', error.response?.data);  // ✅ Log chi tiết
+            showNotification('error', error.response?.data?.message || 'Không thể lưu đơn hàng. Vui lòng thử lại!');
         } finally {
             setLoading(false);
         }
@@ -262,27 +320,62 @@ export default function PurchaseOrderCreate() {
     };
 
     const confirmSendEmail = async () => {
+        if (!validateForm()) return;
+
         setSendingEmail(true);
         try {
-            const purchaseOrder = {
-                ...formData,
-                trangThai: 0,
+            // ✅ Validate supplier exists
+            const selectedSupplier = suppliers.find(s => s.id === parseInt(formData.nhaCungCapId));
+            if (!selectedSupplier) {
+                showNotification('error', 'Nhà cung cấp không tồn tại');
+                setSendingEmail(false);
+                return;
+            }
+
+            // ✅ Validate all products exist
+            const invalidProducts = orderItems.filter(item =>
+                !productVariants.find(p => p.id === item.bienTheSanPhamId)
+            );
+            if (invalidProducts.length > 0) {
+                showNotification('error', 'Có sản phẩm không hợp lệ trong đơn hàng');
+                setSendingEmail(false);
+                return;
+            }
+
+            const deliveryDate = new Date(formData.ngayGiaoDuKien);
+            const orderDate = new Date(formData.ngayDatHang);
+
+            if (isNaN(deliveryDate.getTime()) || isNaN(orderDate.getTime())) {
+                showNotification('error', 'Ngày tháng không hợp lệ');
+                setSendingEmail(false);
+                return;
+            }
+
+            const payload = {
+                soDonMua: formData.soDonMua,
+                nhaCungCapId: Number(formData.nhaCungCapId),
+                ngayDatHang: orderDate.toISOString(),
+                ngayGiaoDuKien: deliveryDate.toISOString(),
+                ghiChu: formData.ghiChu || '',
+                tongTien: calculateTotal(),
+                trangThai: 3,
                 chiTietDonMuaHangs: orderItems.map(item => ({
-                    bienTheSanPhamId: item.bienTheSanPhamId,
-                    soLuongDat: item.soLuongDat,
+                    bienTheSanPhamId: Number(item.bienTheSanPhamId), // ✅ Ensure it's a number
+                    soLuongDat: Number(item.soLuongDat),
                     soLuongDaNhan: 0,
-                    donGia: item.donGia,
-                    ghiChu: item.ghiChu,
+                    donGia: Number(item.donGia),
+                    thanhTien: Number(item.soLuongDat) * Number(item.donGia),
+                    ghiChu: item.ghiChu || '',
                 })),
             };
 
-            console.log('📤 Creating and sending purchase order:', purchaseOrder);
+            console.log('Payload:', JSON.stringify(payload, null, 2));
+            console.log('Selected Supplier:', selectedSupplier);
+            console.log('Order Items:', orderItems);
 
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const response = await purchaseOrderCreateService.create(payload, formData.khoId);
 
-            const selectedSupplier = suppliers.find(s => s.id === parseInt(formData.nhaCungCapId));
-
-            showNotification('success', `Đã gửi email đến ${selectedSupplier?.email} thành công!`);
+            showNotification('success', `Đã gửi email đến ${selectedSupplier.email} thành công!`);
             setShowSendDialog(false);
 
             setTimeout(() => {
@@ -290,7 +383,14 @@ export default function PurchaseOrderCreate() {
             }, 2000);
         } catch (error) {
             console.error('Error sending email:', error);
-            showNotification('error', 'Không thể gửi email. Vui lòng thử lại!');
+            console.error('Error response:', error.response?.data);
+
+            // ✅ Show more specific error message
+            const errorMessage = error.response?.data?.message
+                || error.response?.data?.error
+                || 'Không thể gửi email. Vui lòng thử lại!';
+
+            showNotification('error', errorMessage);
         } finally {
             setSendingEmail(false);
         }
@@ -350,6 +450,53 @@ export default function PurchaseOrderCreate() {
                             />
                         </div>
 
+                        {/* Kho nhập */}
+                        <div className="space-y-2">
+                            <Label className="text-gray-700 font-medium">
+                                Kho nhập <span className="text-red-500">*</span>
+                            </Label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between font-normal"
+                                    >
+                                        <div className="flex items-center">
+                                            <Package className="h-4 w-4 mr-2 text-gray-400" />
+                                            <span className="truncate">
+                                                {formData.khoId
+                                                    ? warehouses.find(k => k.id === formData.khoId)?.tenKho
+                                                    : "Chọn kho nhập"}
+                                            </span>
+                                        </div>
+                                        <ChevronDown className="h-4 w-4 opacity-50 ml-2" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[300px] max-h-[300px] overflow-y-auto bg-white" align="start">
+                                    {warehouses.length === 0 ? (
+                                        <DropdownMenuItem disabled className="text-gray-500 italic">
+                                            Không có kho nào
+                                        </DropdownMenuItem>
+                                    ) : (
+                                        warehouses.map((kho) => (
+                                            <DropdownMenuItem
+                                                key={kho.id}
+                                                onClick={() => handleInputChange('khoId', kho.id)}
+                                                className="cursor-pointer hover:bg-gray-100 py-2 flex flex-col items-start"
+                                            >
+                                                <span className="font-medium text-gray-900">
+                                                    {kho.tenKho}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    {kho.diaChi}
+                                                </span>
+                                            </DropdownMenuItem>
+                                        ))
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
                         {/* Nhà cung cấp */}
                         <div className="space-y-2">
                             <Label className="text-gray-700 font-medium">
@@ -370,31 +517,34 @@ export default function PurchaseOrderCreate() {
                                         <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[400px] max-h-[400px] overflow-y-auto">
-                                    {suppliers.map((supplier) => (
-                                        <DropdownMenuItem
-                                            key={supplier.id}
-                                            onClick={() => handleInputChange('nhaCungCapId', supplier.id)}
-                                            className="cursor-pointer hover:bg-indigo-50 py-3"
-                                        >
-                                            <div className="flex flex-col w-full gap-1">
-                                                <span className="font-medium text-gray-900">
-                                                    {supplier.tenNhaCungCap}
-                                                </span>
-                                                <div className="flex items-center justify-between text-xs">
-                                                    <span className="text-gray-500">
-                                                        Mã: {supplier.maNhaCungCap}
-                                                    </span>
-                                                    <span className="text-gray-400">
-                                                        {supplier.soDienThoai}
-                                                    </span>
-                                                </div>
-                                                <div className="text-xs text-gray-500">
-                                                    📧 {supplier.email}
-                                                </div>
-                                            </div>
+                                <DropdownMenuContent className="w-[400px] max-h-[400px] overflow-y-auto bg-white">
+                                    {suppliers.length === 0 ? (
+                                        <DropdownMenuItem disabled className="text-gray-500 italic">
+                                            Không có nhà cung cấp nào
                                         </DropdownMenuItem>
-                                    ))}
+                                    ) : (
+                                        suppliers.map((supplier) => (
+                                            <DropdownMenuItem
+                                                key={supplier.id}
+                                                onClick={() => handleInputChange('nhaCungCapId', supplier.id)}
+                                                className="cursor-pointer hover:bg-indigo-50 py-3"
+                                            >
+                                                <div className="flex flex-col w-full gap-1">
+                                                    <span className="font-medium text-gray-900">
+                                                        {supplier.tenNhaCungCap}
+                                                    </span>
+                                                    <div className="flex items-center justify-between text-xs">
+                                                        <span className="text-gray-500">
+                                                            Mã: {supplier.maNhaCungCap}
+                                                        </span>
+                                                        <span className="text-gray-400">
+                                                            {supplier.soDienThoai}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </DropdownMenuItem>
+                                        ))
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
 
@@ -650,7 +800,7 @@ export default function PurchaseOrderCreate() {
                             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <Input
                                 placeholder="Tìm kiếm sản phẩm theo tên, mã..."
-                                className="pl-9 bg-white"
+                                className="pl-9 bg-white text-gray-900"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -718,82 +868,92 @@ export default function PurchaseOrderCreate() {
 
             {/* Send Confirmation Dialog */}
             <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-indigo-600">
-                            <Mail className="h-5 w-5" />
-                            Xác nhận gửi yêu cầu báo giá
+                {/* Apply light theme gradient explicitly to match Add Product Dialog */}
+                <DialogContent className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border-gray-200 shadow-xl max-w-md w-full">
+                    <DialogHeader className="pb-4 border-b border-gray-200">
+                        <DialogTitle className="flex items-center gap-2 text-xl text-indigo-700">
+                            <Mail className="h-6 w-6" />
+                            Xác nhận gửi yêu cầu
                         </DialogTitle>
-                        <DialogDescription>
+                        <DialogDescription className="text-gray-600">
                             Email yêu cầu báo giá sẽ được gửi đến nhà cung cấp
                         </DialogDescription>
                     </DialogHeader>
 
                     {selectedSupplier && (
-                        <div className="space-y-4">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-semibold text-gray-900 mb-2">Thông tin nhà cung cấp</h4>
+                        <div className="space-y-4 py-2">
+                            {/* Supplier Info - Using White Card style */}
+                            <div className="bg-white border border-blue-100 rounded-xl p-4 shadow-sm">
+                                <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                                    <Building2 className="h-4 w-4" />
+                                    Thông tin nhà cung cấp
+                                </h4>
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Tên:</span>
-                                        <span className="font-medium">{selectedSupplier.tenNhaCungCap}</span>
+                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                        <span className="text-gray-500">Tên:</span>
+                                        <span className="font-medium text-gray-900 text-right">{selectedSupplier.tenNhaCungCap}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Email:</span>
-                                        <span className="font-medium text-blue-600">{selectedSupplier.email}</span>
+                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                        <span className="text-gray-500">Email:</span>
+                                        <span className="font-medium text-blue-600 text-right">{selectedSupplier.email}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Người liên hệ:</span>
-                                        <span className="font-medium">{selectedSupplier.nguoiLienHe}</span>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">Người liên hệ:</span>
+                                        <span className="font-medium text-gray-900 text-right">{selectedSupplier.nguoiLienHe}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <h4 className="font-semibold text-gray-900 mb-2">Thông tin đơn hàng</h4>
+                            {/* Order Info - Using White Card style */}
+                            <div className="bg-white border border-green-100 rounded-xl p-4 shadow-sm">
+                                <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
+                                    <Package className="h-4 w-4" />
+                                    Thông tin đơn hàng
+                                </h4>
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Số đơn:</span>
-                                        <span className="font-medium">{formData.soDonMua}</span>
+                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                        <span className="text-gray-500">Số đơn:</span>
+                                        <span className="font-mono font-medium text-indigo-600 text-right">{formData.soDonMua}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Số mặt hàng:</span>
-                                        <span className="font-medium">{orderItems.length}</span>
+                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                        <span className="text-gray-500">Số mặt hàng:</span>
+                                        <span className="font-medium text-gray-900 text-right">{orderItems.length}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Tổng số lượng:</span>
-                                        <span className="font-medium">{calculateTotalQuantity()}</span>
+                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                        <span className="text-gray-500">Tổng số lượng:</span>
+                                        <span className="font-medium text-gray-900 text-right">{calculateTotalQuantity()}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Ngày giao DK:</span>
-                                        <span className="font-medium">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">Ngày giao DK:</span>
+                                        <span className="font-medium text-gray-900 text-right">
                                             {new Date(formData.ngayGiaoDuKien).toLocaleDateString('vi-VN')}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <Alert className="bg-yellow-50 border-yellow-200">
-                                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                                <AlertDescription className="text-yellow-800 text-sm">
-                                    Nhà cung cấp sẽ nhận được email với form báo giá. Họ cần nhập email để xác thực trước khi nhập giá và gửi lại.
+                            <Alert className="bg-amber-50 border-amber-200 text-amber-900">
+                                <AlertCircle className="h-4 w-4 text-amber-600" />
+                                <AlertDescription className="text-xs text-amber-800 ml-2">
+                                    Nhà cung cấp sẽ nhận được email báo giá và cần xác thực trước khi phản hồi.
                                 </AlertDescription>
                             </Alert>
                         </div>
                     )}
 
-                    <DialogFooter>
+                    <DialogFooter className="border-t border-gray-200 pt-4">
                         <Button
                             variant="outline"
                             onClick={() => setShowSendDialog(false)}
                             disabled={sendingEmail}
+                            className="border-gray-300 text-gray-700 hover:bg-gray-100"
                         >
                             Hủy
                         </Button>
                         <Button
                             onClick={confirmSendEmail}
                             disabled={sendingEmail}
-                            className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+                            className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-md shadow-indigo-200"
                         >
                             {sendingEmail ? (
                                 <>
