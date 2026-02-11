@@ -52,6 +52,11 @@ export const SIDEBAR_MENU = [
         to: "/sku-builder",
         roles: ["quan_tri_vien", "quan_ly_kho"],
       },
+      {
+        label: "Barcode",
+        to: "/barcodes",
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],
+      },
     ],
   },
 
@@ -111,7 +116,7 @@ export const SIDEBAR_MENU = [
     children: [
       {
         label: "Khách hàng",
-        to: "/customers",
+        to: "/khach-hang",
         roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
       },
       {

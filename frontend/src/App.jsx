@@ -35,9 +35,13 @@ import PickLot from "./pages/issue/PickLot.jsx";
 import QuoteSuccess from "./pages/supplier/pages/Quotesuccess.jsx";
 import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
 import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
+import { Toaster } from "react-hot-toast";
+import KhachHangPage from "./pages/khach-hang/KhachHangPage";
 export default function App() {
   return (
     <BrowserRouter>
+      {/* Toaster – tạm thời đặt ở App */}
+      <Toaster position="top-center" richColors closeButton duration={3500} />
 
       <Routes>
         {/* ========== PUBLIC ROUTES ========== */}
@@ -106,6 +110,9 @@ export default function App() {
           <Route path="/goods-issues/create" element={<PhieuXuatKhoCreate />} />
           <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
           <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
+
+          {/* Khách hàng */}
+          <Route path="/khach-hang" element={<KhachHangPage />} />
         </Route>
 
         {/* ========== 404 ========== */}
