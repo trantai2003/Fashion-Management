@@ -245,7 +245,7 @@ export default function PhieuNhapKhoList() {
                                         onChange={(e) => setFilters((p) => ({ ...p, size: Number(e.target.value), page: 0 }))}
                                         className="h-8 w-16 px-1 text-xs border rounded-md outline-none"
                                     >
-                                        {[10, 20, 30, 50].map((s) => (
+                                        {[10, 20, 30, 40, 50].map((s) => (
                                             <option key={s} value={s}>{s}</option>
                                         ))}
                                     </select>
