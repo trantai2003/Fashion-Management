@@ -25,13 +25,16 @@ import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
 import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
 import KhaiBaoLo from "./pages/receipt/KhaiBaoLo.jsx";
 import PhieuXuatKhoList from "./pages/issue/PhieuXuatKhoList.jsx";
-import PurchaseOrderDetail from "./pages/order/history/Purchaseorderdetail.jsx";
-import PurchaseOrder from "./pages/order/history/PurchaseOrder.jsx";
+import PurchaseOrderDetail from "./pages/order/PurchaseOrderDetail.jsx";
+import PurchaseOrder from "./pages/order/PurchaseOrder.jsx";
 import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
 import SkuBuilder from "./pages/product/SkuBuilder";
 import PhieuXuatKhoCreate from "./pages/issue/PhieuXuatKhoCreate.jsx";
 import PhieuXuatKhoDetail from "./pages/issue/PhieuXuatKhoDetail.jsx";
 import PickLot from "./pages/issue/PickLot.jsx";
+import QuoteSuccess from "./pages/supplier/pages/Quotesuccess.jsx";
+import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
+import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
 export default function App() {
   return (
     <BrowserRouter>
@@ -42,6 +45,9 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/supplier/quotation" element={<SupplierQuotation />} />
+        <Route path="/quote-success" element={<QuoteSuccess />} />
+        <Route path="/supplier/login" element={<SupplierLogin />} />
         <Route path="/user/:id" element={<UserDetail />} />
 
         {/* ========== BACKOFFICE ROUTES (CÓ SIDEBAR + HEADER) ========== */}
@@ -99,7 +105,7 @@ export default function App() {
           <Route path="/goods-issues" element={<PhieuXuatKhoList />} />
           <Route path="/goods-issues/create" element={<PhieuXuatKhoCreate />} />
           <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
-          <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />}/>
+          <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
         </Route>
 
         {/* ========== 404 ========== */}
