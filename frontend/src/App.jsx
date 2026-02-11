@@ -36,6 +36,7 @@ import QuoteSuccess from "./pages/supplier/pages/Quotesuccess.jsx";
 import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
 import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
 import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
+import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
 export default function App() {
   return (
     <BrowserRouter>
@@ -79,6 +80,7 @@ export default function App() {
 
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />
+          <Route path="/xuat-kho-noi-bo" element={<PhieuXuatKhoPage />} />
 
           {/* Material */}
           <Route path="/material" element={<ChatLieuList />} />
