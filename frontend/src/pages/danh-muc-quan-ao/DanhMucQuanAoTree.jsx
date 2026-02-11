@@ -508,7 +508,7 @@ const DanhMucQuanAoTree = () => {
         )}
       </div>
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html:`
         .danh-muc-tree-container {
           max-width: 1200px;
           margin: 0 auto;
@@ -895,7 +895,7 @@ const DanhMucQuanAoTree = () => {
             display: none;
           }
         }
-      `}</style>
+      ` }} />
     </div>
   );
 };

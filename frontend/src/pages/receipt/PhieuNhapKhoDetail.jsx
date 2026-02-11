@@ -3,7 +3,6 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { toast } from "sonner";
 
-// Giữ màu cũ của bạn cho 0, 3, 4 và thêm màu cho 1, 2
 const STATUS_MAP = {
     0: { label: "Nháp", className: "bg-amber-50 text-amber-700" },
     1: { label: "Chờ duyệt", className: "bg-blue-50 text-blue-700" },
@@ -26,7 +25,6 @@ export default function PhieuNhapKhoDetail() {
     const [showSendApproveConfirm, setShowSendApproveConfirm] = useState(false);
 
     const role = localStorage.getItem("role");
-    const isNhanVienKho = role === "nhan_vien_kho";
     const isQuanLy = role === "quan_ly_kho" || role === "quan_tri_vien";
 
     useEffect(() => {

@@ -21,6 +21,9 @@ export default function PhieuXuatKhoDetail() {
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
+    const role = localStorage.getItem("role");
+    const isQuanLy = role === "quan_ly_kho" || role === "quan_tri_vien";
+
     useEffect(() => {
         fetchDetail();
     }, [id]);
@@ -29,7 +32,8 @@ export default function PhieuXuatKhoDetail() {
         setLoading(true);
         try {
             const res = await phieuXuatKhoService.getDetail(id);
-            setData(res);
+            // Sửa: Bóc tách dữ liệu nếu bị bọc bởi ResponseData
+            setData(res?.data || res);
         } catch (e) {
             console.error(e);
             toast.error("Không thể tải chi tiết phiếu xuất");
@@ -114,7 +118,7 @@ export default function PhieuXuatKhoDetail() {
                         )}
 
                         {/* 2. Nút Phê duyệt (Chỉ hiện ở trạng thái Chờ duyệt - 1) */}
-                        {phieu.trangThai === 1 && (
+                        {phieu.trangThai === 1 && isQuanLy && (
                             <button
                                 disabled={isProcessing}
                                 onClick={() => handleStatusChange(phieuXuatKhoService.approve, "Đã phê duyệt phiếu xuất")}
@@ -155,13 +159,16 @@ export default function PhieuXuatKhoDetail() {
                                 }
                             />
                             {phieu.loaiXuat === "ban_hang" && (
-                                <Info label="Sales Order" value={phieu.soDonHang} />
+                                /* Sửa: Lấy từ object donBanHang */
+                                <Info label="Sales Order" value={phieu.donBanHang?.soDonHang} />
                             )}
 
                             {phieu.loaiXuat === "chuyen_kho" && (
-                                <Info label="Kho chuyển đến" value={phieu.tenKhoChuyenDen} />
+                                /* Sửa: Lấy từ object khoChuyenDen */
+                                <Info label="Kho chuyển đến" value={phieu.khoChuyenDen?.tenKho} />
                             )}
-                            <Info label="Kho xuất" value={phieu.tenKho} />
+                            {/* Sửa: Lấy từ object kho */}
+                            <Info label="Kho xuất" value={phieu.kho?.tenKho} />
                             <Info
                                 label="Ngày xuất"
                                 value={new Date(phieu.ngayXuat).toLocaleDateString("vi-VN")}

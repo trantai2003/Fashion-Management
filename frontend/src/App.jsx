@@ -35,6 +35,7 @@ import PickLot from "./pages/issue/PickLot.jsx";
 import QuoteSuccess from "./pages/supplier/pages/Quotesuccess.jsx";
 import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
 import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
+import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
 export default function App() {
   return (
     <BrowserRouter>
@@ -74,6 +75,7 @@ export default function App() {
           {/* Product */}
           <Route path="/products" element={<ProductList />} />
           <Route path="/sku-builder" element={<SkuBuilder />} />
+          <Route path="/danh-muc-quan-ao" element={<DanhMucQuanAoTree />} />
 
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />

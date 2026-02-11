@@ -43,6 +43,9 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     @Autowired
     private LichSuGiaoDichKhoRepository lichSuGiaoDichKhoRepository;
 
+    @Autowired
+    private ChiTietDonMuaHangRepository chiTietDonMuaHangRepository;
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -91,6 +94,10 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                             .donGia(ctPo.getDonGia())
                             .loHang(null)
                             .build();
+
+                    if (item.getSoLuongDuKienNhap().compareTo(ctPo.getSoLuongDat()) > 0) {
+                        throw new RuntimeException("Sản phẩm " + ctPo.getBienTheSanPham().getMaSku() + " nhập quá số lượng đặt");
+                    }
 
                     chiTietPhieuNhapKhoRepository.save(ct);
                 }
@@ -155,12 +162,12 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         List<ChiTietPhieuNhapKho> danhSachNhapTheoLo = chiTietPhieuNhapKhoRepository.findAllByPhieuNhapKhoIdAndCoLo(phieuNhapKhoId);
         Kho kho = phieu.getKho();
         BigDecimal tongTien = BigDecimal.ZERO;
+        DonMuaHang donMuaHang = phieu.getDonMuaHang();
 
         for (ChiTietPhieuNhapKho ct : danhSachNhapTheoLo) {
             LoHang loHang = ct.getLoHang();
             BigDecimal soLuongNhap = ct.getSoLuongNhap();
 
-            // 1. Lấy thông tin tồn kho hiện tại (để lấy số lượng trước khi nhập)
             TonKhoTheoLo tonKho = tonKhoTheoLoRepository.findByKho_IdAndLoHang_Id(kho.getId(), loHang.getId())
                     .orElse(TonKhoTheoLo.builder()
                             .kho(kho)
@@ -169,19 +176,26 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                             .soLuongDaDat(BigDecimal.ZERO)
                             .build());
 
-            BigDecimal soLuongTruoc = tonKho.getSoLuongTon(); // Số lượng TRƯỚC
-            BigDecimal soLuongSau = soLuongTruoc.add(soLuongNhap); // Số lượng SAU
+            BigDecimal soLuongTruoc = tonKho.getSoLuongTon();
+            BigDecimal soLuongSau = soLuongTruoc.add(soLuongNhap);
 
-            // 2. Cập nhật tồn kho
             tonKho.setSoLuongTon(soLuongSau);
             tonKho.setNgayNhapGanNhat(Instant.now());
             tonKho.setLanCapNhatCuoi(Instant.now());
             tonKhoTheoLoRepository.save(tonKho);
 
-            // 3. GHI LỊCH SỬ GIAO DỊCH KHO (Mới bổ sung)
+            ChiTietDonMuaHang ctPo = donMuaHang.getChiTietDonMuaHangs().stream()
+                    .filter(item -> item.getBienTheSanPham().getId().equals(ct.getBienTheSanPham().getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Sản phẩm " + ct.getBienTheSanPham().getMaSku() + " không có trong PO"));
+
+            BigDecimal daNhanHienTai = ctPo.getSoLuongDaNhan() != null ? ctPo.getSoLuongDaNhan() : BigDecimal.ZERO;
+            ctPo.setSoLuongDaNhan(daNhanHienTai.add(soLuongNhap));
+            chiTietDonMuaHangRepository.save(ctPo);
+            
             LichSuGiaoDichKho history = LichSuGiaoDichKho.builder()
                     .ngayGiaoDich(Instant.now())
-                    .loaiGiaoDich("nhap_kho") // Khớp với Enum trong DB của bạn
+                    .loaiGiaoDich("nhap_kho")
                     .loaiThamChieu("phieu_nhap_kho")
                     .idThamChieu(phieu.getId())
                     .bienTheSanPham(ct.getBienTheSanPham())
@@ -190,7 +204,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                     .soLuong(soLuongNhap)
                     .soLuongTruoc(soLuongTruoc)
                     .soLuongSau(soLuongSau)
-                    .giaVon(ct.getDonGia()) // Giá vốn lúc nhập
+                    .giaVon(ct.getDonGia())
                     .nguoiDung(nguoiNhap)
                     .ghiChu("Nhập kho từ phiếu: " + phieu.getSoPhieuNhap())
                     .build();
@@ -205,6 +219,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         phieu.setNguoiNhap(nguoiNhap);
         phieu.setNgayNhap(Instant.now());
         repository.save(phieu);
+        donMuaHangRepository.save(donMuaHang);
     }
 
     @Transactional

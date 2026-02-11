@@ -45,6 +45,7 @@ export default function PhieuXuatKhoList() {
 
         if (filters.keyword?.trim()) {
             const searchKeyword = filters.keyword.trim();
+            // Cập nhật fieldName để search sâu vào object donBanHang
             ["soPhieuXuat", "donBanHang.soDonHang"].forEach((field) => {
                 filterList.push({
                     fieldName: field,
@@ -65,6 +66,7 @@ export default function PhieuXuatKhoList() {
 
         if (filters.tenKho !== "") {
             filterList.push({
+                // Cập nhật fieldName để search sâu vào object kho
                 fieldName: "kho.tenKho",
                 operation: "LIKE",
                 value: filters.tenKho.trim(),
@@ -275,10 +277,12 @@ export default function PhieuXuatKhoList() {
                                             {item.soPhieuXuat}
                                         </td>
                                         <td className="px-4 py-3">
-                                            {item.soDonHang || "-"}
+                                            {/* Sửa: Lấy từ object donBanHang */}
+                                            {item.donBanHang?.soDonHang || "-"}
                                         </td>
                                         <td className="px-4 py-3">
-                                            {item.tenKho}
+                                            {/* Sửa: Lấy từ object kho */}
+                                            {item.kho?.tenKho || "-"}
                                         </td>
                                         <td className="px-4 py-3">
                                             {new Date(
