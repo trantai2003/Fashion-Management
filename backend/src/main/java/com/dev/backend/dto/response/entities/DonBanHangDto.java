@@ -1,16 +1,16 @@
 package com.dev.backend.dto.response.entities;
 
-import com.dev.backend.entities.DonBanHang;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * DTO for {@link com.dev.backend.entities.PhieuXuatKho}
+ * DTO for {@link com.dev.backend.entities.DonBanHang}
  */
 @AllArgsConstructor
 @Getter
@@ -19,17 +19,21 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @EqualsAndHashCode(of = {"id"})
-public class PhieuXuatKhoDto implements Serializable {
+public class DonBanHangDto implements Serializable {
     Integer id;
-    String soPhieuXuat;
-    DonBanHangDto donBanHang;
-    KhoDto kho;
-    Instant ngayXuat;
-    String loaiXuat;
-    KhoDto khoChuyenDen;
+    String soDonHang;
+    KhachHangDto khachHang;
+    KhoDto khoXuat;
+    Instant ngayDatHang;
+    Instant ngayGiaoHang;
     Integer trangThai;
+    BigDecimal tienHang;
+    BigDecimal phiVanChuyen;
+    BigDecimal tongCong;
+    String trangThaiThanhToan;
+    String diaChiGiaoHang;
     String ghiChu;
-    NguoiDungDto nguoiXuat;
+    NguoiDungDto nguoiTao;
     NguoiDungDto nguoiDuyet;
     Instant ngayTao;
     Instant ngayCapNhat;

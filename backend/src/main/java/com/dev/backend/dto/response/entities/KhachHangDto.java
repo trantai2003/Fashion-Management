@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * DTO for {@link com.dev.backend.entities.Kho}
+ * DTO for {@link com.dev.backend.entities.KhachHang}
  */
 @AllArgsConstructor
 @Getter
@@ -18,12 +18,16 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @EqualsAndHashCode(of = {"id"})
-public class KhoDto implements Serializable {
+public class KhachHangDto implements Serializable {
     Integer id;
-    String maKho;
-    String tenKho;
+    String maKhachHang;
+    String tenKhachHang;
+    String nguoiLienHe;
+    String soDienThoai;
+    String email;
     String diaChi;
-    NguoiDungDto quanLy;
+    String loaiKhachHang;
     Integer trangThai;
     Instant ngayTao;
+    Instant ngayCapNhat;
 }

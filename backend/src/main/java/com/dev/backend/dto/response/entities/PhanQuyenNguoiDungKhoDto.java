@@ -8,6 +8,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * DTO for {@link com.dev.backend.entities.PhanQuyenNguoiDungKho}
+ */
 @AllArgsConstructor
 @Getter
 @Setter
