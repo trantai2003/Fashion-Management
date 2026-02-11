@@ -1,6 +1,5 @@
 package com.dev.backend.dto.response.entities;
 
-import com.dev.backend.entities.DonBanHang;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -10,7 +9,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 /**
- * DTO for {@link com.dev.backend.entities.PhieuXuatKho}
+ * DTO for {@link com.dev.backend.entities.KhachHang}
  */
 @AllArgsConstructor
 @Getter
@@ -19,18 +18,16 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @EqualsAndHashCode(of = {"id"})
-public class PhieuXuatKhoDto implements Serializable {
+public class KhachHangDto implements Serializable {
     Integer id;
-    String soPhieuXuat;
-    DonBanHangDto donBanHang;
-    KhoDto kho;
-    Instant ngayXuat;
-    String loaiXuat;
-    KhoDto khoChuyenDen;
+    String maKhachHang;
+    String tenKhachHang;
+    String nguoiLienHe;
+    String soDienThoai;
+    String email;
+    String diaChi;
+    String loaiKhachHang;
     Integer trangThai;
-    String ghiChu;
-    NguoiDungDto nguoiXuat;
-    NguoiDungDto nguoiDuyet;
     Instant ngayTao;
     Instant ngayCapNhat;
 }
