@@ -1,9 +1,11 @@
 package com.dev.backend.services.impl.entities;
 
 import com.dev.backend.config.SecurityContextHolder;
+import com.dev.backend.constant.GlobalCache;
+import com.dev.backend.constant.enums.OtpType;
 import com.dev.backend.constant.variables.IRoleType;
-import com.dev.backend.dto.request.ChiTietDonMuaHangCreating;
-import com.dev.backend.dto.request.DonMuaHangCreating;
+import com.dev.backend.dto.OtpScheduleObj;
+import com.dev.backend.dto.request.*;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.DonMuaHangDto;
 import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
@@ -11,6 +13,7 @@ import com.dev.backend.entities.*;
 import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.DonMuaHangMapper;
 import com.dev.backend.repository.DonMuaHangRepository;
+import com.dev.backend.services.CalcService;
 import com.dev.backend.services.EmailService;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
@@ -45,6 +48,8 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
     private DonMuaHangMapper donMuaHangMapper;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private CalcService calcService;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -165,6 +170,109 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                         .error(null)
                         .build()
         );
+    }
+
+    @Transactional
+    public ResponseEntity<ResponseData<String>> getOtpForSupplier(OtpDonMuaHangGetting getting) {
+        DonMuaHang donMuaHang = getOne(getting.getDonMuaHangId()).orElseThrow(
+                () -> new CommonException("Không tìm thấy đơn mua hàng id: " + getting.getDonMuaHangId())
+        );
+        if (!getting.getEmail().equals(donMuaHang.getNhaCungCap().getEmail())) {
+            throw new CommonException("Email nhà cung cấp không hợp lệ email: " + getting.getEmail());
+        }
+
+        if (donMuaHang.getTrangThai() != 3) {
+            throw new CommonException("Đơn mua hàng không tồn tại id: " + getting.getDonMuaHangId());
+        }
+
+        for (OtpScheduleObj otpScheduleObj : GlobalCache.OTP_SCHEDULE_OBJS) {
+            if (otpScheduleObj.getEmail().equals(getting.getEmail())) {
+                throw new CommonException("Otp chưa hết hạn chờ 5p để gửi lại otp");
+            }
+        }
+
+        OtpScheduleObj otpScheduleObj = OtpScheduleObj.builder()
+                .email(getting.getEmail())
+                .otp(calcService.getRandomActiveCode(6L))
+                .type(OtpType.SUPPLIER_MAIL_SIGN_KEY)
+                .build();
+        GlobalCache.OTP_SCHEDULE_OBJS.add(otpScheduleObj);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .data("Success")
+                        .message("Success")
+                        .error(null)
+                        .build()
+        );
+    }
+
+    @Transactional
+    public ResponseEntity<ResponseData<DonMuaHangDto>> confirmOtpForSupplier(OtpDonMuaHangConfirming confirming) {
+        for (OtpScheduleObj otpScheduleObj : GlobalCache.OTP_SCHEDULE_OBJS) {
+            if (otpScheduleObj.getEmail().equals(confirming.getEmail()) && otpScheduleObj.getOtp().equals(confirming.getOtp())) {
+                DonMuaHang donMuaHang = getOne(confirming.getDonMuaHangId()).orElseThrow(
+                        () -> new CommonException("Không tìm thấy đơn mua hàng id: " + confirming.getDonMuaHangId())
+                );
+                if (!donMuaHang.getNhaCungCap().getEmail().equals(confirming.getEmail())) {
+                    throw new CommonException("Đơn mua hàng không hợp lệ");
+                }
+                return ResponseEntity.ok(
+                        ResponseData.<DonMuaHangDto>builder()
+                                .status(HttpStatus.OK.value())
+                                .data(donMuaHangMapper.toDto(donMuaHang))
+                                .message("Success")
+                                .error(null)
+                                .build()
+                );
+            }
+        }
+        throw new CommonException("Otp hoặc email nhà cung cấp không hợp lệ");
+    }
+
+    @Transactional
+    public ResponseEntity<ResponseData<String>> baoGiaDonMuaHang(DonMuaHangBaoGia baoGia) {
+        DonMuaHang donMuaHang = getOne(baoGia.getId()).orElseThrow(
+                () -> new CommonException("Không tìm thấy đơn mua hàng id: " + baoGia.getId())
+        );
+        if (donMuaHang.getChiTietDonMuaHangs().size() != baoGia.getChiTietDonMuaHangBaoGias().size()) {
+            throw new CommonException("Đơn báo giá không hợp lệ");
+        }
+
+        int l = donMuaHang.getChiTietDonMuaHangs().size();
+        List<ChiTietDonMuaHang> chiTietDonMuaHangs = donMuaHang.getChiTietDonMuaHangs();
+        List<ChiTietDonMuaHangBaoGia> chiTietDonMuaHangBaoGias = baoGia.getChiTietDonMuaHangBaoGias();
+        // Tính toán tổng tiền để so sánh
+        BigDecimal tongTienTinhToan = BigDecimal.ZERO;
+        for (int i = 0; i < l; i++) {
+            chiTietDonMuaHangs.get(i).setDonGia(chiTietDonMuaHangBaoGias.get(i).getDonGia());
+            // so sánh thành tiền
+            BigDecimal thanhTienTinToan = chiTietDonMuaHangs.get(i).getSoLuongDat().multiply(chiTietDonMuaHangs.get(i).getDonGia());
+
+            if (thanhTienTinToan.compareTo(chiTietDonMuaHangs.get(i).getThanhTien()) != 0) {
+                throw new CommonException("Thành tiền tại mặt hàng có lỗi tên :" + chiTietDonMuaHangs.get(i).getBienTheSanPham().getSanPham().getTenSanPham());
+            }
+            chiTietDonMuaHangs.get(i).setThanhTien(thanhTienTinToan);
+            chiTietDonMuaHangService.update(chiTietDonMuaHangs.get(i).getId(), chiTietDonMuaHangs.get(i));
+            tongTienTinhToan = tongTienTinhToan.add(thanhTienTinToan);
+        }
+
+        if(tongTienTinhToan.compareTo(donMuaHang.getTongTien()) != 0){
+            throw new CommonException("Tổng tìn tính toán sai");
+        }
+        donMuaHang.setTrangThai(4);
+        update(donMuaHang.getId(), donMuaHang);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .data("Success")
+                        .message("Success")
+                        .error(null)
+                        .build()
+        );
+
     }
 
 //    @AllArgsConstructor

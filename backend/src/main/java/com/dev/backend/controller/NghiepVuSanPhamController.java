@@ -5,16 +5,21 @@ import com.dev.backend.config.SecurityContextHolder;
 import com.dev.backend.constant.variables.IPermissionType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
+import com.dev.backend.dto.request.DonMuaHangBaoGia;
 import com.dev.backend.dto.request.DonMuaHangCreating;
+import com.dev.backend.dto.request.OtpDonMuaHangConfirming;
+import com.dev.backend.dto.request.OtpDonMuaHangGetting;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.DonMuaHangDto;
 import com.dev.backend.entities.DonMuaHang;
+import com.dev.backend.entities.PhieuXuatKho;
 import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.services.impl.entities.DonMuaHangService;
 import com.dev.backend.services.impl.entities.PhieuXuatKhoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -69,4 +74,21 @@ public class NghiepVuSanPhamController {
                         .build()
         );
     }
+
+
+    @PostMapping("/don-mua-hang/lay-otp")
+    public ResponseEntity<ResponseData<String>> layOtpDonMuaHang(@RequestBody OtpDonMuaHangGetting getting){
+        return donMuaHangService.getOtpForSupplier(getting);
+    }
+
+    @PostMapping("/don-mua-hang/xac-nhan-otp")
+    public ResponseEntity<ResponseData<DonMuaHangDto>> xacNhanOtpDonMuaHang(@RequestBody OtpDonMuaHangConfirming confirming){
+        return donMuaHangService.confirmOtpForSupplier(confirming);
+    }
+
+    @PostMapping("/don-mua-hang/bao-gia")
+    public ResponseEntity<ResponseData<String>> baoGiaDonMuaHang(@RequestBody DonMuaHangBaoGia baoGia){
+        return donMuaHangService.baoGiaDonMuaHang(baoGia);
+    }
+
 }
