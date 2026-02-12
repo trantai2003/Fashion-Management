@@ -37,6 +37,8 @@ import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
 import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
 import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
 import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
+import ProductDetail from "./pages/product/components/product/ProductDetail";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -77,7 +79,7 @@ export default function App() {
           <Route path="/products" element={<ProductList />} />
           <Route path="/sku-builder" element={<SkuBuilder />} />
           <Route path="/danh-muc-quan-ao" element={<DanhMucQuanAoTree />} />
-
+          <Route path="/product-detail/:id" element={<ProductDetail />} />
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/xuat-kho-noi-bo" element={<PhieuXuatKhoPage />} />

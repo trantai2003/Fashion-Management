@@ -324,7 +324,12 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
     if (isLoadingProduct) {
         return (
             <Dialog open={isOpen} onOpenChange={handleCancel}>
-                <DialogContent className="sm:max-w-[900px] bg-white border border-gray-200 rounded-xl shadow-sm">
+                <DialogContent className="sm:max-w-[900px]
+    max-h-[90vh]
+    bg-white text-gray-900
+    border border-gray-200
+    rounded-xl shadow-sm
+    dark:bg-white dark:text-gray-900">
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
                         <span className="ml-3 text-gray-600">Đang tải thông tin sản phẩm...</span>
@@ -336,7 +341,12 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
     return (
         <Dialog open={isOpen} onOpenChange={handleCancel}>
-            <DialogContent className="sm:max-w-[900px] max-h-[90vh] bg-white border border-gray-200 rounded-xl shadow-sm">
+            <DialogContent className="sm:max-w-[900px]
+    max-h-[90vh]
+    bg-white text-gray-900
+    border border-gray-200
+    rounded-xl shadow-sm
+    dark:bg-white dark:text-gray-900">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-purple-700">
                         Chỉnh sửa sản phẩm
