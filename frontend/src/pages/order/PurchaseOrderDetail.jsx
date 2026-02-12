@@ -41,6 +41,7 @@ import {
     Mail,
     MapPin,
     ShoppingCart,
+    Clock,
 } from "lucide-react";
 
 import purchaseOrderDetailService from '@/services/purchaseOrderDetailService';
@@ -65,32 +66,44 @@ export default function PurchaseOrderDetail() {
             label: 'Chờ duyệt',
             color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
             icon: AlertCircle,
-            description: 'Đơn hàng đang chờ phê duyệt'
+            description: 'Đơn hàng đang chờ quản lý phê duyệt'
         },
         1: {
             label: 'Đã duyệt',
             color: 'bg-blue-100 text-blue-800 border-blue-200',
             icon: CheckCircle,
-            description: 'Đơn hàng đã được phê duyệt'
+            description: 'Đơn hàng đã được duyệt nội bộ'
         },
         2: {
-            label: 'Đang giao',
+            label: 'Đang xử lý',
             color: 'bg-purple-100 text-purple-800 border-purple-200',
-            icon: Truck,
-            description: 'Đơn hàng đang trong quá trình giao'
+            icon: Package,
+            description: 'Đơn hàng đang được xử lý'
         },
         3: {
+            label: 'Chờ báo giá',
+            color: 'bg-orange-100 text-orange-800 border-orange-200',
+            icon: Clock,
+            description: 'Đã gửi yêu cầu đến nhà cung cấp, chờ báo giá'
+        },
+        4: {
+            label: 'Đã báo giá',
+            color: 'bg-green-100 text-green-800 border-green-200',
+            icon: FileText,
+            description: 'Nhà cung cấp đã gửi báo giá chi tiết'
+        },
+        5: {
+            label: 'Hoàn thành',
+            color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+            icon: CheckCircle,
+            description: 'Đơn hàng đã hoàn thành nhập kho'
+        },
+        6: {
             label: 'Đã hủy',
             color: 'bg-red-100 text-red-800 border-red-200',
             icon: XCircle,
             description: 'Đơn hàng đã bị hủy'
-        },
-        4: {
-            label: 'Hoàn thành',
-            color: 'bg-green-100 text-green-800 border-green-200',
-            icon: CheckCircle,
-            description: 'Đơn hàng đã hoàn thành'
-        },
+        }
     };
 
     // Format currency
@@ -574,7 +587,9 @@ export default function PurchaseOrderDetail() {
                                             <TableHead className="font-semibold text-center">Màu sắc</TableHead>
                                             <TableHead className="font-semibold text-center">Size</TableHead>
                                             <TableHead className="font-semibold text-center">Chất liệu</TableHead>
-                                            <TableHead className="font-semibold text-right">Đơn giá</TableHead>
+                                            <TableHead className="font-semibold text-right">
+                                                {orderData.trangThai >= 4 ? 'Đơn giá (NCC báo)' : 'Đơn giá dự kiến'}
+                                            </TableHead>
                                             <TableHead className="font-semibold text-center">SL đặt</TableHead>
                                             <TableHead className="font-semibold text-center">SL đã nhận</TableHead>
                                             <TableHead className="font-semibold text-right">Thành tiền</TableHead>
@@ -621,7 +636,13 @@ export default function PurchaseOrderDetail() {
                                                         {item.bienTheSanPham?.chatLieu?.tenChatLieu}
                                                     </TableCell>
                                                     <TableCell className="text-right font-medium">
-                                                        {formatCurrency(item.donGia)}
+                                                        {item.donGia > 0 ? (
+                                                            <span className={orderData.trangThai >= 4 ? "text-green-600 font-bold" : ""}>
+                                                                {formatCurrency(item.donGia)}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-400 italic text-xs">Chưa báo giá</span>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-center">
                                                         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -634,7 +655,7 @@ export default function PurchaseOrderDetail() {
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="text-right font-semibold text-purple-600">
-                                                        {formatCurrency(item.thanhTien)}
+                                                        {item.thanhTien > 0 ? formatCurrency(item.thanhTien) : '-'}
                                                     </TableCell>
                                                 </TableRow>
                                             ))

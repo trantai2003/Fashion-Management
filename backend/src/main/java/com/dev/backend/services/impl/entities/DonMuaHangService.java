@@ -198,6 +198,13 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                 .build();
         GlobalCache.OTP_SCHEDULE_OBJS.add(otpScheduleObj);
 
+        HashMap<String, Object> params = new HashMap<>();
+
+        params.put("userName", donMuaHang.getNhaCungCap().getTenNhaCungCap());
+        params.put("otp", otpScheduleObj.getOtp());
+
+        emailService.sendHtmlEmailFromTemplate(getting.getEmail(), "Truy cập phiếu chi tiết", "supplier_otp.html", params);
+
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
@@ -243,7 +250,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         int l = donMuaHang.getChiTietDonMuaHangs().size();
         List<ChiTietDonMuaHang> chiTietDonMuaHangs = donMuaHang.getChiTietDonMuaHangs();
         List<ChiTietDonMuaHangBaoGia> chiTietDonMuaHangBaoGias = baoGia.getChiTietDonMuaHangBaoGias();
-        // Tính toán tổng tiền để so sánh
+// Tính toán tổng tiền để so sánh
         BigDecimal tongTienTinhToan = BigDecimal.ZERO;
         for (int i = 0; i < l; i++) {
             chiTietDonMuaHangs.get(i).setDonGia(chiTietDonMuaHangBaoGias.get(i).getDonGia());
