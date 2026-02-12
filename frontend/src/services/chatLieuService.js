@@ -2,7 +2,7 @@
 import apiClient from './apiClient';
 
 // Base URL cho API chất liệu
-const CHAT_LIEU_API = '/api/material';
+const CHAT_LIEU_API = '/api/v1/chat-lieu';
 
 /**
  * Lấy danh sách chất liệu (có search)
