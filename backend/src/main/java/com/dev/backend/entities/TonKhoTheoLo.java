@@ -36,12 +36,10 @@ public class TonKhoTheoLo {
     Kho kho;
 
     @ColumnDefault("0.000")
-    @Generated(event = EventType.INSERT)
     @Column(name = "so_luong_ton", precision = 15, scale = 3)
     BigDecimal soLuongTon;
 
     @ColumnDefault("0.000")
-    @Generated(event = EventType.INSERT)
     @Column(name = "so_luong_da_dat", precision = 15, scale = 3)
     BigDecimal soLuongDaDat;
 

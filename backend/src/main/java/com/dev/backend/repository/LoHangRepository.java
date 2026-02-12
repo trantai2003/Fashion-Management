@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LoHangRepository extends JpaRepository<LoHang, Integer>, JpaSpecificationExecutor<LoHang> {
+    boolean existsByMaLoAndBienTheSanPham_Id(String maLo, Integer bienTheSanPhamId);
 }

@@ -42,7 +42,7 @@ export const SIDEBAR_MENU = [
       "nhan_vien_ban_hang",
     ],
     children: [
-      { label: "Danh mục", to: "/categories" },
+      { label: "Danh mục", to: "/danh-muc-quan-ao" },
       { label: "Màu sắc", to: "/attributes" },
       { label: "Kích cỡ", to: "/attributes" },
       { label: "Chất liệu", to: "/material" },
@@ -51,11 +51,6 @@ export const SIDEBAR_MENU = [
         label: "Biến thể SKU & Giá",
         to: "/sku-builder",
         roles: ["quan_tri_vien", "quan_ly_kho"],
-      },
-      {
-        label: "Barcode",
-        to: "/barcodes",
-        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],
       },
     ],
   },
@@ -97,8 +92,7 @@ export const SIDEBAR_MENU = [
     children: [
       { label: "Kho", to: "/warehouse" },
       { label: "Phiếu xuất kho", to: "/goods-issues" },
-      { label: "Danh sách lấy hàng", to: "/pick-lists" },
-      { label: "Chuyển kho nội bộ", to: "/stock-transfers" },
+      { label: "Chuyển kho nội bộ", to: "/xuat-kho-noi-bo" },
       { label: "Kiểm kê", to: "/stock-takes" },
     ],
   },

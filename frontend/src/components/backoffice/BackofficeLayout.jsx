@@ -75,6 +75,54 @@ export default function BackofficeLayout() {
             title: "Quản lý kho",
             subtitle: "Quản lý thông tin vận hành các kho hàng",
         },
+        {
+            key: "GOODS_RECEIPTS",
+            match: (path) => path === "/goods-receipts",
+            title: "Quản lý phiếu nhập kho",
+            subtitle: "Danh sách phiếu nhập kho",
+        },
+        {
+            key: "GOODS_RECEIPTS_CREATE",
+            match: (path) => path === "/goods-receipts/create",
+            title: "Tạo phiếu nhập kho",
+            subtitle: "Tạo mới phiếu nhập kho từ đơn mua hàng (PO)",
+        },
+        {
+            key: "GOODS_RECEIPTS_DETAIL",
+            match: (path) => /^\/goods-receipts\/\d+$/.test(path),
+            title: "Chi tiết phiếu nhập kho",
+            subtitle: "Xem chi tiết phiếu nhập kho",
+        },
+        {
+            key: "LOT_INPUT",
+            match: (path) => /^\/goods-receipts\/\d+\/lot-input\/\d+$/.test(path),
+            title: "Khai báo lô",
+            subtitle: "Khai báo thông tin lô cho sản phẩm nhập kho",
+        },
+        {
+            key: "GOODS_ISSUES",
+            match: (path) => path === "/goods-issues",
+            title: "Quản lý phiếu xuất kho",
+            subtitle: "Danh sách phiếu xuất kho",
+        },
+        {
+            key: "GOODS_ISSUES_CREATE",
+            match: (path) => path === "/goods-issues/create",
+            title: "Tạo phiếu xuất kho",
+            subtitle: "Tạo mới phiếu xuất kho từ đơn bán hàng (SO)",
+        },
+        {
+            key: "GOODS_ISSUES_DETAIL",
+            match: (path) => /^\/goods-issues\/\d+$/.test(path),
+            title: "Chi tiết phiếu xuất kho",
+            subtitle: "Xem chi tiết phiếu xuất kho",
+        },
+        {
+            key: "PICK_LOT",
+            match: (path) => /^\/goods-issues\/\d+\/pick-lot\/\d+$/.test(path),
+            title: "Chọn lô hàng",
+            subtitle: "Chọn lô hàng để xuất kho",
+        }
     ];
 
     const pageMeta = PAGE_META_CONFIG.find((item) =>

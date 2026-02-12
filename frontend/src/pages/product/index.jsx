@@ -504,7 +504,7 @@ export default function ProductList() {
 
                                             <TableCell className="px-4 py-3">
                                                 <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                                                    {product.anhQuanAos ? (
+                                                    {product.anhQuanAos?.[0]?.tepTin?.duongDan ? (  // ✅ Optional chaining
                                                         <img
                                                             src={product.anhQuanAos[0].tepTin.duongDan}
                                                             alt={product.tenSanPham}

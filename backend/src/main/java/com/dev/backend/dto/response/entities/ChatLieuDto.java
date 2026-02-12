@@ -1,14 +1,27 @@
 package com.dev.backend.dto.response.entities;
 
-import lombok.Data;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.time.Instant;
 
-@Data
-public class ChatLieuDto {
-    private Integer id;
-    private String maChatLieu;
-    private String tenChatLieu;
-    private String moTa;
-    private Instant ngayTao;
+/**
+ * DTO for {@link com.dev.backend.entities.ChatLieu}
+ */
+@AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
+@EqualsAndHashCode(of = {"id"})
+public class ChatLieuDto implements Serializable {
+    Integer id;
+    String maChatLieu;
+    String tenChatLieu;
+    String moTa;
+    Instant ngayTao;
 }

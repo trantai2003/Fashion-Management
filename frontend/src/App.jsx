@@ -37,7 +37,6 @@ import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
 import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
 import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
 import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
-import OrderDetails from "./pages/purchase/OrderDetails";
 import KhachHangDetails from "./pages/customer/KhachHangDetails";
 import KhachHangEdit from "./pages/customer/KhachHangEdit";
 
@@ -106,23 +105,17 @@ export default function App() {
           <Route path="/customer/:id" element={<KhachHangDetails />} />
           <Route path="/customer/:id/edit" element={<KhachHangEdit />} />
 
-          {/* Receipt */}
+          {/* Receipt*/}
           <Route path="/goods-receipts/create" element={<PhieuNhapKhoCreate />} />
           <Route path="/goods-receipts" element={<PhieuNhapKhoList />} />
           <Route path="/goods-receipts/:id" element={<PhieuNhapKhoDetail />} />
-          <Route
-            path="/goods-receipts/:phieuNhapKhoId/lot-input/:bienTheSanPhamId"
-            element={<KhaiBaoLo />}
-          />
+          <Route path="/goods-receipts/:phieuNhapKhoId/lot-input/:bienTheSanPhamId" element={<KhaiBaoLo />} />
 
           {/* Issue */}
           <Route path="/goods-issues" element={<PhieuXuatKhoList />} />
           <Route path="/goods-issues/create" element={<PhieuXuatKhoCreate />} />
           <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
-          <Route
-            path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId"
-            element={<PickLot />}
-          />
+          <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
         </Route>
 
         {/* ========== 404 ========== */}

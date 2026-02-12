@@ -51,12 +51,10 @@ public class DonMuaHang {
     Instant ngayGiaoDuKien;
 
     @ColumnDefault("0")
-    @Generated(event = EventType.INSERT)
     @Column(name = "trang_thai")
     Integer trangThai;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "tong_tien", precision = 15, scale = 2)
     BigDecimal tongTien;
 

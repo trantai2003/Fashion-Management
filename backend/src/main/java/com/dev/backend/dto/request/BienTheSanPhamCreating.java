@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @AllArgsConstructor
 @Getter
@@ -30,5 +31,21 @@ public class BienTheSanPhamCreating {
                 .giaBan(creating.getGiaBan())
                 .trangThai(creating.getTrangThai())
                 .build();
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BienTheSanPhamCreating that = (BienTheSanPhamCreating) o;
+        return Objects.equals(mauSacId, that.mauSacId) &&
+                Objects.equals(sizeId, that.sizeId) &&
+                Objects.equals(chatLieuId, that.chatLieuId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mauSacId, sizeId, chatLieuId);
     }
 }

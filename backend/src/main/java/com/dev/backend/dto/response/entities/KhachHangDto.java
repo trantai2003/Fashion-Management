@@ -19,15 +19,15 @@ import java.time.Instant;
 @Builder
 @EqualsAndHashCode(of = {"id"})
 public class KhachHangDto implements Serializable {
-    private Integer id;
-    private String maKhachHang;
-    private String tenKhachHang;
-    private String nguoiLienHe;
-    private String soDienThoai;
-    private String email;
-    private String diaChi;
-    private String loaiKhachHang;
-    private Integer trangThai;
-    private Instant ngayTao;
-    private Instant ngayCapNhat;
+    Integer id;
+    String maKhachHang;
+    String tenKhachHang;
+    String nguoiLienHe;
+    String soDienThoai;
+    String email;
+    String diaChi;
+    String loaiKhachHang;
+    Integer trangThai;
+    Instant ngayTao;
+    Instant ngayCapNhat;
 }
