@@ -49,7 +49,7 @@ export default function BackofficeLayout() {
             key: "ATTRIBUTES",
             match: (path) => path === "/attributes",
             title: "Quản lý thuộc tính",
-            subtitle: "Màu sắc & Kích cỡ",
+            subtitle: "Màu sắc/ Kích cỡ/ Chất liệu",
         },
         {
             key: "MATERIALS",

@@ -6,9 +6,9 @@ import UserDetail from "./pages/UserDetail";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Warehouse from "./pages/warehouse/Warehouse";
-import ChatLieuList from "./pages/material/ChatLieuList";
-import ChatLieuDetail from "./pages/material/ChatLieuDetail";
-import ChatLieuDetailView from "./pages/material/ChatLieuDetailView";
+import ChatLieuList from "./pages/attribute/ChatLieuList";
+import ChatLieuDetail from "./pages/attribute/ChatLieuDetail";
+import ChatLieuDetailView from "./pages/attribute/ChatLieuDetailView";
 import SupplierList from "./pages/supplier/SupplierList";
 import SupplierDetail from "./pages/supplier/SupplierDetail";
 import SupplierDetailView from "./pages/supplier/SupplierDetailView";
@@ -19,7 +19,7 @@ import ViewUserDetailByAdmin from "@/pages/admin/ViewUserDetailByAdmin.jsx";
 import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx";
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
-import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
+import ColorSizeManagement from "@/pages/attribute/ColorSizeManagement.jsx";
 import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
 import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
 import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
@@ -39,6 +39,7 @@ import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
 import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
 import KhachHangDetails from "./pages/customer/KhachHangDetails";
 import KhachHangEdit from "./pages/customer/KhachHangEdit";
+import ProductAttributeHub from "@/pages/attribute/ProductAttributeHub";
 
 export default function App() {
   return (
@@ -73,7 +74,8 @@ export default function App() {
           />
 
           {/* Attributes */}
-          <Route path="/attributes" element={<ColorSizeManagement />} />
+          <Route path="/attribute" element={<ColorSizeManagement />} />
+          <Route path="/attributes" element={<ProductAttributeHub />} />
 
           {/* Product */}
           <Route path="/products" element={<ProductList />} />

@@ -43,9 +43,7 @@ export const SIDEBAR_MENU = [
     ],
     children: [
       { label: "Danh mục", to: "/danh-muc-quan-ao" },
-      { label: "Màu sắc", to: "/attributes" },
-      { label: "Kích cỡ", to: "/attributes" },
-      { label: "Chất liệu", to: "/material" },
+      { label: "Thuộc tính", to: "/attributes" },
       { label: "Sản phẩm", to: "/products" },
       {
         label: "Biến thể SKU & Giá",
