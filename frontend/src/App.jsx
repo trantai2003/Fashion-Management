@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
-
 import BackofficeLayout from "@/components/backoffice/BackofficeLayout";
 import Login from "./pages/Login";
 import HomePage from "./pages/HomePage";
@@ -22,26 +20,39 @@ import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
 import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
+import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
+import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
+import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
+import KhaiBaoLo from "./pages/receipt/KhaiBaoLo.jsx";
+import PhieuXuatKhoList from "./pages/issue/PhieuXuatKhoList.jsx";
+import PurchaseOrderDetail from "./pages/order/PurchaseOrderDetail.jsx";
+import PurchaseOrder from "./pages/order/PurchaseOrder.jsx";
+import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
+import SkuBuilder from "./pages/product/SkuBuilder";
+import PhieuXuatKhoCreate from "./pages/issue/PhieuXuatKhoCreate.jsx";
+import PhieuXuatKhoDetail from "./pages/issue/PhieuXuatKhoDetail.jsx";
+import PickLot from "./pages/issue/PickLot.jsx";
+import QuoteSuccess from "./pages/supplier/pages/Quotesuccess.jsx";
+import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
+import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
+import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
+import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
 import OrderDetails from "./pages/purchase/OrderDetails";
 import KhachHangDetails from "./pages/customer/KhachHangDetails";
 import KhachHangEdit from "./pages/customer/KhachHangEdit";
+
 export default function App() {
   return (
     <BrowserRouter>
-      {/* Toaster – tạm thời đặt ở App */}
-      <Toaster
-        position="top-center"
-        richColors
-        closeButton
-        duration={3500}
-      />
-
       <Routes>
         {/* ========== PUBLIC ROUTES ========== */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/supplier/quotation" element={<SupplierQuotation />} />
+        <Route path="/quote-success" element={<QuoteSuccess />} />
+        <Route path="/supplier/login" element={<SupplierLogin />} />
         <Route path="/user/:id" element={<UserDetail />} />
 
         {/* ========== BACKOFFICE ROUTES (CÓ SIDEBAR + HEADER) ========== */}
@@ -67,15 +78,23 @@ export default function App() {
 
           {/* Product */}
           <Route path="/products" element={<ProductList />} />
+          <Route path="/sku-builder" element={<SkuBuilder />} />
+          <Route path="/danh-muc-quan-ao" element={<DanhMucQuanAoTree />} />
 
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />
+          <Route path="/xuat-kho-noi-bo" element={<PhieuXuatKhoPage />} />
 
           {/* Material */}
           <Route path="/material" element={<ChatLieuList />} />
           <Route path="/material/new" element={<ChatLieuDetail />} />
           <Route path="/material/view/:id" element={<ChatLieuDetailView />} />
           <Route path="/material/:id" element={<ChatLieuDetail />} />
+
+          {/* Purchase Order */}
+          <Route path="/purchase-orders" element={<PurchaseOrder />} />
+          <Route path="/purchase-orders/create" element={<PurchaseOrderCreate />} />
+          <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
 
           {/* Supplier */}
           <Route path="/supplier" element={<SupplierList />} />
@@ -87,8 +106,23 @@ export default function App() {
           <Route path="/customer/:id" element={<KhachHangDetails />} />
           <Route path="/customer/:id/edit" element={<KhachHangEdit />} />
 
-          {/* Purchase Orders */}
-          <Route path="/purchase-orders/:id" element={<OrderDetails />} />
+          {/* Receipt */}
+          <Route path="/goods-receipts/create" element={<PhieuNhapKhoCreate />} />
+          <Route path="/goods-receipts" element={<PhieuNhapKhoList />} />
+          <Route path="/goods-receipts/:id" element={<PhieuNhapKhoDetail />} />
+          <Route
+            path="/goods-receipts/:phieuNhapKhoId/lot-input/:bienTheSanPhamId"
+            element={<KhaiBaoLo />}
+          />
+
+          {/* Issue */}
+          <Route path="/goods-issues" element={<PhieuXuatKhoList />} />
+          <Route path="/goods-issues/create" element={<PhieuXuatKhoCreate />} />
+          <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
+          <Route
+            path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId"
+            element={<PickLot />}
+          />
         </Route>
 
         {/* ========== 404 ========== */}
