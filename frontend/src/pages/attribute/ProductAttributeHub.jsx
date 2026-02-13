@@ -164,7 +164,7 @@ const ProductAttributeHub = () => {
                 {/* Table */}
                 <section className="bg-white border rounded-xl shadow-sm overflow-hidden">
                     <div className="p-4 flex justify-between items-center border-b">
-                        <span className="text-sm font-bold text-gray-800  italic">Danh sách {activeTab}</span>
+                        <span className="text-sm font-bold text-gray-800">Danh sách {activeTab}</span>
                         <button onClick={() => handleOpenModal('add')} className="px-4 py-2 text-sm font-bold text-white rounded-md bg-purple-600 hover:bg-purple-700 shadow-md flex items-center gap-2">
                             <Plus className="h-4 w-4" /> Thêm mới
                         </button>

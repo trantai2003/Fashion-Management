@@ -35,8 +35,7 @@ import PickLot from "./pages/issue/PickLot.jsx";
 import QuoteSuccess from "./pages/supplier/pages/Quotesuccess.jsx";
 import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
 import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
-import { Toaster } from "react-hot-toast";
-import KhachHangPage from "./pages/khach-hang/KhachHangPage";
+import KhachHangPage from "./pages/customer/KhachHangPage";
 import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
 import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
 import KhachHangDetails from "./pages/customer/KhachHangDetails";
@@ -46,9 +45,6 @@ import ProductAttributeHub from "@/pages/attribute/ProductAttributeHub";
 export default function App() {
   return (
     <BrowserRouter>
-      {/* Toaster – tạm thời đặt ở App */}
-      <Toaster position="top-center" richColors closeButton duration={3500} />
-
       <Routes>
         {/* ========== PUBLIC ROUTES ========== */}
         <Route path="/" element={<HomePage />} />

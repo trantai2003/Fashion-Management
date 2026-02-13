@@ -317,7 +317,6 @@ export default function ViewUserListByAdmin() {
 
                                 <TableHeader>
                                     <TableRow className="bg-gray-50 text-xs text-gray-500">
-                                        <TableHead className="px-4 py-3">ID</TableHead>
                                         <TableHead className="px-4 py-3">Username</TableHead>
                                         <TableHead className="px-4 py-3">Họ tên</TableHead>
                                         <TableHead className="px-4 py-3">Email</TableHead>
@@ -325,7 +324,7 @@ export default function ViewUserListByAdmin() {
                                         <TableHead className="px-4 py-3">Vai trò</TableHead>
                                         <TableHead className="px-4 py-3">Trạng thái</TableHead>
                                         <TableHead className="px-4 py-3">Ngày tạo</TableHead>
-                                        <TableHead className="px-4 py-3">Actions</TableHead>
+                                        <TableHead className="px-4 py-3 text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
 
@@ -339,10 +338,11 @@ export default function ViewUserListByAdmin() {
                                     )}
 
                                     {users.map((u) => (
-                                        <TableRow key={u.id} className="border-b hover:bg-gray-50">
-                                            <TableCell className="px-4 py-3">{u.id}</TableCell>
-
-                                            <TableCell className="px-4 py-3 font-semibold">
+                                        <TableRow 
+                                        key={u.id}
+                                        onClick={() => navigate(`/admin/users/${u.id}`)} 
+                                        className="border-b hover:bg-gray-50">
+                                            <TableCell className="px-4 py-3 font-semibold text-purple-600">
                                                 {u.tenDangNhap}
                                             </TableCell>
 
@@ -377,12 +377,6 @@ export default function ViewUserListByAdmin() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-                                                <Link
-                                                    to={`/admin/users/${u.id}`}
-                                                    className="text-sm font-semibold text-purple-600 hover:underline"
-                                                >
-                                                    View
-                                                </Link>
                                                 <Link
                                                     to={`/users/${u.id}/edit-role`}
                                                     className="text-sm font-semibold text-gray-700 hover:underline"
