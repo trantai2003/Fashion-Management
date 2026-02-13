@@ -1,10 +1,13 @@
 package com.dev.backend.controller;
 
 import com.dev.backend.config.SecurityContextHolder;
+import com.dev.backend.constant.enums.FilterLogicType;
+import com.dev.backend.constant.enums.FilterOperation;
 import com.dev.backend.constant.variables.IPermissionType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
+import com.dev.backend.dto.request.FilterCriteria;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
 import com.dev.backend.dto.response.ResponseData;
@@ -13,6 +16,7 @@ import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
 import com.dev.backend.dto.response.entities.TonKhoTheoLoDto;
 import com.dev.backend.entities.PhieuXuatKho;
+import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.PhieuXuatKhoMapper;
 import com.dev.backend.services.impl.entities.PhieuXuatKhoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,17 +38,6 @@ public class PhieuXuatKhoController {
 
     @Autowired
     private PhieuXuatKhoMapper phieuXuatKhoMapper;
-
-    @PostMapping("/filter")
-    @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
-            inWarehouse = true,
-            rolesLogic = RequireAuth.LogicType.OR
-    )
-    public Page<PhieuXuatKhoDto> filter(@RequestBody BaseFilterRequest request) {
-        Page<PhieuXuatKho> pageEntity = phieuXuatKhoService.filter(request);
-        return pageEntity.map(phieuXuatKhoMapper::toDto);
-    }
 
     @PostMapping("/create")
     @RequireAuth(
@@ -198,6 +192,61 @@ public class PhieuXuatKhoController {
         return phieuXuatKhoService.getPickedLots(
                 phieuXuatKhoId,
                 chiTietPhieuXuatKhoId
+        );
+    }
+//    // Bình
+@PostMapping("/filter")
+@RequireAuth(
+        roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+        inWarehouse = true,
+        rolesLogic = RequireAuth.LogicType.OR
+)
+public ResponseEntity<ResponseData<Page<PhieuXuatKhoDto>>> filter(@RequestBody BaseFilterRequest request) {
+    List<FilterCriteria> filters = request.getFilters();
+    if (filters == null) filters = new ArrayList<>();
+    else filters = new ArrayList<>(filters); // Đảm bảo list có thể add thêm
+
+    // Tự động add filter theo kho hiện tại của người dùng
+    filters.add(0, FilterCriteria.builder()
+            .fieldName("kho.id")
+            .operation(FilterOperation.EQUALS)
+            .value(SecurityContextHolder.getKhoId())
+            .logicType(FilterLogicType.AND)
+            .build());
+    request.setFilters(filters);
+
+    // Gọi service và dùng Mapper để convert sang DTO
+    Page<PhieuXuatKho> pageEntity = phieuXuatKhoService.filter(request);
+    Page<PhieuXuatKhoDto> pageDto = pageEntity.map(phieuXuatKhoMapper::toDto);
+
+    return ResponseEntity.ok(
+            ResponseData.<Page<PhieuXuatKhoDto>>builder()
+                    .status(HttpStatus.OK.value())
+                    .data(pageDto)
+                    .message("Lấy danh sách thành công")
+                    .build()
+    );
+}
+
+    @PostMapping("/get-by-id/{id}")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho
+            },
+            inWarehouse = true
+    )
+    public ResponseEntity<ResponseData<PhieuXuatKhoDto>> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok(
+                ResponseData.<PhieuXuatKhoDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(
+                                phieuXuatKhoMapper.toDto(phieuXuatKhoService.getOne(id).orElseThrow(
+                                        () -> new CommonException("Không tìm thấy phiếu xuất kho id: " + id)
+                                ))
+                        )
+                        .build()
         );
     }
 }

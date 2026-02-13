@@ -42,10 +42,8 @@ export const SIDEBAR_MENU = [
       "nhan_vien_ban_hang",
     ],
     children: [
-      { label: "Danh mục", to: "/categories" },
-      { label: "Màu sắc", to: "/attributes" },
-      { label: "Kích cỡ", to: "/attributes" },
-      { label: "Chất liệu", to: "/material" },
+      { label: "Danh mục", to: "/danh-muc-quan-ao" },
+      { label: "Thuộc tính", to: "/attributes" },
       { label: "Sản phẩm", to: "/products" },
       {
         label: "Biến thể SKU & Giá",
@@ -97,8 +95,7 @@ export const SIDEBAR_MENU = [
     children: [
       { label: "Kho", to: "/warehouse" },
       { label: "Phiếu xuất kho", to: "/goods-issues" },
-      { label: "Danh sách lấy hàng", to: "/pick-lists" },
-      { label: "Chuyển kho nội bộ", to: "/stock-transfers" },
+      { label: "Chuyển kho nội bộ", to: "/xuat-kho-noi-bo" },
       { label: "Kiểm kê", to: "/stock-takes" },
     ],
   },

@@ -12,7 +12,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@EqualsAndHashCode( of = {"email"})
+@EqualsAndHashCode(of = {"email"})
 public class OtpScheduleObj {
 
     String email;

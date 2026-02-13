@@ -4,10 +4,7 @@ import com.dev.backend.dto.request.ChiTietPhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
 import com.dev.backend.dto.response.customize.PickedLotDto;
-import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
-import com.dev.backend.dto.response.entities.ChiTietPhieuXuatKhoDto;
-import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
-import com.dev.backend.dto.response.entities.TonKhoTheoLoDto;
+import com.dev.backend.dto.response.entities.*;
 import com.dev.backend.entities.*;
 import com.dev.backend.repository.*;
 import com.dev.backend.services.impl.BaseServiceImpl;
@@ -320,20 +317,41 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
 
     @Transactional(readOnly = true)
     public ChiTietPhieuNhapKhoResponse getDetail(Integer id) {
-        PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu xuất"));
-        String soDonHang = (phieu.getDonBanHang() != null) ? phieu.getDonBanHang().getSoDonHang() : null;
-        String tenKhoChuyenDen = (phieu.getKhoChuyenDen() != null) ? phieu.getKhoChuyenDen().getTenKho() : null;
+        PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu xuất kho"));
 
+        // 1. Map Kho xuất
+        KhoDto khoDto = (phieu.getKho() != null) ? KhoDto.builder()
+                .id(phieu.getKho().getId())
+                .tenKho(phieu.getKho().getTenKho())
+                .maKho(phieu.getKho().getMaKho())
+                .build() : null;
+
+        // 2. Map Kho chuyển đến (nếu có)
+        KhoDto khoChuyenDenDto = (phieu.getKhoChuyenDen() != null) ? KhoDto.builder()
+                .id(phieu.getKhoChuyenDen().getId())
+                .tenKho(phieu.getKhoChuyenDen().getTenKho())
+                .maKho(phieu.getKhoChuyenDen().getMaKho())
+                .build() : null;
+
+        // 3. Map Đơn bán hàng
+        DonBanHangDto donBanHangDto = (phieu.getDonBanHang() != null) ? DonBanHangDto.builder()
+                .id(phieu.getDonBanHang().getId())
+                .soDonHang(phieu.getDonBanHang().getSoDonHang()) // Lấy mã đơn hàng vào đây
+                .build() : null;
+
+        // 4. Build PhieuXuatKhoDto hoàn chỉnh
         PhieuXuatKhoDto phieuDto = PhieuXuatKhoDto.builder()
                 .id(phieu.getId())
                 .soPhieuXuat(phieu.getSoPhieuXuat())
                 .loaiXuat(phieu.getLoaiXuat())
-                .soDonHang(soDonHang)
-                .tenKho(phieu.getKho().getTenKho())
-                .tenKhoChuyenDen(tenKhoChuyenDen)
+                .donBanHang(donBanHangDto)
+                .kho(khoDto)
+                .khoChuyenDen(khoChuyenDenDto)
                 .ngayXuat(phieu.getNgayXuat())
                 .trangThai(phieu.getTrangThai())
                 .ghiChu(phieu.getGhiChu())
+                .ngayTao(phieu.getNgayTao())
+                .ngayCapNhat(phieu.getNgayCapNhat())
                 .build();
 
         List<ChiTietPhieuXuatKho> chiTietList = chiTietPhieuXuatKhoRepository.findByPhieuXuatKhoIdAndLoHangIsNull(phieu.getId());

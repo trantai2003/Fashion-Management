@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -39,6 +40,18 @@ public class SizeController {
                         .data(sizeMapper.toDto(finding.get()))
                         .message("Success")
                         .build());
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<ResponseData<List<SizeDto>>> getAll() {
+        return ResponseEntity.ok(
+                ResponseData.<List<SizeDto>>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(sizeMapper.toDtoList(sizeService.getAll()))
+                        .message("Success")
+                        .error(null)
+                        .build()
+        );
     }
 
     @PostMapping("/filter")

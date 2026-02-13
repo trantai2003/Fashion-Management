@@ -38,90 +38,24 @@ import {
     User,
 } from "lucide-react";
 
+import supplierQuotationService from '@/services/supplierQuotationService';
+
+import { useLocation, useNavigate } from 'react-router-dom';
+
 export default function SupplierQuotation() {
-    // Mock data - Thông tin đơn hàng mẫu
-    const [orderData] = useState({
-        id: 43,
-        soDonMua: "PO20260211001",
-        ngayDatHang: "2026-02-11T05:24:30.726Z",
-        ngayGiaoDuKien: "2026-02-25T05:24:30.726Z",
-        ghiChu: "Đơn hàng cần gấp, vui lòng ưu tiên giao hàng sớm nhất có thể. Yêu cầu đóng gói cẩn thận.",
-        nhaCungCap: {
-            id: 1,
-            maNhaCungCap: "NCC001",
-            tenNhaCungCap: "Công ty TNHH Vải Cao Cấp Việt Nam",
-            nguoiLienHe: "Nguyễn Văn An",
-            soDienThoai: "0241234567",
-            email: "supplier@fabricvn.com",
-            diaChi: "Số 10, Đường Lê Lợi, Quận Hoàn Kiếm, Hà Nội"
-        },
-        khoNhap: {
-            id: 1,
-            maKho: "KHO01",
-            tenKho: "Kho Hà Nội - Trung tâm",
-            diaChi: "Cầu Giấy, Hà Nội"
-        },
-        nguoiTao: {
-            id: 1,
-            hoTen: "Trần Đức Tài",
-            email: "trantai17102003@gmail.com",
-            soDienThoai: "0901234567"
-        },
-        chiTietDonMuaHangs: [
-            {
-                id: 40,
-                bienTheSanPham: {
-                    id: 14,
-                    maSku: "HSQEQQ123",
-                    mauSac: { id: 11, tenMau: "Hồng" },
-                    size: { id: 4, tenSize: "XL" },
-                    chatLieu: { id: 1, tenChatLieu: "Cotton 100%" }
-                },
-                soLuongDat: 50,
-                donGia: 0,
-                ghiChu: "Đợt 1 - Ưu tiên"
-            },
-            {
-                id: 41,
-                bienTheSanPham: {
-                    id: 15,
-                    maSku: "ASXYZ456",
-                    mauSac: { id: 5, tenMau: "Xanh Navy" },
-                    size: { id: 2, tenSize: "M" },
-                    chatLieu: { id: 2, tenChatLieu: "Linen" }
-                },
-                soLuongDat: 100,
-                donGia: 0,
-                ghiChu: "Đợt 2"
-            },
-            {
-                id: 42,
-                bienTheSanPham: {
-                    id: 16,
-                    maSku: "TSDEF789",
-                    mauSac: { id: 1, tenMau: "Trắng" },
-                    size: { id: 3, tenSize: "L" },
-                    chatLieu: { id: 3, tenChatLieu: "Polyester" }
-                },
-                soLuongDat: 75,
-                donGia: 0,
-                ghiChu: "Đợt 1 - Ưu tiên"
-            },
-            {
-                id: 43,
-                bienTheSanPham: {
-                    id: 17,
-                    maSku: "VGHI012",
-                    mauSac: { id: 8, tenMau: "Đen" },
-                    size: { id: 1, tenSize: "S" },
-                    chatLieu: { id: 4, tenChatLieu: "Vải thun co giãn" }
-                },
-                soLuongDat: 60,
-                donGia: 0,
-                ghiChu: "Đợt 2"
-            }
-        ]
-    });
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Use data passed from login page, or fallback to null (should handle redirect if null)
+    // Use data passed from login page, or fallback to null (should handle redirect if null)
+    const [orderData] = useState(location.state?.orderData || null);
+
+    useEffect(() => {
+        if (!orderData) {
+            toast.error('Không tìm thấy thông tin đơn hàng. Vui lòng đăng nhập lại.');
+            navigate('/supplier/login');
+        }
+    }, [orderData, navigate]);
 
     const [submitting, setSubmitting] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -133,6 +67,8 @@ export default function SupplierQuotation() {
 
     // Initialize quote items from mock data
     useEffect(() => {
+        if (!orderData) return;
+
         const initialItems = orderData.chiTietDonMuaHangs.map(item => ({
             id: item.id,
             bienTheSanPhamId: item.bienTheSanPham.id,
@@ -229,35 +165,43 @@ export default function SupplierQuotation() {
     const confirmSubmitQuote = async () => {
         setSubmitting(true);
 
-        // Simulate API call
-        setTimeout(() => {
+        try {
             const payload = {
                 donMuaHangId: orderData.id,
                 ngayGiaoHangDeXuat: new Date(estimatedDeliveryDate).toISOString(),
                 ghiChuNhaCungCap: supplierNote,
-                tongTien: calculateGrandTotal(),
-                chiTietBaoGias: quoteItems.map(item => ({
+                listChiTietBaoGia: quoteItems.map(item => ({
                     chiTietDonMuaHangId: item.id,
                     donGiaDeXuat: Number(item.donGiaDeXuat),
                     soLuongCoCap: Number(item.soLuongCoCap),
                     ngayGiaoHang: item.ngayGiaoHang ? new Date(item.ngayGiaoHang).toISOString() : null,
-                    ghiChu: item.ghiChu || '',
-                    thanhTien: calculateItemTotal(item)
+                    ghiChu: item.ghiChu || ''
                 })),
             };
 
-            console.log('Quote Payload:', JSON.stringify(payload, null, 2));
+            console.log('Sending Quote Payload:', JSON.stringify(payload, null, 2));
+
+            // Call API
+            await supplierQuotationService.submitQuote(payload);
 
             toast.success('Gửi báo giá thành công! Cảm ơn quý đối tác.');
             setShowConfirmDialog(false);
-            setSubmitting(false);
 
-            // Show success notification
+            // Navigate to success page
             setTimeout(() => {
-                toast.info('Khách hàng sẽ nhận được email thông báo về báo giá của bạn');
+                navigate('/quote-success', { replace: true });
             }, 1000);
-        }, 2000);
+
+        } catch (error) {
+            console.error('Error submitting quote:', error);
+            const message = error.response?.data?.message || 'Có lỗi xảy ra khi gửi báo giá. Vui lòng thử lại.';
+            toast.error(message);
+        } finally {
+            setSubmitting(false);
+        }
     };
+
+    if (!orderData) return null;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">

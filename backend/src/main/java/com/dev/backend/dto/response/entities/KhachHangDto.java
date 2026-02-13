@@ -1,5 +1,7 @@
 package com.dev.backend.dto.response.entities;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

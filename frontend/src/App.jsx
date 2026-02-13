@@ -6,9 +6,9 @@ import UserDetail from "./pages/UserDetail";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Warehouse from "./pages/warehouse/Warehouse";
-import ChatLieuList from "./pages/material/ChatLieuList";
-import ChatLieuDetail from "./pages/material/ChatLieuDetail";
-import ChatLieuDetailView from "./pages/material/ChatLieuDetailView";
+import ChatLieuList from "./pages/attribute/ChatLieuList";
+import ChatLieuDetail from "./pages/attribute/ChatLieuDetail";
+import ChatLieuDetailView from "./pages/attribute/ChatLieuDetailView";
 import SupplierList from "./pages/supplier/SupplierList";
 import SupplierDetail from "./pages/supplier/SupplierDetail";
 import SupplierDetailView from "./pages/supplier/SupplierDetailView";
@@ -19,7 +19,7 @@ import ViewUserDetailByAdmin from "@/pages/admin/ViewUserDetailByAdmin.jsx";
 import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx";
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
-import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
+import ColorSizeManagement from "@/pages/attribute/ColorSizeManagement.jsx";
 import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
 import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
 import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
@@ -37,6 +37,12 @@ import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
 import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
 import { Toaster } from "react-hot-toast";
 import KhachHangPage from "./pages/khach-hang/KhachHangPage";
+import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
+import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
+import KhachHangDetails from "./pages/customer/KhachHangDetails";
+import KhachHangEdit from "./pages/customer/KhachHangEdit";
+import ProductAttributeHub from "@/pages/attribute/ProductAttributeHub";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -73,14 +79,17 @@ export default function App() {
           />
 
           {/* Attributes */}
-          <Route path="/attributes" element={<ColorSizeManagement />} />
+          <Route path="/attribute" element={<ColorSizeManagement />} />
+          <Route path="/attributes" element={<ProductAttributeHub />} />
 
           {/* Product */}
           <Route path="/products" element={<ProductList />} />
           <Route path="/sku-builder" element={<SkuBuilder />} />
+          <Route path="/danh-muc-quan-ao" element={<DanhMucQuanAoTree />} />
 
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />
+          <Route path="/xuat-kho-noi-bo" element={<PhieuXuatKhoPage />} />
 
           {/* Material */}
           <Route path="/material" element={<ChatLieuList />} />
@@ -98,6 +107,10 @@ export default function App() {
           <Route path="/supplier/new" element={<SupplierDetail />} />
           <Route path="/supplier/view/:id" element={<SupplierDetailView />} />
           <Route path="/supplier/:id" element={<SupplierDetail />} />
+
+          {/* Customer */}
+          <Route path="/customer/:id" element={<KhachHangDetails />} />
+          <Route path="/customer/:id/edit" element={<KhachHangEdit />} />
 
           {/* Receipt*/}
           <Route path="/goods-receipts/create" element={<PhieuNhapKhoCreate />} />

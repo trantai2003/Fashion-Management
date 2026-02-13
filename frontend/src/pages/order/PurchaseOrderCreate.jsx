@@ -48,6 +48,7 @@ import {
     X,
     Mail,
     FileText,
+    RotateCw,
 } from "lucide-react";
 
 import purchaseOrderCreateService from '@/services/purchaseOrderCreateService';
@@ -86,7 +87,7 @@ export default function PurchaseOrderCreate() {
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
-        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
         return `PO${year}${month}${day}${random}`;
     };
 
@@ -266,10 +267,6 @@ export default function PurchaseOrderCreate() {
                 showNotification('error', `Số lượng sản phẩm "${item.tenSanPham}" phải lớn hơn 0`);
                 return false;
             }
-            if (!item.donGia || item.donGia < 0) {
-                showNotification('error', `Đơn giá sản phẩm "${item.tenSanPham}" không hợp lệ`);
-                return false;
-            }
         }
 
         return true;
@@ -307,8 +304,13 @@ export default function PurchaseOrderCreate() {
             }, 2000);
         } catch (error) {
             console.error('Error saving order:', error);
-            console.error('Response data:', error.response?.data);  // ✅ Log chi tiết
-            showNotification('error', error.response?.data?.message || 'Không thể lưu đơn hàng. Vui lòng thử lại!');
+            console.error('Response data:', error.response?.data);
+
+            if (error.response?.status === 409) {
+                showNotification('error', 'Mã đơn mua hàng đã tồn tại. Vui lòng tạo lại mã mới.');
+            } else {
+                showNotification('error', error.response?.data?.message || 'Không thể lưu đơn hàng. Vui lòng thử lại!');
+            }
         } finally {
             setLoading(false);
         }
@@ -385,12 +387,14 @@ export default function PurchaseOrderCreate() {
             console.error('Error sending email:', error);
             console.error('Error response:', error.response?.data);
 
-            // ✅ Show more specific error message
-            const errorMessage = error.response?.data?.message
-                || error.response?.data?.error
-                || 'Không thể gửi email. Vui lòng thử lại!';
-
-            showNotification('error', errorMessage);
+            if (error.response?.status === 409) {
+                showNotification('error', 'Mã đơn mua hàng đã tồn tại. Vui lòng tạo lại mã mới.');
+            } else {
+                const errorMessage = error.response?.data?.message
+                    || error.response?.data?.error
+                    || 'Không thể gửi email. Vui lòng thử lại!';
+                showNotification('error', errorMessage);
+            }
         } finally {
             setSendingEmail(false);
         }
@@ -442,12 +446,23 @@ export default function PurchaseOrderCreate() {
                             <Label className="text-gray-700 font-medium">
                                 Số đơn mua <span className="text-red-500">*</span>
                             </Label>
-                            <Input
-                                value={formData.soDonMua}
-                                onChange={(e) => handleInputChange('soDonMua', e.target.value)}
-                                className="font-semibold text-indigo-600"
-                                placeholder="Nhập số đơn mua..."
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    value={formData.soDonMua}
+                                    onChange={(e) => handleInputChange('soDonMua', e.target.value)}
+                                    className="font-semibold text-indigo-600"
+                                    placeholder="Nhập số đơn mua..."
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handleInputChange('soDonMua', generateOrderNumber())}
+                                    title="Tạo mã mới"
+                                >
+                                    <RotateCw className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
 
                         {/* Kho nhập */}
@@ -657,8 +672,6 @@ export default function PurchaseOrderCreate() {
                                         <TableHead>Tên sản phẩm</TableHead>
                                         <TableHead>Thuộc tính</TableHead>
                                         <TableHead className="w-[120px]">Số lượng</TableHead>
-                                        <TableHead className="w-[150px]">Đơn giá</TableHead>
-                                        <TableHead className="w-[150px]">Thành tiền</TableHead>
                                         <TableHead className="w-[200px]">Ghi chú</TableHead>
                                         <TableHead className="w-[80px]">Thao tác</TableHead>
                                     </TableRow>
@@ -680,20 +693,6 @@ export default function PurchaseOrderCreate() {
                                                     onChange={(e) => handleUpdateItem(index, 'soLuongDat', e.target.value)}
                                                     className="w-full"
                                                 />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    min="0"
-                                                    step="1000"
-                                                    value={item.donGia}
-                                                    onChange={(e) => handleUpdateItem(index, 'donGia', e.target.value)}
-                                                    className="w-full"
-                                                    placeholder="0"
-                                                />
-                                            </TableCell>
-                                            <TableCell className="font-semibold text-green-600">
-                                                {formatCurrency(item.soLuongDat * item.donGia)}
                                             </TableCell>
                                             <TableCell>
                                                 <Input
@@ -726,7 +725,7 @@ export default function PurchaseOrderCreate() {
             {orderItems.length > 0 && (
                 <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
                     <CardContent className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="text-center">
                                 <p className="text-sm text-gray-600 mb-1">Tổng số mặt hàng</p>
                                 <p className="text-3xl font-bold text-gray-900">{orderItems.length}</p>
@@ -734,10 +733,6 @@ export default function PurchaseOrderCreate() {
                             <div className="text-center">
                                 <p className="text-sm text-gray-600 mb-1">Tổng số lượng</p>
                                 <p className="text-3xl font-bold text-blue-600">{calculateTotalQuantity()}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-sm text-gray-600 mb-1">Tổng giá trị</p>
-                                <p className="text-3xl font-bold text-green-600">{formatCurrency(calculateTotal())}</p>
                             </div>
                         </div>
                     </CardContent>
