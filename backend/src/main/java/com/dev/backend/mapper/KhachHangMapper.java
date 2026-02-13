@@ -7,7 +7,7 @@ import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+//@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface KhachHangMapper {
     KhachHang toEntity(KhachHangDto khachHangDto);
 

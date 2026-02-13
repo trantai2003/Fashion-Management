@@ -113,7 +113,7 @@ export const SIDEBAR_MENU = [
     children: [
       {
         label: "Khách hàng",
-        to: "/khach-hang",
+        to: "/customers",
         roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
       },
       {

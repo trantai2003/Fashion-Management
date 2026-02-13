@@ -109,6 +109,7 @@ export default function App() {
           <Route path="/supplier/:id" element={<SupplierDetail />} />
 
           {/* Customer */}
+          <Route path="/customers" element={<KhachHangPage />} />
           <Route path="/customer/:id" element={<KhachHangDetails />} />
           <Route path="/customer/:id/edit" element={<KhachHangEdit />} />
 
@@ -125,7 +126,7 @@ export default function App() {
           <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
 
           {/* Khách hàng */}
-          <Route path="/khach-hang" element={<KhachHangPage />} />
+          
         </Route>
 
         {/* ========== 404 ========== */}

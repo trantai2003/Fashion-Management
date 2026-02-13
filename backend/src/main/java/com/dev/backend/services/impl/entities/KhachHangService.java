@@ -73,7 +73,6 @@ public class KhachHangService extends BaseServiceImpl<KhachHang, Integer> {
         create(newKhachHang);
         return ResponseEntity.ok(ResponseData.<String>builder().status(200).data("Success").message("Success").build());
     }
-}
     // Function Edit Customer
     @Transactional
     public KhachHangDto update(Integer id, KhachHangUpdating updating) {
