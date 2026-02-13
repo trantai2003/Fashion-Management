@@ -339,6 +339,16 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .soDonHang(phieu.getDonBanHang().getSoDonHang()) // Lấy mã đơn hàng vào đây
                 .build() : null;
 
+        NguoiDungDto nguoiXuatDto = (phieu.getNguoiXuat() != null) ? NguoiDungDto.builder()
+                .id(phieu.getNguoiXuat().getId())
+                .hoTen(phieu.getNguoiXuat().getHoTen())
+                .build() : null;
+
+        NguoiDungDto nguoiDuyetDto = (phieu.getNguoiDuyet() != null) ? NguoiDungDto.builder()
+                .id(phieu.getNguoiDuyet().getId())
+                .hoTen(phieu.getNguoiDuyet().getHoTen())
+                .build() : null;
+
         // 4. Build PhieuXuatKhoDto hoàn chỉnh
         PhieuXuatKhoDto phieuDto = PhieuXuatKhoDto.builder()
                 .id(phieu.getId())
@@ -350,6 +360,8 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .ngayXuat(phieu.getNgayXuat())
                 .trangThai(phieu.getTrangThai())
                 .ghiChu(phieu.getGhiChu())
+                .nguoiXuat(nguoiXuatDto)
+                .nguoiDuyet(nguoiDuyetDto)
                 .ngayTao(phieu.getNgayTao())
                 .ngayCapNhat(phieu.getNgayCapNhat())
                 .build();

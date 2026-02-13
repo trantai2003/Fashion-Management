@@ -176,6 +176,14 @@ export default function PhieuXuatKhoDetail() {
                             {phieu.ghiChu && (
                                 <Info label="Ghi chú" value={phieu.ghiChu} />
                             )}
+                            <Info
+                                label="Người xuất"
+                                value={phieu.nguoiXuat?.hoTen}
+                            />
+                            <Info
+                                label="Người duyệt"
+                                value={phieu.nguoiDuyet?.hoTen}
+                            />
 
                         </div>
                     </section>
