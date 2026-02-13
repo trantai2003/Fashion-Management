@@ -17,7 +17,7 @@ export default function PhieuNhapKhoDetail() {
 
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
-    
+
     // Modal Confirm States
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
@@ -127,9 +127,18 @@ export default function PhieuNhapKhoDetail() {
                         <h2 className="text-sm font-semibold mb-4 text-gray-800 tracking-wider">Thông tin phiếu nhập</h2>
                         <div className="grid md:grid-cols-3 gap-6 text-sm">
                             <Info label="Số phiếu" value={data.soPhieuNhap} />
-                            <Info label="Đơn mua hàng" value={data.soDonMua} />
-                            <Info label="Nhà cung cấp" value={data.tenNhaCungCap} />
+                            <Info label="Loại nhập" value={data.loaiNhap} />
                             <Info label="Kho nhập" value={data.tenKho} />
+                            {data.loaiNhap === "Chuyển kho nội bộ" ? (
+                                <Info label="Chuyển từ kho" value={data.tenKhoChuyenTu} />
+                            ) : (
+                                <>
+                                    <Info label="Đơn mua hàng" value={data.soDonMua} />
+                                    <Info label="Nhà cung cấp" value={data.tenNhaCungCap} />
+                                </>
+                            )}
+                            <Info label="Người duyệt" value={data.tenNguoiDuyet} />
+                            <Info label="Người nhập" value={data.tenNguoiNhap} />
                             <Info label="Ngày nhập" value={new Date(data.ngayNhap).toLocaleDateString("vi-VN")} />
                         </div>
                     </section>

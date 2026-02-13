@@ -22,5 +22,9 @@ public class ChiTietPhieuNhapKhoDto {
     String tenNhaCungCap;
     Integer khoId;
     String tenKho;
+    String loaiNhap;
+    String tenKhoChuyenTu;
+    private String tenNguoiNhap;
+    private String tenNguoiDuyet;
     List<PhieuNhapKhoItemDto> items;
 }

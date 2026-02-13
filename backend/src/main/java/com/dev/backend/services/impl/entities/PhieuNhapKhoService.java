@@ -327,23 +327,47 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                 .filter(ct -> ct.getLoHang() == null)
                 .map(ct -> {
                     BigDecimal soLuongDaKhaiBao = chiTietPhieuNhapKhoRepository.sumSoLuongDaKhaiBao(id, ct.getBienTheSanPham().getId());
+                    BigDecimal safeSoLuongDaKhaiBao = (soLuongDaKhaiBao != null) ? soLuongDaKhaiBao : BigDecimal.ZERO;
+
                     return PhieuNhapKhoItemDto.builder()
                             .bienTheSanPhamId(ct.getBienTheSanPham().getId())
                             .sku(ct.getBienTheSanPham().getMaSku())
                             .tenBienThe(ct.getBienTheSanPham().getSanPham().getTenSanPham())
                             .soLuongCanNhap(ct.getSoLuongNhap())
-                            .soLuongDaKhaiBao(soLuongDaKhaiBao)
-                            .daDuLo(soLuongDaKhaiBao.compareTo(ct.getSoLuongNhap()) >= 0)
+                            .soLuongDaKhaiBao(safeSoLuongDaKhaiBao)
+                            .daDuLo(safeSoLuongDaKhaiBao.compareTo(ct.getSoLuongNhap()) >= 0)
                             .build();
                 }).toList();
 
-        return ChiTietPhieuNhapKhoDto.builder()
-                .id(phieu.getId()).soPhieuNhap(phieu.getSoPhieuNhap()).trangThai(phieu.getTrangThai())
-                .ngayNhap(phieu.getNgayNhap()).donMuaHangId(phieu.getDonMuaHang().getId())
-                .soDonMua(phieu.getDonMuaHang().getSoDonMua()).nhaCungCapId(phieu.getNhaCungCap().getId())
-                .tenNhaCungCap(phieu.getNhaCungCap().getTenNhaCungCap()).khoId(phieu.getKho().getId())
+        ChiTietPhieuNhapKhoDto.ChiTietPhieuNhapKhoDtoBuilder builder = ChiTietPhieuNhapKhoDto.builder()
+                .id(phieu.getId())
+                .soPhieuNhap(phieu.getSoPhieuNhap())
+                .trangThai(phieu.getTrangThai())
+                .ngayNhap(phieu.getNgayNhap())
+                .khoId(phieu.getKho().getId())
                 .tenKho(phieu.getKho().getTenKho())
-                .items(items).build();
+                .items(items)
+                .tenNguoiNhap(phieu.getNguoiNhap() != null ? phieu.getNguoiNhap().getHoTen() : null)
+                .tenNguoiDuyet(phieu.getNguoiDuyet() != null ? phieu.getNguoiDuyet().getHoTen() : null);
+
+        if (phieu.getDonMuaHang() == null) {
+            builder.loaiNhap("Chuyển kho nội bộ");
+            List<String> tenKhoNguonList = lichSuGiaoDichKhoRepository.findTenKhoNguonByPhieuNhap(id);
+            if (!tenKhoNguonList.isEmpty()) {
+                builder.tenKhoChuyenTu(tenKhoNguonList.get(0));
+            }
+        } else {
+            builder.loaiNhap("Nhập từ đơn mua hàng");
+            builder.donMuaHangId(phieu.getDonMuaHang().getId())
+                    .soDonMua(phieu.getDonMuaHang().getSoDonMua());
+
+            if (phieu.getNhaCungCap() != null) {
+                builder.nhaCungCapId(phieu.getNhaCungCap().getId())
+                        .tenNhaCungCap(phieu.getNhaCungCap().getTenNhaCungCap());
+            }
+        }
+
+        return builder.build();
     }
 
     private String generateSoPhieu() {
