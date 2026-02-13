@@ -12,7 +12,7 @@ import { Warehouse } from "lucide-react";
 import { khoService } from "@/services/khoService";
 import { quyenHanService } from "@/services/quyenHan";
 import PermissionMatrix from "./PermissionMatrix";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { parseDateTimeToIsoString } from "@/utils/formatters";
 
 export default function AssignWarehousePermissionModal({
