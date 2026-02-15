@@ -338,10 +338,10 @@ export default function ViewUserListByAdmin() {
                                     )}
 
                                     {users.map((u) => (
-                                        <TableRow 
-                                        key={u.id}
-                                        onClick={() => navigate(`/admin/users/${u.id}`)} 
-                                        className="border-b hover:bg-gray-50">
+                                        <TableRow
+                                            key={u.id}
+                                            onClick={() => navigate(`/admin/users/${u.id}`)}
+                                            className="border-b hover:bg-gray-50">
                                             <TableCell className="px-4 py-3 font-semibold text-purple-600">
                                                 {u.tenDangNhap}
                                             </TableCell>
