@@ -74,4 +74,26 @@ public class DonBanHangController {
                         .build()
         );
     }
+    @PutMapping("/{id}/send-to-warehouse")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> sendToWarehouse(
+            @PathVariable Integer id
+    ) {
+        donBanHangService.sendToWarehouse(id);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(200)
+                        .data("Success")
+                        .message("Đã gửi đơn sang kho")
+                        .error(null)
+                        .build()
+        );
+    }
 }

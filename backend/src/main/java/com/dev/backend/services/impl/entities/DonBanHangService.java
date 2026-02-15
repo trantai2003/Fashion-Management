@@ -82,4 +82,15 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
                 .build();
     }
 
+    @Transactional
+    public void sendToWarehouse(Integer id) {
+        DonBanHang don = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn bán"));
+
+        if (don.getTrangThai() == null || don.getTrangThai() != 0) {
+            throw new RuntimeException("Chỉ đơn ở trạng thái Nháp mới được gửi kho");
+        }
+        don.setTrangThai(1); // Chờ xuất kho
+        repository.save(don);
+    }
 }
