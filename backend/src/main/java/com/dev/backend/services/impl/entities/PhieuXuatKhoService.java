@@ -1,15 +1,20 @@
 package com.dev.backend.services.impl.entities;
 
+import com.dev.backend.config.SecurityContextHolder;
+import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.dto.request.ChiTietPhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
+import com.dev.backend.dto.response.customize.PhieuXuatKhoViewDto;
 import com.dev.backend.dto.response.customize.PickedLotDto;
 import com.dev.backend.dto.response.entities.*;
 import com.dev.backend.entities.*;
+import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.repository.*;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -211,6 +216,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             // 3. Cập nhật đơn bán
             if (phieu.getDonBanHang() != null) {
                 updateSoLuongDaGiao(phieu.getDonBanHang().getId(), pick.getBienTheSanPham().getId(), soLuongXuat);
+                updateTrangThaiDonBanHang(phieu.getDonBanHang().getId());
             }
         }
 
@@ -219,6 +225,33 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         phieu.setNgayXuat(Instant.now());
         repository.save(phieu);
     }
+
+    private void updateTrangThaiDonBanHang(Integer donBanHangId) {
+        DonBanHang don = entityManager.find(DonBanHang.class, donBanHangId);
+        List<ChiTietDonBanHang> list =
+                chiTietDonBanHangRepository.findByDonBanHangId(donBanHangId);
+        boolean allZero = true;
+        boolean allFull = true;
+        for (ChiTietDonBanHang ct : list) {
+            BigDecimal daGiao =
+                    ct.getSoLuongDaGiao() != null ? ct.getSoLuongDaGiao() : BigDecimal.ZERO;
+            if (daGiao.compareTo(BigDecimal.ZERO) > 0) {
+                allZero = false;
+            }
+            if (daGiao.compareTo(ct.getSoLuongDat()) < 0) {
+                allFull = false;
+            }
+        }
+        if (allFull) {
+            don.setTrangThai(3); // Hoàn thành
+        } else if (!allZero) {
+            don.setTrangThai(2); // Đang xuất kho
+        } else {
+            don.setTrangThai(1); // Chờ xuất kho
+        }
+        entityManager.merge(don);
+    }
+
 
     private void updateSoLuongDaGiao(Integer donHangId, Integer bienTheId, BigDecimal qtyShipped) {
         List<ChiTietDonBanHang> listCtSO = chiTietDonBanHangRepository.findByDonBanHangId(donHangId);
@@ -382,6 +415,37 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         }).toList();
 
         return ChiTietPhieuNhapKhoResponse.builder().phieu(phieuDto).chiTiet(chiTietDtos).build();
+    }
+
+    @Transactional(readOnly = true)
+    public PhieuXuatKhoViewDto viewForSales(Integer id) {
+
+        PhieuXuatKho phieu = repository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy phiếu xuất"));
+
+        NguoiDungAuthInfo user = SecurityContextHolder.getUser();
+
+        // Nếu là sales thi chỉ được xem phiếu thuộc đơn mình tạo
+        if (user.getVaiTro().equals(IRoleType.nhan_vien_ban_hang)) {
+
+            if (phieu.getDonBanHang() == null ||
+                    !phieu.getDonBanHang().getNguoiTao().getId().equals(user.getId())) {
+
+                throw new AccessDeniedException("Không có quyền xem phiếu này");
+            }
+        }
+
+        return PhieuXuatKhoViewDto.builder()
+                .id(phieu.getId())
+                .soPhieuXuat(phieu.getSoPhieuXuat())
+                .ngayXuat(phieu.getNgayXuat())
+                .trangThai(phieu.getTrangThai())
+                .ghiChu(phieu.getGhiChu())
+                .tenKho(phieu.getKho().getTenKho())
+                .soDonHang(phieu.getDonBanHang().getSoDonHang())
+                .nguoiDuyet(phieu.getNguoiDuyet() != null ? phieu.getNguoiDuyet().getHoTen() : null)
+                .nguoiXuat(phieu.getNguoiXuat() != null ? phieu.getNguoiXuat().getHoTen() : null)
+                .build();
     }
 
     @Transactional(readOnly = true)
