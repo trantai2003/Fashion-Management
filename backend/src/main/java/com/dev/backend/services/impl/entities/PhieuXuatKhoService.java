@@ -63,7 +63,42 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         if (donBanHang == null) {
             throw new RuntimeException("Đơn bán không tồn tại");
         }
-        Kho khoXuat = donBanHang.getKhoXuat();
+        if (donBanHang.getTrangThai() == 4) {
+            throw new RuntimeException("Đơn bán đã bị huỷ");
+        }
+
+        // Kiểm tra còn hàng không
+        List<ChiTietDonBanHang> chiTietSOList =
+                chiTietDonBanHangRepository.findByDonBanHangId(donBanHang.getId());
+
+        boolean hasRemaining = chiTietSOList.stream().anyMatch(ct -> {
+            BigDecimal daGiao = ct.getSoLuongDaGiao() != null
+                    ? ct.getSoLuongDaGiao()
+                    : BigDecimal.ZERO;
+            return ct.getSoLuongDat().compareTo(daGiao) > 0;
+        });
+
+        if (!hasRemaining) {
+            throw new RuntimeException("Đơn bán đã giao đủ toàn bộ sản phẩm");
+        }
+        Integer currentKhoId = SecurityContextHolder.getKhoId();
+        if (currentKhoId == null) {
+            throw new RuntimeException("Không xác định được kho hiện tại");
+        }
+
+        Kho khoHienTai = entityManager.find(Kho.class, currentKhoId);
+        if (khoHienTai == null) {
+            throw new RuntimeException("Kho không tồn tại");
+        }
+
+        // Nếu đơn chưa có kho thi gán kho hiện tại
+        if (donBanHang.getKhoXuat() == null) {
+            donBanHang.setKhoXuat(khoHienTai);
+        }
+        // Nếu đã có kho thi phải trùng kho hiện tại
+        else if (!donBanHang.getKhoXuat().getId().equals(currentKhoId)) {
+            throw new RuntimeException("Đơn bán này đã được kho khác xử lý");
+        }
         int retry = 0;
         int maxRetry = 5;
         while (true) {
@@ -71,24 +106,27 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 PhieuXuatKho phieu = PhieuXuatKho.builder()
                         .soPhieuXuat(generateSoPhieu())
                         .donBanHang(donBanHang)
-                        .kho(khoXuat)
-                        .ngayXuat(request.getNgayXuat() != null ? request.getNgayXuat() : Instant.now())
+                        .kho(khoHienTai)
                         .ghiChu(request.getGhiChu())
-                        .trangThai(0) // 0 - Mới tạo (Draft)
+                        .loaiXuat("ban_hang")
+                        .trangThai(0) // Draft
                         .build();
                 phieu = repository.save(phieu);
-
-                List<ChiTietDonBanHang> chiTietSOList = chiTietDonBanHangRepository.findByDonBanHangId(donBanHang.getId());
-
                 for (ChiTietPhieuXuatKhoCreating reqCt : request.getChiTietXuat()) {
                     ChiTietDonBanHang ctSO = chiTietSOList.stream()
-                            .filter(ct -> ct.getBienTheSanPham().getId().equals(reqCt.getBienTheSanPhamId()))
+                            .filter(ct -> ct.getBienTheSanPham().getId()
+                                    .equals(reqCt.getBienTheSanPhamId()))
                             .findFirst()
-                            .orElseThrow(() -> new RuntimeException("SP không thuộc đơn bán"));
+                            .orElseThrow(() -> new RuntimeException("Sản phẩm không thuộc đơn bán"));
 
-                    BigDecimal conLai = ctSO.getSoLuongDat().subtract(ctSO.getSoLuongDaGiao() != null ? ctSO.getSoLuongDaGiao() : BigDecimal.ZERO);
+                    BigDecimal daGiao = ctSO.getSoLuongDaGiao() != null
+                            ? ctSO.getSoLuongDaGiao()
+                            : BigDecimal.ZERO;
+
+                    BigDecimal conLai = ctSO.getSoLuongDat().subtract(daGiao);
+
                     if (reqCt.getSoLuongXuat().compareTo(conLai) > 0) {
-                        throw new RuntimeException("Số lượng xuất vượt quá số lượng còn lại trong SO");
+                        throw new RuntimeException("Số lượng xuất vượt quá số lượng còn lại");
                     }
                     if (reqCt.getSoLuongXuat().compareTo(BigDecimal.ZERO) <= 0) {
                         throw new RuntimeException("Số lượng xuất phải > 0");
