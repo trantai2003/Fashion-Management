@@ -113,7 +113,7 @@ export const SIDEBAR_MENU = [
       },
       {
         label: "Đơn bán hàng",
-        to: "/orders",
+        to: "/sales-orders",
         roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
       },
     ],

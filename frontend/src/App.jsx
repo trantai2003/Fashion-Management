@@ -41,6 +41,7 @@ import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
 import KhachHangDetails from "./pages/customer/KhachHangDetails";
 import KhachHangEdit from "./pages/customer/KhachHangEdit";
 import ProductAttributeHub from "@/pages/attribute/ProductAttributeHub";
+import DonBanHangList from "./pages/sales-orders/DonBanHangList";
 
 export default function App() {
   return (
@@ -121,7 +122,8 @@ export default function App() {
           <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
           <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
 
-          {/* Khách hàng */}
+          {/* Sales-orders */}
+          <Route path="/sales-orders" element={<DonBanHangList />} />
           
         </Route>
 
