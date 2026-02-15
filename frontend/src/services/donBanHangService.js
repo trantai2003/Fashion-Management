@@ -2,7 +2,19 @@ import apiClient from "./apiClient";
 
 export const donBanHangService = {
   async filter(payload) {
-    const res = await apiClient.post("/api/v1/don-ban-hang/filter",payload);
+    const res = await apiClient.post("/api/v1/don-ban-hang/filter", payload);
     return res.data?.data || res.data;
   },
+  async getDetail(id) {
+    const res = await apiClient.get(`/api/v1/don-ban-hang/${id}/detail`);
+    return res.data;
+  },
+  async sendToWarehouse(id) {
+    const res = await apiClient.put(`/api/v1/don-ban-hang/${id}/send-to-warehouse`);
+    return res.data;
+  },
+  async cancel(id) {
+    const res = await apiClient.put(`/api/v1/don-ban-hang/${id}/cancel`);
+    return res.data;
+  }
 };

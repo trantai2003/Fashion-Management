@@ -31,6 +31,7 @@ import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
 import SkuBuilder from "./pages/product/SkuBuilder";
 import PhieuXuatKhoCreate from "./pages/issue/PhieuXuatKhoCreate.jsx";
 import PhieuXuatKhoDetail from "./pages/issue/PhieuXuatKhoDetail.jsx";
+import PhieuXuatKhoView from "./pages/issue/PhieuXuatKhoView.jsx";
 import PickLot from "./pages/issue/PickLot.jsx";
 import QuoteSuccess from "./pages/supplier/pages/Quotesuccess.jsx";
 import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
@@ -42,6 +43,7 @@ import KhachHangDetails from "./pages/customer/KhachHangDetails";
 import KhachHangEdit from "./pages/customer/KhachHangEdit";
 import ProductAttributeHub from "@/pages/attribute/ProductAttributeHub";
 import DonBanHangList from "./pages/sales-orders/DonBanHangList";
+import DonBanHangDetail from "./pages/sales-orders/DonBanHangDetail";
 
 export default function App() {
   return (
@@ -121,10 +123,12 @@ export default function App() {
           <Route path="/goods-issues/create" element={<PhieuXuatKhoCreate />} />
           <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
           <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
+          <Route path="/goods-issues/:id/view" element={<PhieuXuatKhoView />} />
 
           {/* Sales-orders */}
           <Route path="/sales-orders" element={<DonBanHangList />} />
-          
+          <Route path="/sales-orders/:id" element={<DonBanHangDetail />} />
+
         </Route>
 
         {/* ========== 404 ========== */}
