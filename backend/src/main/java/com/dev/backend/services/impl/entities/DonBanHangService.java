@@ -1,17 +1,43 @@
 package com.dev.backend.services.impl.entities;
 
+import com.dev.backend.dto.response.customize.DonBanHangDetailResponse;
+import com.dev.backend.dto.response.customize.PhieuXuatKhoSummaryDto;
+import com.dev.backend.dto.response.entities.ChiTietDonBanHangDto;
+import com.dev.backend.dto.response.entities.DonBanHangDto;
+import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
 import com.dev.backend.entities.DonBanHang;
+import com.dev.backend.entities.PhieuXuatKho;
+import com.dev.backend.mapper.ChiTietDonBanHangMapper;
+import com.dev.backend.mapper.DonBanHangMapper;
+import com.dev.backend.mapper.PhieuXuatKhoMapper;
 import com.dev.backend.repository.DonBanHangRepository;
+import com.dev.backend.repository.PhieuXuatKhoRepository;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private DonBanHangMapper donBanHangMapper;
+
+    @Autowired
+    private ChiTietDonBanHangMapper chiTietDonBanHangMapper;
+
+    @Autowired
+    private PhieuXuatKhoRepository phieuXuatKhoRepository;
+
+    @Autowired
+    private PhieuXuatKhoMapper phieuXuatKhoMapper;
+
 
     @Override
     protected EntityManager getEntityManager() {
@@ -24,4 +50,36 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
 
     private final DonBanHangRepository donBanHangRepository =
             (DonBanHangRepository) getRepository();
+
+    @Transactional(readOnly = true)
+    public DonBanHangDetailResponse getDetail(Integer id) {
+        DonBanHang don = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn bán"));
+
+        // Map đơn bán
+        DonBanHangDto donDto = donBanHangMapper.toDto(don);
+
+        // Map chi tiết đơn
+        List<ChiTietDonBanHangDto> chiTietDtos =
+                don.getChiTietDonBanHangs()
+                        .stream()
+                        .map(chiTietDonBanHangMapper::toDto)
+                        .toList();
+
+        // Lấy danh sách phiếu xuất kho liên quan
+        List<PhieuXuatKho> phieuList =
+                phieuXuatKhoRepository.findByDonBanHangId(id);
+
+        List<PhieuXuatKhoSummaryDto> phieuDtos =
+                phieuList.stream()
+                        .map(phieuXuatKhoMapper::toSummaryDto)
+                        .toList();
+
+        return DonBanHangDetailResponse.builder()
+                .donBanHang(donDto)
+                .chiTiet(chiTietDtos)
+                .phieuXuatKhoList(phieuDtos)
+                .build();
+    }
+
 }

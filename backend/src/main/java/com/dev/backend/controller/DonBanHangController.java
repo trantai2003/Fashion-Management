@@ -1,9 +1,11 @@
 package com.dev.backend.controller;
 
+import com.dev.backend.constant.variables.IPermissionType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.customize.DonBanHangDetailResponse;
 import com.dev.backend.dto.response.entities.DonBanHangDto;
 import com.dev.backend.entities.DonBanHang;
 import com.dev.backend.mapper.DonBanHangMapper;
@@ -32,7 +34,6 @@ public class DonBanHangController {
                     IRoleType.nhan_vien_kho,
                     IRoleType.nhan_vien_ban_hang
             },
-            inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<Page<DonBanHangDto>>> filter(
@@ -46,6 +47,28 @@ public class DonBanHangController {
                 ResponseData.<Page<DonBanHangDto>>builder()
                         .status(HttpStatus.OK.value())
                         .data(pageEntity.map(donBanHangMapper::toDto))
+                        .message("Success")
+                        .error(null)
+                        .build()
+        );
+    }
+    @GetMapping("/{id}/detail")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<DonBanHangDetailResponse>> getDetail(
+            @PathVariable Integer id
+    ) {
+        return ResponseEntity.ok(
+                ResponseData.<DonBanHangDetailResponse>builder()
+                        .status(200)
+                        .data(donBanHangService.getDetail(id))
                         .message("Success")
                         .error(null)
                         .build()

@@ -11,6 +11,7 @@ import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @AllArgsConstructor
 @Getter
@@ -100,5 +101,6 @@ public class DonBanHang {
     @Column(name = "ngay_cap_nhat")
     Instant ngayCapNhat;
 
-
+    @OneToMany(mappedBy = "donBanHang", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ChiTietDonBanHang> chiTietDonBanHangs;
 }
