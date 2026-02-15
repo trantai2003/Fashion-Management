@@ -3,6 +3,7 @@ import BackofficeSidebar from "./BackofficeSidebar";
 import BackofficeHeader from "./BackofficeHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import "@/styles/print.css";
 
 export default function BackofficeLayout() {
     const { pathname } = useLocation();

@@ -54,6 +54,10 @@ export default function DonBanHangDetail() {
         }
     }
 
+    function handlePrint() {
+        window.print();
+    }
+
     if (loading || !data) {
         return <div className="p-6">Đang tải...</div>;
     }
@@ -63,94 +67,105 @@ export default function DonBanHangDetail() {
     return (
         <main className="flex-1">
             <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+                <div id="invoice-area" className="space-y-6">
+                    {/* HEADER */}
+                    <section
+                        className="bg-white rounded-xl shadow-sm border p-6 space-y-4"
+                    >
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-800">
+                                    Đơn bán: {donBanHang.soDonHang}
+                                </h2>
+                                <p className="text-sm text-gray-500">
+                                    Ngày đặt: {new Date(donBanHang.ngayDatHang).toLocaleDateString("vi-VN")}
+                                </p>
+                            </div>
 
-                {/* HEADER */}
-                <section className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h2 className="text-xl font-bold text-gray-800">
-                                Đơn bán: {donBanHang.soDonHang}
-                            </h2>
-                            <p className="text-sm text-gray-500">
-                                Ngày đặt: {new Date(donBanHang.ngayDatHang).toLocaleDateString("vi-VN")}
-                            </p>
+                            <span className={`px-3 py-1 text-sm rounded ${STATUS_MAP[donBanHang.trangThai]?.className}`}>
+                                {STATUS_MAP[donBanHang.trangThai]?.label}
+                            </span>
                         </div>
 
-                        <span className={`px-3 py-1 text-sm rounded ${STATUS_MAP[donBanHang.trangThai]?.className}`}>
-                            {STATUS_MAP[donBanHang.trangThai]?.label}
-                        </span>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                            <p className="text-gray-500">Khách hàng</p>
-                            <p className="font-medium">{donBanHang.khachHang.tenKhachHang}</p>
+                        <div className="grid md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <p className="text-gray-500">Khách hàng</p>
+                                <p className="font-medium">{donBanHang.khachHang.tenKhachHang}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500">Kho xuất</p>
+                                <p className="font-medium">{donBanHang.khoXuat.tenKho}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500">Tổng cộng</p>
+                                <p className="font-semibold text-purple-600">
+                                    {donBanHang.tongCong.toLocaleString()} đ
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-gray-500">Kho xuất</p>
-                            <p className="font-medium">{donBanHang.khoXuat.tenKho}</p>
+
+                        {/* ACTIONS */}
+                        <div className="flex gap-3 flex-wrap">
+                            {donBanHang.trangThai === 0 && (
+                                <button
+                                    onClick={handleSendToWarehouse}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    Gửi sang kho
+                                </button>
+                            )}
+
+                            {donBanHang.trangThai !== 3 && donBanHang.trangThai !== 4 && (
+                                <button
+                                    onClick={handleCancel}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                                >
+                                    Hủy đơn
+                                </button>
+                            )}
+                            {donBanHang.trangThai === 3 && (
+                                <button
+                                    onClick={() => handlePrint()}
+                                    className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                                >
+                                    In hóa đơn
+                                </button>
+                            )}
                         </div>
-                        <div>
-                            <p className="text-gray-500">Tổng cộng</p>
-                            <p className="font-semibold text-purple-600">
-                                {donBanHang.tongCong.toLocaleString()} đ
-                            </p>
-                        </div>
-                    </div>
+                    </section>
 
-                    {/* ACTIONS */}
-                    <div className="flex gap-3">
-                        {donBanHang.trangThai === 0 && (
-                            <button
-                                onClick={handleSendToWarehouse}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            >
-                                Gửi sang kho
-                            </button>
-                        )}
+                    {/* CHI TIẾT SẢN PHẨM */}
+                    <section className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <div className="p-4 border-b font-semibold">Chi tiết sản phẩm</div>
 
-                        {donBanHang.trangThai !== 3 && donBanHang.trangThai !== 4 && (
-                            <button
-                                onClick={handleCancel}
-                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                            >
-                                Hủy đơn
-                            </button>
-                        )}
-                    </div>
-                </section>
-
-                {/* CHI TIẾT SẢN PHẨM */}
-                <section className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                    <div className="p-4 border-b font-semibold">Chi tiết sản phẩm</div>
-
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-500">
-                            <tr>
-                                <th className="px-4 py-3 text-left">SKU</th>
-                                <th className="px-4 py-3 text-left">Sản phẩm</th>
-                                <th className="px-4 py-3 text-right">SL đặt</th>
-                                <th className="px-4 py-3 text-right">SL đã giao</th>
-                                <th className="px-4 py-3 text-right">Đơn giá</th>
-                                <th className="px-4 py-3 text-right">Thành tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                            {chiTiet.map((item) => (
-                                <tr key={item.id}>
-                                    <td className="px-4 py-3">{item.sku}</td>
-                                    <td className="px-4 py-3">{item.tenSanPham}</td>
-                                    <td className="px-4 py-3 text-right">{item.soLuongDat}</td>
-                                    <td className="px-4 py-3 text-right">{item.soLuongDaGiao}</td>
-                                    <td className="px-4 py-3 text-right">{item.donGia.toLocaleString()}</td>
-                                    <td className="px-4 py-3 text-right font-semibold">
-                                        {item.thanhTien.toLocaleString()}
-                                    </td>
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50 text-gray-500">
+                                <tr>
+                                    <th className="px-4 py-3 text-left">SKU</th>
+                                    <th className="px-4 py-3 text-left">Sản phẩm</th>
+                                    <th className="px-4 py-3 text-right">SL đặt</th>
+                                    <th className="px-4 py-3 text-right">SL đã giao</th>
+                                    <th className="px-4 py-3 text-right">Đơn giá</th>
+                                    <th className="px-4 py-3 text-right">Thành tiền</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </section>
+                            </thead>
+                            <tbody className="divide-y">
+                                {chiTiet.map((item) => (
+                                    <tr key={item.id}>
+                                        <td className="px-4 py-3">{item.sku}</td>
+                                        <td className="px-4 py-3">{item.tenSanPham}</td>
+                                        <td className="px-4 py-3 text-right">{item.soLuongDat}</td>
+                                        <td className="px-4 py-3 text-right">{item.soLuongDaGiao}</td>
+                                        <td className="px-4 py-3 text-right">{item.donGia.toLocaleString()}</td>
+                                        <td className="px-4 py-3 text-right font-semibold">
+                                            {item.thanhTien.toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
 
                 {/* PHIẾU XUẤT KHO */}
                 <section className="bg-white rounded-xl shadow-sm border overflow-hidden">

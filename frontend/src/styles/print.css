@@ -1,0 +1,33 @@
+@media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  #invoice-area,
+  #invoice-area * {
+    visibility: visible;
+  }
+
+  #invoice-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  button {
+    display: none !important;
+  }
+
+  .shadow-sm,
+  .rounded-xl,
+  .border {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  body {
+    background: white;
+  }
+}
