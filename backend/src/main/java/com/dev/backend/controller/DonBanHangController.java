@@ -96,4 +96,26 @@ public class DonBanHangController {
                         .build()
         );
     }
+    @PutMapping("/{id}/cancel")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> cancel(
+            @PathVariable Integer id
+    ) {
+        donBanHangService.cancel(id);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(200)
+                        .data("Success")
+                        .message("Đã hủy đơn bán")
+                        .error(null)
+                        .build()
+        );
+    }
 }

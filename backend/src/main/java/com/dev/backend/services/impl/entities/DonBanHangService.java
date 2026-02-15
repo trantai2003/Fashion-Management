@@ -93,4 +93,27 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
         don.setTrangThai(1); // Chờ xuất kho
         repository.save(don);
     }
+
+    @Transactional
+    public void cancel(Integer id) {
+
+        DonBanHang don = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn bán"));
+
+        if (don.getTrangThai() == 3) {
+            throw new RuntimeException("Đơn đã hoàn thành, không thể hủy");
+        }
+
+        // Kiểm tra có phiếu xuất đã xuất chưa
+        boolean existsCompletedPX =
+                phieuXuatKhoRepository
+                        .existsByDonBanHangIdAndTrangThai(id, 3);
+
+        if (existsCompletedPX) {
+            throw new RuntimeException("Đơn đã có phiếu xuất hoàn thành, không thể hủy");
+        }
+
+        don.setTrangThai(4); // Đã hủy
+        repository.save(don);
+    }
 }
