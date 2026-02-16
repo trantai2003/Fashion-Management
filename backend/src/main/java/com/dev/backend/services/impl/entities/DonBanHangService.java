@@ -11,7 +11,6 @@ import com.dev.backend.dto.response.customize.PhieuXuatKhoSummaryDto;
 import com.dev.backend.dto.response.entities.ChiTietDonBanHangDto;
 import com.dev.backend.dto.response.entities.DonBanHangDto;
 import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
-import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
 import com.dev.backend.entities.DonBanHang;
 import com.dev.backend.entities.PhieuXuatKho;
 import com.dev.backend.mapper.ChiTietDonBanHangMapper;
@@ -57,16 +56,13 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
         super(repository);
     }
 
-    private final DonBanHangRepository donBanHangRepository =
-            (DonBanHangRepository) getRepository();
-
     @Override
     @Transactional(readOnly = true)
     public Page<DonBanHang> filter(BaseFilterRequest request) {
 
         NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
         boolean isAdmin = currentUser.getVaiTro()
-                .contains(IRoleType.quan_tri_vien.toString());
+                .contains(IRoleType.quan_tri_vien);
         if (!isAdmin) {
             List<FilterCriteria> filters =
                     request.getFilters() == null
