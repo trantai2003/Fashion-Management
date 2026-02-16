@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/khach-hang")
 public class KhachHangController {
@@ -104,5 +106,26 @@ public class KhachHangController {
                 .data(dto)
                 .message("Cập nhật khách hàng thành công")
                 .build());
+    }
+    @GetMapping("/for-sales-order")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<List<KhachHangDto>>> getForSalesOrder() {
+
+        List<KhachHangDto> list = khachHangService.getAllActiveForSales();
+
+        return ResponseEntity.ok(
+                ResponseData.<List<KhachHangDto>>builder()
+                        .status(200)
+                        .data(list)
+                        .message("Success")
+                        .error(null)
+                        .build()
+        );
     }
 }

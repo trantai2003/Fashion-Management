@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class KhachHangService extends BaseServiceImpl<KhachHang, Integer> {
 
@@ -82,5 +84,13 @@ public class KhachHangService extends BaseServiceImpl<KhachHang, Integer> {
         mapper.partialUpdate(updating, entity);
         entity = repository.save(entity);
         return mapper.toDto(entity);
+    }
+    @Transactional(readOnly = true)
+    public List<KhachHangDto> getAllActiveForSales() {
+
+        return repository.findAll().stream()
+                .filter(kh -> kh.getTrangThai() != null && kh.getTrangThai() == 1)
+                .map(mapper::toDto)
+                .toList();
     }
 }
