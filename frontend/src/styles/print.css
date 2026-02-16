@@ -1,9 +1,15 @@
 @media print {
+  body {
+    margin: 0;
+    background: white;
+  }
 
+  /* Ẩn tất cả */
   body * {
     visibility: hidden;
   }
 
+  /* Chỉ in khu vực hóa đơn */
   #invoice-area,
   #invoice-area * {
     visibility: visible;
@@ -14,20 +20,5 @@
     left: 0;
     top: 0;
     width: 100%;
-  }
-
-  button {
-    display: none !important;
-  }
-
-  .shadow-sm,
-  .rounded-xl,
-  .border {
-    box-shadow: none !important;
-    border: none !important;
-  }
-
-  body {
-    background: white;
   }
 }

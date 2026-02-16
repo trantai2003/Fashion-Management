@@ -54,10 +54,6 @@ export default function DonBanHangDetail() {
         }
     }
 
-    function handlePrint() {
-        window.print();
-    }
-
     if (loading || !data) {
         return <div className="p-6">Đang tải...</div>;
     }
@@ -67,7 +63,7 @@ export default function DonBanHangDetail() {
     return (
         <main className="flex-1">
             <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
-                <div id="invoice-area" className="space-y-6">
+                <div className="space-y-6">
                     {/* HEADER */}
                     <section
                         className="bg-white rounded-xl shadow-sm border p-6 space-y-4"
@@ -125,10 +121,10 @@ export default function DonBanHangDetail() {
                             )}
                             {donBanHang.trangThai === 3 && (
                                 <button
-                                    onClick={() => handlePrint()}
+                                    onClick={() => navigate(`/sales-orders/${id}/invoice`)}
                                     className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
                                 >
-                                    In hóa đơn
+                                    Xem hóa đơn
                                 </button>
                             )}
                         </div>

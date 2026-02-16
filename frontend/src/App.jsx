@@ -44,6 +44,7 @@ import KhachHangEdit from "./pages/customer/KhachHangEdit";
 import ProductAttributeHub from "@/pages/attribute/ProductAttributeHub";
 import DonBanHangList from "./pages/sales-orders/DonBanHangList";
 import DonBanHangDetail from "./pages/sales-orders/DonBanHangDetail";
+import DonBanHangInvoice from "./pages/sales-orders/DonBanHangInvoice";
 
 export default function App() {
   return (
@@ -128,6 +129,7 @@ export default function App() {
           {/* Sales-orders */}
           <Route path="/sales-orders" element={<DonBanHangList />} />
           <Route path="/sales-orders/:id" element={<DonBanHangDetail />} />
+          <Route path="/sales-orders/:id/invoice" element={<DonBanHangInvoice />} />
 
         </Route>
 
