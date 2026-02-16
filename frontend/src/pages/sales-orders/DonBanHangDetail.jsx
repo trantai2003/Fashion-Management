@@ -86,16 +86,20 @@ export default function DonBanHangDetail() {
                         <div className="grid md:grid-cols-3 gap-4 text-sm">
                             <div>
                                 <p className="text-gray-500">Khách hàng</p>
-                                <p className="font-medium">{donBanHang.khachHang.tenKhachHang}</p>
+                                <p className="font-medium">{donBanHang.khachHang?.tenKhachHang}</p>
                             </div>
                             <div>
                                 <p className="text-gray-500">Kho xuất</p>
-                                <p className="font-medium">{donBanHang.khoXuat.tenKho}</p>
+                                <p className="font-medium">
+                                    {donBanHang.khoXuat
+                                        ? donBanHang.khoXuat.tenKho
+                                        : "Chưa phân kho"}
+                                </p>
                             </div>
                             <div>
                                 <p className="text-gray-500">Tổng cộng</p>
                                 <p className="font-semibold text-purple-600">
-                                    {donBanHang.tongCong.toLocaleString()} đ
+                                    {donBanHang.tongCong?.toLocaleString()} đ
                                 </p>
                             </div>
                         </div>
@@ -166,7 +170,7 @@ export default function DonBanHangDetail() {
                 {/* PHIẾU XUẤT KHO */}
                 <section className="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div className="p-4 border-b font-semibold">
-                        Phiếu xuất kho ({phieuXuatKhoList.length})
+                        Phiếu xuất kho ({phieuXuatKhoList?.length || 0})
                     </div>
 
                     <table className="w-full text-sm">
