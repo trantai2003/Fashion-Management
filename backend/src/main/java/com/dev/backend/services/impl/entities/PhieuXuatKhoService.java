@@ -114,6 +114,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 PhieuXuatKho phieu = PhieuXuatKho.builder()
                         .soPhieuXuat(generateSoPhieu())
                         .donBanHang(donBanHang)
+                        .ngayXuat(null)
                         .kho(khoXuat) // Sử dụng kho từ request
                         .ghiChu(request.getGhiChu())
                         .loaiXuat("ban_hang")
