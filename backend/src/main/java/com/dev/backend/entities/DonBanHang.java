@@ -37,9 +37,8 @@ public class DonBanHang {
     @JoinColumn(name = "khach_hang_id", nullable = false)
     KhachHang khachHang;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "kho_xuat_id", nullable = false)
+    @JoinColumn(name = "kho_xuat_id", nullable = true)
     Kho khoXuat;
 
     @NotNull
@@ -51,7 +50,6 @@ public class DonBanHang {
 
     @ColumnDefault("0")
     @Column(name = "trang_thai")
-    @Generated(event = EventType.INSERT)
     Integer trangThai;
 
     @ColumnDefault("0.00")

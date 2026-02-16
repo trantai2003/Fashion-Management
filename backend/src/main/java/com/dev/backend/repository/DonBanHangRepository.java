@@ -43,5 +43,5 @@ public interface DonBanHangRepository
     where d.trangThai = 0
 """)
     Long countPendingSaleOrders();
-
+    long countBySoDonHangStartingWith(String prefix);
 }
