@@ -16,5 +16,15 @@ export const donBanHangService = {
   async cancel(id) {
     const res = await apiClient.put(`/api/v1/don-ban-hang/${id}/cancel`);
     return res.data;
-  }
+  },
+  async create(payload) {
+    const res = await apiClient.post("/api/v1/don-ban-hang/create", payload);
+    return res.data;
+  },
+  getVariantsForCreate() {
+    return apiClient.get("/api/v1/don-ban-hang/variants-for-create");
+  },
+  getCustomersForCreate() {
+    return apiClient.get("/api/v1/khach-hang/for-sales-order");
+  },
 };
