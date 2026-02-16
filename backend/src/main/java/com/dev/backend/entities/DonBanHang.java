@@ -53,17 +53,14 @@ public class DonBanHang {
     Integer trangThai;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "tien_hang", precision = 15, scale = 2)
     BigDecimal tienHang;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "phi_van_chuyen", precision = 15, scale = 2)
     BigDecimal phiVanChuyen;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "tong_cong", precision = 15, scale = 2)
     BigDecimal tongCong;
 
