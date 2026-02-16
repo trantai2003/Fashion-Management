@@ -57,8 +57,9 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     @Transactional
     public PhieuXuatKho createFromSO(PhieuXuatKhoCreating request) {
         if (request.getChiTietXuat() == null || request.getChiTietXuat().isEmpty()) {
-            throw new RuntimeException("Phiếu xuất phải có ít nhất 1 sản phẩm");
+            throw new RuntimeException("Phiếu xuất phải có nhất 1 sản phẩm");
         }
+
         DonBanHang donBanHang = entityManager.find(DonBanHang.class, request.getDonBanHangId());
         if (donBanHang == null) {
             throw new RuntimeException("Đơn bán không tồn tại");
@@ -67,38 +68,45 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             throw new RuntimeException("Đơn bán đã bị huỷ");
         }
 
-        // Kiểm tra còn hàng không
-        List<ChiTietDonBanHang> chiTietSOList =
-                chiTietDonBanHangRepository.findByDonBanHangId(donBanHang.getId());
+        // 1. Lấy thông tin người dùng và kho từ Request
+        Integer requestKhoId = request.getKhoId();
+        if (requestKhoId == null) {
+            throw new RuntimeException("Vui lòng chọn kho xuất hàng");
+        }
 
+        // 2. Kiểm tra quyền hạn kho
+        // Admin được phép chọn mọi kho, Nhân viên chỉ được chọn kho mình thuộc về
+        boolean isAdmin = SecurityContextHolder.getUser().getVaiTro()
+                .contains(IRoleType.quan_tri_vien);
+        Integer userInventoryId = SecurityContextHolder.getKhoId();
+
+        if (!isAdmin && !requestKhoId.equals(userInventoryId)) {
+            throw new RuntimeException("Bạn không có quyền xuất hàng từ kho này");
+        }
+
+        Kho khoXuat = entityManager.find(Kho.class, requestKhoId);
+        if (khoXuat == null) {
+            throw new RuntimeException("Kho đã chọn không tồn tại");
+        }
+
+        // 3. Kiểm tra logic đơn hàng với kho đã chọn
+        if (donBanHang.getKhoXuat() == null) {
+            donBanHang.setKhoXuat(khoXuat);
+        } else if (!donBanHang.getKhoXuat().getId().equals(requestKhoId)) {
+            throw new RuntimeException("Đơn bán này đã được chỉ định cho kho: " + donBanHang.getKhoXuat().getTenKho());
+        }
+
+        // Kiểm tra sản phẩm còn lại
+        List<ChiTietDonBanHang> chiTietSOList = chiTietDonBanHangRepository.findByDonBanHangId(donBanHang.getId());
         boolean hasRemaining = chiTietSOList.stream().anyMatch(ct -> {
-            BigDecimal daGiao = ct.getSoLuongDaGiao() != null
-                    ? ct.getSoLuongDaGiao()
-                    : BigDecimal.ZERO;
+            BigDecimal daGiao = ct.getSoLuongDaGiao() != null ? ct.getSoLuongDaGiao() : BigDecimal.ZERO;
             return ct.getSoLuongDat().compareTo(daGiao) > 0;
         });
 
         if (!hasRemaining) {
             throw new RuntimeException("Đơn bán đã giao đủ toàn bộ sản phẩm");
         }
-        Integer currentKhoId = SecurityContextHolder.getKhoId();
-        if (currentKhoId == null) {
-            throw new RuntimeException("Không xác định được kho hiện tại");
-        }
 
-        Kho khoHienTai = entityManager.find(Kho.class, currentKhoId);
-        if (khoHienTai == null) {
-            throw new RuntimeException("Kho không tồn tại");
-        }
-
-        // Nếu đơn chưa có kho thi gán kho hiện tại
-        if (donBanHang.getKhoXuat() == null) {
-            donBanHang.setKhoXuat(khoHienTai);
-        }
-        // Nếu đã có kho thi phải trùng kho hiện tại
-        else if (!donBanHang.getKhoXuat().getId().equals(currentKhoId)) {
-            throw new RuntimeException("Đơn bán này đã được kho khác xử lý");
-        }
         int retry = 0;
         int maxRetry = 5;
         while (true) {
@@ -106,27 +114,25 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 PhieuXuatKho phieu = PhieuXuatKho.builder()
                         .soPhieuXuat(generateSoPhieu())
                         .donBanHang(donBanHang)
-                        .kho(khoHienTai)
+                        .kho(khoXuat) // Sử dụng kho từ request
                         .ghiChu(request.getGhiChu())
                         .loaiXuat("ban_hang")
-                        .trangThai(0) // Draft
+                        .trangThai(0)
                         .build();
+
                 phieu = repository.save(phieu);
+
                 for (ChiTietPhieuXuatKhoCreating reqCt : request.getChiTietXuat()) {
                     ChiTietDonBanHang ctSO = chiTietSOList.stream()
-                            .filter(ct -> ct.getBienTheSanPham().getId()
-                                    .equals(reqCt.getBienTheSanPhamId()))
+                            .filter(ct -> ct.getBienTheSanPham().getId().equals(reqCt.getBienTheSanPhamId()))
                             .findFirst()
                             .orElseThrow(() -> new RuntimeException("Sản phẩm không thuộc đơn bán"));
 
-                    BigDecimal daGiao = ctSO.getSoLuongDaGiao() != null
-                            ? ctSO.getSoLuongDaGiao()
-                            : BigDecimal.ZERO;
-
+                    BigDecimal daGiao = ctSO.getSoLuongDaGiao() != null ? ctSO.getSoLuongDaGiao() : BigDecimal.ZERO;
                     BigDecimal conLai = ctSO.getSoLuongDat().subtract(daGiao);
 
                     if (reqCt.getSoLuongXuat().compareTo(conLai) > 0) {
-                        throw new RuntimeException("Số lượng xuất vượt quá số lượng còn lại");
+                        throw new RuntimeException("Sản phẩm " + ctSO.getBienTheSanPham().getMaSku() + " xuất vượt quá số lượng còn lại");
                     }
                     if (reqCt.getSoLuongXuat().compareTo(BigDecimal.ZERO) <= 0) {
                         throw new RuntimeException("Số lượng xuất phải > 0");
