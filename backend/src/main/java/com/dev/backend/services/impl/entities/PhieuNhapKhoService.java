@@ -92,6 +92,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                         .soPhieuNhap(generateSoPhieu())
                         .donMuaHang(donMuaHang)
                         .nhaCungCap(donMuaHang.getNhaCungCap())
+                        .ngayNhap(null)
                         .kho(donMuaHang.getKhoNhap())
                         .ghiChu(request.getGhiChu())
                         .trangThai(TrangThaiPhieuNhap.DRAFT.getValue())
