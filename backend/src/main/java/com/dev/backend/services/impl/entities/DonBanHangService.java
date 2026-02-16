@@ -1,9 +1,16 @@
 package com.dev.backend.services.impl.entities;
 
+import com.dev.backend.config.SecurityContextHolder;
+import com.dev.backend.constant.enums.FilterLogicType;
+import com.dev.backend.constant.enums.FilterOperation;
+import com.dev.backend.constant.variables.IRoleType;
+import com.dev.backend.dto.request.BaseFilterRequest;
+import com.dev.backend.dto.request.FilterCriteria;
 import com.dev.backend.dto.response.customize.DonBanHangDetailResponse;
 import com.dev.backend.dto.response.customize.PhieuXuatKhoSummaryDto;
 import com.dev.backend.dto.response.entities.ChiTietDonBanHangDto;
 import com.dev.backend.dto.response.entities.DonBanHangDto;
+import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
 import com.dev.backend.entities.DonBanHang;
 import com.dev.backend.entities.PhieuXuatKho;
@@ -15,9 +22,11 @@ import com.dev.backend.repository.PhieuXuatKhoRepository;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -50,6 +59,31 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
 
     private final DonBanHangRepository donBanHangRepository =
             (DonBanHangRepository) getRepository();
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<DonBanHang> filter(BaseFilterRequest request) {
+
+        NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
+        boolean isAdmin = currentUser.getVaiTro()
+                .contains(IRoleType.quan_tri_vien.toString());
+        if (!isAdmin) {
+            List<FilterCriteria> filters =
+                    request.getFilters() == null
+                            ? new ArrayList<>()
+                            : new ArrayList<>(request.getFilters());
+            filters.add(
+                    FilterCriteria.builder()
+                            .fieldName("nguoiTao.id")
+                            .operation(FilterOperation.EQUALS)
+                            .value(currentUser.getId())
+                            .logicType(FilterLogicType.AND)
+                            .build()
+            );
+            request.setFilters(filters);
+        }
+        return super.filter(request);
+    }
 
     @Transactional(readOnly = true)
     public DonBanHangDetailResponse getDetail(Integer id) {
