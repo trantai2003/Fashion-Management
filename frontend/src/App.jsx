@@ -46,6 +46,7 @@ import DonBanHangList from "./pages/sales-orders/DonBanHangList";
 import DonBanHangDetail from "./pages/sales-orders/DonBanHangDetail";
 import DonBanHangInvoice from "./pages/sales-orders/DonBanHangInvoice";
 import DonBanHangCreate from "./pages/sales-orders/DonBanHangCreate";
+import ProductDetail from "./pages/product/components/product/ProductDetail";
 
 export default function App() {
   return (
@@ -87,7 +88,7 @@ export default function App() {
           <Route path="/products" element={<ProductList />} />
           <Route path="/sku-builder" element={<SkuBuilder />} />
           <Route path="/danh-muc-quan-ao" element={<DanhMucQuanAoTree />} />
-
+          <Route path="/product-detail/:id" element={<ProductDetail />} />
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/xuat-kho-noi-bo" element={<PhieuXuatKhoPage />} />
