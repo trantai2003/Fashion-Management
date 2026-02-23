@@ -121,7 +121,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                 });
 
                 setExistingProductImages(product.anhQuanAos || []);
-                
+
                 const variantImageMap = {};
                 if (product.bienTheSanPhams) {
                     product.bienTheSanPhams.forEach((variant, index) => {
@@ -294,6 +294,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
         return (
             <Dialog open={isOpen} onOpenChange={handleCancel}>
                 <DialogContent style={lightModeStyles} className="sm:max-w-[900px] !bg-white !text-slate-950 border border-gray-200 rounded-xl shadow-sm">
+                </DialogContent>
                 <DialogContent className="sm:max-w-[900px]
     max-h-[90vh]
     bg-white text-gray-900
@@ -312,246 +313,247 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
     return (
         <Dialog open={isOpen} onOpenChange={handleCancel}>
             <DialogContent style={lightModeStyles} className="sm:max-w-[900px] max-h-[90vh] !bg-white !text-slate-950 border border-gray-200 rounded-xl shadow-sm">
-            <DialogContent className="sm:max-w-[900px]
+                <DialogContent className="sm:max-w-[900px]
     max-h-[90vh]
     bg-white text-gray-900
     border border-gray-200
     rounded-xl shadow-sm
     dark:bg-white dark:text-gray-900">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-semibold !text-purple-700">
-                        Chỉnh sửa sản phẩm
-                    </DialogTitle>
-                    <DialogDescription className="!text-slate-500">
-                        Cập nhật thông tin sản phẩm và biến thể. Nhấn lưu khi hoàn tất.
-                    </DialogDescription>
-                </DialogHeader>
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-semibold !text-purple-700">
+                            Chỉnh sửa sản phẩm
+                        </DialogTitle>
+                        <DialogDescription className="!text-slate-500">
+                            Cập nhật thông tin sản phẩm và biến thể. Nhấn lưu khi hoàn tất.
+                        </DialogDescription>
+                    </DialogHeader>
 
-                <div className="max-h-[calc(90vh-12rem)] overflow-y-auto overflow-x-visible px-1">
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-sm !text-gray-700 border-b pb-2">Thông tin cơ bản</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2 space-y-2">
-                                    <Label className="!text-slate-900" htmlFor="tenSanPham">Tên sản phẩm *</Label>
-                                    <Controller
-                                        name="tenSanPham"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input {...field} className="!bg-white !text-slate-900 !border-gray-300" placeholder="VD: Áo sơ mi nam" disabled={isSubmitting} />
-                                        )}
-                                    />
-                                    {errors.tenSanPham && <p className="text-xs text-red-500">{errors.tenSanPham.message}</p>}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label className="!text-slate-900" htmlFor="maSanPham">Mã sản phẩm</Label>
-                                    <Controller
-                                        name="maSanPham"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input {...field} className="!bg-white !text-slate-900 !border-gray-300" placeholder="Mã sản phẩm" disabled={isSubmitting} />
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label className="!text-slate-900" htmlFor="maVach">Mã vạch</Label>
-                                    <Controller
-                                        name="maVach"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input {...field} className="!bg-white !text-slate-900 !border-gray-300" placeholder="Mã vạch" disabled={isSubmitting} />
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label className="!text-slate-900" htmlFor="trangThai">Trạng thái</Label>
-                                    <Controller
-                                        name="trangThai"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Select
-                                                value={field.value?.toString()}
-                                                onValueChange={(value) => field.onChange(Number(value))}
-                                                disabled={isSubmitting}
-                                            >
-                                                <SelectTrigger className="!bg-white !text-slate-900 !border-gray-300">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent className="!bg-white !text-slate-900">
-                                                    <SelectItem value="1">Đang bán</SelectItem>
-                                                    <SelectItem value="0">Ngừng bán</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label className="!text-slate-900" htmlFor="giaVonMacDinh">Giá vốn mặc định</Label>
-                                    <Controller
-                                        name="giaVonMacDinh"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" min="0" disabled={isSubmitting} />
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label className="!text-slate-900" htmlFor="giaBanMacDinh">Giá bán mặc định *</Label>
-                                    <Controller
-                                        name="giaBanMacDinh"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" min="0" disabled={isSubmitting} />
-                                        )}
-                                    />
-                                    {errors.giaBanMacDinh && <p className="text-xs text-red-500">{errors.giaBanMacDinh.message}</p>}
-                                </div>
-
-                                <div className="col-span-2 space-y-2">
-                                    <Label className="!text-slate-900" htmlFor="mucTonToiThieu">Mức tồn tối thiểu</Label>
-                                    <Controller
-                                        name="mucTonToiThieu"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" min="0" disabled={isSubmitting} />
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="col-span-2 space-y-2">
-                                    <Label className="!text-slate-900" htmlFor="moTa">Mô tả</Label>
-                                    <Controller
-                                        name="moTa"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Textarea {...field} className="!bg-white !text-slate-900 !border-gray-300" rows={3} disabled={isSubmitting} />
-                                        )}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Ảnh sản phẩm */}
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-sm !text-gray-700 border-b pb-2">Ảnh sản phẩm</h3>
-                            <div className="border-2 border-dashed rounded-lg p-4 space-y-2 !border-gray-200">
-                                {existingProductImages.length > 0 && (
-                                    <div className="mb-2">
-                                        <p className="text-xs !text-gray-500 mb-2">Ảnh hiện tại:</p>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {existingProductImages.map((img, index) => (
-                                                <div key={`existing-${index}`} className="relative">
-                                                    <img src={img.tepTin?.duongDan || img.urlAnh} alt="Product" className="w-full h-20 object-cover rounded" />
-                                                    <button type="button" onClick={() => handleRemoveExistingProductImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                                <input type="file" multiple accept="image/*" onChange={handleProductImagesChange} className="hidden" id="product-images" disabled={isSubmitting} />
-                                <label htmlFor="product-images" className="flex items-center justify-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50 !border-gray-300 !text-slate-900">
-                                    <Upload className="h-4 w-4" /> <span className="text-sm">Thêm ảnh mới</span>
-                                </label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {productImages.map((file, index) => (
-                                        <div key={index} className="relative">
-                                            <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-20 object-cover rounded" />
-                                            <button type="button" onClick={() => handleRemoveProductImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Biến thể */}
-                        <div className="space-y-4 overflow-visible">
-                            <div className="border-b pb-2">
-                                <h3 className="font-semibold text-sm !text-gray-700">Biến thể sản phẩm</h3>
-                                <p className="text-xs !text-gray-500 mt-1">Chỉ có thể cập nhật giá và trạng thái của biến thể</p>
-                            </div>
-                            {fields.map((field, index) => (
-                                <div key={field.id} className="p-4 border rounded-lg space-y-3 !bg-gray-50 relative overflow-visible !border-gray-200">
-                                    <span className="text-sm font-medium !text-slate-900">Biến thể #{index + 1}</span>
-                                    <div className="grid grid-cols-3 gap-3">
-                                        <div className="space-y-2">
-                                            <Label className="!text-slate-900">Giá vốn *</Label>
-                                            <Controller
-                                                name={`bienTheSanPhams.${index}.giaVon`}
-                                                control={control}
-                                                render={({ field }) => <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" disabled={isSubmitting} />}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="!text-slate-900">Giá bán *</Label>
-                                            <Controller
-                                                name={`bienTheSanPhams.${index}.giaBan`}
-                                                control={control}
-                                                render={({ field }) => <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" disabled={isSubmitting} />}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="!text-slate-900">Trạng thái</Label>
-                                            <Controller
-                                                name={`bienTheSanPhams.${index}.trangThai`}
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Select value={field.value?.toString()} onValueChange={(v) => field.onChange(Number(v))} disabled={isSubmitting}>
-                                                        <SelectTrigger className="!bg-white !text-slate-900 !border-gray-300"><SelectValue /></SelectTrigger>
-                                                        <SelectContent className="!bg-white !text-slate-900"><SelectItem value="1">Hoạt động</SelectItem><SelectItem value="0">Tạm ngừng</SelectItem></SelectContent>
-                                                    </Select>
-                                                )}
-                                            />
-                                        </div>
+                    <div className="max-h-[calc(90vh-12rem)] overflow-y-auto overflow-x-visible px-1">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-sm !text-gray-700 border-b pb-2">Thông tin cơ bản</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="col-span-2 space-y-2">
+                                        <Label className="!text-slate-900" htmlFor="tenSanPham">Tên sản phẩm *</Label>
+                                        <Controller
+                                            name="tenSanPham"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Input {...field} className="!bg-white !text-slate-900 !border-gray-300" placeholder="VD: Áo sơ mi nam" disabled={isSubmitting} />
+                                            )}
+                                        />
+                                        {errors.tenSanPham && <p className="text-xs text-red-500">{errors.tenSanPham.message}</p>}
                                     </div>
 
-                                    {/* Variant Image */}
                                     <div className="space-y-2">
-                                        <Label className="!text-slate-900">Ảnh biến thể</Label>
-                                        <div className="border-2 border-dashed rounded-lg p-3 space-y-2 !border-gray-200">
-                                            {existingVariantImages[index] && !variantImages[index] && (
-                                                <div className="relative inline-block">
-                                                    <img src={existingVariantImages[index].tepTin?.duongDan || existingVariantImages[index].urlAnh} alt="Variant" className="w-24 h-24 object-cover rounded" />
-                                                    <button type="button" onClick={() => handleRemoveExistingVariantImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
-                                                </div>
+                                        <Label className="!text-slate-900" htmlFor="maSanPham">Mã sản phẩm</Label>
+                                        <Controller
+                                            name="maSanPham"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Input {...field} className="!bg-white !text-slate-900 !border-gray-300" placeholder="Mã sản phẩm" disabled={isSubmitting} />
                                             )}
-                                            <input type="file" accept="image/*" onChange={(e) => handleVariantImageChange(index, e)} className="hidden" id={`variant-image-${index}`} disabled={isSubmitting} />
-                                            <label htmlFor={`variant-image-${index}`} className="flex items-center justify-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50 !border-gray-300 !text-slate-900">
-                                                <Upload className="h-4 w-4" /> <span className="text-sm">{(variantImages[index] || existingVariantImages[index]) ? "Thay đổi ảnh" : "Thêm ảnh mới"}</span>
-                                            </label>
-                                            {variantImages[index] && (
-                                                <div className="relative inline-block">
-                                                    <img src={URL.createObjectURL(variantImages[index])} alt="New Variant" className="w-24 h-24 object-cover rounded" />
-                                                    <button type="button" onClick={() => handleRemoveVariantImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
-                                                </div>
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="!text-slate-900" htmlFor="maVach">Mã vạch</Label>
+                                        <Controller
+                                            name="maVach"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Input {...field} className="!bg-white !text-slate-900 !border-gray-300" placeholder="Mã vạch" disabled={isSubmitting} />
                                             )}
-                                        </div>
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="!text-slate-900" htmlFor="trangThai">Trạng thái</Label>
+                                        <Controller
+                                            name="trangThai"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Select
+                                                    value={field.value?.toString()}
+                                                    onValueChange={(value) => field.onChange(Number(value))}
+                                                    disabled={isSubmitting}
+                                                >
+                                                    <SelectTrigger className="!bg-white !text-slate-900 !border-gray-300">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="!bg-white !text-slate-900">
+                                                        <SelectItem value="1">Đang bán</SelectItem>
+                                                        <SelectItem value="0">Ngừng bán</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="!text-slate-900" htmlFor="giaVonMacDinh">Giá vốn mặc định</Label>
+                                        <Controller
+                                            name="giaVonMacDinh"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" min="0" disabled={isSubmitting} />
+                                            )}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="!text-slate-900" htmlFor="giaBanMacDinh">Giá bán mặc định *</Label>
+                                        <Controller
+                                            name="giaBanMacDinh"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" min="0" disabled={isSubmitting} />
+                                            )}
+                                        />
+                                        {errors.giaBanMacDinh && <p className="text-xs text-red-500">{errors.giaBanMacDinh.message}</p>}
+                                    </div>
+
+                                    <div className="col-span-2 space-y-2">
+                                        <Label className="!text-slate-900" htmlFor="mucTonToiThieu">Mức tồn tối thiểu</Label>
+                                        <Controller
+                                            name="mucTonToiThieu"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" min="0" disabled={isSubmitting} />
+                                            )}
+                                        />
+                                    </div>
+
+                                    <div className="col-span-2 space-y-2">
+                                        <Label className="!text-slate-900" htmlFor="moTa">Mô tả</Label>
+                                        <Controller
+                                            name="moTa"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Textarea {...field} className="!bg-white !text-slate-900 !border-gray-300" rows={3} disabled={isSubmitting} />
+                                            )}
+                                        />
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </form>
-                </div>
+                            </div>
 
-                <DialogFooter className="!bg-white pt-4 border-t">
-                    <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting} className="!border-gray-300 !text-slate-900">Hủy</Button>
-                    <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="bg-purple-600 hover:bg-purple-700 !text-white"
-                        onClick={handleSubmit(onSubmit)}
-                    >
-                        {isSubmitting ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin !text-white" /><span className="!text-white">Đang cập nhật...</span></>
-                        ) : (
-                            <span className="!text-white">Cập nhật sản phẩm</span>
-                        )}
-                    </Button>
-                </DialogFooter>
+                            {/* Ảnh sản phẩm */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-sm !text-gray-700 border-b pb-2">Ảnh sản phẩm</h3>
+                                <div className="border-2 border-dashed rounded-lg p-4 space-y-2 !border-gray-200">
+                                    {existingProductImages.length > 0 && (
+                                        <div className="mb-2">
+                                            <p className="text-xs !text-gray-500 mb-2">Ảnh hiện tại:</p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {existingProductImages.map((img, index) => (
+                                                    <div key={`existing-${index}`} className="relative">
+                                                        <img src={img.tepTin?.duongDan || img.urlAnh} alt="Product" className="w-full h-20 object-cover rounded" />
+                                                        <button type="button" onClick={() => handleRemoveExistingProductImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <input type="file" multiple accept="image/*" onChange={handleProductImagesChange} className="hidden" id="product-images" disabled={isSubmitting} />
+                                    <label htmlFor="product-images" className="flex items-center justify-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50 !border-gray-300 !text-slate-900">
+                                        <Upload className="h-4 w-4" /> <span className="text-sm">Thêm ảnh mới</span>
+                                    </label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {productImages.map((file, index) => (
+                                            <div key={index} className="relative">
+                                                <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-20 object-cover rounded" />
+                                                <button type="button" onClick={() => handleRemoveProductImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Biến thể */}
+                            <div className="space-y-4 overflow-visible">
+                                <div className="border-b pb-2">
+                                    <h3 className="font-semibold text-sm !text-gray-700">Biến thể sản phẩm</h3>
+                                    <p className="text-xs !text-gray-500 mt-1">Chỉ có thể cập nhật giá và trạng thái của biến thể</p>
+                                </div>
+                                {fields.map((field, index) => (
+                                    <div key={field.id} className="p-4 border rounded-lg space-y-3 !bg-gray-50 relative overflow-visible !border-gray-200">
+                                        <span className="text-sm font-medium !text-slate-900">Biến thể #{index + 1}</span>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <div className="space-y-2">
+                                                <Label className="!text-slate-900">Giá vốn *</Label>
+                                                <Controller
+                                                    name={`bienTheSanPhams.${index}.giaVon`}
+                                                    control={control}
+                                                    render={({ field }) => <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" disabled={isSubmitting} />}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="!text-slate-900">Giá bán *</Label>
+                                                <Controller
+                                                    name={`bienTheSanPhams.${index}.giaBan`}
+                                                    control={control}
+                                                    render={({ field }) => <Input {...field} type="number" className="!bg-white !text-slate-900 !border-gray-300" disabled={isSubmitting} />}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="!text-slate-900">Trạng thái</Label>
+                                                <Controller
+                                                    name={`bienTheSanPhams.${index}.trangThai`}
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Select value={field.value?.toString()} onValueChange={(v) => field.onChange(Number(v))} disabled={isSubmitting}>
+                                                            <SelectTrigger className="!bg-white !text-slate-900 !border-gray-300"><SelectValue /></SelectTrigger>
+                                                            <SelectContent className="!bg-white !text-slate-900"><SelectItem value="1">Hoạt động</SelectItem><SelectItem value="0">Tạm ngừng</SelectItem></SelectContent>
+                                                        </Select>
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Variant Image */}
+                                        <div className="space-y-2">
+                                            <Label className="!text-slate-900">Ảnh biến thể</Label>
+                                            <div className="border-2 border-dashed rounded-lg p-3 space-y-2 !border-gray-200">
+                                                {existingVariantImages[index] && !variantImages[index] && (
+                                                    <div className="relative inline-block">
+                                                        <img src={existingVariantImages[index].tepTin?.duongDan || existingVariantImages[index].urlAnh} alt="Variant" className="w-24 h-24 object-cover rounded" />
+                                                        <button type="button" onClick={() => handleRemoveExistingVariantImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
+                                                    </div>
+                                                )}
+                                                <input type="file" accept="image/*" onChange={(e) => handleVariantImageChange(index, e)} className="hidden" id={`variant-image-${index}`} disabled={isSubmitting} />
+                                                <label htmlFor={`variant-image-${index}`} className="flex items-center justify-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50 !border-gray-300 !text-slate-900">
+                                                    <Upload className="h-4 w-4" /> <span className="text-sm">{(variantImages[index] || existingVariantImages[index]) ? "Thay đổi ảnh" : "Thêm ảnh mới"}</span>
+                                                </label>
+                                                {variantImages[index] && (
+                                                    <div className="relative inline-block">
+                                                        <img src={URL.createObjectURL(variantImages[index])} alt="New Variant" className="w-24 h-24 object-cover rounded" />
+                                                        <button type="button" onClick={() => handleRemoveVariantImage(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </form>
+                    </div>
+
+                    <DialogFooter className="!bg-white pt-4 border-t">
+                        <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting} className="!border-gray-300 !text-slate-900">Hủy</Button>
+                        <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="bg-purple-600 hover:bg-purple-700 !text-white"
+                            onClick={handleSubmit(onSubmit)}
+                        >
+                            {isSubmitting ? (
+                                <><Loader2 className="mr-2 h-4 w-4 animate-spin !text-white" /><span className="!text-white">Đang cập nhật...</span></>
+                            ) : (
+                                <span className="!text-white">Cập nhật sản phẩm</span>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
             </DialogContent>
         </Dialog>
     );
