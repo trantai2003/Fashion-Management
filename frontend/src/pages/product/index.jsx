@@ -517,15 +517,12 @@ export default function ProductList() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3 font-semibold max-w-xs">
-                                                <a 
-                                                    href={`/product-detail/${product.id}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="truncate hover:text-purple-600 hover:underline cursor-pointer block"
-                                                    title={product.tenSanPham}
+                                                <Button
+                                                    onClick={() => navigate(`/products/${product.id}`)}
+                                                    className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:underline p-0 h-auto"
                                                 >
                                                     {product.tenSanPham}
-                                                </a>
+                                                </Button>
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3 font-medium text-purple-700">
@@ -555,13 +552,13 @@ export default function ProductList() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3 text-right space-x-2 flex items-center justify-center">
-                                            <a  href={`/product-detail/${product.id}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:underline"
-                                            >
-                                                <Eye className="h-3.5 w-3.5" />
-                                            </a>
+                                                <Button
+                                                    variant="ghost" // Hoặc style tùy ý bạn
+                                                    onClick={() => navigate(`/products/${product.id}`)}
+                                                    className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:underline p-0 h-auto"
+                                                >
+                                                    <Eye className="h-3.5 w-3.5" />
+                                                </Button>
                                                 <Button
                                                     onClick={() => handleEditClick(product.id)}
                                                     className="text-sm font-semibold text-blue-600 hover:underline flex items-center gap-2"

@@ -9,9 +9,11 @@ import {
   Edit,
   Trash2,
   Save,
-  X
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import { danhMucQuanAoService } from '@/services/danhMucQuanAoService';
+import { toast } from 'sonner';
 
 const DanhMucQuanAoTree = () => {
   const [treeData, setTreeData] = useState([]);
@@ -27,6 +29,7 @@ const DanhMucQuanAoTree = () => {
     moTa: '',
     trangThai: 1
   });
+  const [deleteModal, setDeleteModal] = useState({ show: false, nodeId: null, nodeName: '' });
 
   // Fetch dữ liệu từ API
   useEffect(() => {
@@ -36,7 +39,7 @@ const DanhMucQuanAoTree = () => {
   const fetchTreeData = async () => {
     try {
       const response = await danhMucQuanAoService.getCayDanhMuc();
-      
+
       if (response.data.status === 200) {
         setTreeData(response.data.data);
         // Tự động expand tất cả nodes
@@ -54,7 +57,7 @@ const DanhMucQuanAoTree = () => {
       }
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu:', error);
-      alert('Không thể tải dữ liệu danh mục');
+      toast.error('Không thể tải dữ liệu danh mục');
     }
   };
 
@@ -78,7 +81,7 @@ const DanhMucQuanAoTree = () => {
   const handleDragOver = (e, node) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Không cho phép kéo vào chính nó hoặc con của nó
     if (draggedNode && draggedNode.id !== node.id && !isDescendant(draggedNode, node)) {
       setDragOverNode(node.id);
@@ -103,7 +106,7 @@ const DanhMucQuanAoTree = () => {
 
     // Kiểm tra không cho kéo vào con của chính nó
     if (isDescendant(draggedNode, targetNode)) {
-      alert('Không thể kéo danh mục cha vào danh mục con của nó!');
+      toast.warning('Không thể kéo danh mục cha vào con của nó');
       setDraggedNode(null);
       return;
     }
@@ -119,14 +122,14 @@ const DanhMucQuanAoTree = () => {
       });
 
       if (response.data.status === 200) {
-        alert('Cập nhật thành công!');
+        toast.success('Cập nhật thành công');
         fetchTreeData(); // Tải lại dữ liệu
       } else {
-        alert('Cập nhật thất bại: ' + response.data.message);
+        toast.error('Cập nhật thất bại: ' + response.data.message);
       }
     } catch (error) {
       console.error('Lỗi khi cập nhật:', error);
-      alert('Có lỗi xảy ra khi cập nhật');
+      toast.error('Có lỗi xảy ra khi cập nhật');
     }
 
     setDraggedNode(null);
@@ -150,14 +153,14 @@ const DanhMucQuanAoTree = () => {
       });
 
       if (response.data.status === 200) {
-        alert('Đã chuyển thành danh mục gốc!');
+        toast.success('Đã chuyển thành danh mục gốc!');
         fetchTreeData();
       } else {
-        alert('Cập nhật thất bại: ' + response.data.message);
+        toast.error('Cập nhật thất bại: ' + response.data.message);
       }
     } catch (error) {
       console.error('Lỗi khi cập nhật:', error);
-      alert('Có lỗi xảy ra khi cập nhật');
+      toast.error('Có lỗi xảy ra khi cập nhật');
     }
 
     setDraggedNode(null);
@@ -181,13 +184,14 @@ const DanhMucQuanAoTree = () => {
   };
 
   // Xử lý chỉnh sửa
-  const handleEdit = (node) => {
+  const handleEdit = (node, parentId) => {
     setEditingNode(node.id);
     setEditForm({
       id: node.id,
       tenDanhMuc: node.tenDanhMuc,
       moTa: node.moTa,
-      trangThai: node.trangThai
+      trangThai: node.trangThai,
+      danhMucChaId: parentId
     });
   };
 
@@ -196,35 +200,33 @@ const DanhMucQuanAoTree = () => {
       const response = await danhMucQuanAoService.update(editForm);
 
       if (response.data.status === 200) {
-        alert('Cập nhật thành công!');
+        toast.success('Cập nhật thành công!');
         setEditingNode(null);
         fetchTreeData();
       } else {
-        alert('Cập nhật thất bại: ' + response.data.message);
+        toast.error('Cập nhật thất bại: ' + response.data.message);
       }
     } catch (error) {
       console.error('Lỗi khi cập nhật:', error);
-      alert('Có lỗi xảy ra khi cập nhật');
+      toast.error('Có lỗi xảy ra khi cập nhật');
     }
   };
 
-  const handleDelete = async (nodeId) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
-      return;
-    }
+  const confirmDelete = (node) => {
+    setDeleteModal({ show: true, nodeId: node.id, nodeName: node.tenDanhMuc });
+  };
 
+  const handleDelete = async () => {
     try {
-      const response = await danhMucQuanAoService.delete(nodeId);
-
+      const response = await danhMucQuanAoService.delete(deleteModal.nodeId);
       if (response.data.status === 200) {
-        alert('Xóa thành công!');
+        toast.success(`Đã xóa danh mục "${deleteModal.nodeName}"`);
         fetchTreeData();
-      } else {
-        alert('Xóa thất bại: ' + response.data.message);
       }
     } catch (error) {
-      console.error('Lỗi khi xóa:', error);
-      alert('Có lỗi xảy ra khi xóa');
+      toast.error('Lỗi khi xóa danh mục');
+    } finally {
+      setDeleteModal({ show: false, nodeId: null, nodeName: '' });
     }
   };
 
@@ -246,12 +248,12 @@ const DanhMucQuanAoTree = () => {
 
   const handleSaveCreate = async () => {
     if (!createForm.tenDanhMuc.trim()) {
-      alert('Vui lòng nhập tên danh mục!');
+      toast.warning('Vui lòng nhập tên danh mục!');
       return;
     }
 
     if (!createForm.maDanhMuc.trim()) {
-      alert('Vui lòng nhập mã danh mục!');
+      toast.warning('Vui lòng nhập mã danh mục!');
       return;
     }
 
@@ -259,7 +261,7 @@ const DanhMucQuanAoTree = () => {
       const response = await danhMucQuanAoService.create(createForm);
 
       if (response.data.status === 200) {
-        alert('Tạo danh mục thành công!');
+        toast.success('Tạo danh mục thành công!');
         setCreatingNode(null);
         setCreateForm({
           maDanhMuc: '',
@@ -269,11 +271,11 @@ const DanhMucQuanAoTree = () => {
         });
         fetchTreeData();
       } else {
-        alert('Tạo danh mục thất bại: ' + response.data.message);
+        toast.error('Tạo danh mục thất bại: ' + response.data.message);
       }
     } catch (error) {
       console.error('Lỗi khi tạo danh mục:', error);
-      alert('Có lỗi xảy ra khi tạo danh mục');
+      toast.error('Có lỗi xảy ra khi tạo danh mục');
     }
   };
 
@@ -353,8 +355,10 @@ const DanhMucQuanAoTree = () => {
 
   // Render node
   const renderNode = (node, level = 0, parentId = null) => {
+    if (node.trangThai === 0) return null;
+    const activeChildren = node.danhMucCons ? node.danhMucCons.filter(child => child.trangThai !== 0) : [];
+    const hasChildren = activeChildren.length > 0;
     const isExpanded = expandedNodes.has(node.id);
-    const hasChildren = node.danhMucCons && node.danhMucCons.length > 0;
     const isDragOver = dragOverNode === node.id;
     const isEditing = editingNode === node.id;
     const isCreating = creatingNode === node.id;
@@ -372,7 +376,7 @@ const DanhMucQuanAoTree = () => {
           <div className="node-content">
             <div className="node-left">
               <GripVertical size={16} className="drag-handle" />
-              
+
               {hasChildren || isCreating ? (
                 <button
                   onClick={() => toggleExpand(node.id)}
@@ -409,7 +413,7 @@ const DanhMucQuanAoTree = () => {
               {isEditing ? (
                 <>
                   <button
-                    onClick={handleSaveEdit}
+                    onClick={() => handleSaveEdit()}
                     className="action-button save-button"
                     title="Lưu"
                   >
@@ -433,14 +437,14 @@ const DanhMucQuanAoTree = () => {
                     <Plus size={16} />
                   </button>
                   <button
-                    onClick={() => handleEdit(node)}
+                    onClick={() => handleEdit(node, parentId)}
                     className="action-button edit-button"
                     title="Sửa"
                   >
                     <Edit size={16} />
                   </button>
                   <button
-                    onClick={() => handleDelete(node.id)}
+                    onClick={() => confirmDelete(node)}
                     className="action-button delete-button"
                     title="Xóa"
                   >
@@ -479,8 +483,24 @@ const DanhMucQuanAoTree = () => {
 
   return (
     <div className="danh-muc-tree-container">
+      {deleteModal.show && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <AlertTriangle color="#f44336" size={32} />
+              <h3>Xác nhận xóa danh mục</h3>
+            </div>
+            <p>Bạn có chắc chắn muốn xóa <strong>{deleteModal.nodeName}</strong>?</p>
+            <p className="modal-warning">Hành động này sẽ xóa toàn bộ các danh mục con liên quan.</p>
+            <div className="modal-footer">
+              <button className="btn-modal-cancel" onClick={() => setDeleteModal({ show: false })}>Hủy</button>
+              <button className="btn-modal-confirm" onClick={handleDelete}>Xác nhận xóa</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="header">
-        <h2>Quản Lý Danh Mục Quần Áo</h2>
         <p className="instruction">
           Kéo và thả các danh mục để thay đổi mối quan hệ cha-con
         </p>
@@ -500,7 +520,7 @@ const DanhMucQuanAoTree = () => {
         onDrop={handleDropToRoot}
       >
         {creatingNode === 'root' && renderCreateForm('root')}
-        
+
         {treeData.length === 0 && creatingNode !== 'root' ? (
           <div className="empty-state">Không có dữ liệu danh mục</div>
         ) : (
@@ -508,7 +528,33 @@ const DanhMucQuanAoTree = () => {
         )}
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html:`
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        .modal-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 1000;
+          animation: fadeIn 0.2s ease-out;
+        }
+        .modal-content {
+          background: white;
+          padding: 24px;
+          border-radius: 12px;
+          width: 400px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+          display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+        }
+        .modal-header h3 { margin: 0; color: #333; }
+        .modal-warning { color: #f44336; font-size: 13px; margin-top: 8px; font-weight: 500; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+        .btn-modal-cancel { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; background: #eee; }
+        .btn-modal-confirm { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; background: #f44336; color: white; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .danh-muc-tree-container {
           max-width: 1200px;
           margin: 0 auto;
