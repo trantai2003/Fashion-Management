@@ -36,41 +36,22 @@ const editProductSchema = yup.object({
             giaVon: yup.number().typeError("Phải là số").min(0, "Giá vốn phải >= 0").required("Bắt buộc"),
             giaBan: yup.number().typeError("Phải là số").min(0, "Giá bán phải >= 0").required("Bắt buộc"),
             trangThai: yup.number().required(),
-            // Các trường info hiển thị (read-only)
             mauSac: yup.object().nullable(),
-            kichThuoc: yup.object().nullable(),
+            size: yup.object().nullable(),
             chatLieu: yup.object().nullable(),
         })
     ).min(1, "Phải có ít nhất 1 biến thể")
 });
 
 export default function EditProductModal({ isOpen, onClose, onSuccess, productId }) {
-    // State quản lý dữ liệu phụ trợ
-    const [colors, setColors] = useState([]);
-    const [sizes, setSizes] = useState([]);
-    const [materials, setMaterials] = useState([]);
-
     // State quản lý ảnh
-    const [productImages, setProductImages] = useState([]); // Ảnh mới thêm
-    const [existingProductImages, setExistingProductImages] = useState([]); // Ảnh cũ từ server
-    const [variantImages, setVariantImages] = useState({}); // File ảnh mới cho từng biến thể
-    const [existingVariantImages, setExistingVariantImages] = useState({}); // Ảnh cũ của từng biến thể
+    const [productImages, setProductImages] = useState([]);
+    const [existingProductImages, setExistingProductImages] = useState([]);
+    const [variantImages, setVariantImages] = useState({});
+    const [existingVariantImages, setExistingVariantImages] = useState({});
 
     const [isLoadingProduct, setIsLoadingProduct] = useState(false);
     const [productImageUpdated, setProductImageUpdated] = useState(false);
-
-    const lightModeStyles = {
-        '--background': '0 0% 100%',
-        '--foreground': '222.2 84% 4.9%',
-        '--muted': '210 40% 96.1%',
-        '--muted-foreground': '215.4 16.3% 46.9%',
-        '--popover': '0 0% 100%',
-        '--popover-foreground': '222.2 84% 4.9%',
-        '--border': '214.3 31.8% 91.4%',
-        '--input': '214.3 31.8% 91.4%',
-        '--ring': '222.2 84% 4.9%',
-        colorScheme: 'light',
-    };
 
     const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
         resolver: yupResolver(editProductSchema),
@@ -170,11 +151,6 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
         }
     };
 
-    const onInvalid = (err) => {
-        console.error("Validation Errors:", err);
-        toast.error("Vui lòng kiểm tra lại các trường bắt buộc");
-    };
-
     const handleCancel = () => {
         if (!isSubmitting) {
             reset();
@@ -186,7 +162,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
     if (isLoadingProduct) return (
         <Dialog open={isOpen} onOpenChange={handleCancel}>
-            <DialogContent className="sm:max-w-[400px] flex flex-col items-center py-10 !bg-white">
+            <DialogContent className="light sm:max-w-[400px] flex flex-col items-center py-10 !bg-white border-none shadow-2xl">
                 <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
                 <p className="mt-4 text-slate-600 font-medium">Đang tải thông tin...</p>
             </DialogContent>
@@ -195,80 +171,66 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
     return (
         <Dialog open={isOpen} onOpenChange={handleCancel}>
-            {/* SỬA LỖI: Chỉ dùng 1 DialogContent duy nhất */}
             <DialogContent
-                style={lightModeStyles}
-                className="sm:max-w-[900px] max-h-[95vh] p-0 overflow-hidden flex flex-col !bg-white border-none shadow-2xl"
+                className="light sm:max-w-[900px] max-h-[95vh] p-0 overflow-hidden flex flex-col !bg-white !text-slate-900 border-none shadow-2xl"
             >
-                {/* SỬA LỖI: Form bao ngoài toàn bộ content và footer */}
-                <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="flex flex-col h-full overflow-hidden">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full overflow-hidden !bg-white">
 
-                    <DialogHeader className="px-6 py-4 border-b bg-slate-50/50">
+                    <DialogHeader className="px-6 py-4 border-b !bg-slate-50/50">
                         <DialogTitle className="text-xl font-bold !text-purple-700">Chỉnh sửa sản phẩm</DialogTitle>
                         <DialogDescription className="!text-slate-500">Cập nhật giá và hình ảnh cho các biến thể hiện có.</DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+                    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8 !bg-white">
 
                         {/* 1. THÔNG TIN CƠ BẢN */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-bold text-slate-800 border-l-4 border-purple-500 pl-2 uppercase tracking-tight">Thông tin cơ bản</h3>
+                            <h3 className="text-sm font-bold !text-slate-800 border-l-4 border-purple-500 pl-2 uppercase tracking-tight">Thông tin cơ bản</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2 space-y-2">
-                                    <Label className="text-slate-900 font-medium">Tên sản phẩm *</Label>
+                                    <Label className="!text-slate-900 font-semibold">Tên sản phẩm *</Label>
                                     <Controller name="tenSanPham" control={control} render={({ field }) => (
-                                        <Input {...field} className="!bg-white border-gray-300 focus:ring-purple-500" disabled={isSubmitting} />
+                                        <Input {...field} className="!bg-white !text-slate-900 border-slate-300 focus:ring-purple-500" disabled={isSubmitting} />
                                     )} />
                                     {errors.tenSanPham && <p className="text-xs text-red-500">{errors.tenSanPham.message}</p>}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-slate-900 font-medium">Mã sản phẩm</Label>
+                                    <Label className="!text-slate-900 font-semibold">Mã sản phẩm</Label>
                                     <Controller name="maSanPham" control={control} render={({ field }) => (
-                                        <Input {...field} className="!bg-white border-gray-300" disabled={isSubmitting} />
+                                        <Input {...field} className="!bg-white !text-slate-900 border-slate-300" disabled={isSubmitting} />
                                     )} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-slate-900 font-medium">Trạng thái</Label>
+                                    <Label className="!text-slate-900 font-semibold">Trạng thái</Label>
                                     <Controller name="trangThai" control={control} render={({ field }) => (
                                         <Select value={field.value?.toString()} onValueChange={(v) => field.onChange(Number(v))}>
-                                            <SelectTrigger className="!bg-white border-gray-300"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="!bg-white !text-slate-900 border-slate-300"><SelectValue /></SelectTrigger>
                                             <SelectContent
                                                 position="popper"
                                                 sideOffset={4}
-                                                className="!bg-white !text-slate-900 w-[var(--radix-select-trigger-width)]"
-                                            >
-                                                <SelectItem
-                                                    value="1"
-                                                    className="focus:bg-purple-600 focus:text-white data-[state=checked]:bg-purple-600 data-[state=checked]:text-white cursor-pointer"
-                                                >
-                                                    Đang bán
-                                                </SelectItem>
-                                                <SelectItem
-                                                    value="0"
-                                                    className="focus:bg-purple-600 focus:text-white data-[state=checked]:bg-purple-600 data-[state=checked]:text-white cursor-pointer"
-                                                >
-                                                    Ngừng bán
-                                                </SelectItem>
+                                                className="!bg-white !text-slate-900 border-slate-200 shadow-xl">
+                                                <SelectItem value="1" className="focus:bg-purple-50 focus:text-purple-700 cursor-pointer">Đang bán</SelectItem>
+                                                <SelectItem value="0" className="focus:bg-purple-50 focus:text-purple-700 cursor-pointer">Ngừng bán</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     )} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-slate-900 font-medium">Giá vốn mặc định</Label>
+                                    <Label className="!text-slate-900 font-semibold">Giá vốn mặc định</Label>
                                     <Controller name="giaVonMacDinh" control={control} render={({ field }) => (
-                                        <Input {...field} type="number" className="!bg-white border-gray-300" />
+                                        <Input {...field} type="number" className="!bg-white !text-slate-900 border-slate-300" />
                                     )} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-slate-900 font-medium">Giá bán mặc định *</Label>
+                                    <Label className="!text-slate-900 font-semibold">Giá bán mặc định *</Label>
                                     <Controller name="giaBanMacDinh" control={control} render={({ field }) => (
-                                        <Input {...field} type="number" className="!bg-white border-gray-300" />
+                                        <Input {...field} type="number" className="!bg-white !text-slate-900 border-slate-300" />
                                     )} />
                                 </div>
                                 <div className="col-span-2 space-y-2">
-                                    <Label className="text-slate-900 font-medium">Mô tả</Label>
+                                    <Label className="!text-slate-900 font-semibold">Mô tả</Label>
                                     <Controller name="moTa" control={control} render={({ field }) => (
-                                        <Textarea {...field} className="!bg-white border-gray-300" rows={2} />
+                                        <Textarea {...field} className="!bg-white !text-slate-900 border-slate-300" rows={2} />
                                     )} />
                                 </div>
                             </div>
@@ -276,17 +238,17 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
                         {/* 2. QUẢN LÝ ẢNH */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-bold text-slate-800 border-l-4 border-purple-500 pl-2 uppercase tracking-tight">Hình ảnh sản phẩm</h3>
-                            <div className="grid grid-cols-4 gap-3 p-4 border rounded-xl bg-slate-50/50">
+                            <h3 className="text-sm font-bold !text-slate-800 border-l-4 border-purple-500 pl-2 uppercase tracking-tight">Hình ảnh sản phẩm</h3>
+                            <div className="grid grid-cols-4 gap-3 p-4 border border-slate-200 rounded-xl !bg-slate-50/50">
                                 {existingProductImages.map((img, index) => (
-                                    <div key={`old-${index}`} className="relative aspect-square group overflow-hidden rounded-lg border bg-white">
-                                        <img src={img.tepTin?.duongDan || img.urlAnh} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                    <div key={`old-${index}`} className="relative aspect-square group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                                        <img src={img.tepTin?.duongDan || img.urlAnh} className="w-full h-full object-cover" alt="product" />
                                         <button type="button" onClick={() => { setExistingProductImages(prev => prev.filter((_, i) => i !== index)); setProductImageUpdated(true); }} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"><X className="h-3 w-3" /></button>
                                     </div>
                                 ))}
                                 {productImages.map((file, index) => (
-                                    <div key={`new-${index}`} className="relative aspect-square rounded-lg border-2 border-purple-200 overflow-hidden bg-white">
-                                        <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" />
+                                    <div key={`new-${index}`} className="relative aspect-square rounded-lg border-2 border-purple-200 overflow-hidden bg-white shadow-sm">
+                                        <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" alt="new product" />
                                         <button type="button" onClick={() => setProductImages(prev => prev.filter((_, i) => i !== index))} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
                                     </div>
                                 ))}
@@ -298,21 +260,21 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                             </div>
                         </div>
 
-                        {/* 3. BIẾN THỂ (Khôi phục đầy đủ thông tin) */}
+                        {/* 3. BIẾN THỂ */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-bold text-slate-800 border-l-4 border-purple-500 pl-2 uppercase tracking-tight flex items-center gap-2">
-                                <Layers className="h-4 w-4" /> Danh sách biến thể
+                            <h3 className="text-sm font-bold !text-slate-800 border-l-4 border-purple-500 pl-2 uppercase tracking-tight flex items-center gap-2">
+                                <Layers className="h-4 w-4 !text-slate-600" /> Danh sách biến thể
                             </h3>
                             <div className="space-y-3">
                                 {fields.map((field, index) => (
-                                    <div key={field.id} className="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition-shadow grid grid-cols-12 gap-4 items-center">
-                                        {/* Ảnh biến thể */}
+                                    <div key={field.id} className="border border-slate-200 rounded-xl p-4 !bg-white shadow-sm hover:shadow-md transition-shadow grid grid-cols-12 gap-4 items-center">
                                         <div className="col-span-2">
-                                            <div className="relative aspect-square w-full group overflow-hidden rounded-lg border bg-slate-100">
+                                            <div className="relative aspect-square w-full group overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                                                 {(variantImages[index] || existingVariantImages[index]) ? (
                                                     <img
                                                         src={variantImages[index] ? URL.createObjectURL(variantImages[index]) : (existingVariantImages[index].tepTin?.duongDan || existingVariantImages[index].urlAnh)}
                                                         className="w-full h-full object-cover"
+                                                        alt="variant"
                                                     />
                                                 ) : (
                                                     <div className="flex items-center justify-center h-full"><Upload className="h-5 w-5 text-slate-300" /></div>
@@ -322,48 +284,35 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                                             </div>
                                         </div>
 
-                                        {/* Thông tin hiển thị của biến thể */}
                                         <div className="col-span-3">
-                                            <p className="text-[11px] font-bold text-purple-600 mb-1 uppercase tracking-wider">Mô tả biến thể</p>
-                                            <div className="text-xs space-y-1 font-medium text-slate-600">
-                                                <div className="flex justify-between border-b border-dotted pb-1"><span>Màu:</span> <span className="text-slate-900">{field.mauSac?.tenMau || 'Mặc định'}</span></div>
-                                                <div className="flex justify-between border-b border-dotted pb-1"><span>Size:</span> <span className="text-slate-900">{field.size?.tenSize || 'Mặc định'}</span></div>
-                                                <div className="flex justify-between"><span>Chất liệu:</span> <span className="text-slate-900">{field.chatLieu?.tenChatLieu || 'Mặc định'}</span></div>
+                                            <p className="text-[11px] font-bold !text-purple-600 mb-1 uppercase tracking-wider">Mô tả biến thể</p>
+                                            <div className="text-xs space-y-1 font-medium !text-slate-600">
+                                                <div className="flex justify-between border-b border-dotted border-slate-200 pb-1"><span>Màu:</span> <span className="!text-slate-900">{field.mauSac?.tenMau || 'Mặc định'}</span></div>
+                                                <div className="flex justify-between border-b border-dotted border-slate-200 pb-1"><span>Size:</span> <span className="!text-slate-900">{field.size?.tenSize || 'Mặc định'}</span></div>
+                                                <div className="flex justify-between"><span>Chất liệu:</span> <span className="!text-slate-900">{field.chatLieu?.tenChatLieu || 'Mặc định'}</span></div>
                                             </div>
                                         </div>
 
-                                        {/* Input chỉnh sửa */}
                                         <div className="col-span-7 grid grid-cols-3 gap-3">
                                             <div className="space-y-1">
-                                                <Label className="text-[10px] font-bold text-slate-500 uppercase">Giá vốn</Label>
-                                                <Controller name={`bienTheSanPhams.${index}.giaVon`} control={control} render={({ field }) => <Input {...field} type="number" className="h-8 !bg-white border-slate-200" />} />
+                                                <Label className="text-[10px] font-bold !text-slate-500 uppercase">Giá vốn</Label>
+                                                <Controller name={`bienTheSanPhams.${index}.giaVon`} control={control} render={({ field }) => <Input {...field} type="number" className="h-8 !bg-white !text-slate-900 border-slate-200" />} />
                                             </div>
                                             <div className="space-y-1">
-                                                <Label className="text-[10px] font-bold text-slate-500 uppercase">Giá bán</Label>
-                                                <Controller name={`bienTheSanPhams.${index}.giaBan`} control={control} render={({ field }) => <Input {...field} type="number" className="h-8 !bg-white border-slate-200" />} />
+                                                <Label className="text-[10px] font-bold !text-slate-500 uppercase">Giá bán</Label>
+                                                <Controller name={`bienTheSanPhams.${index}.giaBan`} control={control} render={({ field }) => <Input {...field} type="number" className="h-8 !bg-white !text-slate-900 border-slate-200" />} />
                                             </div>
                                             <div className="space-y-1">
-                                                <Label className="text-[10px] font-bold text-slate-500 uppercase">Trạng thái</Label>
+                                                <Label className="text-[10px] font-bold !text-slate-500 uppercase">Trạng thái</Label>
                                                 <Controller name={`bienTheSanPhams.${index}.trangThai`} control={control} render={({ field }) => (
                                                     <Select value={field.value?.toString()} onValueChange={(v) => field.onChange(Number(v))}>
-                                                        <SelectTrigger className="h-8 !bg-white border-slate-200 text-xs"><SelectValue /></SelectTrigger>
+                                                        <SelectTrigger className="h-8 !bg-white !text-slate-900 border-slate-200 text-xs"><SelectValue /></SelectTrigger>
                                                         <SelectContent
                                                             position="popper"
                                                             sideOffset={4}
-                                                            className="!bg-white !text-slate-900 w-[var(--radix-select-trigger-width)]"
-                                                        >
-                                                            <SelectItem
-                                                                value="1"
-                                                                className="focus:bg-purple-600 focus:text-white data-[state=checked]:bg-purple-600 data-[state=checked]:text-white cursor-pointer"
-                                                            >
-                                                                Hoạt động
-                                                            </SelectItem>
-                                                            <SelectItem
-                                                                value="0"
-                                                                className="focus:bg-purple-600 focus:text-white data-[state=checked]:bg-purple-600 data-[state=checked]:text-white cursor-pointer"
-                                                            >
-                                                                Tạm dừng
-                                                            </SelectItem>
+                                                            className="!bg-white !text-slate-900 border-slate-200 shadow-xl">
+                                                            <SelectItem value="1" className="focus:bg-purple-50 focus:text-purple-700 text-xs cursor-pointer">Hoạt động</SelectItem>
+                                                            <SelectItem value="0" className="focus:bg-purple-50 focus:text-purple-700 text-xs cursor-pointer">Tạm dừng</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 )} />
@@ -375,18 +324,14 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                         </div>
                     </div>
 
-                    <DialogFooter className="px-6 py-4 border-t bg-slate-50/80">
-                        <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting} className="!border-gray-300 !text-slate-700">Hủy bỏ</Button>
+                    <DialogFooter className="px-6 py-4 border-t !bg-slate-50/80">
+                        <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting} className="!border-slate-300 !text-slate-700 hover:bg-slate-100">Hủy bỏ</Button>
                         <Button
                             type="submit"
                             disabled={isSubmitting}
                             className="bg-purple-600 hover:bg-purple-700 !text-white px-8 shadow-lg shadow-purple-200"
                         >
-                            {isSubmitting ? (
-                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang lưu...</>
-                            ) : (
-                                "Cập nhật sản phẩm"
-                            )}
+                            {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang lưu...</> : "Cập nhật sản phẩm"}
                         </Button>
                     </DialogFooter>
                 </form>
