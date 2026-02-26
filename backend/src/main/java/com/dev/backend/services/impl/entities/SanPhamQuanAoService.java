@@ -283,6 +283,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 sanPhamQuanAo.setMoTa(updating.getMoTa());
                 sanPhamQuanAo.setMaVach(updating.getMaVach());
                 sanPhamQuanAo.setGiaVonMacDinh(updating.getGiaVonMacDinh());
+                sanPhamQuanAo.setGiaBanMacDinh(updating.getGiaBanMacDinh());
                 sanPhamQuanAo.setTrangThai(updating.getTrangThai());
                 sanPhamQuanAo = update(updating.getId(), sanPhamQuanAo);
                 if (updating.isImageUpdated()) {
