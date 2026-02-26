@@ -52,7 +52,6 @@ public class KhachHang {
     String diaChi;
 
     @ColumnDefault("'le'")
-    @Generated(event = EventType.INSERT)
     @Lob
     @Column(name = "loai_khach_hang")
     String loaiKhachHang;

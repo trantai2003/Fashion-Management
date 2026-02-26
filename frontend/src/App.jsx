@@ -112,8 +112,8 @@ export default function App() {
 
           {/* Customer */}
           <Route path="/customers" element={<KhachHangPage />} />
-          <Route path="/customer/:id" element={<KhachHangDetails />} />
-          <Route path="/customer/:id/edit" element={<KhachHangEdit />} />
+          <Route path="/customers/:id" element={<KhachHangDetails />} />
+          <Route path="/customers/:id/edit" element={<KhachHangEdit />} />
 
           {/* Receipt*/}
           <Route path="/goods-receipts/create" element={<PhieuNhapKhoCreate />} />
