@@ -99,7 +99,7 @@ export default function KhachHangEdit() {
           duration: 5000,
           position: "top-center",
         });
-        navigate("/customer");
+        navigate("/customers");
       } finally {
         setLoading(false);
       }
@@ -125,7 +125,7 @@ export default function KhachHangEdit() {
         duration: 4000,
         position: "top-center",
       });
-      navigate(`/customer/${id}`);
+      navigate(`/customers/${id}`);
     } catch (error) {
       const errorMsg = error.response?.data?.message || "Có lỗi xảy ra khi cập nhật";
       toast.error(errorMsg, {
@@ -149,7 +149,7 @@ export default function KhachHangEdit() {
 
   return (
     <div className="container mx-auto py-10 max-w-2xl">
-      <Button variant="ghost" className="mb-6 text-purple-600 hover:text-purple-800" onClick={() => navigate(`/customer/${id}`)}>
+      <Button variant="ghost" className="mb-6 text-purple-600 hover:text-purple-800" onClick={() => navigate(`/customers/${id}`)}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại chi tiết
       </Button>
 
@@ -356,7 +356,7 @@ export default function KhachHangEdit() {
             </CardContent>
 
             <CardFooter className="flex justify-end space-x-4 p-8 bg-gradient-to-r from-purple-50 to-purple-100 rounded-b-2xl">
-              <Button type="button" variant="outline" className="border-purple-400 text-purple-700 hover:bg-purple-100 transition-colors" onClick={() => navigate(`/customer/${id}`)}>
+              <Button type="button" variant="outline" className="border-purple-400 text-purple-700 hover:bg-purple-100 transition-colors" onClick={() => navigate(`/customers/${id}`)}>
                 Hủy
               </Button>
               <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white transition-colors min-w-[140px]">

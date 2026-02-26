@@ -21,7 +21,7 @@ export default function KhachHangDetails() {
         setKhachHang(data);
       } catch (error) {
         toast.error(error.response?.data?.message || "Không thể tải thông tin khách hàng");
-        navigate("/customer");
+        navigate("/customers");
       } finally {
         setLoading(false);
       }
@@ -45,14 +45,14 @@ export default function KhachHangDetails() {
 
   return (
     <div className="container mx-auto py-10 max-w-2xl">
-      <Button variant="ghost" className="mb-6 text-purple-600 hover:text-purple-800" onClick={() => navigate("/customer")}>
+      <Button variant="ghost" className="mb-6 text-purple-600 hover:text-purple-800" onClick={() => navigate("/customers")}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại danh sách
       </Button>
 
       <Card className="border-0 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-white">
         <CardHeader className="bg-purple-100 p-6 rounded-t-2xl flex justify-between items-center">
           <CardTitle className="text-2xl font-bold text-purple-800">Chi tiết khách hàng</CardTitle>
-          <Button onClick={() => navigate(`/customer/${id}/edit`)} className="bg-purple-600 hover:bg-purple-700 text-white">
+          <Button onClick={() => navigate(`/customers/${id}/edit`)} className="bg-purple-600 hover:bg-purple-700 text-white">
             <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa
           </Button>
         </CardHeader>

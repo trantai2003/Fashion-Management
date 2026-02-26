@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,12 +30,12 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import PaginationComponent from "../product/components/product/ProductComponent";
 import apiClient from "@/services/apiClient";
-import { 
-    Search, 
-    Plus, 
-    Eye, 
-    Edit, 
-    Trash2, 
+import {
+    Search,
+    Plus,
+    Eye,
+    Edit,
+    Trash2,
     User,
     UserCheck,
     UserX,
@@ -82,7 +83,7 @@ export default function KhachHangPage() {
     const [currentPage, setCurrentPage] = useState(0);
     const [pageSize, setPageSize] = useState(20);
     const [totalItems, setTotalItems] = useState(0);
-
+    const navigate = useNavigate();
     // Filter states
     const [searchQuery, setSearchQuery] = useState("");
     const [loaiKhachHang, setLoaiKhachHang] = useState("all");
@@ -90,7 +91,6 @@ export default function KhachHangPage() {
     const [showFilterPanel, setShowFilterPanel] = useState(false);
 
     // Dialog states
-    const [showDetailDialog, setShowDetailDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [selectedKhachHang, setSelectedKhachHang] = useState(null);
@@ -117,7 +117,7 @@ export default function KhachHangPage() {
         setLoading(true);
         try {
             const filters = [];
-            
+
             // Search filter - tìm theo tên, mã, số điện thoại, email
             if (searchQuery.trim()) {
                 filters.push({
@@ -211,16 +211,6 @@ export default function KhachHangPage() {
         setCurrentPage(0);
     };
 
-    const handleViewDetail = async (khachHang) => {
-        try {
-            const detail = await khachHangService.getById(khachHang.id);
-            setSelectedKhachHang(detail);
-            setShowDetailDialog(true);
-        } catch (error) {
-            showAlert("Lỗi khi tải chi tiết khách hàng: " + error.message, "error");
-        }
-    };
-
     const handleDeleteClick = (khachHang) => {
         setSelectedKhachHang(khachHang);
         setShowDeleteDialog(true);
@@ -308,10 +298,10 @@ export default function KhachHangPage() {
             1: { label: "Hoạt động", variant: "success", icon: UserCheck },
             0: { label: "Ngưng hoạt động", variant: "red", icon: UserX }
         };
-        
+
         const status = statusMap[trangThai] || statusMap[0];
         const Icon = status.icon;
-        
+
         return (
             <Badge variant={status.variant} className="flex items-center gap-1">
                 <Icon className="w-3 h-3" />
@@ -335,9 +325,9 @@ export default function KhachHangPage() {
             "doanh_nghiep": { label: "Doanh nghiệp", className: "bg-purple-100 text-purple-700 border-purple-200" },
             "si": { label: "Khách sỉ", className: "bg-green-100 text-green-700 border-green-200" }
         };
-        
+
         const loai = loaiMap[loaiKhachHang] || { label: loaiKhachHang, className: "bg-gray-100 text-gray-700" };
-        
+
         return (
             <Badge variant="outline" className={loai.className}>
                 {loai.label}
@@ -377,7 +367,7 @@ export default function KhachHangPage() {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-2xl font-bold">Quản lý khách hàng</CardTitle>
-                        <Button 
+                        <Button
                             onClick={handleOpenCreateDialog}
                             className="bg-purple-600 hover:bg-purple-700"
                         >
@@ -407,8 +397,8 @@ export default function KhachHangPage() {
                             <Button onClick={handleSearch} className="bg-purple-600 hover:bg-purple-700">
                                 Tìm kiếm
                             </Button>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 onClick={() => setShowFilterPanel(!showFilterPanel)}
                                 className={showFilterPanel ? "bg-purple-50 border-purple-300" : ""}
                             >
@@ -514,12 +504,12 @@ export default function KhachHangPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleViewDetail(khachHang)}
+                                                        onClick={() => navigate(`/customers/${khachHang.id}`)}
                                                         className="hover:bg-blue-50 hover:text-blue-600"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </Button>
-                                                    
+
                                                     {/* <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -527,7 +517,7 @@ export default function KhachHangPage() {
                                                     >
                                                         <Edit className="w-4 h-4" />
                                                     </Button> */}
-                                                    
+
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -575,14 +565,14 @@ export default function KhachHangPage() {
                             <DialogTitle className="text-xl text-gray-900">Thêm khách hàng mới</DialogTitle>
                         </div>
                     </DialogHeader>
-                    
+
                     <div className="space-y-6 py-4">
                         {/* Thông tin cơ bản */}
                         <div className="space-y-4">
                             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide border-l-4 border-purple-600 pl-3">
                                 Thông tin cơ bản
                             </h3>
-                            
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="maKhachHang" className="text-sm font-medium text-gray-700">
@@ -634,8 +624,8 @@ export default function KhachHangPage() {
                                     <Label htmlFor="loaiKhachHang" className="text-sm font-medium text-gray-700">
                                         Loại khách hàng
                                     </Label>
-                                    <Select 
-                                        value={formData.loaiKhachHang} 
+                                    <Select
+                                        value={formData.loaiKhachHang}
                                         onValueChange={(value) => handleFormChange("loaiKhachHang", value)}
                                     >
                                         <SelectTrigger id="loaiKhachHang">
@@ -656,7 +646,7 @@ export default function KhachHangPage() {
                             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide border-l-4 border-purple-600 pl-3">
                                 Thông tin liên hệ
                             </h3>
-                            
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="soDienThoai" className="text-sm font-medium text-gray-700 flex items-center gap-1">
@@ -710,140 +700,20 @@ export default function KhachHangPage() {
                     </div>
 
                     <DialogFooter className="border-t border-gray-200 pt-4 flex gap-2">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => setShowCreateDialog(false)}
                             disabled={isSubmitting}
                             className="flex-1"
                         >
                             Hủy
                         </Button>
-                        <Button 
+                        <Button
                             onClick={handleCreateSubmit}
                             disabled={isSubmitting}
                             className="flex-1 bg-purple-600 hover:bg-purple-700"
                         >
                             {isSubmitting ? "Đang xử lý..." : "Thêm khách hàng"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Detail Dialog */}
-            <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-                <DialogContent className="sm:max-w-[900px]
-    max-h-[90vh]
-    bg-white text-gray-900
-    border border-gray-200
-    rounded-xl shadow-sm
-    dark:bg-white dark:text-gray-900">
-                    <DialogHeader className="border-b pb-4">
-                        <div className="flex items-center justify-between">
-                            <DialogTitle className="flex items-center gap-2 text-xl">
-                                <div className="p-2 bg-purple-100 rounded-lg">
-                                    <User className="w-5 h-5 text-purple-600" />
-                                </div>
-                                <span className="text-gray-900">Chi tiết khách hàng</span>
-                            </DialogTitle>
-                        </div>
-                    </DialogHeader>
-                    
-                    {selectedKhachHang && (
-                        <div className="space-y-6 py-4">
-                            {/* Header Info */}
-                            <div className="flex items-start justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100">
-                                <div className="space-y-1">
-                                    <Label className="text-xs text-gray-500 uppercase tracking-wide font-semibold">
-                                        Mã khách hàng
-                                    </Label>
-                                    <p className="text-2xl font-bold text-gray-900">{selectedKhachHang.maKhachHang}</p>
-                                    <p className="text-lg text-gray-700">{selectedKhachHang.tenKhachHang}</p>
-                                </div>
-                                <div className="flex flex-col gap-2 items-end">
-                                    {getTrangThaiBadge(selectedKhachHang.trangThai)}
-                                    {getLoaiKhachHangBadge(selectedKhachHang.loaiKhachHang)}
-                                </div>
-                            </div>
-
-                            {/* Main Info Grid */}
-                            <div className="grid grid-cols-2 gap-6">
-                                {selectedKhachHang.nguoiLienHe && (
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                            Người liên hệ
-                                        </Label>
-                                        <div className="flex items-center gap-2 text-gray-900">
-                                            <User className="w-4 h-4 text-gray-400" />
-                                            <span className="font-medium">{selectedKhachHang.nguoiLienHe}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedKhachHang.soDienThoai && (
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                            Số điện thoại
-                                        </Label>
-                                        <div className="flex items-center gap-2 text-gray-900">
-                                            <Phone className="w-4 h-4 text-gray-400" />
-                                            <span className="font-medium">{selectedKhachHang.soDienThoai}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedKhachHang.email && (
-                                    <div className="space-y-2 col-span-2">
-                                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                            Email
-                                        </Label>
-                                        <div className="flex items-center gap-2 text-gray-900">
-                                            <Mail className="w-4 h-4 text-gray-400" />
-                                            <span className="font-medium">{selectedKhachHang.email}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedKhachHang.diaChi && (
-                                    <div className="space-y-2 col-span-2">
-                                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                            Địa chỉ
-                                        </Label>
-                                        <div className="flex items-start gap-2 text-gray-900">
-                                            <MapPin className="w-4 h-4 text-gray-400 mt-1" />
-                                            <span className="font-medium">{selectedKhachHang.diaChi}</span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Additional Info */}
-                            <div className="space-y-4 pt-4 border-t border-gray-200">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                            Ngày tạo
-                                        </Label>
-                                        <p className="text-gray-900 font-medium">{formatDate(selectedKhachHang.ngayTao)}</p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                            Ngày cập nhật
-                                        </Label>
-                                        <p className="text-gray-900 font-medium">{formatDate(selectedKhachHang.ngayCapNhat)}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <DialogFooter className="border-t border-gray-200 pt-4">
-                        <Button 
-                            variant="outline" 
-                            onClick={() => setShowDetailDialog(false)}
-                            className="w-full sm:w-auto bg-white hover:bg-gray-50"
-                        >
-                            Đóng
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -865,7 +735,7 @@ export default function KhachHangPage() {
                             <DialogTitle className="text-xl text-gray-900">Xác nhận xóa</DialogTitle>
                         </div>
                     </DialogHeader>
-                    
+
                     <div className="py-4">
                         <p className="text-gray-700">
                             Bạn có chắc chắn muốn xóa khách hàng{" "}
@@ -875,17 +745,17 @@ export default function KhachHangPage() {
                             Khách hàng sẽ được chuyển sang trạng thái "Ngưng hoạt động".
                         </p>
                     </div>
-                    
+
                     <DialogFooter className="gap-2">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => setShowDeleteDialog(false)}
                             className="flex-1"
                         >
                             Hủy
                         </Button>
-                        <Button 
-                            variant="destructive" 
+                        <Button
+                            variant="destructive"
                             onClick={handleDeleteConfirm}
                             className="flex-1 bg-red-600 hover:bg-red-700"
                         >
