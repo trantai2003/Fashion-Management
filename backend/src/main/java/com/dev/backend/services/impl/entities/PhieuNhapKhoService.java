@@ -1,5 +1,6 @@
 package com.dev.backend.services.impl.entities;
 
+import com.dev.backend.config.SecurityContextHolder;
 import com.dev.backend.constant.enums.TrangThaiPhieuNhap;
 import com.dev.backend.dto.request.ChiTietPhieuNhapKhoCreating;
 import com.dev.backend.dto.request.KhaiBaoLoRequest;
@@ -57,12 +58,31 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
 
     @Transactional
     public PhieuNhapKho createDraft(PhieuNhapKhoCreating request) {
-        if (request.getChiTietPhieuNhapKhos() == null || request.getChiTietPhieuNhapKhos().isEmpty()) {
+        if (request.getChiTietPhieuNhapKhos() == null
+                || request.getChiTietPhieuNhapKhos().isEmpty()) {
             throw new RuntimeException("Danh sách sản phẩm nhập không được rỗng");
         }
 
         DonMuaHang donMuaHang = donMuaHangRepository.findById(request.getDonMuaHangId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy PO"));
+        Integer currentKhoId = SecurityContextHolder.getKhoId();
+
+        if (currentKhoId == null) {
+            throw new RuntimeException("Không xác định được kho hiện tại");
+        }
+
+        if (donMuaHang.getKhoNhap() == null
+                || !donMuaHang.getKhoNhap().getId().equals(currentKhoId)) {
+
+            throw new RuntimeException(
+                    "PO không thuộc kho hiện tại. " +
+                            "Kho PO: " +
+                            (donMuaHang.getKhoNhap() != null
+                                    ? donMuaHang.getKhoNhap().getId()
+                                    : "null") +
+                            " | Kho hiện tại: " + currentKhoId
+            );
+        }
 
         int retry = 0;
         int maxRetry = 5;
@@ -72,8 +92,8 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                         .soPhieuNhap(generateSoPhieu())
                         .donMuaHang(donMuaHang)
                         .nhaCungCap(donMuaHang.getNhaCungCap())
+                        .ngayNhap(null)
                         .kho(donMuaHang.getKhoNhap())
-                        .ngayNhap(request.getNgayNhap() != null ? request.getNgayNhap() : Instant.now())
                         .ghiChu(request.getGhiChu())
                         .trangThai(TrangThaiPhieuNhap.DRAFT.getValue())
                         .tongTien(BigDecimal.ZERO)
@@ -81,26 +101,54 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
 
                 phieuNhapKho = repository.save(phieuNhapKho);
 
+                BigDecimal tongTien = BigDecimal.ZERO;
                 for (ChiTietPhieuNhapKhoCreating item : request.getChiTietPhieuNhapKhos()) {
                     ChiTietDonMuaHang ctPo = donMuaHang.getChiTietDonMuaHangs().stream()
-                            .filter(poItem -> poItem.getBienTheSanPham().getId().equals(item.getBienTheSanPhamId()))
+                            .filter(poItem ->
+                                    poItem.getBienTheSanPham().getId()
+                                            .equals(item.getBienTheSanPhamId())
+                            )
                             .findFirst()
-                            .orElseThrow(() -> new RuntimeException("Sản phẩm không thuộc PO"));
+                            .orElseThrow(() ->
+                                    new RuntimeException("Sản phẩm không thuộc PO")
+                            );
 
+                    BigDecimal soLuongNhap = item.getSoLuongDuKienNhap();
+                    if (soLuongNhap == null
+                            || soLuongNhap.compareTo(BigDecimal.ZERO) <= 0) {
+                        throw new RuntimeException(
+                                "Số lượng nhập phải lớn hơn 0"
+                        );
+                    }
+                    BigDecimal soLuongDat = ctPo.getSoLuongDat();
+                    BigDecimal soLuongDaNhan =
+                            ctPo.getSoLuongDaNhan() != null
+                                    ? ctPo.getSoLuongDaNhan()
+                                    : BigDecimal.ZERO;
+                    BigDecimal soLuongConLai =
+                            soLuongDat.subtract(soLuongDaNhan);
+                    if (soLuongNhap.compareTo(soLuongConLai) > 0) {
+                        throw new RuntimeException(
+                                "Sản phẩm "
+                                        + ctPo.getBienTheSanPham().getMaSku()
+                                        + " nhập vượt quá số lượng còn lại ("
+                                        + soLuongConLai + ")"
+                        );
+                    }
                     ChiTietPhieuNhapKho ct = ChiTietPhieuNhapKho.builder()
                             .phieuNhapKho(phieuNhapKho)
                             .bienTheSanPham(ctPo.getBienTheSanPham())
-                            .soLuongNhap(item.getSoLuongDuKienNhap())
+                            .soLuongNhap(soLuongNhap)
                             .donGia(ctPo.getDonGia())
                             .loHang(null)
                             .build();
-
-                    if (item.getSoLuongDuKienNhap().compareTo(ctPo.getSoLuongDat()) > 0) {
-                        throw new RuntimeException("Sản phẩm " + ctPo.getBienTheSanPham().getMaSku() + " nhập quá số lượng đặt");
-                    }
-
                     chiTietPhieuNhapKhoRepository.save(ct);
+                    tongTien = tongTien.add(
+                            ctPo.getDonGia().multiply(soLuongNhap)
+                    );
                 }
+                phieuNhapKho.setTongTien(tongTien);
+                repository.save(phieuNhapKho);
                 return phieuNhapKho;
             } catch (org.springframework.dao.DataIntegrityViolationException ex) {
                 if (isDuplicateSoPhieu(ex) && retry < maxRetry) {
@@ -327,23 +375,47 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                 .filter(ct -> ct.getLoHang() == null)
                 .map(ct -> {
                     BigDecimal soLuongDaKhaiBao = chiTietPhieuNhapKhoRepository.sumSoLuongDaKhaiBao(id, ct.getBienTheSanPham().getId());
+                    BigDecimal safeSoLuongDaKhaiBao = (soLuongDaKhaiBao != null) ? soLuongDaKhaiBao : BigDecimal.ZERO;
+
                     return PhieuNhapKhoItemDto.builder()
                             .bienTheSanPhamId(ct.getBienTheSanPham().getId())
                             .sku(ct.getBienTheSanPham().getMaSku())
                             .tenBienThe(ct.getBienTheSanPham().getSanPham().getTenSanPham())
                             .soLuongCanNhap(ct.getSoLuongNhap())
-                            .soLuongDaKhaiBao(soLuongDaKhaiBao)
-                            .daDuLo(soLuongDaKhaiBao.compareTo(ct.getSoLuongNhap()) >= 0)
+                            .soLuongDaKhaiBao(safeSoLuongDaKhaiBao)
+                            .daDuLo(safeSoLuongDaKhaiBao.compareTo(ct.getSoLuongNhap()) >= 0)
                             .build();
                 }).toList();
 
-        return ChiTietPhieuNhapKhoDto.builder()
-                .id(phieu.getId()).soPhieuNhap(phieu.getSoPhieuNhap()).trangThai(phieu.getTrangThai())
-                .ngayNhap(phieu.getNgayNhap()).donMuaHangId(phieu.getDonMuaHang().getId())
-                .soDonMua(phieu.getDonMuaHang().getSoDonMua()).nhaCungCapId(phieu.getNhaCungCap().getId())
-                .tenNhaCungCap(phieu.getNhaCungCap().getTenNhaCungCap()).khoId(phieu.getKho().getId())
+        ChiTietPhieuNhapKhoDto.ChiTietPhieuNhapKhoDtoBuilder builder = ChiTietPhieuNhapKhoDto.builder()
+                .id(phieu.getId())
+                .soPhieuNhap(phieu.getSoPhieuNhap())
+                .trangThai(phieu.getTrangThai())
+                .ngayNhap(phieu.getNgayNhap())
+                .khoId(phieu.getKho().getId())
                 .tenKho(phieu.getKho().getTenKho())
-                .items(items).build();
+                .items(items)
+                .tenNguoiNhap(phieu.getNguoiNhap() != null ? phieu.getNguoiNhap().getHoTen() : null)
+                .tenNguoiDuyet(phieu.getNguoiDuyet() != null ? phieu.getNguoiDuyet().getHoTen() : null);
+
+        if (phieu.getDonMuaHang() == null) {
+            builder.loaiNhap("Chuyển kho nội bộ");
+            List<String> tenKhoNguonList = lichSuGiaoDichKhoRepository.findTenKhoNguonByPhieuNhap(id);
+            if (!tenKhoNguonList.isEmpty()) {
+                builder.tenKhoChuyenTu(tenKhoNguonList.get(0));
+            }
+        } else {
+            builder.loaiNhap("Nhập từ đơn mua hàng");
+            builder.donMuaHangId(phieu.getDonMuaHang().getId())
+                    .soDonMua(phieu.getDonMuaHang().getSoDonMua());
+
+            if (phieu.getNhaCungCap() != null) {
+                builder.nhaCungCapId(phieu.getNhaCungCap().getId())
+                        .tenNhaCungCap(phieu.getNhaCungCap().getTenNhaCungCap());
+            }
+        }
+
+        return builder.build();
     }
 
     private String generateSoPhieu() {

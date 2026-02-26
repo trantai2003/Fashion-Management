@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useSidebar } from "@/components/ui/sidebar";
 export default function BackofficeHeader({
@@ -21,6 +21,7 @@ export default function BackofficeHeader({
   subtitle,
 }) {
   const { toggleSidebar, open } = useSidebar();
+  const navigate = useNavigate();
   const token = localStorage.getItem("access_token");
 
   let userId = null;
@@ -35,6 +36,11 @@ export default function BackofficeHeader({
       console.error("Invalid token", e);
     }
   }
+  const handleLogout = () => {
+    localStorage.clear()
+    sessionStorage.clear();
+    navigate("/login");
+  };
   return (
     <header className="sticky top-0 z-40 bg-white border-b">
       <div className="h-16 px-6 flex items-center justify-between">
@@ -77,7 +83,7 @@ export default function BackofficeHeader({
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="" alt="Admin Avatar" />
                   <AvatarFallback className="bg-purple-600 text-white text-sm font-semibold">
-                    A
+                    {username ? username.charAt(0).toUpperCase() : 'A'}
                   </AvatarFallback>
                 </Avatar>
 
@@ -123,6 +129,7 @@ export default function BackofficeHeader({
               <DropdownMenuSeparator className="my-1 bg-gray-200" />
 
               <DropdownMenuItem
+                onClick={handleLogout}
                 className="
         text-sm px-3 py-2 rounded-sm
         text-red-600

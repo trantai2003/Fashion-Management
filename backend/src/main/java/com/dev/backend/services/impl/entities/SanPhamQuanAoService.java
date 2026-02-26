@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,9 +84,9 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
 
         @Transactional
         public ResponseEntity<ResponseData<SanPhamQuanAoDto>> create(
-                        SanPhamQuanAoCreating creating,
-                        List<MultipartFile> anhSanPhams,
-                        List<MultipartFile> anhBienThes) {
+                SanPhamQuanAoCreating creating,
+                List<MultipartFile> anhSanPhams,
+                List<MultipartFile> anhBienThes) {
 
                 List<BienTheSanPhamCreating> list = new ArrayList<>(creating.getBienTheSanPhams());
                 Set<BienTheSanPhamCreating> set = new HashSet<>(creating.getBienTheSanPhams());
@@ -96,7 +97,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
 
                 Instant instantNow = Instant.now();
                 Optional<SanPhamQuanAo> findingSanPhamQuanAo = repository
-                                .findSanPhamQuanAoByMaSanPham(creating.getMaSanPham());
+                        .findSanPhamQuanAoByMaSanPham(creating.getMaSanPham());
                 if (findingSanPhamQuanAo.isPresent()) {
                         throw new CommonException("Mã sản phẩm đã tồn tại: " + creating.getMaSanPham());
                 }
@@ -104,13 +105,13 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 SanPhamQuanAo sanPhamQuanAo = SanPhamQuanAoCreating.toEntity(creating);
 
                 DanhMucQuanAo danhMucQuanAo = danhMucQuanAoService.getOne(creating.getDanhMucId()).orElseThrow(
-                                () -> new CommonException(
-                                                "Danh mục quần không tồn tại id: " + creating.getDanhMucId()));
+                        () -> new CommonException(
+                                "Danh mục quần không tồn tại id: " + creating.getDanhMucId()));
 
                 Integer nguoiTaoId = SecurityContextHolder.getUser().getId();
 
                 NguoiDung nguoiTao = nguoiDungService.getOne(nguoiTaoId).orElseThrow(
-                                () -> new CommonException("Người tạo không tồn tại id: " + nguoiTaoId));
+                        () -> new CommonException("Người tạo không tồn tại id: " + nguoiTaoId));
 
                 sanPhamQuanAo.setDanhMuc(danhMucQuanAo);
                 sanPhamQuanAo.setNguoiTao(nguoiTao);
@@ -123,105 +124,105 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                 int i = 0;
                                 for (MultipartFile file : anhSanPhams) {
                                         String objectName = minioService.upload(file,
-                                                        ITable.san_pham_quan_ao + "_" + sanPhamQuanAo.getMaSanPham()
-                                                                        + "_" + now.getTime() + "_" + i++);
+                                                ITable.san_pham_quan_ao + "_" + sanPhamQuanAo.getMaSanPham()
+                                                        + "_" + now.getTime() + "_" + i++);
                                         TepTin tepTin = tepTinService.create(
-                                                        TepTin.builder()
-                                                                        .tenTepGoc(objectName)
-                                                                        .tenTaiLen(objectName)
-                                                                        .tenLuuTru(objectName)
-                                                                        .duongDan(minioService.getPublicUrl(objectName))
-                                                                        .loaiTepTin(FileType.IMAGE.toString())
-                                                                        .duoiTep(minioService.getObjectInfo(objectName)
-                                                                                        .getUserMetadata()
-                                                                                        .get("file-extension"))
-                                                                        .trangThai(1)
-                                                                        .ngayTao(instantNow)
-                                                                        .build());
+                                                TepTin.builder()
+                                                        .tenTepGoc(objectName)
+                                                        .tenTaiLen(objectName)
+                                                        .tenLuuTru(objectName)
+                                                        .duongDan(minioService.getPublicUrl(objectName))
+                                                        .loaiTepTin(FileType.IMAGE.toString())
+                                                        .duoiTep(minioService.getObjectInfo(objectName)
+                                                                .getUserMetadata()
+                                                                .get("file-extension"))
+                                                        .trangThai(1)
+                                                        .ngayTao(instantNow)
+                                                        .build());
 
                                         anhQuanAoService.create(
-                                                        AnhQuanAo.builder()
-                                                                        .quanAo(sanPhamQuanAo)
-                                                                        .tepTin(tepTin)
-                                                                        .anhChinh(i == 1 ? 1 : 0)
-                                                                        .trangThai(1)
-                                                                        .ngayTao(instantNow)
-                                                                        .build());
+                                                AnhQuanAo.builder()
+                                                        .quanAo(sanPhamQuanAo)
+                                                        .tepTin(tepTin)
+                                                        .anhChinh(i == 1 ? 1 : 0)
+                                                        .trangThai(1)
+                                                        .ngayTao(instantNow)
+                                                        .build());
 
                                 }
                         } catch (Exception e) {
                                 log.error("Lỗi tạo tệp tin cho quần áo: {}", creating.getTenSanPham(), e);
                                 throw new RuntimeException("Lỗi tạo tệp tin cho quần áo: " + creating.getTenSanPham(),
-                                                e);
+                                        e);
                         }
                 }
 
                 int imageCount = 0;
                 for (BienTheSanPhamCreating btspCreating : creating.getBienTheSanPhams()) {
                         Optional<BienTheSanPham> findingBtsp = bienTheSanPhamService.checkExist(
-                                        sanPhamQuanAo.getId(),
-                                        btspCreating.getMauSacId(),
-                                        btspCreating.getSizeId(),
-                                        btspCreating.getMaSku(),
-                                        btspCreating.getMaVachSku());
+                                sanPhamQuanAo.getId(),
+                                btspCreating.getMauSacId(),
+                                btspCreating.getSizeId(),
+                                btspCreating.getMaSku(),
+                                btspCreating.getMaVachSku());
                         if (findingBtsp.isPresent()) {
                                 throw new CommonException(
-                                                "Mã biến thể sản phẩm đã tồn tại: " + btspCreating.getMaSku());
+                                        "Mã biến thể sản phẩm đã tồn tại: " + btspCreating.getMaSku());
                         }
 
                         BienTheSanPham bienTheSanPham = BienTheSanPhamCreating.toEntity(btspCreating);
 
                         bienTheSanPham.setSanPham(sanPhamQuanAo);
                         bienTheSanPham.setMauSac(mauSacService.getOne(btspCreating.getMauSacId()).orElseThrow(
-                                        () -> new CommonException(
-                                                        "Không tìm thấy màu id: " + btspCreating.getMauSacId())));
+                                () -> new CommonException(
+                                        "Không tìm thấy màu id: " + btspCreating.getMauSacId())));
                         bienTheSanPham.setSize(sizeService.getOne(btspCreating.getSizeId()).orElseThrow(
-                                        () -> new CommonException(
-                                                        "Không tìm thấy size id: " + btspCreating.getSizeId())));
+                                () -> new CommonException(
+                                        "Không tìm thấy size id: " + btspCreating.getSizeId())));
                         bienTheSanPham.setChatLieu(chatLieuService.getOne(btspCreating.getChatLieuId()).orElseThrow(
-                                        () -> new CommonException("Không tìm thấy chat lieu id: "
-                                                        + btspCreating.getChatLieuId())));
+                                () -> new CommonException("Không tìm thấy chat lieu id: "
+                                        + btspCreating.getChatLieuId())));
                         bienTheSanPhamService.create(bienTheSanPham);
 
                         if (anhBienThes != null && !anhBienThes.isEmpty()) {
                                 try {
                                         String objectName = minioService.upload(anhBienThes.get(imageCount),
-                                                        ITable.bien_the_san_pham + "_" + sanPhamQuanAo.getMaSanPham()
-                                                                        + "_" + now.getTime() + "_" + imageCount++);
+                                                ITable.bien_the_san_pham + "_" + sanPhamQuanAo.getMaSanPham()
+                                                        + "_" + now.getTime() + "_" + imageCount++);
                                         TepTin tepTin = tepTinService.create(
-                                                        TepTin.builder()
-                                                                        .tenTepGoc(objectName)
-                                                                        .tenTaiLen(objectName)
-                                                                        .tenLuuTru(objectName)
-                                                                        .duongDan(minioService.getPublicUrl(objectName))
-                                                                        .loaiTepTin(FileType.IMAGE.toString())
-                                                                        .duoiTep(minioService.getObjectInfo(objectName)
-                                                                                        .getUserMetadata()
-                                                                                        .get("file-extension"))
-                                                                        .trangThai(1)
-                                                                        .ngayTao(instantNow)
-                                                                        .build());
+                                                TepTin.builder()
+                                                        .tenTepGoc(objectName)
+                                                        .tenTaiLen(objectName)
+                                                        .tenLuuTru(objectName)
+                                                        .duongDan(minioService.getPublicUrl(objectName))
+                                                        .loaiTepTin(FileType.IMAGE.toString())
+                                                        .duoiTep(minioService.getObjectInfo(objectName)
+                                                                .getUserMetadata()
+                                                                .get("file-extension"))
+                                                        .trangThai(1)
+                                                        .ngayTao(instantNow)
+                                                        .build());
 
                                         anhBienTheService.create(
-                                                        AnhBienThe.builder()
-                                                                        .bienThe(bienTheSanPham)
-                                                                        .tepTin(tepTin)
-                                                                        .trangThai(btspCreating.getTrangThai())
-                                                                        .ngayTao(instantNow)
-                                                                        .build());
+                                                AnhBienThe.builder()
+                                                        .bienThe(bienTheSanPham)
+                                                        .tepTin(tepTin)
+                                                        .trangThai(btspCreating.getTrangThai())
+                                                        .ngayTao(instantNow)
+                                                        .build());
                                 } catch (Exception e) {
                                         log.error("Lỗi tạo tệp tin cho biến thể quần áo: {}", btspCreating.getMaSku(),
-                                                        e);
+                                                e);
                                         throw new RuntimeException(
-                                                        "Lỗi tạo tệp tin cho quần áo: " + btspCreating.getMaSku(), e);
+                                                "Lỗi tạo tệp tin cho quần áo: " + btspCreating.getMaSku(), e);
                                 }
                         }
 
                 }
 
                 sanPhamQuanAo = getOne(sanPhamQuanAo.getId()).orElseThrow(
-                                () -> new CommonException(
-                                                "Không tìm thấy sản phẩm đã tạo: " + creating.getMaSanPham()));
+                        () -> new CommonException(
+                                "Không tìm thấy sản phẩm đã tạo: " + creating.getMaSanPham()));
 
                 String giaTriMoiJson;
 
@@ -235,32 +236,32 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 }
 
                 lichSuThayDoiService.create(
-                                LichSuThayDoi.builder()
-                                                .loaiThamChieu(ITable.san_pham_quan_ao)
-                                                .idThamChieu(sanPhamQuanAo.getId())
-                                                .kho(null)
-                                                .hanhDong(IHanhDong.them_moi_san_pham)
-                                                .giaTriCu("")
-                                                .giaTriMoi(giaTriMoiJson)
-                                                .nguoiThucHien(nguoiTao)
-                                                .ngayThucHien(instantNow)
-                                                .ghiChu("Tạo sản phẩm mới: " + sanPhamQuanAo.getTenSanPham() + " id: "
-                                                                + sanPhamQuanAo.getId())
-                                                .build());
+                        LichSuThayDoi.builder()
+                                .loaiThamChieu(ITable.san_pham_quan_ao)
+                                .idThamChieu(sanPhamQuanAo.getId())
+                                .kho(null)
+                                .hanhDong(IHanhDong.them_moi_san_pham)
+                                .giaTriCu("")
+                                .giaTriMoi(giaTriMoiJson)
+                                .nguoiThucHien(nguoiTao)
+                                .ngayThucHien(instantNow)
+                                .ghiChu("Tạo sản phẩm mới: " + sanPhamQuanAo.getTenSanPham() + " id: "
+                                        + sanPhamQuanAo.getId())
+                                .build());
 
                 return ResponseEntity.ok(
-                                ResponseData.<SanPhamQuanAoDto>builder()
-                                                .status(HttpStatus.OK.value())
-                                                .data(sanPhamQuanAoMapper.toDto(sanPhamQuanAo))
-                                                .message("Success")
-                                                .build());
+                        ResponseData.<SanPhamQuanAoDto>builder()
+                                .status(HttpStatus.OK.value())
+                                .data(sanPhamQuanAoMapper.toDto(sanPhamQuanAo))
+                                .message("Success")
+                                .build());
         }
 
         @Transactional
         public ResponseEntity<ResponseData<SanPhamQuanAoDto>> update(
-                        SanPhamQuanAoUpdating updating,
-                        List<MultipartFile> anhSanPhams,
-                        List<MultipartFile> anhBienThes) {
+                SanPhamQuanAoUpdating updating,
+                List<MultipartFile> anhSanPhams,
+                List<MultipartFile> anhBienThes) {
 
                 List<BienTheSanPhamUpdating> list = new ArrayList<>(updating.getBienTheSanPhams());
                 Set<BienTheSanPhamUpdating> set = new HashSet<>(updating.getBienTheSanPhams());
@@ -270,11 +271,11 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 }
 
                 SanPhamQuanAo sanPhamQuanAo = getOne(updating.getId()).orElseThrow(
-                                () -> new CommonException("Không tìm thấy sản phẩm id: " + updating.getId()));
+                        () -> new CommonException("Không tìm thấy sản phẩm id: " + updating.getId()));
 
                 DanhMucQuanAo danhMucQuanAo = danhMucQuanAoService.getOne(updating.getDanhMucId()).orElseThrow(
-                                () -> new CommonException(
-                                                "Không tìm thấy danh mục quần áo id: " + updating.getDanhMucId()));
+                        () -> new CommonException(
+                                "Không tìm thấy danh mục quần áo id: " + updating.getDanhMucId()));
 
                 sanPhamQuanAo.setMaSanPham(updating.getMaSanPham());
                 sanPhamQuanAo.setTenSanPham(updating.getTenSanPham());
@@ -296,30 +297,30 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                 int i = 0;
                                 for (MultipartFile file : anhSanPhams) {
                                         String objectName = minioService.upload(file,
-                                                        ITable.san_pham_quan_ao + "_" + sanPhamQuanAo.getMaSanPham()
-                                                                        + "_" + now.getTime() + "_" + i++);
+                                                ITable.san_pham_quan_ao + "_" + sanPhamQuanAo.getMaSanPham()
+                                                        + "_" + now.getTime() + "_" + i++);
                                         TepTin tepTin = tepTinService.create(
-                                                        TepTin.builder()
-                                                                        .tenTepGoc(objectName)
-                                                                        .tenTaiLen(objectName)
-                                                                        .tenLuuTru(objectName)
-                                                                        .duongDan(minioService.getPublicUrl(objectName))
-                                                                        .loaiTepTin(FileType.IMAGE.toString())
-                                                                        .duoiTep(minioService.getObjectInfo(objectName)
-                                                                                        .getUserMetadata()
-                                                                                        .get("file-extension"))
-                                                                        .trangThai(1)
-                                                                        .ngayTao(sanPhamQuanAo.getNgayCapNhat())
-                                                                        .build());
+                                                TepTin.builder()
+                                                        .tenTepGoc(objectName)
+                                                        .tenTaiLen(objectName)
+                                                        .tenLuuTru(objectName)
+                                                        .duongDan(minioService.getPublicUrl(objectName))
+                                                        .loaiTepTin(FileType.IMAGE.toString())
+                                                        .duoiTep(minioService.getObjectInfo(objectName)
+                                                                .getUserMetadata()
+                                                                .get("file-extension"))
+                                                        .trangThai(1)
+                                                        .ngayTao(sanPhamQuanAo.getNgayCapNhat())
+                                                        .build());
 
                                         anhQuanAoService.create(
-                                                        AnhQuanAo.builder()
-                                                                        .quanAo(sanPhamQuanAo)
-                                                                        .tepTin(tepTin)
-                                                                        .anhChinh(i == 1 ? 1 : 0)
-                                                                        .trangThai(1)
-                                                                        .ngayTao(sanPhamQuanAo.getNgayCapNhat())
-                                                                        .build());
+                                                AnhQuanAo.builder()
+                                                        .quanAo(sanPhamQuanAo)
+                                                        .tepTin(tepTin)
+                                                        .anhChinh(i == 1 ? 1 : 0)
+                                                        .trangThai(1)
+                                                        .ngayTao(sanPhamQuanAo.getNgayCapNhat())
+                                                        .build());
                                 }
 
                         } catch (Exception e) {
@@ -333,10 +334,10 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                         try {
 
                                 BienTheSanPham bienThe = bienTheSanPhamService.getOne(btspUdating.getId())
-                                                .orElseThrow(
-                                                                () -> new CommonException(
-                                                                                "Không tìm thấy biến thể sản phâ id: "
-                                                                                                + btspUdating.getId()));
+                                        .orElseThrow(
+                                                () -> new CommonException(
+                                                        "Không tìm thấy biến thể sản phâ id: "
+                                                                + btspUdating.getId()));
 
                                 bienThe.setGiaVon(btspUdating.getGiaVon());
                                 bienThe.setGiaBan(btspUdating.getGiaBan());
@@ -345,25 +346,25 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                 if (btspUdating.isImageUpdated()) {
 
                                         String objectName = minioService.upload(anhBienThes.get(imageCount),
-                                                        ITable.bien_the_san_pham + "_" + sanPhamQuanAo.getMaSanPham()
-                                                                        + "_" + now.getTime() + "_" + imageCount++);
+                                                ITable.bien_the_san_pham + "_" + sanPhamQuanAo.getMaSanPham()
+                                                        + "_" + now.getTime() + "_" + imageCount++);
                                         TepTin tepTin = TepTin.builder()
-                                                        .tenTepGoc(objectName)
-                                                        .tenTaiLen(objectName)
-                                                        .tenLuuTru(objectName)
-                                                        .duongDan(minioService.getPublicUrl(objectName))
-                                                        .loaiTepTin(FileType.IMAGE.toString())
-                                                        .duoiTep(minioService.getObjectInfo(objectName)
-                                                                        .getUserMetadata().get("file-extension"))
-                                                        .trangThai(1)
-                                                        .build();
+                                                .tenTepGoc(objectName)
+                                                .tenTaiLen(objectName)
+                                                .tenLuuTru(objectName)
+                                                .duongDan(minioService.getPublicUrl(objectName))
+                                                .loaiTepTin(FileType.IMAGE.toString())
+                                                .duoiTep(minioService.getObjectInfo(objectName)
+                                                        .getUserMetadata().get("file-extension"))
+                                                .trangThai(1)
+                                                .build();
                                         tepTin = tepTinService.create(tepTin);
 
                                         if (bienThe.getAnhBienThe() != null) {
                                                 Integer idTepCu = bienThe.getAnhBienThe().getTepTin().getId();
                                                 bienThe.getAnhBienThe().setTepTin(tepTin);
                                                 anhBienTheService.update(bienThe.getAnhBienThe().getId(),
-                                                                bienThe.getAnhBienThe());
+                                                        bienThe.getAnhBienThe());
                                                 tepTinService.hardDeleteNoMessage(idTepCu);
                                         }
                                 }
@@ -375,19 +376,28 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                         }
                 }
                 sanPhamQuanAo = getOne(sanPhamQuanAo.getId()).orElseThrow(
-                                () -> new CommonException("Không tìm thấy sản phẩm quần áo id: " + updating.getId()));
+                        () -> new CommonException("Không tìm thấy sản phẩm quần áo id: " + updating.getId()));
                 return ResponseEntity.ok(
-                                ResponseData.<SanPhamQuanAoDto>builder()
-                                                .status(HttpStatus.OK.value())
-                                                .data(sanPhamQuanAoMapper.toDto(sanPhamQuanAo))
-                                                .message("Success")
-                                                .build());
+                        ResponseData.<SanPhamQuanAoDto>builder()
+                                .status(HttpStatus.OK.value())
+                                .data(sanPhamQuanAoMapper.toDto(sanPhamQuanAo))
+                                .message("Success")
+                                .build());
+        }
+
+        @Transactional(readOnly = true)
+        public SanPhamQuanAoDto getDetail(Integer id) {
+                // Sử dụng findDetailById vừa tạo ở Bước 1
+                SanPhamQuanAo sp = repository.findDetailById(id)
+                        .orElseThrow(() -> new CommonException("Không tìm thấy sản phẩm id: " + id));
+
+                return sanPhamQuanAoMapper.toDto(sp);
         }
 
         @Transactional
         public SanPhamQuanAo changeStatus(Integer id, Integer status) {
                 SanPhamQuanAo sanPhamQuanAo = getOne(id).orElseThrow(
-                                () -> new CommonException("Không tìm thấy sản phẩm id: " + id));
+                        () -> new CommonException("Không tìm thấy sản phẩm id: " + id));
                 sanPhamQuanAo.setTrangThai(status);
                 return repository.save(sanPhamQuanAo);
         }
@@ -395,7 +405,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
         @Transactional
         public void updateSkuPrice(Integer skuId, BigDecimal newPrice, BigDecimal newCost) {
                 BienTheSanPham bienThe = bienTheSanPhamService.getOne(skuId).orElseThrow(
-                                () -> new CommonException("Không tìm thấy biến thể id: " + skuId));
+                        () -> new CommonException("Không tìm thấy biến thể id: " + skuId));
                 if (newPrice != null)
                         bienThe.setGiaBan(newPrice);
                 if (newCost != null)

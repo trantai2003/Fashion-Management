@@ -1,0 +1,24 @@
+@media print {
+  body {
+    margin: 0;
+    background: white;
+  }
+
+  /* Ẩn tất cả */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Chỉ in khu vực hóa đơn */
+  #invoice-area,
+  #invoice-area * {
+    visibility: visible;
+  }
+
+  #invoice-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

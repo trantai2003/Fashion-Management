@@ -46,8 +46,7 @@ public class PhieuNhapKho {
     @JoinColumn(name = "kho_id", nullable = false)
     Kho kho;
 
-    @NotNull
-    @Column(name = "ngay_nhap", nullable = false)
+    @Column(name = "ngay_nhap", nullable = true)
     Instant ngayNhap;
 
     @ColumnDefault("0")

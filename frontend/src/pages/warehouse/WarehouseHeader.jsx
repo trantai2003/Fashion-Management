@@ -9,7 +9,7 @@ export default function WarehouseHeader({ onAddWarehouse }) {
             </div>
             <Button
                 onClick={onAddWarehouse}
-                className="bg-gradient-to-r from-purple-600 to-blue-600"
+                className="bg-gradient-to-r !text-white from-purple-600 to-blue-600"
             >
                 <Plus className="w-4 h-4 mr-2" />
                 Thêm kho mới

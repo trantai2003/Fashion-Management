@@ -11,6 +11,7 @@ import com.dev.backend.dto.request.FilterCriteria;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.customize.PhieuXuatKhoViewDto;
 import com.dev.backend.dto.response.customize.PickedLotDto;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
@@ -194,7 +195,30 @@ public class PhieuXuatKhoController {
                 chiTietPhieuXuatKhoId
         );
     }
-//    // Bình
+
+    @GetMapping("/{id}/view")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho,
+                    IRoleType.nhan_vien_ban_hang
+            }
+    )
+    public ResponseEntity<ResponseData<PhieuXuatKhoViewDto>> view(
+            @PathVariable Integer id
+    ) {
+
+        return ResponseEntity.ok(
+                ResponseData.<PhieuXuatKhoViewDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(phieuXuatKhoService.viewForSales(id))
+                        .message("Success")
+                        .build()
+        );
+    }
+
+    //    // Bình
 @PostMapping("/filter")
 @RequireAuth(
         roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},

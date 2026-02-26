@@ -1,5 +1,7 @@
 package com.dev.backend.dto.response.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -27,4 +29,6 @@ public class DanhMucQuanAoDto implements Serializable {
     Integer trangThai;
     Instant ngayTao;
     Set<DanhMucQuanAoDto> danhMucCons;
+    @JsonIgnoreProperties("danhMucCha")
+    DanhMucQuanAoDto danhMucCha;
 }

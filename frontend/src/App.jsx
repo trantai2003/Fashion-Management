@@ -6,9 +6,9 @@ import UserDetail from "./pages/UserDetail";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Warehouse from "./pages/warehouse/Warehouse";
-import ChatLieuList from "./pages/material/ChatLieuList";
-import ChatLieuDetail from "./pages/material/ChatLieuDetail";
-import ChatLieuDetailView from "./pages/material/ChatLieuDetailView";
+import ChatLieuList from "./pages/attribute/ChatLieuList";
+import ChatLieuDetail from "./pages/attribute/ChatLieuDetail";
+import ChatLieuDetailView from "./pages/attribute/ChatLieuDetailView";
 import SupplierList from "./pages/supplier/SupplierList";
 import SupplierDetail from "./pages/supplier/SupplierDetail";
 import SupplierDetailView from "./pages/supplier/SupplierDetailView";
@@ -19,7 +19,7 @@ import ViewUserDetailByAdmin from "@/pages/admin/ViewUserDetailByAdmin.jsx";
 import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx";
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
-import ColorSizeManagement from "@/pages/material/ColorSizeManagement.jsx";
+import ColorSizeManagement from "@/pages/attribute/ColorSizeManagement.jsx";
 import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
 import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
 import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
@@ -31,14 +31,22 @@ import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
 import SkuBuilder from "./pages/product/SkuBuilder";
 import PhieuXuatKhoCreate from "./pages/issue/PhieuXuatKhoCreate.jsx";
 import PhieuXuatKhoDetail from "./pages/issue/PhieuXuatKhoDetail.jsx";
+import PhieuXuatKhoView from "./pages/issue/PhieuXuatKhoView.jsx";
 import PickLot from "./pages/issue/PickLot.jsx";
 import QuoteSuccess from "./pages/supplier/pages/Quotesuccess.jsx";
 import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
 import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
+import KhachHangPage from "./pages/customer/KhachHangPage";
 import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
 import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
 import KhachHangDetails from "./pages/customer/KhachHangDetails";
 import KhachHangEdit from "./pages/customer/KhachHangEdit";
+import ProductAttributeHub from "@/pages/attribute/ProductAttributeHub";
+import DonBanHangList from "./pages/sales-orders/DonBanHangList";
+import DonBanHangDetail from "./pages/sales-orders/DonBanHangDetail";
+import DonBanHangInvoice from "./pages/sales-orders/DonBanHangInvoice";
+import DonBanHangCreate from "./pages/sales-orders/DonBanHangCreate";
+import ProductDetail from "./pages/product/components/product/ProductDetail";
 
 export default function App() {
   return (
@@ -73,13 +81,14 @@ export default function App() {
           />
 
           {/* Attributes */}
-          <Route path="/attributes" element={<ColorSizeManagement />} />
+          <Route path="/attribute" element={<ColorSizeManagement />} />
+          <Route path="/attributes" element={<ProductAttributeHub />} />
 
           {/* Product */}
           <Route path="/products" element={<ProductList />} />
           <Route path="/sku-builder" element={<SkuBuilder />} />
           <Route path="/danh-muc-quan-ao" element={<DanhMucQuanAoTree />} />
-
+          <Route path="/products/:id" element={<ProductDetail />} />
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/xuat-kho-noi-bo" element={<PhieuXuatKhoPage />} />
@@ -102,6 +111,7 @@ export default function App() {
           <Route path="/supplier/:id" element={<SupplierDetail />} />
 
           {/* Customer */}
+          <Route path="/customers" element={<KhachHangPage />} />
           <Route path="/customer/:id" element={<KhachHangDetails />} />
           <Route path="/customer/:id/edit" element={<KhachHangEdit />} />
 
@@ -116,6 +126,14 @@ export default function App() {
           <Route path="/goods-issues/create" element={<PhieuXuatKhoCreate />} />
           <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
           <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
+          <Route path="/goods-issues/:id/view" element={<PhieuXuatKhoView />} />
+
+          {/* Sales-orders */}
+          <Route path="/sales-orders" element={<DonBanHangList />} />
+          <Route path="/sales-orders/:id" element={<DonBanHangDetail />} />
+          <Route path="/sales-orders/:id/invoice" element={<DonBanHangInvoice />} />
+          <Route path="/sales-orders/create" element={<DonBanHangCreate />} />
+
         </Route>
 
         {/* ========== 404 ========== */}
