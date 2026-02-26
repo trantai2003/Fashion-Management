@@ -11,6 +11,7 @@ import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @AllArgsConstructor
 @Getter
@@ -36,9 +37,8 @@ public class DonBanHang {
     @JoinColumn(name = "khach_hang_id", nullable = false)
     KhachHang khachHang;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "kho_xuat_id", nullable = false)
+    @JoinColumn(name = "kho_xuat_id", nullable = true)
     Kho khoXuat;
 
     @NotNull
@@ -50,21 +50,17 @@ public class DonBanHang {
 
     @ColumnDefault("0")
     @Column(name = "trang_thai")
-    @Generated(event = EventType.INSERT)
     Integer trangThai;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "tien_hang", precision = 15, scale = 2)
     BigDecimal tienHang;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "phi_van_chuyen", precision = 15, scale = 2)
     BigDecimal phiVanChuyen;
 
     @ColumnDefault("0.00")
-    @Generated(event = EventType.INSERT)
     @Column(name = "tong_cong", precision = 15, scale = 2)
     BigDecimal tongCong;
 
@@ -100,5 +96,6 @@ public class DonBanHang {
     @Column(name = "ngay_cap_nhat")
     Instant ngayCapNhat;
 
-
+    @OneToMany(mappedBy = "donBanHang", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ChiTietDonBanHang> chiTietDonBanHangs;
 }

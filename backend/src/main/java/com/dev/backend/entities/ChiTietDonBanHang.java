@@ -43,7 +43,8 @@ public class ChiTietDonBanHang {
 
     @ColumnDefault("0.000")
     @Column(name = "so_luong_da_giao", precision = 15, scale = 3)
-    BigDecimal soLuongDaGiao;
+    @Builder.Default
+    BigDecimal soLuongDaGiao = BigDecimal.ZERO;
 
     @NotNull
     @Column(name = "don_gia", nullable = false, precision = 15, scale = 2)

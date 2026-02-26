@@ -1,15 +1,20 @@
 package com.dev.backend.services.impl.entities;
 
+import com.dev.backend.config.SecurityContextHolder;
+import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.dto.request.ChiTietPhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
+import com.dev.backend.dto.response.customize.PhieuXuatKhoViewDto;
 import com.dev.backend.dto.response.customize.PickedLotDto;
 import com.dev.backend.dto.response.entities.*;
 import com.dev.backend.entities.*;
+import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.repository.*;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,13 +57,56 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     @Transactional
     public PhieuXuatKho createFromSO(PhieuXuatKhoCreating request) {
         if (request.getChiTietXuat() == null || request.getChiTietXuat().isEmpty()) {
-            throw new RuntimeException("Phiếu xuất phải có ít nhất 1 sản phẩm");
+            throw new RuntimeException("Phiếu xuất phải có nhất 1 sản phẩm");
         }
+
         DonBanHang donBanHang = entityManager.find(DonBanHang.class, request.getDonBanHangId());
         if (donBanHang == null) {
             throw new RuntimeException("Đơn bán không tồn tại");
         }
-        Kho khoXuat = donBanHang.getKhoXuat();
+        if (donBanHang.getTrangThai() == 4) {
+            throw new RuntimeException("Đơn bán đã bị huỷ");
+        }
+
+        // 1. Lấy thông tin người dùng và kho từ Request
+        Integer requestKhoId = request.getKhoId();
+        if (requestKhoId == null) {
+            throw new RuntimeException("Vui lòng chọn kho xuất hàng");
+        }
+
+        // 2. Kiểm tra quyền hạn kho
+        // Admin được phép chọn mọi kho, Nhân viên chỉ được chọn kho mình thuộc về
+        boolean isAdmin = SecurityContextHolder.getUser().getVaiTro()
+                .contains(IRoleType.quan_tri_vien);
+        Integer userInventoryId = SecurityContextHolder.getKhoId();
+
+        if (!isAdmin && !requestKhoId.equals(userInventoryId)) {
+            throw new RuntimeException("Bạn không có quyền xuất hàng từ kho này");
+        }
+
+        Kho khoXuat = entityManager.find(Kho.class, requestKhoId);
+        if (khoXuat == null) {
+            throw new RuntimeException("Kho đã chọn không tồn tại");
+        }
+
+        // 3. Kiểm tra logic đơn hàng với kho đã chọn
+        if (donBanHang.getKhoXuat() == null) {
+            donBanHang.setKhoXuat(khoXuat);
+        } else if (!donBanHang.getKhoXuat().getId().equals(requestKhoId)) {
+            throw new RuntimeException("Đơn bán này đã được chỉ định cho kho: " + donBanHang.getKhoXuat().getTenKho());
+        }
+
+        // Kiểm tra sản phẩm còn lại
+        List<ChiTietDonBanHang> chiTietSOList = chiTietDonBanHangRepository.findByDonBanHangId(donBanHang.getId());
+        boolean hasRemaining = chiTietSOList.stream().anyMatch(ct -> {
+            BigDecimal daGiao = ct.getSoLuongDaGiao() != null ? ct.getSoLuongDaGiao() : BigDecimal.ZERO;
+            return ct.getSoLuongDat().compareTo(daGiao) > 0;
+        });
+
+        if (!hasRemaining) {
+            throw new RuntimeException("Đơn bán đã giao đủ toàn bộ sản phẩm");
+        }
+
         int retry = 0;
         int maxRetry = 5;
         while (true) {
@@ -66,24 +114,26 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 PhieuXuatKho phieu = PhieuXuatKho.builder()
                         .soPhieuXuat(generateSoPhieu())
                         .donBanHang(donBanHang)
-                        .kho(khoXuat)
-                        .ngayXuat(request.getNgayXuat() != null ? request.getNgayXuat() : Instant.now())
+                        .ngayXuat(null)
+                        .kho(khoXuat) // Sử dụng kho từ request
                         .ghiChu(request.getGhiChu())
-                        .trangThai(0) // 0 - Mới tạo (Draft)
+                        .loaiXuat("ban_hang")
+                        .trangThai(0)
                         .build();
-                phieu = repository.save(phieu);
 
-                List<ChiTietDonBanHang> chiTietSOList = chiTietDonBanHangRepository.findByDonBanHangId(donBanHang.getId());
+                phieu = repository.save(phieu);
 
                 for (ChiTietPhieuXuatKhoCreating reqCt : request.getChiTietXuat()) {
                     ChiTietDonBanHang ctSO = chiTietSOList.stream()
                             .filter(ct -> ct.getBienTheSanPham().getId().equals(reqCt.getBienTheSanPhamId()))
                             .findFirst()
-                            .orElseThrow(() -> new RuntimeException("SP không thuộc đơn bán"));
+                            .orElseThrow(() -> new RuntimeException("Sản phẩm không thuộc đơn bán"));
 
-                    BigDecimal conLai = ctSO.getSoLuongDat().subtract(ctSO.getSoLuongDaGiao() != null ? ctSO.getSoLuongDaGiao() : BigDecimal.ZERO);
+                    BigDecimal daGiao = ctSO.getSoLuongDaGiao() != null ? ctSO.getSoLuongDaGiao() : BigDecimal.ZERO;
+                    BigDecimal conLai = ctSO.getSoLuongDat().subtract(daGiao);
+
                     if (reqCt.getSoLuongXuat().compareTo(conLai) > 0) {
-                        throw new RuntimeException("Số lượng xuất vượt quá số lượng còn lại trong SO");
+                        throw new RuntimeException("Sản phẩm " + ctSO.getBienTheSanPham().getMaSku() + " xuất vượt quá số lượng còn lại");
                     }
                     if (reqCt.getSoLuongXuat().compareTo(BigDecimal.ZERO) <= 0) {
                         throw new RuntimeException("Số lượng xuất phải > 0");
@@ -211,6 +261,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             // 3. Cập nhật đơn bán
             if (phieu.getDonBanHang() != null) {
                 updateSoLuongDaGiao(phieu.getDonBanHang().getId(), pick.getBienTheSanPham().getId(), soLuongXuat);
+                updateTrangThaiDonBanHang(phieu.getDonBanHang().getId());
             }
         }
 
@@ -219,6 +270,33 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         phieu.setNgayXuat(Instant.now());
         repository.save(phieu);
     }
+
+    private void updateTrangThaiDonBanHang(Integer donBanHangId) {
+        DonBanHang don = entityManager.find(DonBanHang.class, donBanHangId);
+        List<ChiTietDonBanHang> list =
+                chiTietDonBanHangRepository.findByDonBanHangId(donBanHangId);
+        boolean allZero = true;
+        boolean allFull = true;
+        for (ChiTietDonBanHang ct : list) {
+            BigDecimal daGiao =
+                    ct.getSoLuongDaGiao() != null ? ct.getSoLuongDaGiao() : BigDecimal.ZERO;
+            if (daGiao.compareTo(BigDecimal.ZERO) > 0) {
+                allZero = false;
+            }
+            if (daGiao.compareTo(ct.getSoLuongDat()) < 0) {
+                allFull = false;
+            }
+        }
+        if (allFull) {
+            don.setTrangThai(3); // Hoàn thành
+        } else if (!allZero) {
+            don.setTrangThai(2); // Đang xuất kho
+        } else {
+            don.setTrangThai(1); // Chờ xuất kho
+        }
+        entityManager.merge(don);
+    }
+
 
     private void updateSoLuongDaGiao(Integer donHangId, Integer bienTheId, BigDecimal qtyShipped) {
         List<ChiTietDonBanHang> listCtSO = chiTietDonBanHangRepository.findByDonBanHangId(donHangId);
@@ -339,6 +417,16 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .soDonHang(phieu.getDonBanHang().getSoDonHang()) // Lấy mã đơn hàng vào đây
                 .build() : null;
 
+        NguoiDungDto nguoiXuatDto = (phieu.getNguoiXuat() != null) ? NguoiDungDto.builder()
+                .id(phieu.getNguoiXuat().getId())
+                .hoTen(phieu.getNguoiXuat().getHoTen())
+                .build() : null;
+
+        NguoiDungDto nguoiDuyetDto = (phieu.getNguoiDuyet() != null) ? NguoiDungDto.builder()
+                .id(phieu.getNguoiDuyet().getId())
+                .hoTen(phieu.getNguoiDuyet().getHoTen())
+                .build() : null;
+
         // 4. Build PhieuXuatKhoDto hoàn chỉnh
         PhieuXuatKhoDto phieuDto = PhieuXuatKhoDto.builder()
                 .id(phieu.getId())
@@ -350,6 +438,8 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .ngayXuat(phieu.getNgayXuat())
                 .trangThai(phieu.getTrangThai())
                 .ghiChu(phieu.getGhiChu())
+                .nguoiXuat(nguoiXuatDto)
+                .nguoiDuyet(nguoiDuyetDto)
                 .ngayTao(phieu.getNgayTao())
                 .ngayCapNhat(phieu.getNgayCapNhat())
                 .build();
@@ -370,6 +460,37 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         }).toList();
 
         return ChiTietPhieuNhapKhoResponse.builder().phieu(phieuDto).chiTiet(chiTietDtos).build();
+    }
+
+    @Transactional(readOnly = true)
+    public PhieuXuatKhoViewDto viewForSales(Integer id) {
+
+        PhieuXuatKho phieu = repository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy phiếu xuất"));
+
+        NguoiDungAuthInfo user = SecurityContextHolder.getUser();
+
+        // Nếu là sales thi chỉ được xem phiếu thuộc đơn mình tạo
+        if (user.getVaiTro().equals(IRoleType.nhan_vien_ban_hang)) {
+
+            if (phieu.getDonBanHang() == null ||
+                    !phieu.getDonBanHang().getNguoiTao().getId().equals(user.getId())) {
+
+                throw new AccessDeniedException("Không có quyền xem phiếu này");
+            }
+        }
+
+        return PhieuXuatKhoViewDto.builder()
+                .id(phieu.getId())
+                .soPhieuXuat(phieu.getSoPhieuXuat())
+                .ngayXuat(phieu.getNgayXuat())
+                .trangThai(phieu.getTrangThai())
+                .ghiChu(phieu.getGhiChu())
+                .tenKho(phieu.getKho().getTenKho())
+                .soDonHang(phieu.getDonBanHang().getSoDonHang())
+                .nguoiDuyet(phieu.getNguoiDuyet() != null ? phieu.getNguoiDuyet().getHoTen() : null)
+                .nguoiXuat(phieu.getNguoiXuat() != null ? phieu.getNguoiXuat().getHoTen() : null)
+                .build();
     }
 
     @Transactional(readOnly = true)

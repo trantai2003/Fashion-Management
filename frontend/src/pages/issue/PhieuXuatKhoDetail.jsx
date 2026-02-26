@@ -75,12 +75,12 @@ export default function PhieuXuatKhoDetail() {
                 {/* ===== HEADER ===== */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
                     {/* LEFT */}
-                    <Link
-                        to="/goods-issues"
+                    <button
+                        onClick={() => navigate(-1)}
                         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
                     >
-                        ← Back to list
-                    </Link>
+                        ← Quay lại
+                    </button>
 
                     {/* RIGHT ACTIONS */}
                     <div className="flex items-center gap-2">
@@ -176,6 +176,14 @@ export default function PhieuXuatKhoDetail() {
                             {phieu.ghiChu && (
                                 <Info label="Ghi chú" value={phieu.ghiChu} />
                             )}
+                            <Info
+                                label="Người xuất"
+                                value={phieu.nguoiXuat?.hoTen}
+                            />
+                            <Info
+                                label="Người duyệt"
+                                value={phieu.nguoiDuyet?.hoTen}
+                            />
 
                         </div>
                     </section>
@@ -238,8 +246,8 @@ export default function PhieuXuatKhoDetail() {
                                                     ${phieu.trangThai === 0
                                                         ? "bg-purple-600 text-white hover:bg-purple-700"
                                                         : phieu.trangThai === 4
-                                                        ? "bg-gray-300 text-white cursor-not-allowed"
-                                                        : "bg-blue-600 text-white hover:bg-blue-700"
+                                                            ? "bg-gray-300 text-white cursor-not-allowed"
+                                                            : "bg-blue-600 text-white hover:bg-blue-700"
                                                     }
                                                 `}
                                             >

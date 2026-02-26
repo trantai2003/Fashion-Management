@@ -49,9 +49,12 @@ export default function WarehouseManagement() {
             
             console.log(res);
 
-            if (res.data?.status === 200) {
-                const pageData = res.data.data;
-                setWarehouses(pageData.content || []);
+            if (res?.data?.data?.content) {
+                setWarehouses(res.data.data.content);
+            } else if (res?.data?.content) {
+                setWarehouses(res.data.content);
+            } else {
+                setWarehouses([]);
             }
         } catch (error) {
             console.error("Lỗi khi tải danh sách kho:", error);

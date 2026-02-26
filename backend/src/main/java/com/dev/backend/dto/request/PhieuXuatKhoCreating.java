@@ -13,6 +13,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PhieuXuatKhoCreating {
     Integer donBanHangId;
+    Integer khoId;
     Instant ngayXuat;
     String ghiChu;
     List<ChiTietPhieuXuatKhoCreating> chiTietXuat;

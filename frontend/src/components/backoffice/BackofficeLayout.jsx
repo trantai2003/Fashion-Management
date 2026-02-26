@@ -3,6 +3,7 @@ import BackofficeSidebar from "./BackofficeSidebar";
 import BackofficeHeader from "./BackofficeHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import "@/styles/print.css";
 
 export default function BackofficeLayout() {
     const { pathname } = useLocation();
@@ -49,7 +50,7 @@ export default function BackofficeLayout() {
             key: "ATTRIBUTES",
             match: (path) => path === "/attributes",
             title: "Quản lý thuộc tính",
-            subtitle: "Màu sắc & Kích cỡ",
+            subtitle: "Màu sắc/ Kích cỡ/ Chất liệu",
         },
         {
             key: "MATERIALS",
@@ -122,6 +123,18 @@ export default function BackofficeLayout() {
             match: (path) => /^\/goods-issues\/\d+\/pick-lot\/\d+$/.test(path),
             title: "Chọn lô hàng",
             subtitle: "Chọn lô hàng để xuất kho",
+        },
+        {
+            key: "DANH_MUC_QUAN_AO",
+            match: (path) => path === "/danh-muc-quan-ao",
+            title: "Quản lý danh mục quần áo",
+            subtitle: "Xem và quản lý cấu trúc danh mục quần áo",
+        },
+        {
+            key: "CHI_TIET_SAN_PHAM",
+            match: (path) => /^\/products\/\d+$/.test(path),
+            title: "Chi tiết sản phẩm",
+            subtitle: "Xem thông tin chi tiết về sản phẩm",
         }
     ];
 

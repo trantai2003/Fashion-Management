@@ -41,4 +41,8 @@ export const phieuXuatKhoService = {
         return apiClient.get(`/api/v1/phieu-xuat-kho/${phieuXuatKhoId}/picked-lots/${chiTietPhieuXuatKhoId}`)
             .then((res) => res.data);
     },
+    async view(id) {
+        const res = await apiClient.get(`/api/v1/phieu-xuat-kho/${id}/view`);
+        return res.data.data;
+    }
 };

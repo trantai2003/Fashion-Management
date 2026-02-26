@@ -57,9 +57,21 @@ export default function WarehouseDialog({
                 else setShowDialog(true);
             }}
         >
-
-            <DialogContent className="w-[95vw] max-w-2xl bg-white rounded-2xl border border-gray-200 shadow-2xl">
-
+            <DialogContent
+                style={{
+                    '--background': '0 0% 100%',
+                    '--foreground': '222.2 84% 4.9%',
+                    '--muted': '210 40% 96.1%',
+                    '--muted-foreground': '215.4 16.3% 46.9%',
+                    '--popover': '0 0% 100%',
+                    '--popover-foreground': '222.2 84% 4.9%',
+                    '--border': '214.3 31.8% 91.4%',
+                    '--input': '214.3 31.8% 91.4%',
+                    '--ring': '222.2 84% 4.9%',
+                    colorScheme: 'light',
+                }}
+                className="w-[95vw] max-w-2xl !bg-white !text-slate-950 rounded-2xl border border-gray-200 shadow-2xl"
+            >
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Warehouse className="w-5 h-5 text-purple-600" />
@@ -307,7 +319,7 @@ export default function WarehouseDialog({
                     </div>
                 )}
 
-                <DialogFooter>
+                <DialogFooter className="!text-white">
                     <Button variant="outline" onClick={onClose}>
                         {dialogMode === 'view' ? 'Đóng' : 'Hủy'}
                     </Button>

@@ -43,9 +43,7 @@ export const SIDEBAR_MENU = [
     ],
     children: [
       { label: "Danh mục", to: "/danh-muc-quan-ao" },
-      { label: "Màu sắc", to: "/attributes" },
-      { label: "Kích cỡ", to: "/attributes" },
-      { label: "Chất liệu", to: "/material" },
+      { label: "Thuộc tính", to: "/attributes" },
       { label: "Sản phẩm", to: "/products" },
       {
         label: "Biến thể SKU & Giá",
@@ -115,7 +113,7 @@ export const SIDEBAR_MENU = [
       },
       {
         label: "Đơn bán hàng",
-        to: "/orders",
+        to: "/sales-orders",
         roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
       },
     ],

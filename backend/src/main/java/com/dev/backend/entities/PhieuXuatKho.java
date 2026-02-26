@@ -39,8 +39,7 @@ public class PhieuXuatKho {
     @JoinColumn(name = "kho_id", nullable = false)
     Kho kho;
 
-    @NotNull
-    @Column(name = "ngay_xuat", nullable = false)
+    @Column(name = "ngay_xuat", nullable = true)
     Instant ngayXuat;
 
     @ColumnDefault("'ban_hang'")
