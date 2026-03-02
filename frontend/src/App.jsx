@@ -38,7 +38,7 @@ import SupplierQuotation from "./pages/supplier/pages/Supplierquotation.jsx";
 import SupplierLogin from "./pages/supplier/pages/Supplierlogin.jsx";
 import KhachHangPage from "./pages/customer/KhachHangPage";
 import DanhMucQuanAoTree from "./pages/danh-muc-quan-ao/DanhMucQuanAoTree.jsx";
-import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
+import PhieuChuyenKhoList from "./pages/chuyenKhoNoiBo/PhieuChuyenKhoList";
 import KhachHangDetails from "./pages/customer/KhachHangDetails";
 import KhachHangEdit from "./pages/customer/KhachHangEdit";
 import ProductAttributeHub from "@/pages/attribute/ProductAttributeHub";
@@ -91,7 +91,6 @@ export default function App() {
           <Route path="/products/:id" element={<ProductDetail />} />
           {/* Warehouse */}
           <Route path="/warehouse" element={<Warehouse />} />
-          <Route path="/xuat-kho-noi-bo" element={<PhieuXuatKhoPage />} />
 
           {/* Material */}
           <Route path="/material" element={<ChatLieuList />} />
@@ -134,6 +133,10 @@ export default function App() {
           <Route path="/sales-orders/:id/invoice" element={<DonBanHangInvoice />} />
           <Route path="/sales-orders/create" element={<DonBanHangCreate />} />
 
+          {/* Chuyen kho noi bo */}
+          <Route path="/transfer-tickets" element={<PhieuChuyenKhoList />} />
+          {/* <Route path="/transfer-tickets/create" element={<PhieuChuyenKhoCreate />} />
+          <Route path="/transfer-tickets/:id" element={<PhieuChuyenKhoDetail />} /> */}
         </Route>
 
         {/* ========== 404 ========== */}

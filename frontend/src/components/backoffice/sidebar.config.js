@@ -90,7 +90,7 @@ export const SIDEBAR_MENU = [
     children: [
       { label: "Kho", to: "/warehouse" },
       { label: "Phiếu xuất kho", to: "/goods-issues" },
-      { label: "Chuyển kho nội bộ", to: "/xuat-kho-noi-bo" },
+      { label: "Chuyển kho nội bộ", to: "/transfer-tickets" },
       { label: "Kiểm kê", to: "/stock-takes" },
     ],
   },
