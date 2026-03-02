@@ -119,6 +119,12 @@ export default function BackofficeLayout() {
             subtitle: "Xem chi tiết phiếu xuất kho",
         },
         {
+            key: "TRANSFER_TICKETS",
+            match: (path) => path === "/transfer-tickets",
+            title: "Quản lý phiếu chuyển kho nội bộ",
+            subtitle: "Danh sách phiếu chuyển kho nội bộ",
+        },
+        {
             key: "PICK_LOT",
             match: (path) => /^\/goods-issues\/\d+\/pick-lot\/\d+$/.test(path),
             title: "Chọn lô hàng",
