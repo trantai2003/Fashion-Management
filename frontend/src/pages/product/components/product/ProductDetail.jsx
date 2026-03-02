@@ -79,7 +79,7 @@ export default function ProductDetail() {
             <div className="bg-white border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3 text-sm text-gray-500 overflow-x-auto whitespace-nowrap scrollbar-hide">
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate("/products")}
                         className="flex items-center gap-2 text-gray-900 hover:text-purple-600 font-medium transition-colors mr-2 group"
                     >
                         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
