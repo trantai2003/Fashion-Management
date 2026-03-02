@@ -518,7 +518,7 @@ export default function ProductList() {
 
                                             <TableCell className="px-4 py-3 font-semibold max-w-xs">
                                                 <a 
-                                                    href={`/product-detail/${product.id}`}
+                                                    href={`/products/${product.id}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="truncate hover:text-purple-600 hover:underline cursor-pointer block"
@@ -555,7 +555,7 @@ export default function ProductList() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3 text-right space-x-2 flex items-center justify-center">
-                                            <a  href={`/product-detail/${product.id}`}
+                                            <a  href={`/products/${product.id}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:underline"
