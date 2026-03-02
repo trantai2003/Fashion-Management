@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -384,9 +385,34 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                 .status(HttpStatus.OK.value())
                                 .data(sanPhamQuanAoMapper.toDto(sanPhamQuanAo))
                                 .message("Success")
-                                .build()
-                );
+                                .build());
         }
 
+        @Transactional(readOnly = true)
+        public SanPhamQuanAoDto getDetail(Integer id) {
+                // Sử dụng findDetailById vừa tạo ở Bước 1
+                SanPhamQuanAo sp = repository.findDetailById(id)
+                        .orElseThrow(() -> new CommonException("Không tìm thấy sản phẩm id: " + id));
 
+                return sanPhamQuanAoMapper.toDto(sp);
+        }
+
+        @Transactional
+        public SanPhamQuanAo changeStatus(Integer id, Integer status) {
+                SanPhamQuanAo sanPhamQuanAo = getOne(id).orElseThrow(
+                        () -> new CommonException("Không tìm thấy sản phẩm id: " + id));
+                sanPhamQuanAo.setTrangThai(status);
+                return repository.save(sanPhamQuanAo);
+        }
+
+        @Transactional
+        public void updateSkuPrice(Integer skuId, BigDecimal newPrice, BigDecimal newCost) {
+                BienTheSanPham bienThe = bienTheSanPhamService.getOne(skuId).orElseThrow(
+                        () -> new CommonException("Không tìm thấy biến thể id: " + skuId));
+                if (newPrice != null)
+                        bienThe.setGiaBan(newPrice);
+                if (newCost != null)
+                        bienThe.setGiaVon(newCost);
+                bienTheSanPhamService.update(skuId, bienThe);
+        }
 }
