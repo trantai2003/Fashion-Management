@@ -84,4 +84,20 @@ public class PhieuChuyenKhoController {
                         .build()
         );
     }
+    @PutMapping("/{id}/submit")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> submitTransfer(@PathVariable Integer id) {
+        phieuXuatKhoService.submitTransfer(id);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Gửi duyệt phiếu chuyển kho thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
 }

@@ -561,4 +561,26 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .items(itemDtos)
                 .build();
     }
+    @Transactional
+    public void submitTransfer(Integer id) {
+        //Tìm phiếu
+        PhieuXuatKho phieu = repository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho id: " + id));
+        //Kiểm tra loại phiếu và trạng thái hợp lệ
+        if (!"chuyen_kho".equals(phieu.getLoaiXuat())) {
+            throw new RuntimeException("Đây không phải là phiếu chuyển kho nội bộ");
+        }
+        if (phieu.getTrangThai() != 0) { // 0 là Nháp
+            throw new RuntimeException("Chỉ phiếu ở trạng thái Nháp mới có thể gửi duyệt");
+        }
+        //Kiểm tra xem phiếu đã có ít nhất 1 sản phẩm chưa
+        List<ChiTietPhieuXuatKho> details = chiTietPhieuXuatKhoRepository.findByPhieuXuatKhoIdAndLoHangIsNull(id);
+        if (details.isEmpty()) {
+            throw new RuntimeException("Vui lòng thêm ít nhất một sản phẩm vào phiếu trước khi gửi duyệt");
+        }
+        //Cập nhật trạng thái sang 1 (Chờ duyệt)
+        phieu.setTrangThai(1);
+        repository.save(phieu);
+    }
+    
 }
