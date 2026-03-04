@@ -81,10 +81,8 @@ public class DonMuaHang {
 
 
     // Danh sách chi tiết đơn mua hàng
-
-    @Builder.Default
     @OneToMany(mappedBy = "donMuaHang", fetch = FetchType.LAZY)
-    List<ChiTietDonMuaHang> chiTietDonMuaHangs = new ArrayList<>();
+    List<ChiTietDonMuaHang> chiTietDonMuaHangs;
 
 
 }

@@ -6,6 +6,7 @@ import com.dev.backend.constant.enums.OtpType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.dto.OtpScheduleObj;
 import com.dev.backend.dto.request.*;
+import com.dev.backend.dto.response.GiaoDichDto;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.DonMuaHangDto;
 import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
@@ -280,6 +281,62 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                         .build()
         );
 
+    }
+
+    @Transactional
+    public ResponseEntity<ResponseData<GiaoDichDto>> layGiaoDich(Integer id) {
+
+
+        DonMuaHang donMuaHang = getOne(id).orElseThrow(
+                () -> new CommonException("Không tìm thấy đơn hàng id: "+id)
+        );
+
+        if(donMuaHang.getTrangThai() < 4){
+            throw  new CommonException("Nhà cung cấp chưa xác nhận gửi hàng");
+        }
+
+        if(donMuaHang.getTrangThai() == 6){
+            throw new CommonException("Đơn hàng đã được thành toán");
+        }
+        return ResponseEntity.ok(
+                ResponseData.<GiaoDichDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(
+                                GiaoDichDto.builder()
+                                        .soDonMua(donMuaHang.getSoDonMua())
+                                        .maGiaoDich("tran_"+ donMuaHang.getSoDonMua())
+                                        .nganHang(donMuaHang.getNhaCungCap().getNganHang())
+                                        .soNganHang(donMuaHang.getNhaCungCap().getSoNganHang())
+                                        .tenNhaCungCap(donMuaHang.getNhaCungCap().getTenNhaCungCap())
+                                        .tenKho(donMuaHang.getKhoNhap().getTenKho())
+                                        .tongTien(donMuaHang.getTongTien()).build()
+                        )
+                        .message("Success")
+                        .error(null)
+                        .build()
+        );
+
+    }
+
+    public ResponseEntity<ResponseData<String>> kiemTraThanhToan(Integer id) {
+        //api kiểm tra thanh toán
+        String api = "sample";
+        // logic kiểm tranh thanh toán
+        boolean isSuccess = false;
+        {
+            isSuccess = true;
+        }
+        if (!isSuccess) {
+            throw new CommonException("Chưa thanh toán");
+        }
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(api)
+                        .message("Success")
+                        .error(null)
+                        .build()
+        );
     }
 
 //    @AllArgsConstructor
