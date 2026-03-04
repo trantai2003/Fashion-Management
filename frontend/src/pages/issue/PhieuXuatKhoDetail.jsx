@@ -310,7 +310,24 @@ export default function PhieuXuatKhoDetail() {
                                 </button>
                                 <button
                                     disabled={isProcessing}
-                                    onClick={() => handleStatusChange(phieuXuatKhoService.cancel, "Đã huỷ phiếu xuất thành công")}
+                                    onClick={async () => {
+                                        setIsProcessing(true);
+                                        try {
+                                            if (phieu.loaiXuat === "chuyen_kho") {
+                                                await phieuChuyenKhoService.cancel(phieu.id);
+                                            } else {
+                                                await phieuXuatKhoService.cancel(phieu.id);
+                                            }
+                                            
+                                            toast.success("Đã huỷ phiếu xuất thành công");
+                                            navigate("/goods-issues");
+                                        } catch (e) {
+                                            toast.error(e?.response?.data?.message || "Không thể huỷ phiếu");
+                                        } finally {
+                                            setIsProcessing(false);
+                                            setShowCancelConfirm(false);
+                                        }
+                                    }}
                                     className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-bold hover:bg-red-700"
                                 >
                                     {isProcessing ? "Đang xử lý..." : "Xác nhận huỷ"}
