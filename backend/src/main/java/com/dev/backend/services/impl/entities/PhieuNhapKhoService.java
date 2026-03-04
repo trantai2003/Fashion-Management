@@ -9,6 +9,7 @@ import com.dev.backend.dto.response.customize.LoHangKhaiBaoDto;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoDto;
 import com.dev.backend.dto.response.entities.PhieuNhapKhoItemDto;
 import com.dev.backend.entities.*;
+import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.repository.*;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
@@ -18,8 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> {
@@ -372,24 +372,42 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     @Transactional(readOnly = true)
     public ChiTietPhieuNhapKhoDto getDetail(Integer id) {
         PhieuNhapKho phieu = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
+                .orElseThrow(() -> new CommonException("Không tìm thấy phiếu nhập id: " + id));
 
-        List<PhieuNhapKhoItemDto> items = phieu.getChiTietPhieuNhapKhos().stream()
-                .filter(ct -> ct.getLoHang() == null)
-                .map(ct -> {
-                    BigDecimal soLuongDaKhaiBao = chiTietPhieuNhapKhoRepository.sumSoLuongDaKhaiBao(id, ct.getBienTheSanPham().getId());
-                    BigDecimal safeSoLuongDaKhaiBao = (soLuongDaKhaiBao != null) ? soLuongDaKhaiBao : BigDecimal.ZERO;
+        // LOGIC MỚI: Group theo biến thể để tính tổng số lượng
+        Map<Integer, PhieuNhapKhoItemDto> itemsMap = new LinkedHashMap<>();
 
-                    return PhieuNhapKhoItemDto.builder()
-                            .bienTheSanPhamId(ct.getBienTheSanPham().getId())
-                            .sku(ct.getBienTheSanPham().getMaSku())
-                            .tenBienThe(ct.getBienTheSanPham().getSanPham().getTenSanPham())
-                            .soLuongCanNhap(ct.getSoLuongNhap())
-                            .soLuongDaKhaiBao(safeSoLuongDaKhaiBao)
-                            .daDuLo(safeSoLuongDaKhaiBao.compareTo(ct.getSoLuongNhap()) >= 0)
-                            .build();
-                }).toList();
+        for (ChiTietPhieuNhapKho ct : phieu.getChiTietPhieuNhapKhos()) {
+            Integer btId = ct.getBienTheSanPham().getId();
+            PhieuNhapKhoItemDto dto = itemsMap.computeIfAbsent(btId, k -> PhieuNhapKhoItemDto.builder()
+                    .bienTheSanPhamId(btId)
+                    .sku(ct.getBienTheSanPham().getMaSku())
+                    .tenBienThe(ct.getBienTheSanPham().getSanPham().getTenSanPham())
+                    .soLuongCanNhap(BigDecimal.ZERO)
+                    .soLuongDaKhaiBao(BigDecimal.ZERO)
+                    .build());
 
+            if (ct.getLoHang() == null) {
+                // Luồng PO: Dòng chứa số lượng dự kiến nhập từ nhà cung cấp
+                dto.setSoLuongCanNhap(ct.getSoLuongNhap());
+            } else {
+                // Các dòng đã khai báo lô cụ thể (Hoặc dòng từ Chuyển kho)
+                BigDecimal slMoi = ct.getSoLuongNhap() != null ? ct.getSoLuongNhap() : BigDecimal.ZERO;
+                dto.setSoLuongDaKhaiBao(dto.getSoLuongDaKhaiBao().add(slMoi));
+
+                // Nếu là chuyển kho nội bộ (không có dòng null), số lượng cần nhập chính bằng số lượng đã chuyển đi
+                if (phieu.getDonMuaHang() == null) {
+                    dto.setSoLuongCanNhap(dto.getSoLuongDaKhaiBao());
+                }
+            }
+        }
+        itemsMap.values().forEach(item -> {
+            boolean daDu = item.getSoLuongDaKhaiBao().compareTo(item.getSoLuongCanNhap()) >= 0
+                    && item.getSoLuongCanNhap().compareTo(BigDecimal.ZERO) > 0;
+            item.setDaDuLo(daDu);
+        });
+
+        List<PhieuNhapKhoItemDto> items = new ArrayList<>(itemsMap.values());
         ChiTietPhieuNhapKhoDto.ChiTietPhieuNhapKhoDtoBuilder builder = ChiTietPhieuNhapKhoDto.builder()
                 .id(phieu.getId())
                 .soPhieuNhap(phieu.getSoPhieuNhap())
@@ -404,20 +422,14 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         if (phieu.getDonMuaHang() == null) {
             builder.loaiNhap("Chuyển kho nội bộ");
             List<String> tenKhoNguonList = lichSuGiaoDichKhoRepository.findTenKhoNguonByPhieuNhap(id);
-            if (!tenKhoNguonList.isEmpty()) {
-                builder.tenKhoChuyenTu(tenKhoNguonList.get(0));
-            }
+            if (!tenKhoNguonList.isEmpty()) builder.tenKhoChuyenTu(tenKhoNguonList.get(0));
         } else {
             builder.loaiNhap("Nhập từ đơn mua hàng");
-            builder.donMuaHangId(phieu.getDonMuaHang().getId())
-                    .soDonMua(phieu.getDonMuaHang().getSoDonMua());
-
+            builder.donMuaHangId(phieu.getDonMuaHang().getId()).soDonMua(phieu.getDonMuaHang().getSoDonMua());
             if (phieu.getNhaCungCap() != null) {
-                builder.nhaCungCapId(phieu.getNhaCungCap().getId())
-                        .tenNhaCungCap(phieu.getNhaCungCap().getTenNhaCungCap());
+                builder.nhaCungCapId(phieu.getNhaCungCap().getId()).tenNhaCungCap(phieu.getNhaCungCap().getTenNhaCungCap());
             }
         }
-
         return builder.build();
     }
 
