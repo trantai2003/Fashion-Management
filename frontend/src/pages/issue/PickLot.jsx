@@ -14,9 +14,12 @@ export default function PickLot() {
     const tenBienThe = state?.tenBienThe || "-";
     const soLuongCanXuat = Number(state?.soLuongXuat ?? 0);
     const phieuTrangThai = state?.phieuTrangThai;
+    const loaiXuat = state?.loaiXuat; // Nhận thông tin loại phiếu từ Detail truyền sang
 
-    // Logic ReadOnly: Nếu trạng thái phiếu khác 0 (Nháp) thì chỉ cho xem
-    const isReadOnly = phieuTrangThai !== 0;
+    // LOGIC RẼ NHÁNH: Cập nhật điều kiện ReadOnly để hỗ trợ Chuyển kho
+    const isReadOnly = loaiXuat === "chuyen_kho" 
+        ? phieuTrangThai !== 2 
+        : phieuTrangThai !== 0;
 
     /* ===== LOCAL STATE ===== */
     const [loading, setLoading] = useState(false);

@@ -350,13 +350,25 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
 
     @Transactional
     public void pickLoHang(Integer phieuXuatKhoId, PickLoHangRequest request) {
-        PhieuXuatKho phieu = repository.findById(phieuXuatKhoId).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
-        if (phieu.getTrangThai() != 0) throw new RuntimeException("Chỉ được chỉnh sửa pick lô khi phiếu ở trạng thái Mới tạo");
+        PhieuXuatKho phieu = repository.findById(phieuXuatKhoId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
+
+        // 1. KIỂM TRA TRẠNG THÁI PHÙ HỢP
+        boolean isChuyenKho = "chuyen_kho".equals(phieu.getLoaiXuat());
+        if (isChuyenKho) {
+            if (phieu.getTrangThai() != 2) { // Đối với chuyển kho, phải Đã duyệt mới được pick
+                throw new RuntimeException("Chỉ được pick lô cho phiếu chuyển kho ở trạng thái Đã duyệt (2)");
+            }
+        } else {
+            if (phieu.getTrangThai() != 0) { // Đối với SO, phải ở trạng thái Nháp mới được pick
+                throw new RuntimeException("Chỉ được chỉnh sửa pick lô cho đơn bán hàng ở trạng thái Mới tạo (0)");
+            }
+        }
 
         ChiTietPhieuXuatKho ctGoc = chiTietPhieuXuatKhoRepository.findById(request.getChiTietPhieuXuatKhoId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy dòng phiếu xuất"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy dòng phiếu xuất gốc"));
 
-        if (ctGoc.getLoHang() != null) throw new RuntimeException("Chỉ được pick lô từ dòng gốc");
+        if (ctGoc.getLoHang() != null) throw new RuntimeException("Vui lòng thực hiện pick lô từ dòng sản phẩm gốc");
 
         BigDecimal tongPickLanNay = request.getLoHangPicks().stream()
                 .map(PickLoHangRequest.Item::getSoLuongXuat)
@@ -364,20 +376,47 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (tongPickLanNay.compareTo(ctGoc.getSoLuongXuat()) > 0) {
-            throw new RuntimeException("Tổng số lượng pick vượt quá số lượng cần xuất");
+            throw new RuntimeException("Tổng số lượng bốc lô vượt quá số lượng yêu cầu");
         }
 
+        // 2. RẼ NHÁNH HOÀN LẠI SO_LUONG_DA_DAT (Chỉ áp dụng cho Chuyển kho)
+        if (isChuyenKho) {
+            List<ChiTietPhieuXuatKho> oldPicks = chiTietPhieuXuatKhoRepository
+                    .findByPhieuXuatKhoIdAndBienTheSanPhamIdAndLoHangIsNotNull(phieuXuatKhoId, ctGoc.getBienTheSanPham().getId());
+
+            for (ChiTietPhieuXuatKho old : oldPicks) {
+                tonKhoTheoLoRepository.findByKho_IdAndLoHang_Id(phieu.getKho().getId(), old.getLoHang().getId())
+                        .ifPresent(t -> {
+                            BigDecimal currentDaDat = t.getSoLuongDaDat() != null ? t.getSoLuongDaDat() : BigDecimal.ZERO;
+                            t.setSoLuongDaDat(currentDaDat.subtract(old.getSoLuongXuat()));
+                            tonKhoTheoLoRepository.save(t);
+                        });
+            }
+        }
+
+        // 3. Xóa các dòng pick cũ
         chiTietPhieuXuatKhoRepository.deletePickedByPhieuAndBienThe(phieuXuatKhoId, ctGoc.getBienTheSanPham().getId());
 
+        // 4. LƯU PICK MỚI VÀ RẼ NHÁNH CẬP NHẬT SO_LUONG_DA_DAT
         for (PickLoHangRequest.Item item : request.getLoHangPicks()) {
             if (item.getSoLuongXuat() == null || item.getSoLuongXuat().compareTo(BigDecimal.ZERO) <= 0) continue;
 
-            LoHang loHang = loHangRepository.findById(item.getLoHangId()).orElseThrow(() -> new RuntimeException("Không tìm thấy lô"));
-            TonKhoTheoLo tonKho = tonKhoTheoLoRepository.findByKho_IdAndLoHang_Id(phieu.getKho().getId(), loHang.getId())
-                    .orElseThrow(() -> new RuntimeException("Lô không có trong kho xuất"));
+            LoHang loHang = loHangRepository.findById(item.getLoHangId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy lô hàng"));
 
-            if (item.getSoLuongXuat().compareTo(tonKho.getSoLuongKhaDung()) > 0) {
-                throw new RuntimeException("Lô " + loHang.getMaLo() + " không đủ tồn khả dụng");
+            TonKhoTheoLo tonKho = tonKhoTheoLoRepository.findByKho_IdAndLoHang_Id(phieu.getKho().getId(), loHang.getId())
+                    .orElseThrow(() -> new RuntimeException("Sản phẩm không có tồn kho trong lô đã chọn tại kho này"));
+
+            // Kiểm tra tồn khả dụng (Chỉ áp dụng cho Chuyển kho vì SO đã giữ hàng từ trước)
+            if (isChuyenKho && item.getSoLuongXuat().compareTo(tonKho.getSoLuongKhaDung()) > 0) {
+                throw new RuntimeException("Lô " + loHang.getMaLo() + " không đủ tồn khả dụng để chuyển đi");
+            }
+
+            // CHỈ CẬP NHẬT SO_LUONG_DA_DAT NẾU LÀ CHUYỂN KHO
+            if (isChuyenKho) {
+                BigDecimal currentDaDat = tonKho.getSoLuongDaDat() != null ? tonKho.getSoLuongDaDat() : BigDecimal.ZERO;
+                tonKho.setSoLuongDaDat(currentDaDat.add(item.getSoLuongXuat()));
+                tonKhoTheoLoRepository.save(tonKho);
             }
 
             ChiTietPhieuXuatKho ctPick = ChiTietPhieuXuatKho.builder()
