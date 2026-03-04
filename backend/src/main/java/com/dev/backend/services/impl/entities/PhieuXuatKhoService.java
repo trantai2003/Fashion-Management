@@ -479,8 +479,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         NguoiDungAuthInfo user = SecurityContextHolder.getUser();
 
         // Nếu là sales thi chỉ được xem phiếu thuộc đơn mình tạo
-        if (user.getVaiTro().equals(IRoleType.nhan_vien_ban_hang)) {
-
+        if (user.getVaiTro().contains(IRoleType.nhan_vien_ban_hang)) {
             if (phieu.getDonBanHang() == null ||
                     !phieu.getDonBanHang().getNguoiTao().getId().equals(user.getId())) {
 
@@ -772,22 +771,25 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             for (ChiTietPhieuXuatKho pick : detailedPicks) {
                 BigDecimal qty = pick.getSoLuongXuat();
 
-                //Trừ tồn tại Kho Trung Chuyển
                 TonKhoTheoLo tonTransit = tonKhoTheoLoRepository
                         .findByKho_IdAndLoHang_Id(khoTransit.getId(), pick.getLoHang().getId())
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy hàng trong kho trung chuyển"));
-                tonTransit.setSoLuongTon(tonTransit.getSoLuongTon().subtract(qty));
-                tonKhoTheoLoRepository.save(tonTransit);
 
-                //Cộng lại tồn tại Kho A
+                BigDecimal tonTruocTransit = tonTransit.getSoLuongTon();
+                tonTransit.setSoLuongTon(tonTruocTransit.subtract(qty));
+                tonKhoTheoLoRepository.save(tonTransit);
                 TonKhoTheoLo tonA = tonKhoTheoLoRepository
                         .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
                         .orElseThrow(() -> new RuntimeException("Lỗi dữ liệu tồn kho A"));
-                tonA.setSoLuongTon(tonA.getSoLuongTon().add(qty));
+
+                BigDecimal tonTruocA = tonA.getSoLuongTon();
+                tonA.setSoLuongTon(tonTruocA.add(qty));
                 tonKhoTheoLoRepository.save(tonA);
 
-                //Ghi lịch sử giao dịch (Transit -> A)
-                saveHistory(phieu, pick, phieu.getKho(), "nhap_kho", "Hoàn trả hàng do hủy phiếu chuyển", SecurityContextHolder.getUser().getId(), qty);
+                // LẤY ĐỐI TƯỢNG NGUOIGDUNG TỪ CONTEXT
+                NguoiDung currentUser = nguoiDungRepository.findById(SecurityContextHolder.getUser().getId()).get();
+                // (tonTruocA và tonA.getSoLuongTon())
+                saveHistory(phieu, pick, phieu.getKho(), "nhap_kho", "Hoàn trả hàng do hủy phiếu chuyển", currentUser, tonTruocA, tonA.getSoLuongTon());
             }
 
             //Hủy phiếu nhập kho tương ứng đã sinh ra cho Kho B

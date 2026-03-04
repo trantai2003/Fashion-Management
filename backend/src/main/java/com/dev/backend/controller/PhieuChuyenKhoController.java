@@ -133,4 +133,19 @@ public class PhieuChuyenKhoController {
                         .build()
         );
     }
+    @PutMapping("/{id}/cancel")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true
+    )
+    public ResponseEntity<ResponseData<String>> cancelTransfer(@PathVariable Integer id) {
+        phieuXuatKhoService.cancelTransfer(id);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Hủy phiếu chuyển kho thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
 }
