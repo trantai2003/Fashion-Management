@@ -686,7 +686,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuNhapKho pn = PhieuNhapKho.builder()
                 .soPhieuNhap("PN-TRF-" + px.getSoPhieuXuat())
                 .kho(px.getKhoChuyenDen())
-                .trangThai(2) // 2: Đã duyệt (Đồng bộ với màn Nhập kho của bạn)
+                .trangThai(2) // 2: Đã duyệt
                 .ngayTao(Instant.now())
                 .ghiChu("Nhập kho tự động từ phiếu chuyển " + px.getSoPhieuXuat())
                 .build();
