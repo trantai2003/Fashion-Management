@@ -600,16 +600,19 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         if (phieu.getTrangThai() != 1) {
             throw new RuntimeException("Chỉ phiếu ở trạng thái Chờ duyệt mới có thể phê duyệt");
         }
-        //KIỂM TRA QUYỀN: Chỉ quản lý tại Kho nhận (Kho B) mới được phép duyệt
-        Integer userWarehouseId = SecurityContextHolder.getKhoId();
-        if (phieu.getKhoChuyenDen() == null || !phieu.getKhoChuyenDen().getId().equals(userWarehouseId)) {
-            throw new AccessDeniedException("Bạn không có quyền duyệt phiếu này. " +
-                    "Chỉ quản lý của kho nhận (" +
-                    (phieu.getKhoChuyenDen() != null ? phieu.getKhoChuyenDen().getTenKho() : "N/A") +
-                    ") mới có quyền duyệt.");
-        }
         NguoiDung nguoiDuyet = nguoiDungRepository.findById(nguoiDuyetId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người duyệt"));
+        boolean isAdmin = nguoiDuyet.getVaiTro().contains(IRoleType.quan_tri_vien);
+        //KIỂM TRA QUYỀN: Chỉ quản lý tại Kho nhận (Kho B) mới được phép duyệt
+        Integer userWarehouseId = SecurityContextHolder.getKhoId();
+        if (!isAdmin) {
+            if (phieu.getKhoChuyenDen() == null || !phieu.getKhoChuyenDen().getId().equals(userWarehouseId)) {
+                throw new AccessDeniedException("Bạn không có quyền duyệt phiếu này. " +
+                        "Chỉ quản lý của kho nhận (" +
+                        (phieu.getKhoChuyenDen() != null ? phieu.getKhoChuyenDen().getTenKho() : "N/A") +
+                        ") hoặc Quản trị viên mới có quyền duyệt.");
+            }
+        }
 
         //Cập nhật trạng thái sang 2 (Đã duyệt)
         phieu.setTrangThai(2);
