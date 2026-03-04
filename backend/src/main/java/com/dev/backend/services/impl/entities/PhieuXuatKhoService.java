@@ -7,6 +7,7 @@ import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
 import com.dev.backend.dto.response.customize.PhieuXuatKhoViewDto;
 import com.dev.backend.dto.response.customize.PickedLotDto;
+import com.dev.backend.dto.response.customize.TransferDetailDto;
 import com.dev.backend.dto.response.entities.*;
 import com.dev.backend.entities.*;
 import com.dev.backend.exception.customize.CommonException;
@@ -518,5 +519,46 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
 
     private boolean isDuplicateSoPhieu(Exception ex) {
         return ex.getMessage() != null && ex.getMessage().contains("uk_phieu_xuat_kho_so_phieu");
+    }
+
+    @Transactional(readOnly = true)
+    public TransferDetailDto getTransferDetail(Integer id) {
+        PhieuXuatKho phieu = repository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho id: " + id));
+
+        if (!"chuyen_kho".equals(phieu.getLoaiXuat())) {
+            throw new RuntimeException("Đây không phải là phiếu chuyển kho");
+        }
+
+        // 1. Lấy danh sách hàng hóa yêu cầu (những dòng chưa có lo_hang_id)
+        List<ChiTietPhieuXuatKho> itemsGoc = chiTietPhieuXuatKhoRepository.findByPhieuXuatKhoIdAndLoHangIsNull(id);
+
+        List<TransferDetailDto.TransferItemDto> itemDtos = itemsGoc.stream().map(ct -> {
+            // Tính tổng số lượng đã pick lô cho biến thể này (nếu có)
+            BigDecimal daPick = chiTietPhieuXuatKhoRepository.sumSoLuongDaPick(id, ct.getBienTheSanPham().getId());
+
+            return TransferDetailDto.TransferItemDto.builder()
+                    .bienTheId(ct.getBienTheSanPham().getId())
+                    .sku(ct.getBienTheSanPham().getMaSku())
+                    .tenSanPham(ct.getBienTheSanPham().getSanPham().getTenSanPham() + " - " + ct.getBienTheSanPham().getMauSac().getTenMau())
+                    .soLuongYeuCau(ct.getSoLuongXuat())
+                    .soLuongDaPick(daPick != null ? daPick : BigDecimal.ZERO)
+                    .build();
+        }).toList();
+
+        return TransferDetailDto.builder()
+                .id(phieu.getId())
+                .soPhieuXuat(phieu.getSoPhieuXuat())
+                .khoXuatId(phieu.getKho().getId())
+                .khoXuatTen(phieu.getKho().getTenKho())
+                .khoNhapId(phieu.getKhoChuyenDen().getId())
+                .khoNhapTen(phieu.getKhoChuyenDen().getTenKho())
+                .nguoiXuatTen(phieu.getNguoiXuat() != null ? phieu.getNguoiXuat().getHoTen() : "N/A")
+                .nguoiDuyetTen(phieu.getNguoiDuyet() != null ? phieu.getNguoiDuyet().getHoTen() : "Chưa duyệt")
+                .ngayTao(phieu.getNgayTao())
+                .trangThai(phieu.getTrangThai())
+                .ghiChu(phieu.getGhiChu())
+                .items(itemDtos)
+                .build();
     }
 }

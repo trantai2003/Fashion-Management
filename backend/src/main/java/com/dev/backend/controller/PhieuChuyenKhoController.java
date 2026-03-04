@@ -8,6 +8,7 @@ import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.FilterCriteria;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.customize.TransferDetailDto;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
 import com.dev.backend.entities.PhieuXuatKho;
 import com.dev.backend.mapper.PhieuXuatKhoMapper;
@@ -65,6 +66,21 @@ public class PhieuChuyenKhoController {
                         .status(HttpStatus.OK.value())
                         .data(pageDto)
                         .message("Lấy danh sách phiếu chuyển kho thành công")
+                        .build()
+        );
+    }
+    @GetMapping("/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true
+    )
+    public ResponseEntity<ResponseData<TransferDetailDto>> getDetail(@PathVariable Integer id) {
+        TransferDetailDto data = phieuXuatKhoService.getTransferDetail(id);
+        return ResponseEntity.ok(
+                ResponseData.<TransferDetailDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(data)
+                        .message("Lấy chi tiết phiếu chuyển thành công")
                         .build()
         );
     }
