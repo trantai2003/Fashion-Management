@@ -117,4 +117,20 @@ public class PhieuChuyenKhoController {
                         .build()
         );
     }
+    @PutMapping("/{id}/start-shipping")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true
+    )
+    public ResponseEntity<ResponseData<String>> startShipping(@PathVariable Integer id) {
+        Integer staffId = SecurityContextHolder.getUser().getId();
+        phieuXuatKhoService.startShipping(id, staffId);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Xác nhận xuất kho và bắt đầu vận chuyển thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
 }

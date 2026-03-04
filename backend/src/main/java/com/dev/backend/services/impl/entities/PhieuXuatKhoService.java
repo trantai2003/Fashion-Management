@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> {
@@ -45,6 +46,12 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
 
     @Autowired
     private LichSuGiaoDichKhoRepository lichSuGiaoDichKhoRepository;
+
+    @Autowired
+    private PhieuNhapKhoRepository phieuNhapKhoRepository;
+
+    @Autowired
+    private ChiTietPhieuNhapKhoRepository chiTietPhieuNhapKhoRepository;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -609,5 +616,111 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         phieu.setTrangThai(2);
         phieu.setNguoiDuyet(nguoiDuyet);
         repository.save(phieu);
+    }
+    @Transactional
+    public void startShipping(Integer id, Integer nguoiXuatId) {
+        // Tìm phiếu và kiểm tra tính hợp lệ
+        PhieuXuatKho phieu = repository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho id: " + id));
+
+        if (!"chuyen_kho".equals(phieu.getLoaiXuat()) || phieu.getTrangThai() != 2) {
+            throw new RuntimeException("Chỉ phiếu chuyển kho đã duyệt mới có thể bắt đầu vận chuyển");
+        }
+
+        // Lấy thông tin kho Trung chuyển (mã 'KHO_TRANSIT')
+        Kho khoTransit = entityManager.createQuery("SELECT k FROM Kho k WHERE k.maKho = 'KHO_TRANSIT'", Kho.class)
+                .getSingleResult();
+
+        NguoiDung nguoiXuat = nguoiDungRepository.findById(nguoiXuatId).orElseThrow();
+
+        // Lấy danh sách các lô hàng đã được pick (những dòng có lo_hang_id)
+        List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository.findAll().stream()
+                .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
+                .toList();
+
+        if (detailedPicks.isEmpty()) {
+            throw new RuntimeException("Phiếu chưa được pick lô hàng cụ thể, không thể xuất kho");
+        }
+
+        for (ChiTietPhieuXuatKho pick : detailedPicks) {
+            BigDecimal qty = pick.getSoLuongXuat();
+
+            // TRỪ TỒN TẠI KHO A (Trừ tồn thực tế và trừ số lượng đã đặt)
+            TonKhoTheoLo tonA = tonKhoTheoLoRepository
+                    .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
+                    .orElseThrow(() -> new RuntimeException("Lỗi dữ liệu tồn kho A"));
+
+            BigDecimal tonTruocA = tonA.getSoLuongTon();
+            tonA.setSoLuongTon(tonTruocA.subtract(qty));
+            tonA.setSoLuongDaDat(tonA.getSoLuongDaDat().subtract(qty)); // Giải phóng hàng đã giữ
+            tonKhoTheoLoRepository.save(tonA);
+
+            // CỘNG TỒN VÀO KHO TRUNG CHUYỂN (Hàng đang đi trên đường)
+            TonKhoTheoLo tonTransit = tonKhoTheoLoRepository
+                    .findByKho_IdAndLoHang_Id(khoTransit.getId(), pick.getLoHang().getId())
+                    .orElse(TonKhoTheoLo.builder()
+                            .kho(khoTransit).loHang(pick.getLoHang())
+                            .soLuongTon(BigDecimal.ZERO).soLuongDaDat(BigDecimal.ZERO)
+                            .build());
+
+            BigDecimal tonTruocTransit = tonTransit.getSoLuongTon();
+            tonTransit.setSoLuongTon(tonTruocTransit.add(qty));
+            tonTransit.setNgayNhapGanNhat(Instant.now());
+            tonKhoTheoLoRepository.save(tonTransit);
+
+            // C. GHI LỊCH SỬ GIAO DỊCH (2 dòng: Xuất A và Nhập Transit)
+            saveHistory(phieu, pick, phieu.getKho(), "xuat_kho", "Xuất chuyển kho: " + phieu.getSoPhieuXuat(), nguoiXuat, tonTruocA, tonA.getSoLuongTon());
+            saveHistory(phieu, pick, khoTransit, "nhap_kho", "Hàng đang đi đường: " + phieu.getSoPhieuXuat(), nguoiXuat, tonTruocTransit, tonTransit.getSoLuongTon());
+        }
+
+        // TỰ ĐỘNG SINH PHIẾU NHẬP KHO CHO KHO B
+        createAutoPhieuNhapForKhoB(phieu, detailedPicks);
+
+        // Cập nhật trạng thái phiếu xuất sang 3
+        phieu.setTrangThai(3);
+        phieu.setNgayXuat(Instant.now());
+        phieu.setNguoiXuat(nguoiXuat);
+        repository.save(phieu);
+    }
+
+    private void createAutoPhieuNhapForKhoB(PhieuXuatKho px, List<ChiTietPhieuXuatKho> picks) {
+        PhieuNhapKho pn = PhieuNhapKho.builder()
+                .soPhieuNhap("PN-TRF-" + px.getSoPhieuXuat())
+                .kho(px.getKhoChuyenDen())
+                .trangThai(2) // 2: Đã duyệt (Đồng bộ với màn Nhập kho của bạn)
+                .ngayTao(Instant.now())
+                .ghiChu("Nhập kho tự động từ phiếu chuyển " + px.getSoPhieuXuat())
+                .build();
+        pn = phieuNhapKhoRepository.save(pn);
+
+        for (ChiTietPhieuXuatKho pick : picks) {
+            ChiTietPhieuNhapKho ct = ChiTietPhieuNhapKho.builder()
+                    .phieuNhapKho(pn)
+                    .bienTheSanPham(pick.getBienTheSanPham())
+                    .soLuongNhap(pick.getSoLuongXuat())
+                    .donGia(pick.getLoHang().getGiaVon())
+                    .loHang(pick.getLoHang()) // QUAN TRỌNG: Kế thừa lô hàng để Kho B không phải chọn lại
+                    .build();
+            chiTietPhieuNhapKhoRepository.save(ct);
+        }
+    }
+
+    private void saveHistory(PhieuXuatKho p, ChiTietPhieuXuatKho pick, Kho kho, String type, String note, NguoiDung user, BigDecimal truoc, BigDecimal sau) {
+        LichSuGiaoDichKho history = LichSuGiaoDichKho.builder()
+                .ngayGiaoDich(Instant.now())
+                .loaiGiaoDich(type)
+                .loaiThamChieu("phieu_xuat_kho")
+                .idThamChieu(p.getId())
+                .bienTheSanPham(pick.getBienTheSanPham())
+                .loHang(pick.getLoHang())
+                .kho(kho)
+                .soLuong(pick.getSoLuongXuat())
+                .soLuongTruoc(truoc)
+                .soLuongSau(sau)
+                .giaVon(pick.getLoHang().getGiaVon())
+                .nguoiDung(user)
+                .ghiChu(note)
+                .build();
+        lichSuGiaoDichKhoRepository.save(history);
     }
 }
