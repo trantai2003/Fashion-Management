@@ -131,7 +131,9 @@ export default function PurchaseOrderCreate() {
                 }
 
                 // Handle Warehouses Response
-                if (warehousesRes && warehousesRes.data && warehousesRes.data.content) {
+                if (warehousesRes?.data?.data?.content) {
+                    setWarehouses(warehousesRes.data.data.content);
+                } else if (warehousesRes?.data?.content) {
                     setWarehouses(warehousesRes.data.content);
                 }
 
