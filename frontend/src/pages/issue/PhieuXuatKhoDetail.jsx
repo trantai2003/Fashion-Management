@@ -10,6 +10,7 @@ const STATUS_MAP = {
     2: { label: "Đã duyệt", className: "bg-indigo-50 text-indigo-700" },
     3: { label: "Đã xuất", className: "bg-green-50 text-green-700" },
     4: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
+    5: { label: "Đã xuất", className: "bg-green-50 text-green-700" },
 };
 
 export default function PhieuXuatKhoDetail() {

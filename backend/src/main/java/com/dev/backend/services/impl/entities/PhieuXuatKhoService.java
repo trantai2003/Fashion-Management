@@ -733,10 +733,10 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         }
 
         int currentStatus = phieu.getTrangThai();
-        if (currentStatus == 4) { // 4: Hoàn tất
+        if (currentStatus == 5) { // 5: Hoàn tất
             throw new RuntimeException("Phiếu đã hoàn tất, không thể hủy");
         }
-        if (currentStatus == 5) { // 5: Đã hủy
+        if (currentStatus == 4) { // 4: Đã hủy
             throw new RuntimeException("Phiếu đã được hủy trước đó");
         }
 
@@ -797,7 +797,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         }
 
         //Cập nhật trạng thái cuối cùng sang 5 (Đã hủy)
-        phieu.setTrangThai(5);
+        phieu.setTrangThai(4);
         repository.save(phieu);
     }
 

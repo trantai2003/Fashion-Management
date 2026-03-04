@@ -23,6 +23,10 @@ const STATUS_MAP = {
         label: "Đã hủy",
         className: "bg-red-50 text-red-700",
     },
+    5: {
+        label: "Đã xuất",
+        className: "bg-green-50 text-green-700",
+    }
 };
 
 export default function PhieuXuatKhoList() {

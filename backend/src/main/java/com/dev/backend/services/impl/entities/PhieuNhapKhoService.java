@@ -513,7 +513,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         phieu.setNguoiNhap(nguoiNhap);
         repository.save(phieu);
 
-        phieuXuatGoc.setTrangThai(4); //Hoàn tất (Closed)
+        phieuXuatGoc.setTrangThai(5); //Hoàn tất (Closed)
         phieuXuatKhoRepository.save(phieuXuatGoc);
     }
 }
