@@ -100,4 +100,21 @@ public class PhieuChuyenKhoController {
                         .build()
         );
     }
+    @PutMapping("/{id}/approve")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
+            inWarehouse = true, // Annotation này sẽ kiểm tra user có thuộc kho nào đó không
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> approveTransfer(@PathVariable Integer id) {
+        Integer managerId = SecurityContextHolder.getUser().getId();
+        phieuXuatKhoService.approveTransfer(id, managerId);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Phê duyệt phiếu chuyển kho thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
 }

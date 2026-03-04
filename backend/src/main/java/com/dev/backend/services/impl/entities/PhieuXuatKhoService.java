@@ -582,5 +582,32 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         phieu.setTrangThai(1);
         repository.save(phieu);
     }
-    
+    @Transactional
+    public void approveTransfer(Integer id, Integer nguoiDuyetId) {
+        //Tìm phiếu
+        PhieuXuatKho phieu = repository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho id: " + id));
+        //Kiểm tra loại phiếu và trạng thái (Phải là Chờ duyệt - 1)
+        if (!"chuyen_kho".equals(phieu.getLoaiXuat())) {
+            throw new RuntimeException("Đây không phải là phiếu chuyển kho nội bộ");
+        }
+        if (phieu.getTrangThai() != 1) {
+            throw new RuntimeException("Chỉ phiếu ở trạng thái Chờ duyệt mới có thể phê duyệt");
+        }
+        //KIỂM TRA QUYỀN: Chỉ quản lý tại Kho nhận (Kho B) mới được phép duyệt
+        Integer userWarehouseId = SecurityContextHolder.getKhoId();
+        if (phieu.getKhoChuyenDen() == null || !phieu.getKhoChuyenDen().getId().equals(userWarehouseId)) {
+            throw new AccessDeniedException("Bạn không có quyền duyệt phiếu này. " +
+                    "Chỉ quản lý của kho nhận (" +
+                    (phieu.getKhoChuyenDen() != null ? phieu.getKhoChuyenDen().getTenKho() : "N/A") +
+                    ") mới có quyền duyệt.");
+        }
+        NguoiDung nguoiDuyet = nguoiDungRepository.findById(nguoiDuyetId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người duyệt"));
+
+        //Cập nhật trạng thái sang 2 (Đã duyệt)
+        phieu.setTrangThai(2);
+        phieu.setNguoiDuyet(nguoiDuyet);
+        repository.save(phieu);
+    }
 }
