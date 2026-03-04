@@ -75,7 +75,7 @@ public class NghiepVuSanPhamController {
         );
     }
 
-
+    //  
     @PostMapping("/don-mua-hang/lay-otp")
     public ResponseEntity<ResponseData<String>> layOtpDonMuaHang(@RequestBody OtpDonMuaHangGetting getting){
         return donMuaHangService.getOtpForSupplier(getting);
