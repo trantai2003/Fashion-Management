@@ -136,7 +136,6 @@ export default function PhieuNhapKhoDetail() {
                             <Info label="Số phiếu" value={data.soPhieuNhap} />
                             <Info label="Kho nhập hàng" value={data.tenKho} />
                             
-                            {/* Hiển thị dựa theo validate luồng */}
                             {isInternalTransfer ? (
                                 <Info label="Loại nghiệp vụ" value="Chuyển kho nội bộ" />
                             ) : (
@@ -156,11 +155,6 @@ export default function PhieuNhapKhoDetail() {
                     <section className="bg-white border rounded-xl shadow-sm overflow-hidden">
                         <div className="p-4 border-b flex justify-between items-center">
                             <h2 className="text-sm font-semibold">Danh sách sản phẩm</h2>
-                            {!isAllDuLo && data.trangThai === 0 && (
-                                <span className="text-xs text-red-500 animate-pulse font-medium">
-                                    * Cần khai báo đủ lô trước khi gửi duyệt
-                                </span>
-                            )}
                         </div>
 
                         <table className="w-full text-sm text-left">
@@ -182,10 +176,8 @@ export default function PhieuNhapKhoDetail() {
                                             <div className="text-gray-500 text-xs">{item.tenBienThe}</div>
                                         </td>
                                         <td className="px-4 py-3 text-center font-medium">{item.soLuongCanNhap}</td>
-                                        <td className="px-4 py-3 text-center">
-                                            <span className={item.daDuLo ? "text-green-600 font-bold" : "text-amber-600"}>
-                                                {(item.soLuongDaKhaiBao ?? 0)} / {item.soLuongCanNhap}
-                                            </span>
+                                        <td className="px-4 py-3 text-center font-bold">
+                                            {item.soLuongDaKhaiBao ?? 0} / {item.soLuongCanNhap}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             {item.daDuLo ? (
@@ -197,10 +189,7 @@ export default function PhieuNhapKhoDetail() {
                                         <td className="px-4 py-3 text-right">
                                             <button
                                                 onClick={() => navigate(`/goods-receipts/${data.id}/lot-input/${item.bienTheSanPhamId}`)}
-                                                className={`px-3 py-1.5 text-xs font-bold rounded shadow-sm transition-all
-                                                    ${data.trangThai === 0 
-                                                        ? "bg-purple-600 text-white hover:bg-purple-700" 
-                                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                                                className="px-3 py-1.5 text-xs font-bold rounded shadow-sm bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all"
                                             >
                                                 {data.trangThai === 0 ? "Khai báo lô" : "Xem lô"}
                                             </button>
@@ -216,7 +205,7 @@ export default function PhieuNhapKhoDetail() {
                 {showSendApproveConfirm && (
                     <ConfirmModal
                         title="Xác nhận gửi duyệt"
-                        content={`Bạn muốn gửi duyệt phiếu ${data.soPhieuNhap}? Sau khi gửi, bạn không thể chỉnh sửa lô.`}
+                        content={`Bạn muốn gửi duyệt phiếu ${data.soPhieuNhap}?`}
                         onClose={() => setShowSendApproveConfirm(false)}
                         onConfirm={() => handleAction(phieuNhapKhoService.sendToApprove, "Đã gửi duyệt thành công", () => setShowSendApproveConfirm(false))}
                         confirmClass="bg-orange-500 hover:bg-orange-600"
@@ -234,30 +223,34 @@ export default function PhieuNhapKhoDetail() {
                     />
                 )}
 
-                {/* ===== MODAL: HOÀN TẤT (RẼ NHÁNH THEO VALIDATE MỚI) ===== */}
+                {/* ===== MODAL: HOÀN TẤT ===== */}
                 {showCompleteConfirm && (
                     <ConfirmModal
                         title={isInternalTransfer ? "Xác nhận nhận hàng chuyển kho" : "Xác nhận nhập kho thực tế"}
                         content={isInternalTransfer 
-                            ? "Hệ thống sẽ trừ tồn tại Kho Trung Chuyển và cộng vào kho của bạn. Thao tác này sẽ đóng luồng chuyển kho nội bộ."
-                            : `Hoàn tất nhập kho thực tế cho phiếu ${data.soPhieuNhap}. Tồn kho sẽ được cộng ngay lập tức.`}
+                            ? "Hệ thống sẽ trừ tồn tại Kho Trung Chuyển và cộng vào kho của bạn."
+                            : `Hoàn tất nhập kho cho phiếu ${data.soPhieuNhap}.`}
                         onClose={() => setShowCompleteConfirm(false)}
                         onConfirm={() => handleAction(
                             isInternalTransfer ? phieuChuyenKhoService.completeReceipt : phieuNhapKhoService.complete, 
-                            isInternalTransfer ? "Đã nhận hàng chuyển kho thành công" : "Nhập kho thành công", 
+                            "Nhập kho thành công", 
                             () => setShowCompleteConfirm(false)
                         )}
                         confirmClass="bg-green-600 hover:bg-green-700"
                     />
                 )}
 
-                {/* ===== MODAL: HỦY PHIẾU ===== */}
+                {/* ===== MODAL: HỦY PHIẾU (RẼ NHÁNH TẠI ĐÂY) ===== */}
                 {showCancelConfirm && (
                     <ConfirmModal
                         title="Xác nhận huỷ phiếu"
-                        content={`Bạn chắc chắn muốn huỷ phiếu ${data.soPhieuNhap}?`}
+                        content={`Bạn chắc chắn muốn huỷ phiếu ${data.soPhieuNhap}? Thao tác này không thể hoàn tác.`}
                         onClose={() => setShowCancelConfirm(false)}
-                        onConfirm={() => handleAction(phieuNhapKhoService.cancel, "Đã huỷ phiếu", () => setShowCancelConfirm(false))}
+                        onConfirm={() => handleAction(
+                            isInternalTransfer ? phieuChuyenKhoService.cancel : phieuNhapKhoService.cancel, 
+                            "Đã huỷ phiếu thành công", 
+                            () => setShowCancelConfirm(false)
+                        )}
                         confirmClass="bg-red-600 hover:bg-red-700"
                     />
                 )}
