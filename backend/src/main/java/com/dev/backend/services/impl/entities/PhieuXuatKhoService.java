@@ -723,4 +723,89 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .build();
         lichSuGiaoDichKhoRepository.save(history);
     }
+    @Transactional
+    public void cancelTransfer(Integer id) {
+        //Tìm phiếu và kiểm tra tính hợp lệ
+        PhieuXuatKho phieu = repository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho id: " + id));
+
+        if (!"chuyen_kho".equals(phieu.getLoaiXuat())) {
+            throw new RuntimeException("Đây không phải là phiếu chuyển kho nội bộ");
+        }
+
+        int currentStatus = phieu.getTrangThai();
+        if (currentStatus == 4) { // 4: Hoàn tất
+            throw new RuntimeException("Phiếu đã hoàn tất, không thể hủy");
+        }
+        if (currentStatus == 5) { // 5: Đã hủy
+            throw new RuntimeException("Phiếu đã được hủy trước đó");
+        }
+
+        //Xử lý hoàn tồn dựa theo trạng thái
+        if (currentStatus == 2) {
+            // TRẠNG THÁI ĐÃ DUYỆT: Hoàn trả số lượng đã đặt (so_luong_da_dat) tại Kho A
+            List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository.findAll().stream()
+                    .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
+                    .toList();
+
+            for (ChiTietPhieuXuatKho pick : detailedPicks) {
+                TonKhoTheoLo tonA = tonKhoTheoLoRepository
+                        .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
+                        .orElse(null);
+
+                if (tonA != null) {
+                    BigDecimal currentDaDat = tonA.getSoLuongDaDat() != null ? tonA.getSoLuongDaDat() : BigDecimal.ZERO;
+                    tonA.setSoLuongDaDat(currentDaDat.subtract(pick.getSoLuongXuat()));
+                    tonKhoTheoLoRepository.save(tonA);
+                }
+            }
+        }
+        else if (currentStatus == 3) {
+            // TRẠNG THÁI ĐANG VẬN CHUYỂN: Hàng đang ở Kho Trung Chuyển -> Trả về Kho A
+            Kho khoTransit = entityManager.createQuery("SELECT k FROM Kho k WHERE k.maKho = 'KHO_TRANSIT'", Kho.class)
+                    .getSingleResult();
+
+            List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository.findAll().stream()
+                    .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
+                    .toList();
+
+            for (ChiTietPhieuXuatKho pick : detailedPicks) {
+                BigDecimal qty = pick.getSoLuongXuat();
+
+                //Trừ tồn tại Kho Trung Chuyển
+                TonKhoTheoLo tonTransit = tonKhoTheoLoRepository
+                        .findByKho_IdAndLoHang_Id(khoTransit.getId(), pick.getLoHang().getId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy hàng trong kho trung chuyển"));
+                tonTransit.setSoLuongTon(tonTransit.getSoLuongTon().subtract(qty));
+                tonKhoTheoLoRepository.save(tonTransit);
+
+                //Cộng lại tồn tại Kho A
+                TonKhoTheoLo tonA = tonKhoTheoLoRepository
+                        .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
+                        .orElseThrow(() -> new RuntimeException("Lỗi dữ liệu tồn kho A"));
+                tonA.setSoLuongTon(tonA.getSoLuongTon().add(qty));
+                tonKhoTheoLoRepository.save(tonA);
+
+                //Ghi lịch sử giao dịch (Transit -> A)
+                saveHistory(phieu, pick, phieu.getKho(), "nhap_kho", "Hoàn trả hàng do hủy phiếu chuyển", SecurityContextHolder.getUser().getId(), qty);
+            }
+
+            //Hủy phiếu nhập kho tương ứng đã sinh ra cho Kho B
+            cancelLinkedReceipt(phieu.getSoPhieuXuat());
+        }
+
+        //Cập nhật trạng thái cuối cùng sang 5 (Đã hủy)
+        phieu.setTrangThai(5);
+        repository.save(phieu);
+    }
+
+    private void cancelLinkedReceipt(String soPhieuXuat) {
+        String ghiChuSearch = "Nhập kho tự động từ phiếu chuyển " + soPhieuXuat;
+        Optional<PhieuNhapKho> phieuNhap = phieuNhapKhoRepository.findByGhiChuContaining(ghiChuSearch);
+        if (phieuNhap.isPresent()) {
+            PhieuNhapKho pn = phieuNhap.get();
+            pn.setTrangThai(4); // 4: Đã hủy (Theo mapping của module Nhập kho)
+            phieuNhapKhoRepository.save(pn);
+        }
+    }
 }
