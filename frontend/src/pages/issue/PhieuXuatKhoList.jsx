@@ -81,7 +81,7 @@ export default function PhieuXuatKhoList() {
             page: filters.page,
             size: filters.size,
             filters: filterList,
-            sorts: [{ fieldName: "soPhieuXuat", direction: "DESC" }],
+            sorts: [{ fieldName: "ngayXuat", direction: "DESC" }],
         };
     }
 
@@ -93,6 +93,12 @@ export default function PhieuXuatKhoList() {
             );
 
             let list = res.content || [];
+            list = list.filter((item) => {
+                if (item.loaiXuat === "chuyen_kho") {
+                    return item.trangThai >= 2;
+                }
+                return true;
+            });
             if (filters.ngayXuat) {
                 list = list.filter((item) => {
                     if (!item.ngayXuat) return false;
@@ -106,7 +112,7 @@ export default function PhieuXuatKhoList() {
             }
 
             setData(list);
-            setTotal(res.totalElements || 0);
+            setTotal(list.length); 
         } finally {
             setLoading(false);
         }
@@ -255,6 +261,7 @@ export default function PhieuXuatKhoList() {
                                 <th className="px-4 py-3 text-left">Số phiếu</th>
                                 <th className="px-4 py-3 text-left">Đơn bán hàng</th>
                                 <th className="px-4 py-3 text-left">Kho xuất</th>
+                                <th className="px-4 py-3 text-left">Ngày tạo</th>
                                 <th className="px-4 py-3 text-left">Ngày xuất</th>
                                 <th className="px-4 py-3 text-left">Trạng thái</th>
                             </tr>
@@ -290,8 +297,13 @@ export default function PhieuXuatKhoList() {
                                         </td>
                                         <td className="px-4 py-3">
                                             {new Date(
-                                                item.ngayXuat
+                                                item.ngayTao
                                             ).toLocaleDateString("vi-VN")}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {new Date(
+                                                item.ngayXuat
+                                            ).toLocaleDateString("vi-VN") || "Chưa xuất kho"}
                                         </td>
                                         <td className="px-4 py-3">
                                             <span
