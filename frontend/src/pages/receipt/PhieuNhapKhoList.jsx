@@ -220,7 +220,9 @@ export default function PhieuNhapKhoList() {
                                                 {new Date(item.ngayTao).toLocaleDateString("vi-VN")}
                                             </td>
                                             <td className="px-4 py-4">
-                                                {new Date(item.ngayNhap).toLocaleDateString("vi-VN") || "Chưa nhập kho"}
+                                                {item.ngayNhap
+                                                    ? new Date(item.ngayNhap).toLocaleDateString("vi-VN")
+                                                    : "Chưa nhập kho"}
                                             </td>
                                             <td className="px-4 py-4">
                                                 <span className={`px-2 py-1 text-xs rounded ${STATUS_MAP[item.trangThai]?.className}`}>

@@ -114,7 +114,7 @@ export default function PhieuXuatKhoDetail() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between bg-white border-b sticky top-0 z-10">
                     {/* LEFT */}
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate("/goods-issues")}
                         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 font-medium"
                     >
                         ← Quay lại
@@ -211,7 +211,7 @@ export default function PhieuXuatKhoDetail() {
                             />
                             
                             <Info
-                                label="Người phụ trách"
+                                label="Người xuất"
                                 value={phieu.nguoiXuat?.hoTen || "---"}
                             />
                             

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 const STATUS_MAP = {
     0: { label: "Nháp", className: "bg-amber-50 text-amber-700" },
     1: { label: "Chờ duyệt", className: "bg-blue-50 text-blue-700" },
-    2: { label: "Đã duyệt", className: "bg-indigo-50 text-indigo-700" },
+    2: { label: "Chờ xuất hàng", className: "bg-indigo-50 text-indigo-700" },
     3: { label: "Đang vận chuyển", className: "bg-purple-50 text-purple-700" },
     5: { label: "Hoàn tất", className: "bg-green-50 text-green-700" },
     4: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
