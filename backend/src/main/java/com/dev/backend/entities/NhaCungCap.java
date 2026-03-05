@@ -35,6 +35,14 @@ public class NhaCungCap {
     @Column(name = "ten_nha_cung_cap", nullable = false, length = 200)
     String tenNhaCungCap;
 
+    @Size(max = 20)
+    @Column(name = "ngan_hang", length = 20)
+    String nganHang;
+
+    @Size(max = 100)
+    @Column(name = "so_ngan_hang", length = 100)
+    String soNganHang;
+
     @Size(max = 100)
     @Column(name = "nguoi_lien_he", length = 100)
     String nguoiLienHe;

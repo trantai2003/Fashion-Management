@@ -167,11 +167,10 @@ export default function SupplierQuotation() {
 
         try {
             const payload = {
-                donMuaHangId: orderData.id,
-                ngayGiaoHangDeXuat: new Date(estimatedDeliveryDate).toISOString(),
-                ghiChuNhaCungCap: supplierNote,
+                id: orderData.id,
+                ghiChu: supplierNote,
                 listChiTietBaoGia: quoteItems.map(item => ({
-                    chiTietDonMuaHangId: item.id,
+                    id: item.id,
                     donGiaDeXuat: Number(item.donGiaDeXuat),
                     soLuongCoCap: Number(item.soLuongCoCap),
                     ngayGiaoHang: item.ngayGiaoHang ? new Date(item.ngayGiaoHang).toISOString() : null,

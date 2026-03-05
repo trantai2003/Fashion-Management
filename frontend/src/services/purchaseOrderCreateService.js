@@ -79,6 +79,8 @@ const purchaseOrderCreateService = {
      * @returns Promise<ResponseData<DonMuaHangDto>>
      */
     create: async (creating, khoId) => {
+        console.log('Creating purchase order:', creating);
+        console.log('Kho ID:', khoId);
         try {
             const response = await apiClient.post(
                 '/api/v1/nghiep-vu/don-mua-hang/create',
