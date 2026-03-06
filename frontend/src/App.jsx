@@ -70,7 +70,7 @@ export default function App() {
           {/* User management */}
           <Route path="/users" element={<ViewUserListByAdmin />} />
           <Route path="/users/add" element={<AddUserByAdmin />} />
-          <Route path="/admin/users/:id" element={<ViewUserDetailByAdmin />} />
+          <Route path="/users/:id" element={<ViewUserDetailByAdmin />} />
           <Route
             path="/users/:id/reset-password"
             element={<ResetUserPasswordByAdmin />}
