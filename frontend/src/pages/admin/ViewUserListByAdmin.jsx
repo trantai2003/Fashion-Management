@@ -340,7 +340,7 @@ export default function ViewUserListByAdmin() {
                                     {users.map((u) => (
                                         <TableRow
                                             key={u.id}
-                                            onClick={() => navigate(`/admin/users/${u.id}`)}
+                                            onClick={() => navigate(`/users/${u.id}`)}
                                             className="border-b hover:bg-gray-50">
                                             <TableCell className="px-4 py-3 font-semibold text-purple-600">
                                                 {u.tenDangNhap}
@@ -377,19 +377,25 @@ export default function ViewUserListByAdmin() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-                                                <Link
-                                                    to={`/users/${u.id}/edit-role`}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/users/${u.id}/edit-role`);
+                                                    }}
                                                     className="text-sm font-semibold text-gray-700 hover:underline"
                                                 >
                                                     Role
-                                                </Link>
+                                                </button>
 
-                                                <Link
-                                                    to={`/users/${u.id}/reset-password`}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/users/${u.id}/reset-password`);
+                                                    }}
                                                     className="text-sm font-semibold text-red-600 hover:underline"
                                                 >
                                                     Reset
-                                                </Link>
+                                                </button>
                                             </TableCell>
                                         </TableRow>
                                     ))}
