@@ -878,22 +878,28 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         if (request.getKhoXuatId().equals(request.getKhoNhapId())) {
             throw new CommonException("Kho gửi và kho nhận không được trùng nhau");
         }
-        // KIỂM TRA QUYỀN (Người tạo phải thuộc Kho B - Kho nhận hàng)
-        boolean isAdmin = SecurityContextHolder.getUser().getVaiTro().contains(IRoleType.quan_tri_vien);
+
+        //Kiểm tra quyền
+        NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
+        boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
         Integer userWarehouseId = SecurityContextHolder.getKhoId();
         // Nếu không phải Admin, chỉ được tạo request cho chính kho của mình nhận
         if (!isAdmin && !request.getKhoNhapId().equals(userWarehouseId)) {
             throw new AccessDeniedException("Bạn chỉ có quyền tạo yêu cầu nhập hàng cho kho của mình");
         }
 
-        Kho khoA = entityManager.find(Kho.class, request.getKhoXuatId()); // Kho gửi
-        Kho khoB = entityManager.find(Kho.class, request.getKhoNhapId()); // Kho nhận
+        //Tìm và kiểm tra thực thể (Nên ném lỗi nếu null)
+        Kho khoA = Optional.ofNullable(entityManager.find(Kho.class, request.getKhoXuatId()))
+                .orElseThrow(() -> new CommonException("Kho xuất hàng không tồn tại"));
+        Kho khoB = Optional.ofNullable(entityManager.find(Kho.class, request.getKhoNhapId()))
+                .orElseThrow(() -> new CommonException("Kho nhận hàng không tồn tại"));
+
         int retry = 0;
         int maxRetry = 5;
         while (true) {
             try {
                 PhieuXuatKho phieu = PhieuXuatKho.builder()
-                        .soPhieuXuat(generateSoPhieuTransfer()) // SỬ DỤNG HÀM MỚI TẠI ĐÂY
+                        .soPhieuXuat(generateSoPhieuTransfer())
                         .kho(khoA)
                         .khoChuyenDen(khoB)
                         .loaiXuat("chuyen_kho")
@@ -903,13 +909,15 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                         .build();
                 phieu = repository.save(phieu);
                 for (ChiTietPhieuXuatKhoCreating reqCt : request.getChiTietXuat()) {
-                    BienTheSanPham bt = entityManager.find(BienTheSanPham.class, reqCt.getBienTheSanPhamId());
+                    BienTheSanPham bt = Optional.ofNullable(entityManager.find(BienTheSanPham.class, reqCt.getBienTheSanPhamId()))
+                            .orElseThrow(() -> new CommonException("Sản phẩm ID " + reqCt.getBienTheSanPhamId() + " không tồn tại"));
+
                     ChiTietPhieuXuatKho ct = ChiTietPhieuXuatKho.builder()
                             .phieuXuatKho(phieu)
                             .bienTheSanPham(bt)
                             .soLuongXuat(reqCt.getSoLuongXuat())
                             .build();
-                    chiTietPhieuXuatKhoRepository.save(ct);
+                    entityManager.persist(ct); // Dùng persist trong vòng lặp Transactional sẽ hiệu quả hơn
                 }
                 return phieu;
             } catch (org.springframework.dao.DataIntegrityViolationException ex) {
