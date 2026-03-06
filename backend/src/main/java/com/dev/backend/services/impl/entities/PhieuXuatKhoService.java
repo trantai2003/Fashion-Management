@@ -724,11 +724,20 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         repository.save(phieu);
     }
 
+    private String generateSoPhieuNhapTransfer() {
+        String dateStr = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+        String prefix = "PN-TRF-" + dateStr;
+        long countToday = phieuNhapKhoRepository.countByTransferPrefix(prefix);
+
+        return prefix + (countToday + 1);
+    }
+
     private void createAutoPhieuNhapForKhoB(PhieuXuatKho px, List<ChiTietPhieuXuatKho> picks) {
         PhieuNhapKho pn = PhieuNhapKho.builder()
-                .soPhieuNhap("PN-TRF-" + px.getSoPhieuXuat())
+                .soPhieuNhap(generateSoPhieuNhapTransfer())
                 .kho(px.getKhoChuyenDen())
                 .trangThai(2) // 2: Đã duyệt
+                .nguoiDuyet(px.getNguoiDuyet())
                 .ngayTao(Instant.now())
                 .ghiChu("Nhập kho tự động từ phiếu chuyển " + px.getSoPhieuXuat())
                 .build();
