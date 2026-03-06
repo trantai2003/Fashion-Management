@@ -22,5 +22,9 @@ export const phieuChuyenKhoService = {
     },
     async completeReceipt(id) {
         return await apiClient.put(`/api/v1/phieu-nhap-kho/${id}/complete-transfer`);
+    },
+    async create(payload) {
+        const res = await apiClient.post("/api/v1/phieu-chuyen-kho/create", payload);
+        return res.data?.data || res.data;
     }
 }
