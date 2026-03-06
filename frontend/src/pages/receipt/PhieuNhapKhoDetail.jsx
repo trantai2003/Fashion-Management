@@ -242,17 +242,30 @@ export default function PhieuNhapKhoDetail() {
                     />
                 )}
 
-                {/* ===== MODAL: HỦY PHIẾU (RẼ NHÁNH TẠI ĐÂY) ===== */}
                 {showCancelConfirm && (
                     <ConfirmModal
                         title="Xác nhận huỷ phiếu"
-                        content={`Bạn chắc chắn muốn huỷ phiếu ${data.soPhieuNhap}? Thao tác này không thể hoàn tác.`}
+                        content={`Bạn chắc chắn muốn huỷ phiếu ${data.soPhieuNhap}? Thao tác này sẽ huỷ toàn bộ quy trình liên quan và không thể hoàn tác.`}
                         onClose={() => setShowCancelConfirm(false)}
-                        onConfirm={() => handleAction(
-                            isInternalTransfer ? phieuChuyenKhoService.cancel : phieuNhapKhoService.cancel,
-                            "Đã huỷ phiếu thành công",
-                            () => setShowCancelConfirm(false)
-                        )}
+                        onConfirm={() => {
+                            const targetId = isInternalTransfer ? data.phieuXuatGocId : id;
+                            if (!targetId) {
+                                toast.error("Lỗi: Không tìm thấy ID phiếu gốc để thực hiện hủy quy trình!");
+                                return;
+                            }
+
+                            // 3. Gọi handleAction với đúng Service tương ứng
+                            handleAction(
+                                () => isInternalTransfer
+                                    ? phieuChuyenKhoService.cancel(targetId)
+                                    : phieuNhapKhoService.cancel(targetId),
+                                "Đã huỷ quy trình thành công",
+                                () => {
+                                    setShowCancelConfirm(false);
+                                    navigate("/goods-receipts");
+                                }
+                            );
+                        }}
                         confirmClass="bg-red-600 hover:bg-red-700"
                     />
                 )}

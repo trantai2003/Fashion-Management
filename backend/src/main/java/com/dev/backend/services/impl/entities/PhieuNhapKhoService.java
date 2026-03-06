@@ -373,8 +373,26 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     public ChiTietPhieuNhapKhoDto getDetail(Integer id) {
         PhieuNhapKho phieu = repository.findById(id)
                 .orElseThrow(() -> new CommonException("Không tìm thấy phiếu nhập id: " + id));
+        Integer phieuXuatGocId = null;
+        String ghiChu = phieu.getGhiChu();
 
-        // LOGIC MỚI: Group theo biến thể để tính tổng số lượng
+        if (ghiChu != null) {
+            String maPX = "";
+            // Trường hợp 1: Nhập chuyển kho bình thường cho kho B
+            if (ghiChu.contains("Nhập kho tự động từ phiếu chuyển ")) {
+                maPX = ghiChu.replace("Nhập kho tự động từ phiếu chuyển ", "").trim();
+            }
+            // Trường hợp 2: Nhập hoàn trả lại cho kho A do hủy phiếu
+            else if (ghiChu.contains("Nhập hoàn trả tự động do hủy phiếu chuyển: ")) {
+                maPX = ghiChu.replace("Nhập hoàn trả tự động do hủy phiếu chuyển: ", "").trim();
+            }
+
+            if (!maPX.isEmpty()) {
+                phieuXuatGocId = phieuXuatKhoRepository.findBySoPhieuXuat(maPX)
+                        .map(PhieuXuatKho::getId)
+                        .orElse(null);
+            }
+        }
         Map<Integer, PhieuNhapKhoItemDto> itemsMap = new LinkedHashMap<>();
 
         for (ChiTietPhieuNhapKho ct : phieu.getChiTietPhieuNhapKhos()) {
@@ -410,6 +428,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         List<PhieuNhapKhoItemDto> items = new ArrayList<>(itemsMap.values());
         ChiTietPhieuNhapKhoDto.ChiTietPhieuNhapKhoDtoBuilder builder = ChiTietPhieuNhapKhoDto.builder()
                 .id(phieu.getId())
+                .phieuXuatGocId(phieuXuatGocId) // TRẢ VỀ ID 36 CHO FRONTEND TẠI ĐÂY
                 .soPhieuNhap(phieu.getSoPhieuNhap())
                 .trangThai(phieu.getTrangThai())
                 .ngayNhap(phieu.getNgayNhap())
@@ -420,7 +439,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                 .tenNguoiDuyet(phieu.getNguoiDuyet() != null ? phieu.getNguoiDuyet().getHoTen() : null);
 
         if (phieu.getDonMuaHang() == null) {
-            builder.loaiNhap("Chuyển kho nội bộ");
+            builder.loaiNhap(ghiChu != null && ghiChu.contains("hoàn trả") ? "Nhập hoàn trả (Hủy chuyển kho)" : "Chuyển kho nội bộ");
             List<String> tenKhoNguonList = lichSuGiaoDichKhoRepository.findTenKhoNguonByPhieuNhap(id);
             if (!tenKhoNguonList.isEmpty()) builder.tenKhoChuyenTu(tenKhoNguonList.get(0));
         } else {
