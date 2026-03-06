@@ -7,6 +7,7 @@ import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.FilterCriteria;
+import com.dev.backend.dto.request.PhieuChuyenKhoCreating;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.customize.TransferDetailDto;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
@@ -103,7 +104,7 @@ public class PhieuChuyenKhoController {
     @PutMapping("/{id}/approve")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
-            inWarehouse = true, // Annotation này sẽ kiểm tra user có thuộc kho nào đó không
+            inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<String>> approveTransfer(@PathVariable Integer id) {
@@ -145,6 +146,23 @@ public class PhieuChuyenKhoController {
                         .status(HttpStatus.OK.value())
                         .message("Hủy phiếu chuyển kho thành công")
                         .data("SUCCESS")
+                        .build()
+        );
+    }
+    @PostMapping("/create")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<PhieuXuatKhoDto>> createTransfer(@RequestBody PhieuChuyenKhoCreating request) {
+        PhieuXuatKho entity = phieuXuatKhoService.createTransfer(request);
+        PhieuXuatKhoDto dto = phieuXuatKhoMapper.toDto(entity);
+        return ResponseEntity.ok(
+                ResponseData.<PhieuXuatKhoDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(dto)
+                        .message("Tạo yêu cầu điều chuyển hàng hóa thành công")
                         .build()
         );
     }

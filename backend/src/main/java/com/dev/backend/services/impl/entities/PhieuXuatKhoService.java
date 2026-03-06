@@ -3,6 +3,7 @@ package com.dev.backend.services.impl.entities;
 import com.dev.backend.config.SecurityContextHolder;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.dto.request.ChiTietPhieuXuatKhoCreating;
+import com.dev.backend.dto.request.PhieuChuyenKhoCreating;
 import com.dev.backend.dto.request.PhieuXuatKhoCreating;
 import com.dev.backend.dto.request.PickLoHangRequest;
 import com.dev.backend.dto.response.customize.PhieuXuatKhoViewDto;
@@ -727,7 +728,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     private String generateSoPhieuNhapTransfer() {
         String dateStr = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
         String prefix = "PN-TRF-" + dateStr;
-        long countToday = phieuNhapKhoRepository.countByTransferPrefix(prefix);
+        long countToday = phieuNhapKhoRepository.countBySoPhieuPrefix(prefix);
 
         return prefix + (countToday + 1);
     }
@@ -859,6 +860,65 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             PhieuNhapKho pn = phieuNhap.get();
             pn.setTrangThai(4); // 4: Đã hủy (Theo mapping của module Nhập kho)
             phieuNhapKhoRepository.save(pn);
+        }
+    }
+    private String generateSoPhieuTransfer() {
+        String dateStr = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String prefix = "PX-TRF-" + dateStr;
+        long countToday = ((PhieuXuatKhoRepository) repository).countBySoPhieuXuatStartingWith(prefix);
+        return prefix + (countToday + 1);
+    }
+
+    @Transactional
+    public PhieuXuatKho createTransfer(PhieuChuyenKhoCreating request) {
+        // Kiểm tra cơ bản
+        if (request.getChiTietXuat() == null || request.getChiTietXuat().isEmpty()) {
+            throw new CommonException("Yêu cầu điều chuyển phải có ít nhất 1 sản phẩm");
+        }
+        if (request.getKhoXuatId().equals(request.getKhoNhapId())) {
+            throw new CommonException("Kho gửi và kho nhận không được trùng nhau");
+        }
+        // KIỂM TRA QUYỀN (Người tạo phải thuộc Kho B - Kho nhận hàng)
+        boolean isAdmin = SecurityContextHolder.getUser().getVaiTro().contains(IRoleType.quan_tri_vien);
+        Integer userWarehouseId = SecurityContextHolder.getKhoId();
+        // Nếu không phải Admin, chỉ được tạo request cho chính kho của mình nhận
+        if (!isAdmin && !request.getKhoNhapId().equals(userWarehouseId)) {
+            throw new AccessDeniedException("Bạn chỉ có quyền tạo yêu cầu nhập hàng cho kho của mình");
+        }
+
+        Kho khoA = entityManager.find(Kho.class, request.getKhoXuatId()); // Kho gửi
+        Kho khoB = entityManager.find(Kho.class, request.getKhoNhapId()); // Kho nhận
+        int retry = 0;
+        int maxRetry = 5;
+        while (true) {
+            try {
+                PhieuXuatKho phieu = PhieuXuatKho.builder()
+                        .soPhieuXuat(generateSoPhieuTransfer()) // SỬ DỤNG HÀM MỚI TẠI ĐÂY
+                        .kho(khoA)
+                        .khoChuyenDen(khoB)
+                        .loaiXuat("chuyen_kho")
+                        .trangThai(0) // Nháp
+                        .ngayTao(Instant.now())
+                        .ghiChu(request.getGhiChu())
+                        .build();
+                phieu = repository.save(phieu);
+                for (ChiTietPhieuXuatKhoCreating reqCt : request.getChiTietXuat()) {
+                    BienTheSanPham bt = entityManager.find(BienTheSanPham.class, reqCt.getBienTheSanPhamId());
+                    ChiTietPhieuXuatKho ct = ChiTietPhieuXuatKho.builder()
+                            .phieuXuatKho(phieu)
+                            .bienTheSanPham(bt)
+                            .soLuongXuat(reqCt.getSoLuongXuat())
+                            .build();
+                    chiTietPhieuXuatKhoRepository.save(ct);
+                }
+                return phieu;
+            } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+                if (isDuplicateSoPhieu(ex) && retry < maxRetry) {
+                    retry++;
+                    continue;
+                }
+                throw ex;
+            }
         }
     }
 }
