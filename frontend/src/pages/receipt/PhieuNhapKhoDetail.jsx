@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
-import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService"; 
+import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { toast } from "sonner";
 
 const STATUS_MAP = {
@@ -64,7 +64,7 @@ export default function PhieuNhapKhoDetail() {
             await actionFn(id);
             toast.success(successMsg);
             closeModals();
-            fetchDetail(); 
+            fetchDetail();
         } catch (e) {
             toast.error(e?.response?.data?.message || "Thao tác thất bại");
         }
@@ -135,7 +135,7 @@ export default function PhieuNhapKhoDetail() {
                         <div className="grid md:grid-cols-3 gap-6 text-sm">
                             <Info label="Số phiếu" value={data.soPhieuNhap} />
                             <Info label="Kho nhập hàng" value={data.tenKho} />
-                            
+
                             {isInternalTransfer ? (
                                 <Info label="Loại nghiệp vụ" value="Chuyển kho nội bộ" />
                             ) : (
@@ -147,7 +147,9 @@ export default function PhieuNhapKhoDetail() {
 
                             <Info label="Người duyệt" value={data.tenNguoiDuyet} />
                             <Info label="Người nhập" value={data.tenNguoiNhap} />
-                            <Info label="Ngày lập phiếu" value={new Date(data.ngayNhap).toLocaleDateString("vi-VN")} />
+                            <Info label="Ngày nhập phiếu" value={data.ngayNhap
+                                ? new Date(data.ngayNhap).toLocaleDateString("vi-VN")
+                                : "Chưa nhập kho"} />
                         </div>
                     </section>
 
@@ -227,13 +229,13 @@ export default function PhieuNhapKhoDetail() {
                 {showCompleteConfirm && (
                     <ConfirmModal
                         title={isInternalTransfer ? "Xác nhận nhận hàng chuyển kho" : "Xác nhận nhập kho thực tế"}
-                        content={isInternalTransfer 
+                        content={isInternalTransfer
                             ? "Hệ thống sẽ trừ tồn tại Kho Trung Chuyển và cộng vào kho của bạn."
                             : `Hoàn tất nhập kho cho phiếu ${data.soPhieuNhap}.`}
                         onClose={() => setShowCompleteConfirm(false)}
                         onConfirm={() => handleAction(
-                            isInternalTransfer ? phieuChuyenKhoService.completeReceipt : phieuNhapKhoService.complete, 
-                            "Nhập kho thành công", 
+                            isInternalTransfer ? phieuChuyenKhoService.completeReceipt : phieuNhapKhoService.complete,
+                            "Nhập kho thành công",
                             () => setShowCompleteConfirm(false)
                         )}
                         confirmClass="bg-green-600 hover:bg-green-700"
@@ -247,8 +249,8 @@ export default function PhieuNhapKhoDetail() {
                         content={`Bạn chắc chắn muốn huỷ phiếu ${data.soPhieuNhap}? Thao tác này không thể hoàn tác.`}
                         onClose={() => setShowCancelConfirm(false)}
                         onConfirm={() => handleAction(
-                            isInternalTransfer ? phieuChuyenKhoService.cancel : phieuNhapKhoService.cancel, 
-                            "Đã huỷ phiếu thành công", 
+                            isInternalTransfer ? phieuChuyenKhoService.cancel : phieuNhapKhoService.cancel,
+                            "Đã huỷ phiếu thành công",
                             () => setShowCancelConfirm(false)
                         )}
                         confirmClass="bg-red-600 hover:bg-red-700"
