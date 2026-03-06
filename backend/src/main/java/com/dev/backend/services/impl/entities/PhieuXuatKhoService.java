@@ -912,10 +912,18 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                     BienTheSanPham bt = Optional.ofNullable(entityManager.find(BienTheSanPham.class, reqCt.getBienTheSanPhamId()))
                             .orElseThrow(() -> new CommonException("Sản phẩm ID " + reqCt.getBienTheSanPhamId() + " không tồn tại"));
 
+                    // check tồn kho
+                    BigDecimal qtyYeuCau = reqCt.getSoLuongXuat();
+                    BigDecimal qtyKhaDung = tonKhoTheoLoRepository.sumSoLuongKhaDungByKhoAndBienThe(khoA.getId(), bt.getId());
+
+                    if (qtyKhaDung.compareTo(qtyYeuCau) < 0) {
+                        throw new CommonException("Sản phẩm [" + bt.getMaSku() + "] không đủ tồn kho tại kho " + khoA.getTenKho() +
+                                " (Yêu cầu: " + qtyYeuCau + ", Hiện có: " + qtyKhaDung + ")");
+                    }
                     ChiTietPhieuXuatKho ct = ChiTietPhieuXuatKho.builder()
                             .phieuXuatKho(phieu)
                             .bienTheSanPham(bt)
-                            .soLuongXuat(reqCt.getSoLuongXuat())
+                            .soLuongXuat(qtyYeuCau)
                             .build();
                     entityManager.persist(ct); // Dùng persist trong vòng lặp Transactional sẽ hiệu quả hơn
                 }

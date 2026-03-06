@@ -278,7 +278,6 @@ export default function PhieuXuatKhoDetail() {
                                             
                                             <td className="px-4 py-3 text-center">
                                                 <button
-                                                    disabled={phieu.trangThai >= 3}
                                                     onClick={() =>
                                                         navigate(
                                                             `/goods-issues/${phieu.id}/pick-lot/${ct.id}`,

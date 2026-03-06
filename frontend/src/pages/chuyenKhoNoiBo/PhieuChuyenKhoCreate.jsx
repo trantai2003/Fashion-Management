@@ -120,13 +120,9 @@ export default function PhieuChuyenKhoCreate() {
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="rounded-full w-9 h-9 border-gray-300 hover:text-purple-600">
-                            <ArrowLeft className="h-4 w-4" />
+                        <Button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 font-medium">
+                            ← Quay lại
                         </Button>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Tạo phiếu điều chuyển</h1>
-                            <p className="text-sm text-gray-500">Lập kế hoạch di chuyển hàng hóa giữa các kho nội bộ.</p>
-                        </div>
                     </div>
                 </div>
 

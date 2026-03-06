@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -252,5 +253,18 @@ public interface TonKhoTheoLoRepository extends JpaRepository<TonKhoTheoLo, Inte
             @Param("khoId") Integer khoId,
             @Param("bienTheSanPhamId") Integer bienTheSanPhamId,
             @Param("phieuId") Integer phieuId
+    );
+    /**
+     * Tính tổng số lượng khả dụng của một biến thể tại một kho (tổng của tất cả các lô)
+     */
+    @Query("""
+    SELECT COALESCE(SUM(t.soLuongTon - t.soLuongDaDat), 0)
+    FROM TonKhoTheoLo t
+    WHERE t.kho.id = :khoId 
+    AND t.loHang.bienTheSanPham.id = :bienTheId
+""")
+    BigDecimal sumSoLuongKhaDungByKhoAndBienThe(
+            @Param("khoId") Integer khoId,
+            @Param("bienTheId") Integer bienTheId
     );
 }
