@@ -23,6 +23,10 @@ const STATUS_MAP = {
         label: "Đã hủy",
         className: "bg-red-50 text-red-700",
     },
+    5: {
+        label: "Đã xuất",
+        className: "bg-green-50 text-green-700",
+    }
 };
 
 export default function PhieuXuatKhoList() {
@@ -45,13 +49,12 @@ export default function PhieuXuatKhoList() {
 
         if (filters.keyword?.trim()) {
             const searchKeyword = filters.keyword.trim();
-            // Cập nhật fieldName để search sâu vào object donBanHang
             ["soPhieuXuat", "donBanHang.soDonHang"].forEach((field) => {
                 filterList.push({
                     fieldName: field,
                     operation: "LIKE",
                     value: searchKeyword,
-                    logicType: "OR", 
+                    logicType: "OR",
                 });
             });
         }
@@ -66,7 +69,6 @@ export default function PhieuXuatKhoList() {
 
         if (filters.tenKho !== "") {
             filterList.push({
-                // Cập nhật fieldName để search sâu vào object kho
                 fieldName: "kho.tenKho",
                 operation: "LIKE",
                 value: filters.tenKho.trim(),
@@ -77,32 +79,38 @@ export default function PhieuXuatKhoList() {
             page: filters.page,
             size: filters.size,
             filters: filterList,
-            sorts: [{ fieldName: "soPhieuXuat", direction: "DESC" }],
+            sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
         };
     }
 
     async function fetchData() {
         setLoading(true);
         try {
-            const res = await phieuXuatKhoService.filter(
-                buildFilterPayload()
-            );
-
+            const res = await phieuXuatKhoService.filter(buildFilterPayload());
             let list = res.content || [];
+            const filteredList = list.filter((item) => {
+                if (item.loaiXuat === "chuyen_kho" || item.loaiXuat === "CHUYEN_KHO") {
+                    return item.trangThai >= 2;
+                }
+                return true;
+            });
+            let finalData = filteredList;
             if (filters.ngayXuat) {
-                list = list.filter((item) => {
-                    if (!item.ngayXuat) return false;
-                    const date = new Date(item.ngayXuat);
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const itemDateLocal = `${year}-${month}-${day}`;
-                    return itemDateLocal === filters.ngayXuat;
+                finalData = filteredList.filter((item) => {
+                    const dateValue = item.ngayXuat || item.ngayTao;
+                    if (!dateValue) return false;
+                    const date = new Date(dateValue);
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}` === filters.ngayXuat;
                 });
             }
 
-            setData(list);
+            setData(finalData);
             setTotal(res.totalElements || 0);
+        } catch (e) {
+            console.error("Fetch list error:", e);
         } finally {
             setLoading(false);
         }
@@ -110,14 +118,7 @@ export default function PhieuXuatKhoList() {
 
     useEffect(() => {
         fetchData();
-    }, [
-        filters.keyword,
-        filters.tenKho,
-        filters.trangThai,
-        filters.ngayXuat,
-        filters.page,
-        filters.size,
-    ]);
+    }, [filters.keyword, filters.tenKho, filters.trangThai, filters.ngayXuat, filters.page, filters.size]);
 
     const totalPages = Math.ceil(total / filters.size);
 
@@ -251,6 +252,7 @@ export default function PhieuXuatKhoList() {
                                 <th className="px-4 py-3 text-left">Số phiếu</th>
                                 <th className="px-4 py-3 text-left">Đơn bán hàng</th>
                                 <th className="px-4 py-3 text-left">Kho xuất</th>
+                                <th className="px-4 py-3 text-left">Ngày tạo</th>
                                 <th className="px-4 py-3 text-left">Ngày xuất</th>
                                 <th className="px-4 py-3 text-left">Trạng thái</th>
                             </tr>
@@ -277,17 +279,20 @@ export default function PhieuXuatKhoList() {
                                             {item.soPhieuXuat}
                                         </td>
                                         <td className="px-4 py-3">
-                                            {/* Sửa: Lấy từ object donBanHang */}
                                             {item.donBanHang?.soDonHang || "-"}
                                         </td>
                                         <td className="px-4 py-3">
-                                            {/* Sửa: Lấy từ object kho */}
                                             {item.kho?.tenKho || "-"}
                                         </td>
                                         <td className="px-4 py-3">
                                             {new Date(
-                                                item.ngayXuat
+                                                item.ngayTao
                                             ).toLocaleDateString("vi-VN")}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {item.ngayXuat
+                                                ? new Date(item.ngayXuat).toLocaleDateString("vi-VN")
+                                                : "Chưa xuất kho"}
                                         </td>
                                         <td className="px-4 py-3">
                                             <span

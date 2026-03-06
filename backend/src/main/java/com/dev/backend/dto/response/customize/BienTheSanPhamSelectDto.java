@@ -16,4 +16,7 @@ public class BienTheSanPhamSelectDto {
     private String maBienThe;
     private String tenSanPham;
     private BigDecimal giaBan;
+    String tenMau;
+    String tenSize;
+    String tenChatLieu;
 }

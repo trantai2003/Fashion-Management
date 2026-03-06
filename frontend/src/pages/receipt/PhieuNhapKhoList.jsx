@@ -191,6 +191,7 @@ export default function PhieuNhapKhoList() {
                                     <th className="px-4 py-3">Đơn mua (PO)</th>
                                     <th className="px-4 py-3">Nhà cung cấp</th>
                                     <th className="px-4 py-3">Kho</th>
+                                    <th className="px-4 py-3">Ngày tạo</th>
                                     <th className="px-4 py-3">Ngày nhập</th>
                                     <th className="px-4 py-3">Trạng thái</th>
                                 </tr>
@@ -216,7 +217,12 @@ export default function PhieuNhapKhoList() {
                                             <td className="px-4 py-4">{item.tenNhaCungCap}</td>
                                             <td className="px-4 py-4">{item.tenKho}</td>
                                             <td className="px-4 py-4">
-                                                {new Date(item.ngayNhap).toLocaleDateString("vi-VN")}
+                                                {new Date(item.ngayTao).toLocaleDateString("vi-VN")}
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                {item.ngayNhap
+                                                    ? new Date(item.ngayNhap).toLocaleDateString("vi-VN")
+                                                    : "Chưa nhập kho"}
                                             </td>
                                             <td className="px-4 py-4">
                                                 <span className={`px-2 py-1 text-xs rounded ${STATUS_MAP[item.trangThai]?.className}`}>

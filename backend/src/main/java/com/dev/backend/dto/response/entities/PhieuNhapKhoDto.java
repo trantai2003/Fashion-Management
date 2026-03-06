@@ -21,6 +21,7 @@ public class PhieuNhapKhoDto {
     Integer khoId;
     String tenKho;
     Instant ngayNhap;
+    Instant ngayTao;
     Integer trangThai;
     String ghiChu;
 }

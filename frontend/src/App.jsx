@@ -47,7 +47,8 @@ import DonBanHangDetail from "./pages/sales-orders/DonBanHangDetail";
 import DonBanHangInvoice from "./pages/sales-orders/DonBanHangInvoice";
 import DonBanHangCreate from "./pages/sales-orders/DonBanHangCreate";
 import ProductDetail from "./pages/product/components/product/ProductDetail";
-
+import PhieuChuyenKhoDetail from "./pages/chuyenKhoNoiBo/PhieuChuyenKhoDetail";
+import PhieuChuyenKhoCreate from "./pages/chuyenKhoNoiBo/PhieuChuyenKhoCreate";
 export default function App() {
   return (
     <BrowserRouter>
@@ -135,8 +136,8 @@ export default function App() {
 
           {/* Chuyen kho noi bo */}
           <Route path="/transfer-tickets" element={<PhieuChuyenKhoList />} />
-          {/* <Route path="/transfer-tickets/create" element={<PhieuChuyenKhoCreate />} />
-          <Route path="/transfer-tickets/:id" element={<PhieuChuyenKhoDetail />} /> */}
+          <Route path="/transfer-tickets/create" element={<PhieuChuyenKhoCreate />} />
+          <Route path="/transfer-tickets/:id" element={<PhieuChuyenKhoDetail />} />
         </Route>
 
         {/* ========== 404 ========== */}

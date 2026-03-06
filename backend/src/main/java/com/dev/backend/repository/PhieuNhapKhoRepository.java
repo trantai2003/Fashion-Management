@@ -7,12 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface PhieuNhapKhoRepository extends JpaRepository<PhieuNhapKho, Integer>, JpaSpecificationExecutor<PhieuNhapKho> {
-    @Query("""
-        SELECT COUNT(p)
-        FROM PhieuNhapKho p
-        WHERE p.soPhieuNhap LIKE :prefix%
-    """)
+    @Query("SELECT COUNT(p) FROM PhieuNhapKho p WHERE p.soPhieuNhap LIKE :prefix%")
     long countBySoPhieuPrefix(@Param("prefix") String prefix);
+    Optional<PhieuNhapKho> findByGhiChuContaining(String ghiChu);
 }

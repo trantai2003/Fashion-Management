@@ -104,10 +104,14 @@ export default function AuthPage() {
                         // Decode JWT to get user info
                         const decoded = jwtDecode(token);
                         console.log("LOGIN SUCCESS - Decoded Token:", decoded);
-
-                        // Check role and navigate accordingly
                         const role = decoded.scope || decoded.vaiTro || decoded.role || decoded.authorities;
-                        console.log("LOGIN SUCCESS - Detected Role:", role);
+                        localStorage.setItem('role', role);
+
+                        const warehouseId = decoded.khoId || decoded.warehouseId;
+                        if (warehouseId) {
+                            localStorage.setItem('warehouseId', warehouseId);
+                            console.log("Saved Warehouse ID:", warehouseId);
+                        }
 
                         if (role === 'quan_tri_vien') {
                             console.log("Redirecting to /admin/dashboard");

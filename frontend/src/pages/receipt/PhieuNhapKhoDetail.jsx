@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
+import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { toast } from "sonner";
 
 const STATUS_MAP = {
@@ -50,13 +51,20 @@ export default function PhieuNhapKhoDetail() {
 
     const isAllDuLo = data.items.every(item => item.daDuLo === true);
 
+    /**
+     * VALIDATE LUỒNG:
+     * 1. Số phiếu bắt đầu bằng PN-TRF-
+     * 2. Hoặc không có đơn mua hàng (soDonMua = null)
+     */
+    const isInternalTransfer = data.soPhieuNhap?.startsWith("PN-TRF-") || !data.soDonMua;
+
     // Xử lý các hành động
     const handleAction = async (actionFn, successMsg, closeModals) => {
         try {
             await actionFn(id);
             toast.success(successMsg);
             closeModals();
-            fetchDetail(); // Load lại dữ liệu để cập nhật trạng thái mới
+            fetchDetail();
         } catch (e) {
             toast.error(e?.response?.data?.message || "Thao tác thất bại");
         }
@@ -68,7 +76,7 @@ export default function PhieuNhapKhoDetail() {
                 {/* ===== HEADER ===== */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate("/goods-receipts")}
                         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
                     >
                         ← Quay lại
@@ -79,7 +87,6 @@ export default function PhieuNhapKhoDetail() {
                             {STATUS_MAP[data.trangThai]?.label}
                         </span>
 
-                        {/* Nút HỦY: Hiển thị nếu chưa Hoàn thành và chưa Hủy */}
                         {data.trangThai < 3 && (
                             <button
                                 className="px-4 py-2 rounded-md text-sm border border-red-200 text-red-600 hover:bg-red-50"
@@ -89,7 +96,6 @@ export default function PhieuNhapKhoDetail() {
                             </button>
                         )}
 
-                        {/* Bước 1: GỬI DUYỆT (Nhân viên/Quản lý làm khi ở DRAFT) */}
                         {data.trangThai === 0 && (
                             <button
                                 disabled={!isAllDuLo}
@@ -101,7 +107,6 @@ export default function PhieuNhapKhoDetail() {
                             </button>
                         )}
 
-                        {/* Bước 2: PHÊ DUYỆT (Chỉ Quản lý làm khi ở PENDING) */}
                         {data.trangThai === 1 && isQuanLy && (
                             <button
                                 onClick={() => setShowApproveConfirm(true)}
@@ -111,13 +116,12 @@ export default function PhieuNhapKhoDetail() {
                             </button>
                         )}
 
-                        {/* Bước 3: HOÀN TẤT (Bấm khi đã APPROVED) */}
                         {data.trangThai === 2 && (
                             <button
                                 onClick={() => setShowCompleteConfirm(true)}
                                 className="px-4 py-2 rounded-md text-sm font-semibold bg-green-600 text-white hover:bg-green-700"
                             >
-                                Xác nhận nhập kho
+                                {isInternalTransfer ? "Xác nhận đã nhận hàng" : "Xác nhận nhập kho"}
                             </button>
                         )}
                     </div>
@@ -130,19 +134,22 @@ export default function PhieuNhapKhoDetail() {
                         <h2 className="text-sm font-semibold mb-4 text-gray-800 tracking-wider">Thông tin phiếu nhập</h2>
                         <div className="grid md:grid-cols-3 gap-6 text-sm">
                             <Info label="Số phiếu" value={data.soPhieuNhap} />
-                            <Info label="Loại nhập" value={data.loaiNhap} />
-                            <Info label="Kho nhập" value={data.tenKho} />
-                            {data.loaiNhap === "Chuyển kho nội bộ" ? (
-                                <Info label="Chuyển từ kho" value={data.tenKhoChuyenTu} />
+                            <Info label="Kho nhập hàng" value={data.tenKho} />
+
+                            {isInternalTransfer ? (
+                                <Info label="Loại nghiệp vụ" value="Chuyển kho nội bộ" />
                             ) : (
                                 <>
                                     <Info label="Đơn mua hàng" value={data.soDonMua} />
                                     <Info label="Nhà cung cấp" value={data.tenNhaCungCap} />
                                 </>
                             )}
+
                             <Info label="Người duyệt" value={data.tenNguoiDuyet} />
                             <Info label="Người nhập" value={data.tenNguoiNhap} />
-                            <Info label="Ngày nhập" value={new Date(data.ngayNhap).toLocaleDateString("vi-VN")} />
+                            <Info label="Ngày nhập phiếu" value={data.ngayNhap
+                                ? new Date(data.ngayNhap).toLocaleDateString("vi-VN")
+                                : "Chưa nhập kho"} />
                         </div>
                     </section>
 
@@ -150,11 +157,6 @@ export default function PhieuNhapKhoDetail() {
                     <section className="bg-white border rounded-xl shadow-sm overflow-hidden">
                         <div className="p-4 border-b flex justify-between items-center">
                             <h2 className="text-sm font-semibold">Danh sách sản phẩm</h2>
-                            {!isAllDuLo && data.trangThai === 0 && (
-                                <span className="text-xs text-red-500 animate-pulse font-medium">
-                                    * Cần khai báo đủ lô trước khi gửi duyệt
-                                </span>
-                            )}
                         </div>
 
                         <table className="w-full text-sm text-left">
@@ -176,10 +178,8 @@ export default function PhieuNhapKhoDetail() {
                                             <div className="text-gray-500 text-xs">{item.tenBienThe}</div>
                                         </td>
                                         <td className="px-4 py-3 text-center font-medium">{item.soLuongCanNhap}</td>
-                                        <td className="px-4 py-3 text-center">
-                                            <span className={item.daDuLo ? "text-green-600 font-bold" : "text-amber-600"}>
-                                                {(item.soLuongDaKhaiBao ?? 0)} / {item.soLuongCanNhap}
-                                            </span>
+                                        <td className="px-4 py-3 text-center font-bold">
+                                            {item.soLuongDaKhaiBao ?? 0} / {item.soLuongCanNhap}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             {item.daDuLo ? (
@@ -191,10 +191,7 @@ export default function PhieuNhapKhoDetail() {
                                         <td className="px-4 py-3 text-right">
                                             <button
                                                 onClick={() => navigate(`/goods-receipts/${data.id}/lot-input/${item.bienTheSanPhamId}`)}
-                                                className={`px-3 py-1.5 text-xs font-bold rounded shadow-sm transition-all
-                                                    ${data.trangThai === 0 
-                                                        ? "bg-purple-600 text-white hover:bg-purple-700" 
-                                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                                                className="px-3 py-1.5 text-xs font-bold rounded shadow-sm bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all"
                                             >
                                                 {data.trangThai === 0 ? "Khai báo lô" : "Xem lô"}
                                             </button>
@@ -210,7 +207,7 @@ export default function PhieuNhapKhoDetail() {
                 {showSendApproveConfirm && (
                     <ConfirmModal
                         title="Xác nhận gửi duyệt"
-                        content={`Bạn muốn gửi duyệt phiếu ${data.soPhieuNhap}? Sau khi gửi, bạn không thể chỉnh sửa lô.`}
+                        content={`Bạn muốn gửi duyệt phiếu ${data.soPhieuNhap}?`}
                         onClose={() => setShowSendApproveConfirm(false)}
                         onConfirm={() => handleAction(phieuNhapKhoService.sendToApprove, "Đã gửi duyệt thành công", () => setShowSendApproveConfirm(false))}
                         confirmClass="bg-orange-500 hover:bg-orange-600"
@@ -231,21 +228,44 @@ export default function PhieuNhapKhoDetail() {
                 {/* ===== MODAL: HOÀN TẤT ===== */}
                 {showCompleteConfirm && (
                     <ConfirmModal
-                        title="Xác nhận nhập kho thực tế"
-                        content={`Hoàn tất nhập kho cho phiếu ${data.soPhieuNhap}. Tồn kho sẽ được cộng ngay lập tức.`}
+                        title={isInternalTransfer ? "Xác nhận nhận hàng chuyển kho" : "Xác nhận nhập kho thực tế"}
+                        content={isInternalTransfer
+                            ? "Hệ thống sẽ trừ tồn tại Kho Trung Chuyển và cộng vào kho của bạn."
+                            : `Hoàn tất nhập kho cho phiếu ${data.soPhieuNhap}.`}
                         onClose={() => setShowCompleteConfirm(false)}
-                        onConfirm={() => handleAction(phieuNhapKhoService.complete, "Nhập kho thành công", () => setShowCompleteConfirm(false))}
+                        onConfirm={() => handleAction(
+                            isInternalTransfer ? phieuChuyenKhoService.completeReceipt : phieuNhapKhoService.complete,
+                            "Nhập kho thành công",
+                            () => setShowCompleteConfirm(false)
+                        )}
                         confirmClass="bg-green-600 hover:bg-green-700"
                     />
                 )}
 
-                {/* ===== MODAL: HỦY PHIẾU ===== */}
                 {showCancelConfirm && (
                     <ConfirmModal
                         title="Xác nhận huỷ phiếu"
-                        content={`Bạn chắc chắn muốn huỷ phiếu ${data.soPhieuNhap}?`}
+                        content={`Bạn chắc chắn muốn huỷ phiếu ${data.soPhieuNhap}? Thao tác này sẽ huỷ toàn bộ quy trình liên quan và không thể hoàn tác.`}
                         onClose={() => setShowCancelConfirm(false)}
-                        onConfirm={() => handleAction(phieuNhapKhoService.cancel, "Đã huỷ phiếu", () => setShowCancelConfirm(false))}
+                        onConfirm={() => {
+                            const targetId = isInternalTransfer ? data.phieuXuatGocId : id;
+                            if (!targetId) {
+                                toast.error("Lỗi: Không tìm thấy ID phiếu gốc để thực hiện hủy quy trình!");
+                                return;
+                            }
+
+                            // 3. Gọi handleAction với đúng Service tương ứng
+                            handleAction(
+                                () => isInternalTransfer
+                                    ? phieuChuyenKhoService.cancel(targetId)
+                                    : phieuNhapKhoService.cancel(targetId),
+                                "Đã huỷ quy trình thành công",
+                                () => {
+                                    setShowCancelConfirm(false);
+                                    navigate("/goods-receipts");
+                                }
+                            );
+                        }}
                         confirmClass="bg-red-600 hover:bg-red-700"
                     />
                 )}
@@ -254,7 +274,7 @@ export default function PhieuNhapKhoDetail() {
     );
 }
 
-// Sub-component cho Modal để tái sử dụng
+// Sub-components
 function ConfirmModal({ title, content, onClose, onConfirm, confirmClass }) {
     return (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -273,7 +293,7 @@ function ConfirmModal({ title, content, onClose, onConfirm, confirmClass }) {
 function Info({ label, value }) {
     return (
         <div>
-            <div className="text-[11px] text-gray-400 tracking-wider mb-1">{label}</div>
+            <div className="text-[11px] text-gray-400 tracking-wider mb-1 uppercase font-bold">{label}</div>
             <div className="font-semibold text-gray-900">{value || "-"}</div>
         </div>
     );

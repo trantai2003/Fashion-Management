@@ -7,7 +7,9 @@ import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
 import com.dev.backend.dto.request.BaseFilterRequest;
 import com.dev.backend.dto.request.FilterCriteria;
+import com.dev.backend.dto.request.PhieuChuyenKhoCreating;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.customize.TransferDetailDto;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
 import com.dev.backend.entities.PhieuXuatKho;
 import com.dev.backend.mapper.PhieuXuatKhoMapper;
@@ -65,6 +67,102 @@ public class PhieuChuyenKhoController {
                         .status(HttpStatus.OK.value())
                         .data(pageDto)
                         .message("Lấy danh sách phiếu chuyển kho thành công")
+                        .build()
+        );
+    }
+    @GetMapping("/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true
+    )
+    public ResponseEntity<ResponseData<TransferDetailDto>> getDetail(@PathVariable Integer id) {
+        TransferDetailDto data = phieuXuatKhoService.getTransferDetail(id);
+        return ResponseEntity.ok(
+                ResponseData.<TransferDetailDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(data)
+                        .message("Lấy chi tiết phiếu chuyển thành công")
+                        .build()
+        );
+    }
+    @PutMapping("/{id}/submit")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> submitTransfer(@PathVariable Integer id) {
+        phieuXuatKhoService.submitTransfer(id);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Gửi duyệt phiếu chuyển kho thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+    @PutMapping("/{id}/approve")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> approveTransfer(@PathVariable Integer id) {
+        Integer managerId = SecurityContextHolder.getUser().getId();
+        phieuXuatKhoService.approveTransfer(id, managerId);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Phê duyệt phiếu chuyển kho thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+    @PutMapping("/{id}/start-shipping")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true
+    )
+    public ResponseEntity<ResponseData<String>> startShipping(@PathVariable Integer id) {
+        Integer staffId = SecurityContextHolder.getUser().getId();
+        phieuXuatKhoService.startShipping(id, staffId);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Xác nhận xuất kho và bắt đầu vận chuyển thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+    @PutMapping("/{id}/cancel")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true
+    )
+    public ResponseEntity<ResponseData<String>> cancelTransfer(@PathVariable Integer id) {
+        phieuXuatKhoService.cancelTransfer(id);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Hủy phiếu chuyển kho thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
+    @PostMapping("/create")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<PhieuXuatKhoDto>> createTransfer(@RequestBody PhieuChuyenKhoCreating request) {
+        PhieuXuatKho entity = phieuXuatKhoService.createTransfer(request);
+        PhieuXuatKhoDto dto = phieuXuatKhoMapper.toDto(entity);
+        return ResponseEntity.ok(
+                ResponseData.<PhieuXuatKhoDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(dto)
+                        .message("Tạo yêu cầu điều chuyển hàng hóa thành công")
                         .build()
         );
     }

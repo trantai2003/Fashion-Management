@@ -274,6 +274,10 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
                         .maBienThe(v.getMaSku())
                         .tenSanPham(v.getSanPham().getTenSanPham())
                         .giaBan(v.getGiaBan())
+                        .tenMau(v.getMauSac() != null ? v.getMauSac().getTenMau() : null)
+                        .tenSize(v.getSize() != null ? v.getSize().getTenSize() : null)
+                        .tenChatLieu(v.getChatLieu() != null ?
+                                v.getChatLieu().getTenChatLieu() : null)
                         .build())
                 .toList();
     }

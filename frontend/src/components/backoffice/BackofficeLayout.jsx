@@ -141,6 +141,12 @@ export default function BackofficeLayout() {
             match: (path) => /^\/products\/\d+$/.test(path),
             title: "Chi tiết sản phẩm",
             subtitle: "Xem thông tin chi tiết về sản phẩm",
+        },
+        {
+            key: "CREATE_TRANSFER_TICKET",
+            match: (path) => path === "/transfer-tickets/create",
+            title: "Tạo phiếu chuyển kho nội bộ",
+            subtitle: "Tạo mới phiếu chuyển kho nội bộ",
         }
     ];
 

@@ -42,10 +42,9 @@ public class PhieuXuatKho {
     @Column(name = "ngay_xuat", nullable = true)
     Instant ngayXuat;
 
-    @ColumnDefault("'ban_hang'")
-    @Generated(event = EventType.INSERT)
     @Column(name = "loai_xuat")
-    String loaiXuat;
+    @Builder.Default
+    String loaiXuat = "ban_hang";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "kho_chuyen_den_id")

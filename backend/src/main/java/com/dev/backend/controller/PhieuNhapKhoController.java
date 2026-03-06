@@ -189,4 +189,20 @@ public class PhieuNhapKhoController {
                         .build()
         );
     }
+    @PutMapping("/{id}/complete-transfer")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            inWarehouse = true
+    )
+    public ResponseEntity<ResponseData<String>> completeTransfer(@PathVariable Integer id) {
+        Integer staffId = SecurityContextHolder.getUser().getId();
+        phieuNhapKhoService.completeTransferReceipt(id, staffId);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Nhập kho nội bộ thành công")
+                        .data("SUCCESS")
+                        .build()
+        );
+    }
 }

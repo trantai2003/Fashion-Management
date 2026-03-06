@@ -27,4 +27,5 @@ public class ChiTietPhieuNhapKhoDto {
     private String tenNguoiNhap;
     private String tenNguoiDuyet;
     List<PhieuNhapKhoItemDto> items;
+    private Integer phieuXuatGocId;
 }

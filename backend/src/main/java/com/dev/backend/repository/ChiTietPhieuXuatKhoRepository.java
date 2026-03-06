@@ -13,8 +13,11 @@ import java.util.List;
 
 @Repository
 public interface ChiTietPhieuXuatKhoRepository extends JpaRepository<ChiTietPhieuXuatKho, Integer>, JpaSpecificationExecutor<ChiTietPhieuXuatKho> {
-    List<ChiTietPhieuXuatKho>
-    findByPhieuXuatKhoIdAndLoHangIsNull(Integer phieuXuatKhoId);
+    List<ChiTietPhieuXuatKho> findByPhieuXuatKhoIdAndLoHangIsNull(Integer phieuXuatKhoId);
+    List<ChiTietPhieuXuatKho> findByPhieuXuatKhoIdAndBienTheSanPhamIdAndLoHangIsNotNull(
+            Integer phieuXuatKhoId,
+            Integer bienTheSanPhamId
+    );
     @Query("""
         select coalesce(sum(ct.soLuongXuat), 0)
         from ChiTietPhieuXuatKho ct
