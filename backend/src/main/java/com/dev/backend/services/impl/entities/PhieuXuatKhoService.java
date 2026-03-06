@@ -639,19 +639,17 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         if (phieu.getTrangThai() != 1) {
             throw new RuntimeException("Chỉ phiếu ở trạng thái Chờ duyệt mới có thể phê duyệt");
         }
-        NguoiDung nguoiDuyet = nguoiDungRepository.findById(nguoiDuyetId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người duyệt"));
-        boolean isAdmin = nguoiDuyet.getVaiTro().contains(IRoleType.quan_tri_vien);
-        //KIỂM TRA QUYỀN: Chỉ quản lý tại Kho nhận (Kho B) mới được phép duyệt
+
+        // KIỂM TRA QUYỀN: Phải là Quản lý Kho A (Kho xuất) mới được duyệt cho đi
+        boolean isAdmin = SecurityContextHolder.getUser().getVaiTro().contains(IRoleType.quan_tri_vien);
         Integer userWarehouseId = SecurityContextHolder.getKhoId();
-        if (!isAdmin) {
-            if (phieu.getKhoChuyenDen() == null || !phieu.getKhoChuyenDen().getId().equals(userWarehouseId)) {
-                throw new AccessDeniedException("Bạn không có quyền duyệt phiếu này. " +
-                        "Chỉ quản lý của kho nhận (" +
-                        (phieu.getKhoChuyenDen() != null ? phieu.getKhoChuyenDen().getTenKho() : "N/A") +
-                        ") hoặc Quản trị viên mới có quyền duyệt.");
-            }
+
+        if (!isAdmin && !phieu.getKho().getId().equals(userWarehouseId)) {
+            throw new AccessDeniedException("Bạn không có quyền duyệt phiếu này. Chỉ quản lý tại kho xuất ("
+                    + phieu.getKho().getTenKho() + ") mới có quyền cho phép xuất hàng.");
         }
+
+        NguoiDung nguoiDuyet = nguoiDungRepository.findById(nguoiDuyetId).orElseThrow();
 
         //Cập nhật trạng thái sang 2 (Đã duyệt)
         phieu.setTrangThai(2);
