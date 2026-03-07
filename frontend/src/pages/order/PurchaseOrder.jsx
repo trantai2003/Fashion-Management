@@ -914,8 +914,8 @@ export default function PurchaseOrderList() {
                                     <TableHead className="font-semibold text-gray-700 text-right w-[140px]">
                                         Tổng tiền
                                     </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 text-center w-[80px]">
-                                        Thao tác
+                                    <TableHead className="font-semibold text-gray-700 text-center w-[160px]">
+                                        Trạng thái thanh toán
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -1006,7 +1006,12 @@ export default function PurchaseOrderList() {
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                {renderActionButtons(order)}
+                                                <Badge
+                                                    variant="outline"
+                                                    className={`${order.trangThaiThanhToan === 1 ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'} border font-medium`}
+                                                >
+                                                    {order.trangThaiThanhToan === 1 ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                                                </Badge>
                                             </TableCell>
                                         </TableRow>
                                     ))
