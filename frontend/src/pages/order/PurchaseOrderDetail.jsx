@@ -42,6 +42,7 @@ import {
     MapPin,
     ShoppingCart,
     Clock,
+    CreditCard,
 } from "lucide-react";
 
 import purchaseOrderDetailService from '@/services/purchaseOrderDetailService';
@@ -463,11 +464,11 @@ export default function PurchaseOrderDetail() {
                     </Button>
                     <Button
                         variant="outline"
-                        className="gap-2"
-                        onClick={handleExport}
+                        className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0"
+                        onClick={() => navigate(`/purchase-orders/${id}/payment`)}
                     >
-                        <Download className="h-4 w-4" />
-                        Xuất file
+                        <CreditCard className="h-4 w-4" />
+                        Thanh toán
                     </Button>
                     {orderData.trangThai === 0 && (
                         <>
