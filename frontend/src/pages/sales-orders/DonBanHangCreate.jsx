@@ -160,17 +160,6 @@ export default function SalesOrderCreate() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="rounded-full w-9 h-9 border-gray-300 hover:text-purple-600">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Tạo đơn bán hàng</h1>
-                            <p className="text-sm text-gray-500">Thiết lập đơn hàng và thông tin giao nhận khách hàng.</p>
-                        </div>
-                    </div>
-                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left: Info Section */}
@@ -265,7 +254,7 @@ export default function SalesOrderCreate() {
 
                     {/* Right Column: Products Table */}
                     <div className="lg:col-span-2 space-y-6">
-                        <Card className="shadow-sm border-gray-200 overflow-hidden flex flex-col">
+                        <Card className="shadow-sm border-gray-200 overflow-hidden flex flex-col min-h-[438px]">
                             <CardHeader className="flex flex-row items-center justify-between px-6 py-4 space-y-0 bg-white border-b">
                                 <CardTitle className="text-sm font-bold  text-gray-700 flex items-center gap-2">
                                     <ShoppingCart className="h-4 w-4 text-purple-600" />
@@ -377,16 +366,20 @@ export default function SalesOrderCreate() {
                                 )}
                             </CardContent>
                         </Card>
-
-                        <div className="flex justify-end pt-2">
-                            <Button
-                                onClick={handleCreate}
-                                disabled={loading}
-                                className="h-12 px-12 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-200 transition-all active:scale-95  tracking-wide"
-                            >
-                                {loading ? "Đang tạo..." : "Xác nhận tạo đơn hàng"}
-                            </Button>
-                        </div>
+                    </div>
+                </div>
+                <div className="pt-6 border-t border-gray-200 flex justify-between items-center">
+                    <Button onClick={() => navigate("/sales-orders")} className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1">
+                        ← Quay lại danh sách
+                    </Button>
+                    <div className="flex gap-3">
+                        <Button
+                            onClick={handleCreate}
+                            disabled={loading}
+                            className="px-8 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md shadow-purple-100 transition-all active:scale-95"
+                        >
+                            {loading ? "Đang tạo..." : "Xác nhận tạo đơn hàng"}
+                        </Button>
                     </div>
                 </div>
             </div>
