@@ -89,6 +89,7 @@ export default function SalesOrderCreate() {
             maBienThe: product.maBienThe,
             tenSanPham: product.tenSanPham,
             soLuongDat: 1,
+            giaGoc: product.giaBan,
             donGia: product.giaBan,
             thanhTien: product.giaBan,
         }]);
@@ -101,6 +102,15 @@ export default function SalesOrderCreate() {
             const updated = [...prev];
             updated[index].soLuongDat = qty;
             updated[index].thanhTien = qty * updated[index].donGia;
+            return updated;
+        });
+    };
+    const handleUpdatePrice = (index, value) => {
+        const price = value === "" ? 0 : Number(value);
+        setOrderItems(prev => {
+            const updated = [...prev];
+            updated[index].donGia = price;
+            updated[index].thanhTien = price * updated[index].soLuongDat;
             return updated;
         });
     };
@@ -125,7 +135,8 @@ export default function SalesOrderCreate() {
                 ghiChu: formData.ghiChu?.trim() || "",
                 chiTiet: orderItems.map(item => ({
                     bienTheSanPhamId: parseInt(item.bienTheSanPhamId),
-                    soLuongDat: parseInt(item.soLuongDat)
+                    soLuongDat: parseInt(item.soLuongDat),
+                    donGia: parseFloat(item.donGia)
                 }))
             };
 
@@ -297,7 +308,14 @@ export default function SalesOrderCreate() {
                                                     <TableRow key={index} className="hover:bg-purple-50/30 transition-colors border-b last:border-0">
                                                         <TableCell className="pl-6 py-4">
                                                             <div className="font-bold text-gray-900 leading-none">{item.tenSanPham}</div>
-                                                            <div className="text-[11px] text-gray-400 font-mono mt-1.5 ">{item.maBienThe}</div>
+                                                            <div className="text-[11px] text-gray-400 font-mono mt-1.5 flex items-center gap-2">
+                                                                {item.maBienThe}
+                                                                {item.donGia < item.giaGoc && (
+                                                                    <span className="text-orange-600 font-semibold bg-orange-50 px-1.5 py-0.5 rounded text-[10px]">
+                                                                        Thấp hơn {Math.ceil(((item.giaGoc - item.donGia) / item.giaGoc) * 100)}% so với niêm yết
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </TableCell>
                                                         <TableCell className="text-center">
                                                             <input
@@ -308,8 +326,16 @@ export default function SalesOrderCreate() {
                                                                 className="w-16 h-9 text-center border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-600 outline-none"
                                                             />
                                                         </TableCell>
-                                                        <TableCell className="text-right text-gray-600 font-medium">
-                                                            {item.donGia?.toLocaleString()}đ
+                                                        <TableCell className="text-right">
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    value={item.donGia}
+                                                                    onChange={(e) => handleUpdatePrice(index, e.target.value)}
+                                                                    className="w-24 h-9 text-right border border-gray-300 rounded px-2 focus:ring-2 focus:ring-purple-500 outline-none font-medium"
+                                                                />
+                                                                <span className="text-xs text-gray-400">đ</span>
+                                                            </div>
                                                         </TableCell>
                                                         <TableCell className="text-right font-bold text-purple-600 pr-6 text-base">
                                                             {item.thanhTien?.toLocaleString()}đ

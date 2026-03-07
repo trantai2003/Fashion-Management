@@ -225,21 +225,22 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
                         );
                     }
 
-                    BigDecimal donGia = bienThe.getGiaBan();
-                    if (donGia == null) {
-                        throw new RuntimeException(
-                                "Biến thể " + bienThe.getMaSku() + " chưa có giá bán"
-                        );
+                    BigDecimal giaNiemYet = bienThe.getGiaBan();
+                    BigDecimal giaThoaThuan = item.getDonGia() != null ? item.getDonGia() : giaNiemYet;
+                    BigDecimal mucGiamToiDa = giaNiemYet.multiply(new BigDecimal("0.9")); // 90% giá gốc
+                    if (giaThoaThuan.compareTo(mucGiamToiDa) < 0) {
+                        throw new RuntimeException("Giá bán của sản phẩm " + bienThe.getMaSku() +
+                                " không được thấp hơn 10% so với giá niêm yết (" + mucGiamToiDa + ")");
                     }
 
-                    BigDecimal thanhTien = donGia.multiply(item.getSoLuongDat());
+                    BigDecimal thanhTien = giaThoaThuan.multiply(item.getSoLuongDat());
 
                     ChiTietDonBanHang chiTiet = ChiTietDonBanHang.builder()
                             .donBanHang(don)
                             .bienTheSanPham(bienThe)
                             .soLuongDat(item.getSoLuongDat())
                             .soLuongDaGiao(BigDecimal.ZERO)
-                            .donGia(donGia)
+                            .donGia(giaThoaThuan)
                             .thanhTien(thanhTien)
                             .ghiChu(item.getGhiChu())
                             .build();
