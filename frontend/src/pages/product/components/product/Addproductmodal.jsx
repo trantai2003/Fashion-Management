@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Loader2, Upload, X, Plus } from "lucide-react";
+import { Loader2, Upload, X, Plus, Info } from "lucide-react";
 import { toast } from "sonner";
 import { productService } from "@/services/productService.js";
 import * as yup from "yup";
@@ -25,8 +25,9 @@ const addProductSchema = yup.object({
     maVach: yup.string(),
     danhMucId: yup.number().required("Danh mục là bắt buộc"),
     moTa: yup.string(),
-    giaVonMacDinh: yup.number().min(0, "Giá vốn phải >= 0").required("Giá vốn là bắt buộc"),
-    giaBanMacDinh: yup.number().min(0, "Giá bán phải >= 0").required("Giá bán là bắt buộc"),
+    // BỎ BẮT BUỘC NHẬP GIÁ VÌ CHƯA CÓ LÔ HÀNG
+    giaVonMacDinh: yup.number().transform(value => (isNaN(value) ? 0 : value)).nullable(),
+    giaBanMacDinh: yup.number().transform(value => (isNaN(value) ? 0 : value)).nullable(),
     mucTonToiThieu: yup.number().min(0, "Mức tồn phải >= 0"),
     trangThai: yup.number().required(),
     bienTheSanPhams: yup.array().of(
@@ -36,8 +37,9 @@ const addProductSchema = yup.object({
             chatLieuId: yup.number().required("Chất liệu là bắt buộc").nullable(),
             maSku: yup.string().required("Mã SKU là bắt buộc"),
             maVachSku: yup.string(),
-            giaVon: yup.number().min(0, "Giá vốn phải >= 0").required("Giá vốn là bắt buộc"),
-            giaBan: yup.number().min(0, "Giá bán phải >= 0").required("Giá bán là bắt buộc"),
+            // BỎ BẮT BUỘC NHẬP GIÁ VÌ CHƯA CÓ LÔ HÀNG
+            giaVon: yup.number().transform(value => (isNaN(value) ? 0 : value)).nullable(),
+            giaBan: yup.number().transform(value => (isNaN(value) ? 0 : value)).nullable(),
             trangThai: yup.number().required(),
         })
     ).min(1, "Phải có ít nhất 1 biến thể")
@@ -192,8 +194,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                 mucTonToiThieu: data.mucTonToiThieu,
                 moTa: data.moTa || "",
                 danhMucId: Number(data.danhMucId),
-                giaVonMacDinh: Number(data.giaVonMacDinh),
-                giaBanMacDinh: Number(data.giaBanMacDinh),
+                giaVonMacDinh: Number(data.giaVonMacDinh) || 0,
+                giaBanMacDinh: Number(data.giaBanMacDinh) || 0,
                 trangThai: Number(data.trangThai),
                 bienTheSanPhams: data.bienTheSanPhams.map(variant => ({
                     mauSacId: Number(variant.mauSacId),
@@ -201,8 +203,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                     chatLieuId: Number(variant.chatLieuId),
                     maSku: variant.maSku,
                     maVachSku: variant.maVachSku || "",
-                    giaVon: Number(variant.giaVon),
-                    giaBan: Number(variant.giaBan),
+                    giaVon: Number(variant.giaVon) || 0,
+                    giaBan: Number(variant.giaBan) || 0,
                     trangThai: Number(variant.trangThai),
                 })),
             };
@@ -219,6 +221,10 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
             data.bienTheSanPhams.forEach((_, index) => {
                 if (variantImages[index]) {
                     formData.append('anhBienThes', variantImages[index]);
+                } else {
+                    // CẦN THIẾT: Backend dùng counter tăng dần nên nếu không có ảnh, ta gửi một file rỗng
+                    // để Backend vẫn thực hiện lệnh loop qua nhưng không lưu gì
+                    formData.append('anhBienThes', new File([], "empty.txt"));
                 }
             });
 
@@ -309,6 +315,14 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                     <DialogDescription>
                         Nhập đầy đủ thông tin sản phẩm và biến thể. Ảnh sản phẩm và ảnh biến thể là bắt buộc.
                     </DialogDescription>
+                    
+                    {/* KHỐI THÔNG BÁO LOGIC TÍNH GIÁ ĐƯỢC THÊM VÀO */}
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-start gap-2 mt-2">
+                        <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                        <p className="text-xs text-blue-700">
+                            <b>Lưu ý hệ thống:</b> Không bắt buộc nhập Giá vốn và Giá bán khi tạo mới. Hệ thống sẽ tự động cập nhật giá từ các lô hàng thực tế trong kho. Trạng thái sẽ tự động chuyển thành <b>Ngừng bán (0)</b> nếu hết tồn kho.
+                        </p>
+                    </div>
                 </DialogHeader>
 
                 <div className="max-h-[calc(90vh-12rem)] overflow-y-auto overflow-x-visible px-1">
@@ -367,7 +381,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                 />
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="trangThai">Trạng thái</Label>
+                                    <Label htmlFor="trangThai">Trạng thái mặc định</Label>
                                     <Controller
                                         name="trangThai"
                                         control={control}
@@ -389,7 +403,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                     />
                                 </div>
 
-                                {/* Giá mặc định */}
+                                {/* Giá mặc định - KHÔNG REQUIRED NỮA */}
                                 <div className="space-y-2">
                                     <Label htmlFor="giaVonMacDinh">Giá vốn mặc định</Label>
                                     <Controller
@@ -400,7 +414,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                 {...field}
                                                 type="number"
                                                 min="0"
-                                                placeholder="0"
+                                                placeholder="0 (Sẽ tự động cập nhật)"
                                                 disabled={isSubmitting}
                                             />
                                         )}
@@ -409,7 +423,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="giaBanMacDinh">
-                                        Giá bán mặc định <span className="text-red-500">*</span>
+                                        Giá bán mặc định
                                     </Label>
                                     <Controller
                                         name="giaBanMacDinh"
@@ -419,14 +433,11 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                 {...field}
                                                 type="number"
                                                 min="0"
-                                                placeholder="0"
+                                                placeholder="0 (Sẽ tự động cập nhật)"
                                                 disabled={isSubmitting}
                                             />
                                         )}
                                     />
-                                    {errors.giaBanMacDinh && (
-                                        <p className="text-xs text-red-500">{errors.giaBanMacDinh.message}</p>
-                                    )}
                                 </div>
 
                                 {/* Mức tồn tối thiểu */}
@@ -702,9 +713,9 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                             />
                                         </div>
 
-                                        {/* Giá vốn */}
+                                        {/* Giá vốn - KHÔNG REQUIRED NỮA */}
                                         <div className="space-y-2">
-                                            <Label>Giá vốn <span className="text-red-500">*</span></Label>
+                                            <Label>Giá vốn</Label>
                                             <Controller
                                                 name={`bienTheSanPhams.${index}.giaVon`}
                                                 control={control}
@@ -713,16 +724,16 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         {...field}
                                                         type="number"
                                                         min="0"
-                                                        placeholder="0"
+                                                        placeholder="0 (Sẽ tự động tính)"
                                                         disabled={isSubmitting}
                                                     />
                                                 )}
                                             />
                                         </div>
 
-                                        {/* Giá bán */}
+                                        {/* Giá bán - KHÔNG REQUIRED NỮA */}
                                         <div className="space-y-2">
-                                            <Label>Giá bán <span className="text-red-500">*</span></Label>
+                                            <Label>Giá bán</Label>
                                             <Controller
                                                 name={`bienTheSanPhams.${index}.giaBan`}
                                                 control={control}
@@ -731,7 +742,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         {...field}
                                                         type="number"
                                                         min="0"
-                                                        placeholder="0"
+                                                        placeholder="0 (Sẽ tự động tính)"
                                                         disabled={isSubmitting}
                                                     />
                                                 )}
@@ -740,7 +751,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
 
                                         {/* Trạng thái */}
                                         <div className="space-y-2">
-                                            <Label>Trạng thái</Label>
+                                            <Label>Trạng thái mặc định</Label>
                                             <Controller
                                                 name={`bienTheSanPhams.${index}.trangThai`}
                                                 control={control}
@@ -754,8 +765,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                             <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="1">Hoạt động</SelectItem>
-                                                            <SelectItem value="0">Tạm ngừng</SelectItem>
+                                                            <SelectItem value="1">Đang bán</SelectItem>
+                                                            <SelectItem value="0">Ngừng bán</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 )}
