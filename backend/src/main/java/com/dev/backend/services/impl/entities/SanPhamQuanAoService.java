@@ -34,7 +34,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -102,8 +101,6 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                 .getResultList();
                         sp.setBienTheSanPhams(danhSachBienThe);
                 }
-
-                boolean tatCaBienTheHetHang = true;
                 BigDecimal tongGiaVonBienThe = BigDecimal.ZERO;
                 BigDecimal tongGiaBanBienThe = BigDecimal.ZERO;
                 int soBienTheCoHang = 0;
@@ -134,7 +131,6 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                         bienThe.setGiaBan(giaBanVariant);
 
                                         bienThe.setTrangThai(1);
-                                        tatCaBienTheHetHang = false;
 
                                         // Tích lũy để tính trung bình cộng cho sản phẩm cha
                                         tongGiaVonBienThe = tongGiaVonBienThe.add(giaVonTongVariant);
@@ -161,9 +157,9 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 } else {
                         // Nếu tất cả biến thể hết hàng
                         sp.setTrangThai(0);
-                        // Bạn có thể giữ giá cũ hoặc set về 0
-                        // sp.setGiaVonMacDinh(BigDecimal.ZERO);
-                        // sp.setGiaBanMacDinh(BigDecimal.ZERO);
+                        // Giữ giá cũ
+                        sp.setGiaVonMacDinh(BigDecimal.ZERO);
+                        sp.setGiaBanMacDinh(BigDecimal.ZERO);
                 }
 
                 repository.save(sp);
@@ -369,27 +365,27 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 sanPhamQuanAo.setTrangThai(updating.getTrangThai());
                 sanPhamQuanAo = update(updating.getId(), sanPhamQuanAo);
                 if (updating.isImageUpdated()) {
-
-                        // Lưu lại list id tepTin trước
+                        //Lấy danh sách ID tệp tin để xóa file vật lý sau
                         List<Integer> tepTinIds = sanPhamQuanAo.getAnhQuanAos()
                                 .stream()
                                 .map(anh -> anh.getTepTin().getId())
                                 .toList();
 
-                        // Xóa anh_quan_ao trước
-                        anhQuanAoService.delete(sanPhamQuanAo.getAnhQuanAos());
+                        //Xóa sạch danh sách ảnh trong Object (Hibernate sẽ tự xóa bản ghi AnhQuanAo trong DB)
+                        sanPhamQuanAo.getAnhQuanAos().clear();
 
-                        // Sau đó mới xóa tep_tin (cả MinIO lẫn DB)
+                        //Ép Hibernate đồng bộ ngay để tránh xung đột với logic upload phía sau
+                        entityManager.flush();
+
+                        //Xóa tệp tin (DB và MinIO)
                         tepTinIds.forEach(id -> tepTinService.hardDeleteNoMessage(id));
                         try {
                                 Date now = new Date();
                                 int i = 0;
                                 for (MultipartFile file : anhSanPhams) {
-                                        System.out.println("File name: " + file.getOriginalFilename()
-                                                + " | Size: " + file.getSize());
                                         String objectName = minioService.upload(file, ITable.san_pham_quan_ao + "_" + sanPhamQuanAo.getMaSanPham() + "_" + now.getTime() + "_" + i++);
-                                        TepTin tepTin = tepTinService.create(
-                                                TepTin.builder()
+
+                                        TepTin tepTin = tepTinService.create(TepTin.builder()
                                                         .tenTepGoc(objectName)
                                                         .tenTaiLen(objectName)
                                                         .tenLuuTru(objectName)
@@ -401,20 +397,21 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                                         .build()
                                         );
 
-                                        anhQuanAoService.create(
-                                                AnhQuanAo.builder()
-                                                        .quanAo(sanPhamQuanAo)
-                                                        .tepTin(tepTin)
-                                                        .anhChinh(i == 1 ? 1 : 0)
-                                                        .trangThai(1)
-                                                        .ngayTao(sanPhamQuanAo.getNgayCapNhat())
-                                                        .build()
-                                        );
+                                        //Thêm ảnh mới trực tiếp vào list của sản phẩm
+                                        AnhQuanAo newAnh = AnhQuanAo.builder()
+                                                .quanAo(sanPhamQuanAo)
+                                                .tepTin(tepTin)
+                                                .anhChinh(i == 1 ? 1 : 0)
+                                                .trangThai(1)
+                                                .ngayTao(Instant.now())
+                                                .build();
+
+                                        sanPhamQuanAo.getAnhQuanAos().add(newAnh);
                                 }
                                 System.out.println("Có tổng cộng " + i + " ảnh");
 
                         } catch (Exception e) {
-                                throw new RuntimeException(e);
+                                throw new RuntimeException("Lỗi upload ảnh: " + e.getMessage());
                         }
 
 

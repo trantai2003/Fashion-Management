@@ -11,6 +11,7 @@ import org.hibernate.generator.EventType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -79,8 +80,11 @@ public class SanPhamQuanAo {
     @Column(name = "ngay_cap_nhat")
     Instant ngayCapNhat;
 
-    @OneToMany(mappedBy = "quanAo", fetch = FetchType.LAZY)
-    List<AnhQuanAo> anhQuanAos;
+    @OneToMany(mappedBy = "quanAo",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    List<AnhQuanAo> anhQuanAos = new ArrayList<>();
 
     @OneToMany(mappedBy = "sanPham", fetch = FetchType.LAZY)
     List<BienTheSanPham> bienTheSanPhams;
