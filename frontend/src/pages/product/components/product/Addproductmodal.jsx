@@ -320,7 +320,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                     <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-start gap-2 mt-2">
                         <Info className="h-4 w-4 text-blue-600 mt-0.5" />
                         <p className="text-xs text-blue-700">
-                            <b>Lưu ý hệ thống:</b> Không bắt buộc nhập Giá vốn và Giá bán khi tạo mới. Hệ thống sẽ tự động cập nhật giá từ các lô hàng thực tế trong kho. Trạng thái sẽ tự động chuyển thành <b>Ngừng bán (0)</b> nếu hết tồn kho.
+                            <b>Lưu ý hệ thống:</b> Không bắt buộc nhập Giá vốn và Giá bán khi tạo mới. Hệ thống sẽ tự động cập nhật giá từ các lô hàng thực tế trong kho. Trạng thái sẽ tự động chuyển thành <b>Hết hàng (0)</b> nếu hết tồn kho.
                         </p>
                     </div>
                 </DialogHeader>
@@ -395,8 +395,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="1">Đang bán</SelectItem>
-                                                    <SelectItem value="0">Ngừng bán</SelectItem>
+                                                    <SelectItem value="1">Còn hàng</SelectItem>
+                                                    <SelectItem value="0">Hết hàng</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         )}
@@ -765,8 +765,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                             <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="1">Đang bán</SelectItem>
-                                                            <SelectItem value="0">Ngừng bán</SelectItem>
+                                                            <SelectItem value="1">Hoạt động</SelectItem>
+                                                            <SelectItem value="0">Tạm ngừng</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 )}

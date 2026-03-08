@@ -137,13 +137,32 @@ export default function ProductDetail() {
                                     <Badge variant="secondary" className="px-3 py-1 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border-none">
                                         {product.danhMuc?.tenDanhMuc}
                                     </Badge>
-                                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${product.trangThai === 1
-                                        ? "bg-emerald-50 text-emerald-700"
-                                        : "bg-gray-100 text-gray-600"
-                                        }`}>
-                                        <div className={`w-1.5 h-1.5 rounded-full ${product.trangThai === 1 ? "bg-emerald-500" : "bg-gray-400"}`} />
-                                        {product.trangThai === 1 ? "Đang kinh doanh" : "Ngừng kinh doanh"}
-                                    </div>
+                                    {(() => {
+                                        const configs = {
+                                            1: {
+                                                label: "Còn hàng",
+                                                container: "bg-emerald-50 text-emerald-700",
+                                                dot: "bg-emerald-500"
+                                            },
+                                            0: {
+                                                label: "Hết hàng",
+                                                container: "bg-rose-50 text-rose-700",
+                                                dot: "bg-rose-500"
+                                            },
+                                            2: {
+                                                label: "Ngừng hoạt động",
+                                                container: "bg-gray-100 text-gray-600",
+                                                dot: "bg-gray-400"
+                                            }
+                                        };
+                                        const config = configs[product.trangThai] || configs[2];
+                                        return (
+                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config.container}`}>
+                                                <div className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+                                                {config.label}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
 
                                 <h1 className="text-4xl font-bold text-gray-900 leading-tight tracking-tight">

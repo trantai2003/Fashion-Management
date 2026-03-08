@@ -437,9 +437,8 @@ export default function ProductList() {
                                     <TableRow className="bg-gray-50 text-xs text-gray-500">
                                         <TableHead className="px-4 py-3">ID</TableHead>
                                         <TableHead className="px-4 py-3">Hình ảnh</TableHead>
-                                        <TableHead className="px-4 py-3">Tên sản phẩm</TableHead>
+                                        <TableHead className="px-4 py-3 text-center">Tên sản phẩm</TableHead>
                                         <TableHead className="px-4 py-3">Giá bán</TableHead>
-                                        <TableHead className="px-4 py-3">Tồn kho</TableHead>
                                         <TableHead className="px-4 py-3">Trạng thái</TableHead>
                                         <TableHead className="px-4 py-3">Ngày tạo</TableHead>
                                         <TableHead className="px-4 py-3 text-center">Thao tác</TableHead>
@@ -462,9 +461,6 @@ export default function ProductList() {
                                                     </TableCell>
                                                     <TableCell className="px-4 py-3">
                                                         <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
                                                     </TableCell>
                                                     <TableCell className="px-4 py-3">
                                                         <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
@@ -533,19 +529,17 @@ export default function ProductList() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3">
-                                                <span className="font-medium text-green-600">
-                                                    {product.soLuongTon || 0}
-                                                </span>
-                                            </TableCell>
-
-                                            <TableCell className="px-4 py-3">
                                                 {product.trangThai === 1 ? (
                                                     <span className="px-2 py-1 text-xs rounded bg-green-50 text-green-700">
-                                                        Đang bán
+                                                        Còn hàng
+                                                    </span>
+                                                ) : product.trangThai === 0 ? (
+                                                    <span className="px-2 py-1 text-xs rounded bg-red-50 text-red-700">
+                                                        Hết hàng
                                                     </span>
                                                 ) : (
-                                                    <span className="px-2 py-1 text-xs rounded bg-red-50 text-red-700">
-                                                        Ngừng bán
+                                                    <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-600">
+                                                        Ngừng hoạt động
                                                     </span>
                                                 )}
                                             </TableCell>

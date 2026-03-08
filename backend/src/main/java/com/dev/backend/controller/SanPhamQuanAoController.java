@@ -91,7 +91,7 @@ public class SanPhamQuanAoController {
                 IRoleType.nhan_vien_mua_hang
         })
         public ResponseEntity<ResponseData<String>> softDelete(@PathVariable Integer id) {
-                sanPhamQuanAoService.changeStatus(id, 0);
+                sanPhamQuanAoService.changeStatus(id, 2);
                 return ResponseEntity.ok(
                         ResponseData.<String>builder()
                                 .status(HttpStatus.OK.value())
