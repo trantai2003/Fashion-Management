@@ -130,7 +130,7 @@ export default function PurchaseOrderCreate() {
                     setProductVariants(variantsRes);
                     setFilteredProducts(variantsRes);
                 }
-                
+
 
                 // Handle Warehouses Response
                 if (warehousesRes && warehousesRes.data && warehousesRes.data.data.content) {
@@ -811,14 +811,13 @@ export default function PurchaseOrderCreate() {
                                         <TableHead className="font-semibold text-gray-700">Mã sản phẩm</TableHead>
                                         <TableHead className="font-semibold text-gray-700">Tên sản phẩm</TableHead>
                                         <TableHead className="font-semibold text-gray-700">Thuộc tính</TableHead>
-                                        <TableHead className="font-semibold text-gray-700">Tồn kho</TableHead>
                                         <TableHead className="font-semibold text-gray-700 w-[120px] text-right">Thao tác</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {filteredProducts.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                                            <TableCell colSpan={4} className="text-center py-8 text-gray-500">
                                                 Không tìm thấy sản phẩm phù hợp
                                             </TableCell>
                                         </TableRow>
@@ -833,14 +832,6 @@ export default function PurchaseOrderCreate() {
                                                 </TableCell>
                                                 <TableCell className="text-sm text-gray-600">
                                                     {product.thuocTinh}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${product.tonKho > 20 ? 'bg-green-100 text-green-700' :
-                                                        product.tonKho > 10 ? 'bg-yellow-100 text-yellow-700' :
-                                                            'bg-red-100 text-red-700'
-                                                        }`}>
-                                                        {product.tonKho} {product.donViTinh}
-                                                    </span>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <Button
