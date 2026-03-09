@@ -55,4 +55,16 @@ public interface ChiTietPhieuXuatKhoRepository extends JpaRepository<ChiTietPhie
             @Param("phieuXuatKhoId") Integer phieuXuatKhoId,
             @Param("bienTheSanPhamId") Integer bienTheSanPhamId
     );
+    @Query("""
+    SELECT bt.sanPham.id
+    FROM ChiTietPhieuXuatKho ct
+    JOIN ct.phieuXuatKho px
+    JOIN ct.bienTheSanPham bt
+    WHERE px.loaiXuat = 'ban_hang'
+      AND px.trangThai = 1
+    GROUP BY bt.sanPham.id
+    ORDER BY SUM(ct.soLuongXuat) DESC
+    LIMIT :top
+    """)
+    List<Integer> findTopSanPham(@Param("top") Integer top);
 }
