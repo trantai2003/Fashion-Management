@@ -1,11 +1,12 @@
+
 import {
-  LayoutDashboard,
-  ShieldAlert,
   Package,
+  LayoutDashboard,
   ArrowDownToLine,
   Warehouse,
   ShoppingCart,
   BarChart3,
+  ShieldAlert,
 } from "lucide-react";
 
 export const SIDEBAR_MENU = [
@@ -18,14 +19,17 @@ export const SIDEBAR_MENU = [
       "quan_tri_vien",
     ],
   },
-
   // ================= QUẢN TRỊ HỆ THỐNG =================
   {
     label: "Quản trị hệ thống",
     icon: ShieldAlert,
-    roles: ["quan_tri_vien"],
+    roles: ["quan_tri_vien"], 
     children: [
+      {label:"Báo cáo doanh thu", to:"/bao-cao/doanh-thu"},
+      {label:"Báo cáo khách hàng", to:"/bao-cao/khach-hang"},
+       { label: "Báo cáo xuất nhập", to: "/bao-cao/xuat-nhap" },
       { label: "Người dùng", to: "/users" },
+
       { label: "Nhật ký sự cố / lỗi", to: "/issues" },
     ],
   },

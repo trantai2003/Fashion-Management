@@ -42,6 +42,9 @@ import PhieuXuatKhoPage from "./pages/xuat-kho-noi-bo/PhieuXuatKhoPage";
 import KhachHangDetails from "./pages/customer/KhachHangDetails";
 import KhachHangEdit from "./pages/customer/KhachHangEdit";
 import ProductAttributeHub from "@/pages/attribute/ProductAttributeHub";
+import BaoCaoDoanhThu from "./pages/bao-cao/BaoCaoDoanhThu";
+import KhachHangReport from "./pages/bao-cao/KhachHangReport";
+import NhatKyNhapXuat from "./pages/bao-cao/NhatKyNhapXuat";
 
 export default function App() {
   return (
@@ -126,7 +129,13 @@ export default function App() {
           <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
 
           {/* Khách hàng */}
-          
+
+          <Route path="/bao-cao/doanh-thu" element={<BaoCaoDoanhThu/>}/>
+
+          <Route path="/bao-cao/khach-hang" element={<KhachHangReport/>}/>
+          <Route
+            path="/bao-cao/xuat-nhap"
+            element={<NhatKyNhapXuat />} />
         </Route>
 
         {/* ========== 404 ========== */}

@@ -40,4 +40,6 @@ public class ThongKeHeThongController {
         return thongKeHeThongService.findTonKhoChiTietByKho(khoId);
     }
 
+
+
 }
