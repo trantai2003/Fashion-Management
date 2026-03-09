@@ -307,7 +307,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
     bg-white text-gray-900
     border border-gray-200
     rounded-xl shadow-sm
-    dark:bg-white dark:text-gray-900">
+    dark:bg-white dark:text-gray-900 flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold text-purple-700">
                         Thêm sản phẩm mới
@@ -325,7 +325,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                     </div>
                 </DialogHeader>
 
-                <div className="max-h-[calc(90vh-12rem)] overflow-y-auto overflow-x-visible px-1">
+                <div className="flex-1 overflow-y-auto overflow-x-visible px-1 min-h-0">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div className="space-y-4">
                             <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">Thông tin cơ bản</h3>
@@ -391,10 +391,16 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                 onValueChange={(value) => field.onChange(Number(value))}
                                                 disabled={isSubmitting}
                                             >
-                                                <SelectTrigger>
-                                                    <SelectValue />
+                                                <SelectTrigger className="w-full h-10">
+                                                    <SelectValue placeholder="Chọn trạng thái" />
                                                 </SelectTrigger>
-                                                <SelectContent>
+                                                <SelectContent
+                                                    position="popper"
+                                                    side="bottom"
+                                                    align="start"
+                                                    sideOffset={4}
+                                                    className="z-50 bg-white border border-gray-200 shadow-lg rounded-md"
+                                                >
                                                     <SelectItem value="1">Còn hàng</SelectItem>
                                                     <SelectItem value="0">Hết hàng</SelectItem>
                                                 </SelectContent>
@@ -529,26 +535,6 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                 <h3 className="font-semibold text-sm text-gray-700">
                                     Biến thể sản phẩm <span className="text-red-500">*</span>
                                 </h3>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => append({
-                                        mauSacId: null,
-                                        sizeId: null,
-                                        chatLieuId: null,
-                                        maSku: "",
-                                        maVachSku: "",
-                                        giaVon: 0,
-                                        giaBan: 0,
-                                        trangThai: 1,
-                                    })}
-                                    disabled={isSubmitting}
-                                    className="flex items-center gap-1"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Thêm biến thể
-                                </Button>
                             </div>
 
                             {fields.map((field, index) => (
@@ -581,7 +567,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         onValueChange={(value) => field.onChange(Number(value))}
                                                         disabled={isSubmitting}
                                                     >
-                                                        <SelectTrigger className="w-full">
+                                                        <SelectTrigger className="w-full h-10">
                                                             <SelectValue placeholder="Chọn màu" />
                                                         </SelectTrigger>
                                                         <SelectContent
@@ -589,7 +575,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                             side="bottom"
                                                             align="start"
                                                             sideOffset={4}
-                                                            className="z-110 bg-white"
+                                                            className="z-50 bg-white border border-gray-200 shadow-lg rounded-md"
                                                         >
                                                             {colors.length === 0 ? (
                                                                 <div className="p-2 text-sm text-gray-500">Không có màu sắc</div>
@@ -621,7 +607,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         onValueChange={(value) => field.onChange(Number(value))}
                                                         disabled={isSubmitting}
                                                     >
-                                                        <SelectTrigger className="w-full">
+                                                        <SelectTrigger className="w-full h-10">
                                                             <SelectValue placeholder="Chọn size" />
                                                         </SelectTrigger>
                                                         <SelectContent
@@ -629,7 +615,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                             side="bottom"
                                                             align="start"
                                                             sideOffset={4}
-                                                            className="z-110 bg-white"
+                                                            className="z-50 bg-white border border-gray-200 shadow-lg rounded-md"
                                                         >
                                                             {sizes.length === 0 ? (
                                                                 <div className="p-2 text-sm text-gray-500">Không có size</div>
@@ -661,7 +647,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         onValueChange={(value) => field.onChange(Number(value))}
                                                         disabled={isSubmitting}
                                                     >
-                                                        <SelectTrigger className="w-full">
+                                                        <SelectTrigger className="w-full h-10">
                                                             <SelectValue placeholder="Chọn chất liệu" />
                                                         </SelectTrigger>
                                                         <SelectContent
@@ -669,7 +655,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                             side="bottom"
                                                             align="start"
                                                             sideOffset={4}
-                                                            className="z-110 bg-white"
+                                                            className="z-50 bg-white border border-gray-200 shadow-lg rounded-md"
                                                         >
                                                             {materials.length === 0 ? (
                                                                 <div className="p-2 text-sm text-gray-500">Không có chất liệu</div>
@@ -761,10 +747,16 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         onValueChange={(value) => field.onChange(Number(value))}
                                                         disabled={isSubmitting}
                                                     >
-                                                        <SelectTrigger>
-                                                            <SelectValue />
+                                                        <SelectTrigger className="w-full h-10">
+                                                            <SelectValue placeholder="Chọn trạng thái" />
                                                         </SelectTrigger>
-                                                        <SelectContent>
+                                                        <SelectContent
+                                                            position="popper"
+                                                            side="bottom"
+                                                            align="start"
+                                                            sideOffset={4}
+                                                            className="z-50 bg-white border border-gray-200 shadow-lg rounded-md"
+                                                        >
                                                             <SelectItem value="1">Hoạt động</SelectItem>
                                                             <SelectItem value="0">Tạm ngừng</SelectItem>
                                                         </SelectContent>
@@ -826,30 +818,54 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                     </form>
                 </div>
 
-                <DialogFooter>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancel}
-                        disabled={isSubmitting}
-                    >
-                        Hủy
-                    </Button>
-                    <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="bg-purple-600 hover:bg-purple-700"
-                        onClick={handleSubmit(onSubmit)}
-                    >
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Đang lưu...
-                            </>
-                        ) : (
-                            "Lưu sản phẩm"
-                        )}
-                    </Button>
+                <DialogFooter className="mt-4 border-t pt-4 bg-white shrink-0">
+                    <div className="w-full flex items-center justify-between gap-3">
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => append({
+                                mauSacId: null,
+                                sizeId: null,
+                                chatLieuId: null,
+                                maSku: "",
+                                maVachSku: "",
+                                giaVon: 0,
+                                giaBan: 0,
+                                trangThai: 1,
+                            })}
+                            disabled={isSubmitting}
+                            className="flex items-center gap-1"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Thêm biến thể
+                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleCancel}
+                                disabled={isSubmitting}
+                            >
+                                Hủy
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="bg-purple-600 hover:bg-purple-700"
+                                onClick={handleSubmit(onSubmit)}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Đang lưu...
+                                    </>
+                                ) : (
+                                    "Lưu sản phẩm"
+                                )}
+                            </Button>
+                        </div>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

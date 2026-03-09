@@ -19,6 +19,12 @@ import { toast } from "sonner";
 import { productService } from "@/services/productService.js";
 import * as yup from "yup";
 
+const PRODUCT_STATUS_LABELS = {
+    1: "Còn hàng",
+    0: "Hết hàng",
+    2: "Ngừng hoạt động",
+};
+
 const editProductSchema = yup.object({
     tenSanPham: yup.string().required("Tên sản phẩm là bắt buộc"),
     maSanPham: yup.string(),
@@ -432,19 +438,13 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                                         name="trangThai"
                                         control={control}
                                         render={({ field }) => (
-                                            <Select
-                                                value={field.value?.toString()}
-                                                onValueChange={(value) => field.onChange(Number(value))}
-                                                disabled={isSubmitting}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="1">Còn hàng</SelectItem>
-                                                    <SelectItem value="0">Hết hàng</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <div className="flex items-center gap-2 rounded border border-gray-200 px-3 py-2 bg-gray-50">
+                                                <span className="text-sm text-gray-700">
+                                                    {PRODUCT_STATUS_LABELS[field.value] ?? "-"}
+                                                </span>
+                                                {/* Preserve value for submit while locking UI */}
+                                                <input type="hidden" value={field.value ?? 1} readOnly {...field} />
+                                            </div>
                                         )}
                                     />
                                 </div>
@@ -656,10 +656,16 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                                                         onValueChange={(value) => field.onChange(Number(value))}
                                                         disabled={isSubmitting}
                                                     >
-                                                        <SelectTrigger>
-                                                            <SelectValue />
+                                                        <SelectTrigger className="w-full h-10">
+                                                            <SelectValue placeholder="Chọn trạng thái" />
                                                         </SelectTrigger>
-                                                        <SelectContent>
+                                                        <SelectContent
+                                                            position="popper"
+                                                            side="bottom"
+                                                            align="start"
+                                                            sideOffset={4}
+                                                            className="z-50 bg-white border border-gray-200 shadow-lg rounded-md"
+                                                        >
                                                             <SelectItem value="1">Hoạt động</SelectItem>
                                                             <SelectItem value="0">Tạm ngừng</SelectItem>
                                                         </SelectContent>
@@ -774,3 +780,4 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
         </Dialog>
     );
 }
+
