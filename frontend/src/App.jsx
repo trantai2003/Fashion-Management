@@ -50,6 +50,8 @@ import DonBanHangCreate from "./pages/sales-orders/DonBanHangCreate";
 import ProductDetail from "./pages/product/components/product/ProductDetail";
 import PhieuChuyenKhoDetail from "./pages/chuyenKhoNoiBo/PhieuChuyenKhoDetail";
 import PhieuChuyenKhoCreate from "./pages/chuyenKhoNoiBo/PhieuChuyenKhoCreate";
+import StockTakeList from "./pages/stock-take/StockTakeList";
+import StockTakeCreate from "./pages/stock-take/StockTakeCreate";
 export default function App() {
   return (
     <BrowserRouter>
@@ -140,6 +142,11 @@ export default function App() {
           <Route path="/transfer-tickets" element={<PhieuChuyenKhoList />} />
           <Route path="/transfer-tickets/create" element={<PhieuChuyenKhoCreate />} />
           <Route path="/transfer-tickets/:id" element={<PhieuChuyenKhoDetail />} />
+
+          {/* Kiểm kê kho hàng*/}
+          <Route path="/stock-take" element={<StockTakeList />} />
+          <Route path="/stock-take/new" element={<StockTakeCreate />} />
+          <Route path="/stock-take/:id" element={<StockTakeCreate />} /> {/* Để hoàn thành kiểm kê */}
         </Route>
 
         {/* ========== 404 ========== */}
