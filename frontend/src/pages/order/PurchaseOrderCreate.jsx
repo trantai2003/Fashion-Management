@@ -109,10 +109,11 @@ export default function PurchaseOrderCreate() {
                     khoService.filter({
                         page: 0,
                         size: 100,
-                        filters: [],
-                        sorts: []
+                        filters: []
                     })
                 ]);
+                console.log("warehousesRes full:", warehousesRes);
+                console.log("warehousesRes.data:", warehousesRes.data);
 
                 // Handle Suppliers Response
                 if (suppliersRes && suppliersRes.data) {
@@ -129,14 +130,13 @@ export default function PurchaseOrderCreate() {
                     setProductVariants(variantsRes);
                     setFilteredProducts(variantsRes);
                 }
+                
 
                 // Handle Warehouses Response
-                if (warehousesRes?.data?.data?.content) {
+                if (warehousesRes && warehousesRes.data && warehousesRes.data.data.content) {
+                    console.log("Warehouses:", warehousesRes.data.data.content);
                     setWarehouses(warehousesRes.data.data.content);
-                } else if (warehousesRes?.data?.content) {
-                    setWarehouses(warehousesRes.data.content);
                 }
-
             } catch (error) {
                 console.error("Failed to load initial data:", error);
                 toast.error("Không thể tải dữ liệu ban đầu");
