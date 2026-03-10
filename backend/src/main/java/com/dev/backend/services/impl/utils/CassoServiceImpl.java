@@ -20,7 +20,7 @@ public class CassoServiceImpl implements CassoService {
     private final Gson gson = new Gson();
 
     private static final String BASE_URL = "https://oauth.casso.vn/v2/transactions";
-    private static final String API_KEY = "AK_CS.a4cd55a01bca11f1a3ca79c2f1d864cb.ydVUM9TQe52qEpPKmSba5g6PfaRC5QF9Ex7W7VSXXwWgftkwBPtya5xs9te3WKnUq67bZYYY";
+    private static final String API_KEY = "AK_CS.876702f01be211f1a3ca79c2f1d864cb.t6f1lQ8X7nX8E5dYIkmwenzuaDKvtGCdMLgCvgsJ0uTFE6c8xc2ZvV36KigsSVWV3Fng2XeZ";
     @Override
     public CassoResponse getListTransactionCasso(String fromDate, int page, int pageSize, String sort) {
         if(sort == null) sort = "ASC";
