@@ -184,7 +184,7 @@ export default function PurchaseOrderList() {
             if (filters.soDonMua) {
                 filterArray.push({
                     fieldName: "soDonMua",
-                    operation: "CONTAINS",
+                    operation: "LIKE",
                     value: filters.soDonMua,
                     logicType: "AND"
                 });
