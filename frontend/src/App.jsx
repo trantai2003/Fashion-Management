@@ -50,6 +50,14 @@ import DonBanHangCreate from "./pages/sales-orders/DonBanHangCreate";
 import ProductDetail from "./pages/product/components/product/ProductDetail";
 import PhieuChuyenKhoDetail from "./pages/chuyenKhoNoiBo/PhieuChuyenKhoDetail";
 import PhieuChuyenKhoCreate from "./pages/chuyenKhoNoiBo/PhieuChuyenKhoCreate";
+
+// Store Front
+import StoreLayout from "@/components/store/StoreLayout";
+import StoreHome from "./pages/store/StoreHome";
+import ProductCategory from "./pages/store/ProductCategory";
+import ProductSearch from "./pages/store/ProductSearch";
+import PublicProductDetail from "./pages/store/PublicProductDetail";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -63,6 +71,14 @@ export default function App() {
         <Route path="/quote-success" element={<QuoteSuccess />} />
         <Route path="/supplier/login" element={<SupplierLogin />} />
         <Route path="/user/:id" element={<UserDetail />} />
+
+        {/* ========== STOREFRONT ROUTES (CÓ NAVBAR + FOOTER CỦA KHÁCH) ========== */}
+        <Route element={<StoreLayout />}>
+          <Route path="/store" element={<StoreHome />} />
+          <Route path="/category/:id" element={<ProductCategory />} />
+          <Route path="/search" element={<ProductSearch />} />
+          <Route path="/product/:id" element={<PublicProductDetail />} />
+        </Route>
 
         {/* ========== BACKOFFICE ROUTES (CÓ SIDEBAR + HEADER) ========== */}
         <Route element={<BackofficeLayout />}>

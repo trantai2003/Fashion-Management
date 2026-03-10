@@ -2,7 +2,9 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
+  ShoppingBag,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
 
@@ -71,6 +73,7 @@ export default function BackofficeHeader({
           </div>
         </div>
 
+
         {/* Right */}
         <div className="flex items-center gap-4">
           {/* User dropdown */}
@@ -124,6 +127,18 @@ export default function BackofficeHeader({
                 className="text-sm px-3 py-2 rounded-sm focus:bg-gray-100 cursor-pointer"
               >
                 Đổi mật khẩu
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator className="my-1 bg-gray-200" />
+
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/store"
+                  className="text-sm px-3 py-2 rounded-sm focus:bg-gray-100 cursor-pointer flex items-center gap-2"
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  Về cửa hàng
+                </Link>
               </DropdownMenuItem>
 
               <DropdownMenuSeparator className="my-1 bg-gray-200" />

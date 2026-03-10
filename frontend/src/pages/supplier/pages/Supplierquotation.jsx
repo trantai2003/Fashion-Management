@@ -169,11 +169,9 @@ export default function SupplierQuotation() {
             const payload = {
                 id: orderData.id,
                 ghiChu: supplierNote,
-                listChiTietBaoGia: quoteItems.map(item => ({
+                chiTietDonMuaHangBaoGias: quoteItems.map(item => ({
                     id: item.id,
-                    donGiaDeXuat: Number(item.donGiaDeXuat),
-                    soLuongCoCap: Number(item.soLuongCoCap),
-                    ngayGiaoHang: item.ngayGiaoHang ? new Date(item.ngayGiaoHang).toISOString() : null,
+                    donGia: Number(item.donGiaDeXuat),
                     ghiChu: item.ghiChu || ''
                 })),
             };
@@ -357,7 +355,6 @@ export default function SupplierQuotation() {
                                             Đơn giá đề xuất <span className="text-red-500">*</span>
                                         </TableHead>
                                         <TableHead className="w-[150px]">Thành tiền</TableHead>
-                                        <TableHead className="w-[150px]">Ngày giao hàng</TableHead>
                                         <TableHead className="w-[200px]">Ghi chú</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -397,15 +394,6 @@ export default function SupplierQuotation() {
                                             </TableCell>
                                             <TableCell className="font-semibold text-green-600">
                                                 {formatCurrency(calculateItemTotal(item))}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    type="date"
-                                                    value={item.ngayGiaoHang}
-                                                    onChange={(e) => handleUpdateQuoteItem(index, 'ngayGiaoHang', e.target.value)}
-                                                    className="w-full"
-                                                    min={new Date().toISOString().split('T')[0]}
-                                                />
                                             </TableCell>
                                             <TableCell>
                                                 <Input
@@ -468,6 +456,7 @@ export default function SupplierQuotation() {
                                     value={estimatedDeliveryDate}
                                     onChange={(e) => setEstimatedDeliveryDate(e.target.value)}
                                     min={new Date(orderData.ngayDatHang).toISOString().split('T')[0]}
+                                    readOnly= {true}
                                 />
                             </div>
                             <p className="text-xs text-gray-500">

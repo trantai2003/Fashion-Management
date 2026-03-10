@@ -92,8 +92,10 @@ export default function SkuBuilder() {
             const lowerKeyword = keyword.toLowerCase();
             result = result.filter(sku =>
                 sku.productName.toLowerCase().includes(lowerKeyword) ||
-                (sku.skuCode && sku.skuCode.toLowerCase().includes(lowerKeyword)) ||
-                (sku.maVach && sku.maVach.toLowerCase().includes(lowerKeyword))
+                (sku.maSku && sku.maSku.toLowerCase().includes(lowerKeyword)) ||
+                (sku.maVachSku && sku.maVachSku.toLowerCase().includes(lowerKeyword)) ||
+                (sku.maVach && sku.maVach.toLowerCase().includes(lowerKeyword)) ||
+                (sku.maBienThe && sku.maBienThe.toLowerCase().includes(lowerKeyword))
             );
         }
 
@@ -275,7 +277,9 @@ export default function SkuBuilder() {
                                             .slice(page * pageSize, (page + 1) * pageSize)
                                             .map((sku, index) => (
                                                 <TableRow key={`${sku.id}-${index}`} className="hover:bg-gray-50">
-                                                    <TableCell className="font-mono text-xs">{sku.skuCode || sku.maVach || 'N/A'}</TableCell>
+                                                    <TableCell className="font-mono text-xs font-bold text-purple-700">
+                                                        {sku.maSku || sku.maBienThe || sku.skuCode || 'N/A'}
+                                                    </TableCell>
                                                     <TableCell className="max-w-[200px] truncate" title={sku.productName}>
                                                         {sku.productName}
                                                     </TableCell>
