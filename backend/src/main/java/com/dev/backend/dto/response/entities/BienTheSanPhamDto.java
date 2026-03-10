@@ -22,6 +22,8 @@ import java.util.List;
 @EqualsAndHashCode(of = {"id"})
 public class BienTheSanPhamDto implements Serializable {
     Integer id;
+    // Tên ghép: "TênSảnPhẩm - TênMàu / TênSize" — dùng cho kiểm kê và các màn hình cần hiển thị nhanh
+    String tenBienThe;
     MauSacDto mauSac;
     SizeDto size;
     ChatLieuDto chatLieu;
