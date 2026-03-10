@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { X, ChevronRight, ChevronDown, Warehouse, Package, Layers, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { thongKeHeThongService } from "@/services/thongKeHeThongService";
@@ -100,7 +100,7 @@ function KhoTonKhoPanel({ khoData }) {
 }
 
 // ─── Panel 1 biến thể ─────────────────────────────────────────────────────────
-function BienThePanel({ bienThe }) {
+function BienThePanel({ bienThe, initialTongTon = null }) {
     const [open, setOpen] = useState(false);
     const [tonKhoList, setTonKhoList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -129,7 +129,9 @@ function BienThePanel({ bienThe }) {
         }
     }, [open, loaded, bienThe.id]);
 
-    const tongTon = tonKhoList.reduce((s, k) => s + Number(k.tongSoLuongTon ?? 0), 0);
+    const tongTon = loaded
+        ? tonKhoList.reduce((s, k) => s + Number(k.tongSoLuongTon ?? 0), 0)
+        : Number(initialTongTon ?? 0);
 
     return (
         <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
@@ -202,7 +204,7 @@ function BienThePanel({ bienThe }) {
 
                 {/* Tổng tồn */}
                 <div className="flex items-center gap-2 flex-shrink-0">
-                    {loaded && (
+                    {(loaded || initialTongTon !== null) && (
                         <span className="text-xs text-gray-500">
                             Tổng tồn:{" "}
                             <b className={tongTon > 0 ? "text-green-600" : "text-red-500"}>
@@ -247,6 +249,78 @@ export default function InventoryDrawer({ isOpen, onClose, product }) {
     // ✅ Dùng trực tiếp bienTheSanPhams từ SanPhamQuanAoDto — không cần gọi API riêng
     const bienTheList = product?.bienTheSanPhams ?? [];
 
+    const [variantTonKhoMap, setVariantTonKhoMap] = useState({});
+    const [tongTonBienThe, setTongTonBienThe] = useState(null);
+    const [isLoadingTongTon, setIsLoadingTongTon] = useState(false);
+
+    const fallbackTonKhoSanPham = useMemo(() => {
+        if (!product) return 0;
+
+        const fromProduct = Number(product.tongSoLuongTon ?? product.soLuongTon);
+        if (!Number.isNaN(fromProduct)) return fromProduct;
+
+        const fromVariants = bienTheList.reduce((sum, bt) => {
+            const n = Number(bt?.tongSoLuongTon ?? bt?.soLuongTon);
+            return sum + (Number.isNaN(n) ? 0 : n);
+        }, 0);
+
+        return fromVariants;
+    }, [product, bienTheList]);
+
+    useEffect(() => {
+        if (!isOpen || !product || bienTheList.length === 0) {
+            setVariantTonKhoMap({});
+            setTongTonBienThe(null);
+            setIsLoadingTongTon(false);
+            return;
+        }
+
+        let isCancelled = false;
+
+        const fetchTongTonBienThe = async () => {
+            try {
+                setIsLoadingTongTon(true);
+
+                const responses = await Promise.all(
+                    bienTheList
+                        .filter((bt) => bt?.id != null)
+                        .map(async (bt) => {
+                            const res = await thongKeHeThongService.getTonKhoBienThe(bt.id);
+                            const list = res?.data?.status === 200 ? (res.data.data || []) : [];
+                            const tongTon = list.reduce((s, kho) => s + Number(kho?.tongSoLuongTon ?? 0), 0);
+                            return { bienTheId: bt.id, tongTon };
+                        })
+                );
+
+                if (isCancelled) return;
+
+                const nextMap = responses.reduce((acc, item) => {
+                    acc[item.bienTheId] = item.tongTon;
+                    return acc;
+                }, {});
+
+                const tongAll = responses.reduce((sum, item) => sum + item.tongTon, 0);
+                setVariantTonKhoMap(nextMap);
+                setTongTonBienThe(tongAll);
+            } catch (error) {
+                if (isCancelled) return;
+                console.error("Lỗi khi tổng hợp tồn kho biến thể:", error);
+                setVariantTonKhoMap({});
+                setTongTonBienThe(null);
+            } finally {
+                if (!isCancelled) setIsLoadingTongTon(false);
+            }
+        };
+
+        fetchTongTonBienThe();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [isOpen, product, bienTheList]);
+
+    const tonKhoHienTaiDisplay = tongTonBienThe ?? fallbackTonKhoSanPham;
+
     if (!isOpen) return null;
 
     return (
@@ -285,8 +359,14 @@ export default function InventoryDrawer({ isOpen, onClose, product }) {
                         <span className="text-gray-300">|</span>
                         <span className="text-gray-600">
                             Tồn kho hiện tại:{" "}
-                            <b className="text-green-600">{(product.soLuongTon ?? 0).toLocaleString()}</b>
+                            <b className="text-green-600">{Number(tonKhoHienTaiDisplay ?? 0).toLocaleString()}</b>
                         </span>
+                        {isLoadingTongTon && (
+                            <span className="text-purple-600 inline-flex items-center gap-1">
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                Đang đồng bộ tồn kho...
+                            </span>
+                        )}
                         <span className="text-gray-300">|</span>
                         <span className="text-gray-600">
                             Số biến thể: <b className="text-purple-700">{bienTheList.length}</b>
@@ -307,7 +387,11 @@ export default function InventoryDrawer({ isOpen, onClose, product }) {
                                 Nhấn vào biến thể để xem tồn kho theo từng kho → nhấn vào kho để xem chi tiết theo lô hàng
                             </p>
                             {bienTheList.map((bt, idx) => (
-                                <BienThePanel key={bt.id ?? idx} bienThe={bt} />
+                                <BienThePanel
+                                    key={bt.id ?? idx}
+                                    bienThe={bt}
+                                    initialTongTon={bt?.id != null ? variantTonKhoMap[bt.id] ?? null : null}
+                                />
                             ))}
                         </>
                     )}
