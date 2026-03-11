@@ -1,5 +1,6 @@
 package com.dev.backend.dto.response.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -24,7 +25,9 @@ public class PhanQuyenNguoiDungKhoDto implements Serializable {
     KhoDto kho;
     Integer laQuanLyKho;
     Integer trangThai;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     Instant ngayBatDau;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     Instant ngayKetThuc;
     NguoiDungDto nguoiCapQuyen;
     String ghiChu;
