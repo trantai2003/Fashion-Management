@@ -20,3 +20,12 @@ export const getKhoList = async () => {
   // Trả về mảng content từ Page object
   return res.data?.data?.content ?? [];
 };
+export const getMineKhoList = async () => {
+  const res = await apiClient.post("/api/v1/kho/mine", {
+    filters: [],
+    sorts: [],
+    page: 0,
+    size: 1000
+  });
+  return res.data?.data?.content ?? [];
+};

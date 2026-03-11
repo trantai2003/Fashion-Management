@@ -56,6 +56,9 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     @Autowired
     private ChiTietPhieuNhapKhoRepository chiTietPhieuNhapKhoRepository;
 
+    @Autowired
+    private PhanQuyenNguoiDungKhoRepository phanQuyenNguoiDungKhoRepository;
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -82,32 +85,24 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             throw new RuntimeException("Đơn bán đã bị huỷ");
         }
 
-        // 1. Lấy thông tin người dùng và kho từ Request
-        Integer requestKhoId = request.getKhoId();
-        if (requestKhoId == null) {
-            throw new RuntimeException("Vui lòng chọn kho xuất hàng");
-        }
-
-        // 2. Kiểm tra quyền hạn kho
-        // Admin được phép chọn mọi kho, Nhân viên chỉ được chọn kho mình thuộc về
-        boolean isAdmin = SecurityContextHolder.getUser().getVaiTro()
-                .contains(IRoleType.quan_tri_vien);
-        Integer userInventoryId = SecurityContextHolder.getKhoId();
-
-        if (!isAdmin && !requestKhoId.equals(userInventoryId)) {
-            throw new RuntimeException("Bạn không có quyền xuất hàng từ kho này");
-        }
-
-        Kho khoXuat = entityManager.find(Kho.class, requestKhoId);
+        Kho khoXuat = donBanHang.getKhoXuat();
         if (khoXuat == null) {
-            throw new RuntimeException("Kho đã chọn không tồn tại");
+            throw new CommonException("Đơn bán hàng này chưa được chỉ định kho xuất. Vui lòng liên hệ Sales.");
         }
 
-        // 3. Kiểm tra logic đơn hàng với kho đã chọn
-        if (donBanHang.getKhoXuat() == null) {
-            donBanHang.setKhoXuat(khoXuat);
-        } else if (!donBanHang.getKhoXuat().getId().equals(requestKhoId)) {
-            throw new RuntimeException("Đơn bán này đã được chỉ định cho kho: " + donBanHang.getKhoXuat().getTenKho());
+        NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
+        boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
+
+        if (!isAdmin) {
+            PhanQuyenNguoiDungKho phanQuyen = phanQuyenNguoiDungKhoRepository
+                    .findByNguoiDungIdAndKhoId(currentUser.getId(), khoXuat.getId())
+                    .orElseThrow(() -> new CommonException("Bạn không phụ trách kho [" + khoXuat.getTenKho() +
+                            "]. Không thể thực hiện xuất kho cho đơn hàng này."));
+
+            if (phanQuyen.getTrangThai() != 1 ||
+                    (phanQuyen.getNgayKetThuc() != null && phanQuyen.getNgayKetThuc().isBefore(Instant.now()))) {
+                throw new CommonException("Quyền truy cập kho [" + khoXuat.getTenKho() + "] của bạn đã hết hạn hoặc bị khóa.");
+            }
         }
 
         // Kiểm tra sản phẩm còn lại
@@ -129,7 +124,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                         .soPhieuXuat(generateSoPhieu())
                         .donBanHang(donBanHang)
                         .ngayXuat(null)
-                        .kho(khoXuat) // Sử dụng kho từ request
+                        .kho(khoXuat)
                         .ghiChu(request.getGhiChu())
                         .loaiXuat("ban_hang")
                         .trangThai(0)

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { donBanHangService } from "@/services/donBanHangService";
-import { khoService } from "@/services/khoService"; 
+import { getMineKhoList } from "@/services/khoService";
 import { toast } from "sonner";
 
 export default function PhieuXuatKhoCreate() {
@@ -27,39 +27,43 @@ export default function PhieuXuatKhoCreate() {
     async function fetchInitialData() {
         setLoading(true);
         try {
-            const [soRes, khoRes] = await Promise.all([
-                donBanHangService.filter({
-                    page: 0,
-                    size: 100,
-                    filters: [
-                        { 
-                            fieldName: "trangThai", 
-                            operation: "IN", 
-                            value: [1, 2]
-                        }
-                    ],
-                    sorts: [{ fieldName: "ngayDatHang", direction: "DESC" }]
-                }),
-                khoService.filter({
-                    page: 0,
-                    size: 100,
-                    filters: [],
-                })
-            ]);
-            const availableSOs = (soRes.content || []).filter(so => {
-                return true; 
+            // 1. Lấy danh sách kho mà User này phụ trách (Dùng để hiển thị lên UI/Dropdown)
+            const myWarehousesRes = await getMineKhoList();
+            // Xử lý linh hoạt cho cả trường hợp service trả về .data hoặc mảng trực tiếp
+            const warehouseList = myWarehousesRes.data || myWarehousesRes;
+            setWarehouses(warehouseList);
+
+            // 2. Lấy thông tin quyền từ localStorage
+            const role = localStorage.getItem("role");
+            const isAdmin = role === "quan_tri_vien";
+
+            // 3. Gọi API lấy danh sách Đơn bán hàng (SO)
+            // Lưu ý: Lúc này Backend đã tự động thêm filter khoId cho nhân viên kho rồi
+            const soRes = await donBanHangService.filter({
+                page: 0,
+                size: 1000,
+                filters: [
+                    { fieldName: "trangThai", operation: "IN", value: [1, 2] }
+                ],
+                sorts: [{ fieldName: "ngayDatHang", direction: "DESC" }]
             });
 
-            setSoList(availableSOs);
-            
-            const listKho = khoRes.data?.content || khoRes.data?.data?.content || [];
-            setWarehouses(listKho);
+            // 4. Bóc tách dữ liệu từ Page object của Spring Data
+            // soRes ở đây thường là object có chứa trường 'content'
+            const availableSOs = soRes.content || soRes.data?.content || [];
 
-            if (listKho.length === 1) {
-                setForm(prev => ({ ...prev, khoId: listKho[0].id }));
+            console.log(`Tìm thấy ${availableSOs.length} đơn hàng phù hợp.`);
+            setSoList(availableSOs);
+
+            // 5. Nếu user chỉ có quyền ở 1 kho duy nhất, tự động chọn kho đó vào form
+            if (warehouseList.length === 1) {
+                setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
             }
+
         } catch (e) {
-            toast.error("Không thể tải dữ liệu khởi tạo");
+            console.error("Lỗi khởi tạo màn hình phiếu xuất:", e);
+            const errorMsg = e?.response?.data?.message || "Không thể tải danh sách đơn hàng";
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }
@@ -75,15 +79,16 @@ export default function PhieuXuatKhoCreate() {
             const res = await donBanHangService.getDetail(soId);
             const data = res.data;
             const hasRemaining = data.chiTiet.some(ct => ct.soLuongDat > ct.soLuongDaGiao);
-            
+
             if (!hasRemaining) {
-                toast.error("Đơn hàng này đã giao đủ số lượng, không thể tạo thêm phiếu xuất.");
+                toast.error("Đơn hàng này đã giao đủ số lượng.");
                 return;
             }
 
             setSelectedSO(data);
-            
-            const targetKhoId = data.donBanHang?.khoXuat?.id || form.khoId;
+
+            // Tự động gán khoId theo kho đã định danh trong SO
+            const targetKhoId = data.donBanHang?.khoXuat?.id || data.khoXuat?.id;
 
             setForm((prev) => ({
                 ...prev,
@@ -103,14 +108,14 @@ export default function PhieuXuatKhoCreate() {
 
     async function createPhieu() {
         const validLines = form.chiTietXuat.filter((ct) => ct.soLuongXuat > 0);
-        
+
         if (!form.donBanHangId) return toast.error("Vui lòng chọn đơn bán"), null;
         if (!form.khoId) return toast.error("Vui lòng chọn kho xuất hàng"), null;
         if (validLines.length === 0) return toast.error("Phải có ít nhất 1 sản phẩm xuất > 0"), null;
 
         const payload = {
-            donBanHangId: form.donBanHangId,
-            khoId: form.khoId,
+            donBanHangId: parseInt(form.donBanHangId),
+            khoId: parseInt(form.khoId),
             ghiChu: form.ghiChu,
             chiTietXuat: validLines,
         };
@@ -122,7 +127,9 @@ export default function PhieuXuatKhoCreate() {
             toast.success("Tạo phiếu xuất thành công");
             return res.id;
         } catch (e) {
-            toast.error(e?.response?.data?.message || "Không thể tạo phiếu xuất");
+            // SỬA Ở ĐÂY: Dùng đúng bộ bóc tách lỗi để hiện "Không đủ tồn kho" từ Backend
+            const errorMsg = e?.response?.data?.message || e?.response?.data?.errors?.[0] || "Không thể tạo phiếu xuất";
+            toast.error(errorMsg);
             return null;
         } finally {
             setLoading(false);
@@ -164,10 +171,10 @@ export default function PhieuXuatKhoCreate() {
                                 <select
                                     value={form.khoId}
                                     onChange={(e) => setForm({ ...form, khoId: e.target.value })}
-                                    disabled={selectedSO?.donBanHang?.khoXuat}
-                                    className="mt-2 w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition-all outline-none text-sm disabled:opacity-60"
+                                    disabled={true} // Khóa luôn kho vì đơn hàng đã chỉ định kho rồi
+                                    className="mt-2 w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition-all outline-none text-sm disabled:opacity-80 font-bold text-gray-700"
                                 >
-                                    <option value="">-- Chọn kho hàng --</option>
+                                    <option value="">-- Kho xuất từ đơn hàng --</option>
                                     {warehouses.map((k) => (
                                         <option key={k.id} value={k.id}>{k.tenKho}</option>
                                     ))}
@@ -208,7 +215,7 @@ export default function PhieuXuatKhoCreate() {
                                             {selectedSO.chiTiet.map((item, idx) => {
                                                 const conLai = item.soLuongDat - item.soLuongDaGiao;
                                                 const formItemIdx = form.chiTietXuat.findIndex(f => f.bienTheSanPhamId === item.bienTheSanPhamId);
-                                                
+
                                                 return (
                                                     <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                                                         <td className="px-5 py-4">
@@ -267,7 +274,7 @@ export default function PhieuXuatKhoCreate() {
                         </button>
                         <button
                             onClick={handleContinue}
-                            disabled={loading || !form.khoId}
+                            disabled={loading || !form.donBanHangId}
                             className="px-8 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700 shadow-md transition-all active:scale-95 disabled:opacity-50"
                         >
                             Tiếp tục

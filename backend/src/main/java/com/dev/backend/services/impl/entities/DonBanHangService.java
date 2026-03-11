@@ -75,25 +75,50 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
     @Override
     @Transactional(readOnly = true)
     public Page<DonBanHang> filter(BaseFilterRequest request) {
-
         NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
-        boolean isAdmin = currentUser.getVaiTro()
-                .contains(IRoleType.quan_tri_vien);
-        if (!isAdmin) {
-            List<FilterCriteria> filters =
-                    request.getFilters() == null
-                            ? new ArrayList<>()
-                            : new ArrayList<>(request.getFilters());
-            filters.add(
-                    FilterCriteria.builder()
-                            .fieldName("nguoiTao.id")
-                            .operation(FilterOperation.EQUALS)
-                            .value(currentUser.getId())
-                            .logicType(FilterLogicType.AND)
-                            .build()
-            );
-            request.setFilters(filters);
+        Set<String> roles = currentUser.getVaiTro();
+
+        // 1. Nếu là Admin thì không lọc gì thêm, để super.filter xử lý theo request từ FE
+        if (roles.contains(IRoleType.quan_tri_vien)) {
+            return super.filter(request);
         }
+
+        List<FilterCriteria> filters = request.getFilters() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(request.getFilters());
+
+        // 2. ƯU TIÊN: Nếu là nhân viên kho hoặc quản lý kho
+        if (roles.contains(IRoleType.nhan_vien_kho) || roles.contains(IRoleType.quan_ly_kho)) {
+            List<Integer> myWarehouseIds = currentUser.getPhanQuyenNguoiDungKhos()
+                    .stream()
+                    .map(pq -> pq.getKho().getId())
+                    .toList();
+
+            if (!myWarehouseIds.isEmpty()) {
+                filters.add(FilterCriteria.builder()
+                        .fieldName("khoXuat.id")
+                        .operation(FilterOperation.IN)
+                        .value(myWarehouseIds)
+                        .build());
+            } else {
+                // Nếu nhân viên kho chưa được gán kho nào, chặn không cho thấy đơn nào
+                filters.add(FilterCriteria.builder()
+                        .fieldName("id")
+                        .operation(FilterOperation.EQUALS)
+                        .value(-1)
+                        .build());
+            }
+        }
+        // 3. Nếu CHỈ là nhân viên bán hàng (không có quyền kho)
+        else if (roles.contains(IRoleType.nhan_vien_ban_hang)) {
+            filters.add(FilterCriteria.builder()
+                    .fieldName("nguoiTao.id")
+                    .operation(FilterOperation.EQUALS)
+                    .value(currentUser.getId())
+                    .build());
+        }
+
+        request.setFilters(filters);
         return super.filter(request);
     }
 

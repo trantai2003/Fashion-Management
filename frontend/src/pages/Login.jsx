@@ -109,8 +109,21 @@ export default function AuthPage() {
 
                         const warehouseId = decoded.khoId || decoded.warehouseId;
                         if (warehouseId) {
-                            localStorage.setItem('warehouseId', warehouseId);
+                            localStorage.setItem('selected_kho_id', warehouseId);
                             console.log("Saved Warehouse ID:", warehouseId);
+                        } else {
+                            try {
+                                if (decoded.warehousePermissions) {
+                                    const permissions = JSON.parse(decoded.warehousePermissions);
+                                    if (permissions && permissions.length > 0) {
+                                        const defaultKhoId = permissions[0].kho.id;
+                                        localStorage.setItem('selected_kho_id', defaultKhoId);
+                                        console.log("Đã lấy kho đầu tiên làm mặc định:", defaultKhoId);
+                                    }
+                                }
+                            } catch (err) {
+                                console.error("Không thể bóc tách warehousePermissions:", err);
+                            }
                         }
 
                         if (role === 'quan_tri_vien') {

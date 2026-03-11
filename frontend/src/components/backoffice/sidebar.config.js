@@ -88,7 +88,11 @@ export const SIDEBAR_MENU = [
     icon: Warehouse,
     roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],
     children: [
-      { label: "Kho", to: "/warehouse" },
+      {
+        label: "Kho",
+        to: "/warehouse",
+        roles: ["quan_tri_vien", "quan_ly_kho"],
+      },
       { label: "Phiếu xuất kho", to: "/goods-issues" },
       { label: "Chuyển kho nội bộ", to: "/transfer-tickets" },
       { label: "Kiểm kê", to: "/stock-take" },
@@ -102,8 +106,6 @@ export const SIDEBAR_MENU = [
     roles: [
       "quan_tri_vien",
       "nhan_vien_ban_hang",
-      "quan_ly_kho",
-      "nhan_vien_kho",
     ],
     children: [
       {

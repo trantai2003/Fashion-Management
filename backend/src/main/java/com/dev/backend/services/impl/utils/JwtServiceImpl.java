@@ -6,6 +6,7 @@ import com.dev.backend.dto.response.entities.PhanQuyenNguoiDungKhoDto;
 import com.dev.backend.services.JwtService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -27,7 +28,9 @@ import java.util.StringJoiner;
 @Service
 public class JwtServiceImpl implements JwtService {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @Override
     public String buildScope(Set<String> roles) {
@@ -99,7 +102,9 @@ public class JwtServiceImpl implements JwtService {
             jwsObject.sign(new MACSigner(ConstantVariables.SIGNER_KEY.getBytes()));
             return jwsObject.serialize();
         } catch (JOSEException | JsonProcessingException e) {
-            throw new RuntimeException("Error generating token", e);
+            // Thêm log ở đây để nhìn thấy lỗi thật sự ở bảng Console của IntelliJ/Eclipse
+            e.printStackTrace();
+            throw new RuntimeException("Error generating token: " + e.getMessage(), e);
         }
     }
 

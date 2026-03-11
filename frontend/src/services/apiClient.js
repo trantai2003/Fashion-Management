@@ -10,10 +10,15 @@ apiClient.interceptors.request.use(
         if (config.skipAuth) return config;
 
         const token = localStorage.getItem("access_token");
+        const khoId = localStorage.getItem("selected_kho_id");
         if (token) {
             config.headers = config.headers || {};
             config.headers.Authorization = `Bearer ${token}`;
         }
+        if (khoId) {
+            config.headers['kho_id'] = khoId;
+        }
+
         return config;
     },
     (error) => Promise.reject(error)
