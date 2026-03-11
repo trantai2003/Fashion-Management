@@ -9,7 +9,7 @@ const STATUS_MAP = {
     0: { label: "Đang kiểm đếm", className: "bg-amber-50 text-amber-700" },
     1: { label: "Đang kiểm đếm", className: "bg-amber-50 text-amber-700" },
     2: { label: "Chờ nhận hàng", className: "bg-blue-50 text-blue-700" }, // Dành cho luồng Chuyển kho
-    3: { label: "Hoàn thành", className: "bg-green-50 text-green-700" },
+    3: { label: "Đã nhập kho", className: "bg-green-50 text-green-700" },
     4: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
 };
 
@@ -74,7 +74,7 @@ export default function PhieuNhapKhoDetail() {
                         onClick={() => navigate("/goods-receipts")}
                         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 font-medium"
                     >
-                        ← Quay lại
+                        ← Quay lại danh sách
                     </button>
 
                     <div className="flex items-center gap-2">
