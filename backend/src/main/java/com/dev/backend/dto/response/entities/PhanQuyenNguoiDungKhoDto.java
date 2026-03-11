@@ -1,6 +1,7 @@
 package com.dev.backend.dto.response.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @EqualsAndHashCode(of = {"id"})
