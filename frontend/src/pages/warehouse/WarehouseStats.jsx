@@ -4,58 +4,58 @@ import { Warehouse, CheckCircle2, X, Package } from 'lucide-react';
 
 export default function WarehouseStats({ stats }) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">Tổng số kho</p>
-                            <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                            <p className="text-sm font-medium text-gray-600">Tổng số kho</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
                         </div>
-                        <div className="bg-blue-100 p-3 rounded-full">
-                            <Warehouse className="w-6 h-6 text-blue-600" />
+                        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Warehouse className="h-6 w-6 text-blue-600" />
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">Đang hoạt động</p>
-                            <p className="text-3xl font-bold text-green-600">{stats.active}</p>
+                            <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.active}</p>
                         </div>
-                        <div className="bg-green-100 p-3 rounded-full">
-                            <CheckCircle2 className="w-6 h-6 text-green-600" />
+                        <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                            <CheckCircle2 className="h-6 w-6 text-green-600" />
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-gray-50 to-white">
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">Không hoạt động</p>
-                            <p className="text-3xl font-bold text-gray-600">{stats.inactive}</p>
+                            <p className="text-sm font-medium text-gray-600">Không hoạt động</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.inactive}</p>
                         </div>
-                        <div className="bg-gray-100 p-3 rounded-full">
-                            <X className="w-6 h-6 text-gray-600" />
+                        <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                            <X className="h-6 w-6 text-gray-600" />
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-white">
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-600">Tổng tồn kho</p>
-                            <p className="text-3xl font-bold text-purple-600">{stats.totalStock}</p>
+                            <p className="text-sm font-medium text-gray-600">Tổng tồn kho</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalStock}</p>
                         </div>
-                        <div className="bg-purple-100 p-3 rounded-full">
-                            <Package className="w-6 h-6 text-purple-600" />
+                        <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                            <Package className="h-6 w-6 text-purple-600" />
                         </div>
                     </div>
                 </CardContent>

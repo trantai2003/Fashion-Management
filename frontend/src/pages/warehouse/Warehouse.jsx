@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from 'sonner';
 import { khoService } from '@/services/khoService';
 import { useToggle } from '@/hooks/useToggle';
@@ -21,6 +30,12 @@ export default function WarehouseManagement() {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
+    const [pagination, setPagination] = useState({
+        pageNumber: 0,
+        pageSize: 10,
+        totalElements: 0,
+        totalPages: 0,
+    });
     const [showDialog, setShowDialog] = useState(false);
     const [dialogMode, setDialogMode] = useState('create'); // create, edit, view
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -39,20 +54,32 @@ export default function WarehouseManagement() {
     const [errors, setErrors] = useState({});
 
     // Fetch warehouses
-    const fetchWarehouses = useCallback(async () => {
+    const fetchWarehouses = useCallback(async (page = pagination.pageNumber, size = pagination.pageSize) => {
         try {
             setIsLoading(true);
-            const payload = buildWarehouseFilterPayload({ searchTerm, filterStatus });
+            const payload = buildWarehouseFilterPayload({ searchTerm, filterStatus, pageNumber: page, pageSize: size });
             const res = await khoService.filter(payload);
 
-            // doi 2 s
-            
             console.log(res);
 
-            if (res?.data?.data?.content) {
-                setWarehouses(res.data.data.content);
-            } else if (res?.data?.content) {
-                setWarehouses(res.data.content);
+            if (res?.data?.data) {
+                setWarehouses(res.data.data.content || []);
+                setPagination(prev => ({
+                    ...prev,
+                    pageNumber: res.data.data.number || 0,
+                    pageSize: Math.max(res.data.data.size, 1),
+                    totalElements: res.data.data.totalElements || 0,
+                    totalPages: res.data.data.totalPages || 0,
+                }));
+            } else if (res?.data) {
+                setWarehouses(res.data.content || []);
+                setPagination(prev => ({
+                    ...prev,
+                    pageNumber: res.data.number || 0,
+                    pageSize: Math.max(res.data.size, 1),
+                    totalElements: res.data.totalElements || 0,
+                    totalPages: res.data.totalPages || 0,
+                }));
             } else {
                 setWarehouses([]);
             }
@@ -63,7 +90,17 @@ export default function WarehouseManagement() {
         } finally {
             setIsLoading(false);
         }
-    }, [searchTerm, filterStatus]);
+    }, [searchTerm, filterStatus, pagination.pageNumber, pagination.pageSize]);
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 0 && newPage < pagination.totalPages) {
+            setPagination(prev => ({...prev, pageNumber: newPage}));
+        }
+    };
+
+    const handlePageSizeChange = (newSize) => {
+        setPagination(prev => ({...prev, pageSize: newSize, pageNumber: 0}));
+    };
 
     // Fetch managers
     const fetchManagers = useCallback(async () => {
@@ -151,8 +188,8 @@ export default function WarehouseManagement() {
         return {
             filters: filterList,
             sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
-            page: 0,
-            size: 100,
+            page: filters.pageNumber,
+            size: filters.pageSize,
         };
     }
 
@@ -274,8 +311,8 @@ export default function WarehouseManagement() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
-            <div className="max-w-7xl mx-auto space-y-6">
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+            <div className="space-y-6 w-full">
                 <WarehouseHeader onAddWarehouse={() => handleOpenDialog('create')} />
                 <WarehouseStats stats={stats} />
                 <WarehouseSearchFilter
@@ -291,12 +328,116 @@ export default function WarehouseManagement() {
                         <span className="ml-3 text-gray-600">Đang tải danh sách kho...</span>
                     </div>
                 ) : warehouses.length > 0 ? (
-                    <WarehouseList
-                        warehouses={warehouses}
-                        onView={(warehouse) => handleOpenDialog('view', warehouse)}
-                        onEdit={(warehouse) => handleOpenDialog('edit', warehouse)}
-                        onDelete={handleDeleteClick}
-                    />
+                    <>
+                        <WarehouseList
+                            warehouses={warehouses}
+                            onView={(warehouse) => handleOpenDialog('view', warehouse)}
+                            onEdit={(warehouse) => handleOpenDialog('edit', warehouse)}
+                            onDelete={handleDeleteClick}
+                        />
+
+                        {/* Pagination Section */}
+                        <Card className="border-0 shadow-md bg-white">
+                            <CardContent className="p-4">
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    {/* Left side - Page size selector */}
+                                    <div className="flex items-center gap-2">
+                                        <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
+                                                    {pagination.pageSize} dòng
+                                                    <ChevronDown className="h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                                                {[5, 10, 20, 50, 100].map(size => (
+                                                    <DropdownMenuItem
+                                                        key={size}
+                                                        onClick={() => handlePageSizeChange(size)}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        {size} dòng
+                                                    </DropdownMenuItem>
+                                                ))}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+
+                                    {/* Center - Page info */}
+                                    <div className="text-sm text-gray-600">
+                                        Hiển thị{' '}
+                                        <span className="font-semibold text-gray-900">
+                                            {pagination.pageNumber * pagination.pageSize + 1}
+                                        </span>
+                                        {' '}-{' '}
+                                        <span className="font-semibold text-gray-900">
+                                            {Math.min((pagination.pageNumber + 1) * pagination.pageSize, pagination.totalElements)}
+                                        </span>
+                                        {' '}trong tổng số{' '}
+                                        <span className="font-semibold text-purple-600">{pagination.totalElements}</span> kết quả
+                                    </div>
+
+                                    {/* Right side - Navigation buttons */}
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePageChange(pagination.pageNumber - 1)}
+                                            disabled={pagination.pageNumber === 0}
+                                            className="gap-1 disabled:opacity-50"
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                            Trước
+                                        </Button>
+
+                                        {/* Page numbers */}
+                                        <div className="hidden sm:flex gap-1">
+                                            {[...Array(Math.min(5, pagination.totalPages))].map((_, idx) => {
+                                                let pageNum;
+                                                if (pagination.totalPages <= 5) {
+                                                    pageNum = idx;
+                                                } else if (pagination.pageNumber < 3) {
+                                                    pageNum = idx;
+                                                } else if (pagination.pageNumber > pagination.totalPages - 4) {
+                                                    pageNum = pagination.totalPages - 5 + idx;
+                                                } else {
+                                                    pageNum = pagination.pageNumber - 2 + idx;
+                                                }
+
+                                                return (
+                                                    <Button
+                                                        key={idx}
+                                                        variant={pagination.pageNumber === pageNum ? "default" : "outline"}
+                                                        size="sm"
+                                                        onClick={() => handlePageChange(pageNum)}
+                                                        className={
+                                                            pagination.pageNumber === pageNum
+                                                                ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
+                                                                : "border-gray-200"
+                                                        }
+                                                    >
+                                                        {pageNum + 1}
+                                                    </Button>
+                                                );
+                                            })}
+                                        </div>
+
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePageChange(pagination.pageNumber + 1)}
+                                            disabled={pagination.pageNumber >= pagination.totalPages - 1}
+                                            className="gap-1 disabled:opacity-50"
+                                        >
+                                            Sau
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </>
                 ) : (
                     <WarehouseEmptyState />
                 )}
