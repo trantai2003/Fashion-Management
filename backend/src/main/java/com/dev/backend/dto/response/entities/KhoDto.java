@@ -1,5 +1,6 @@
 package com.dev.backend.dto.response.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -25,5 +26,6 @@ public class KhoDto implements Serializable {
     String diaChi;
     NguoiDungDto quanLy;
     Integer trangThai;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     Instant ngayTao;
 }
