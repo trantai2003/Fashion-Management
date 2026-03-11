@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,9 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -83,6 +84,86 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
         private final SanPhamQuanAoRepository repository = (SanPhamQuanAoRepository) getRepository();
 
 
+        @Transactional
+        public void recalculatePriceAndStatus(Integer sanPhamId) {
+                // 1. Ép Hibernate đẩy dữ liệu xuống DB để đảm bảo Query Native đọc được số mới nhất
+                entityManager.flush();
+
+                SanPhamQuanAo sp = repository.findById(sanPhamId)
+                        .orElseThrow(() -> new CommonException("Không tìm thấy sản phẩm id: " + sanPhamId));
+
+                List<BienTheSanPham> danhSachBienThe = sp.getBienTheSanPhams();
+
+                // 2. Xử lý cache Hibernate nếu danh sách bị null khi vừa tạo mới
+                if (danhSachBienThe == null || danhSachBienThe.isEmpty()) {
+                        danhSachBienThe = entityManager.createQuery("SELECT b FROM BienTheSanPham b WHERE b.sanPham.id = :id", BienTheSanPham.class)
+                                .setParameter("id", sanPhamId)
+                                .getResultList();
+                        sp.setBienTheSanPhams(danhSachBienThe);
+                }
+                BigDecimal tongGiaVonBienThe = BigDecimal.ZERO;
+                BigDecimal tongGiaBanBienThe = BigDecimal.ZERO;
+                int soBienTheCoHang = 0;
+
+                if (danhSachBienThe != null) {
+                        for (BienTheSanPham bienThe : danhSachBienThe) {
+                                // Query tính: SUM(so_luong_ton * gia_von) và SUM(so_luong_ton)
+                                String sql = "SELECT SUM(t.so_luong_ton * l.gia_von), SUM(t.so_luong_ton) " +
+                                        "FROM ton_kho_theo_lo t " +
+                                        "JOIN lo_hang l ON t.lo_hang_id = l.id " +
+                                        "WHERE l.bien_the_san_pham_id = :bienTheId";
+
+                                Query query = entityManager.createNativeQuery(sql);
+                                query.setParameter("bienTheId", bienThe.getId());
+                                Object[] result = (Object[]) query.getSingleResult();
+
+                                BigDecimal tongGiaTriTon = result[0] != null ? new BigDecimal(result[0].toString()) : BigDecimal.ZERO;
+                                BigDecimal tongSoLuongTon = result[1] != null ? new BigDecimal(result[1].toString()) : BigDecimal.ZERO;
+
+                                // Nếu biến thể còn tồn kho
+                                if (tongSoLuongTon.compareTo(BigDecimal.ZERO) > 0) {
+                                        // Công thức 2: Giá vốn biến thể = Tổng giá trị / Tổng tồn hệ thống
+                                        BigDecimal giaVonTongVariant = tongGiaTriTon.divide(tongSoLuongTon, 2, RoundingMode.HALF_UP);
+                                        bienThe.setGiaVon(giaVonTongVariant);
+
+                                        // Công thức 3: Giá bán biến thể = Giá vốn * 1.2
+                                        BigDecimal giaBanVariant = giaVonTongVariant.multiply(new BigDecimal("1.2")).setScale(2, RoundingMode.HALF_UP);
+                                        bienThe.setGiaBan(giaBanVariant);
+
+                                        bienThe.setTrangThai(1);
+
+                                        // Tích lũy để tính trung bình cộng cho sản phẩm cha
+                                        tongGiaVonBienThe = tongGiaVonBienThe.add(giaVonTongVariant);
+                                        tongGiaBanBienThe = tongGiaBanBienThe.add(giaBanVariant);
+                                        soBienTheCoHang++;
+                                } else {
+                                        // Hết hàng thì trạng thái = 0
+                                        bienThe.setTrangThai(0);
+                                        // Giữ nguyên hoặc set về 0 tùy bạn, ở đây tôi gán 0 cho minh bạch
+                                        if (bienThe.getGiaVon() == null) bienThe.setGiaVon(BigDecimal.ZERO);
+                                        if (bienThe.getGiaBan() == null) bienThe.setGiaBan(BigDecimal.ZERO);
+                                }
+                                bienTheSanPhamService.update(bienThe.getId(), bienThe);
+                        }
+                }
+
+                // 3. Cập nhật giá cho Sản phẩm cha (SanPhamQuanAo)
+                if (soBienTheCoHang > 0) {
+                        // Giá vốn sản phẩm = Trung bình cộng giá vốn các biến thể còn hàng
+                        sp.setGiaVonMacDinh(tongGiaVonBienThe.divide(new BigDecimal(soBienTheCoHang), 2, RoundingMode.HALF_UP));
+                        // Giá bán sản phẩm = Trung bình cộng giá bán các biến thể còn hàng
+                        sp.setGiaBanMacDinh(tongGiaBanBienThe.divide(new BigDecimal(soBienTheCoHang), 2, RoundingMode.HALF_UP));
+                        sp.setTrangThai(1);
+                } else {
+                        // Nếu tất cả biến thể hết hàng
+                        sp.setTrangThai(0);
+                        // Giữ giá cũ
+                        sp.setGiaVonMacDinh(BigDecimal.ZERO);
+                        sp.setGiaBanMacDinh(BigDecimal.ZERO);
+                }
+
+                repository.save(sp);
+        }
         @Transactional
         public ResponseEntity<ResponseData<SanPhamQuanAoDto>> create(
                 SanPhamQuanAoCreating creating,
@@ -214,7 +295,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                         }
 
                 }
-
+                recalculatePriceAndStatus(sanPhamQuanAo.getId());
                 sanPhamQuanAo = getOne(sanPhamQuanAo.getId()).orElseThrow(
                         () -> new CommonException("Không tìm thấy sản phẩm đã tạo: " + creating.getMaSanPham())
                 );
@@ -284,27 +365,27 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 sanPhamQuanAo.setTrangThai(updating.getTrangThai());
                 sanPhamQuanAo = update(updating.getId(), sanPhamQuanAo);
                 if (updating.isImageUpdated()) {
-
-                        // Lưu lại list id tepTin trước
+                        //Lấy danh sách ID tệp tin để xóa file vật lý sau
                         List<Integer> tepTinIds = sanPhamQuanAo.getAnhQuanAos()
                                 .stream()
                                 .map(anh -> anh.getTepTin().getId())
                                 .toList();
 
-                        // Xóa anh_quan_ao trước
-                        anhQuanAoService.delete(sanPhamQuanAo.getAnhQuanAos());
+                        //Xóa sạch danh sách ảnh trong Object (Hibernate sẽ tự xóa bản ghi AnhQuanAo trong DB)
+                        sanPhamQuanAo.getAnhQuanAos().clear();
 
-                        // Sau đó mới xóa tep_tin (cả MinIO lẫn DB)
+                        //Ép Hibernate đồng bộ ngay để tránh xung đột với logic upload phía sau
+                        entityManager.flush();
+
+                        //Xóa tệp tin (DB và MinIO)
                         tepTinIds.forEach(id -> tepTinService.hardDeleteNoMessage(id));
                         try {
                                 Date now = new Date();
                                 int i = 0;
                                 for (MultipartFile file : anhSanPhams) {
-                                        System.out.println("File name: " + file.getOriginalFilename()
-                                                + " | Size: " + file.getSize());
                                         String objectName = minioService.upload(file, ITable.san_pham_quan_ao + "_" + sanPhamQuanAo.getMaSanPham() + "_" + now.getTime() + "_" + i++);
-                                        TepTin tepTin = tepTinService.create(
-                                                TepTin.builder()
+
+                                        TepTin tepTin = tepTinService.create(TepTin.builder()
                                                         .tenTepGoc(objectName)
                                                         .tenTaiLen(objectName)
                                                         .tenLuuTru(objectName)
@@ -316,20 +397,21 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                                         .build()
                                         );
 
-                                        anhQuanAoService.create(
-                                                AnhQuanAo.builder()
-                                                        .quanAo(sanPhamQuanAo)
-                                                        .tepTin(tepTin)
-                                                        .anhChinh(i == 1 ? 1 : 0)
-                                                        .trangThai(1)
-                                                        .ngayTao(sanPhamQuanAo.getNgayCapNhat())
-                                                        .build()
-                                        );
+                                        //Thêm ảnh mới trực tiếp vào list của sản phẩm
+                                        AnhQuanAo newAnh = AnhQuanAo.builder()
+                                                .quanAo(sanPhamQuanAo)
+                                                .tepTin(tepTin)
+                                                .anhChinh(i == 1 ? 1 : 0)
+                                                .trangThai(1)
+                                                .ngayTao(Instant.now())
+                                                .build();
+
+                                        sanPhamQuanAo.getAnhQuanAos().add(newAnh);
                                 }
                                 System.out.println("Có tổng cộng " + i + " ảnh");
 
                         } catch (Exception e) {
-                                throw new RuntimeException(e);
+                                throw new RuntimeException("Lỗi upload ảnh: " + e.getMessage());
                         }
 
 
@@ -377,6 +459,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                 throw new RuntimeException("Lỗi tạo tệp tin cho quần áo: " + btspUdating.getId(), e);
                         }
                 }
+                recalculatePriceAndStatus(sanPhamQuanAo.getId());
                 sanPhamQuanAo = getOne(sanPhamQuanAo.getId()).orElseThrow(
                         () -> new CommonException("Không tìm thấy sản phẩm quần áo id: " + updating.getId())
                 );

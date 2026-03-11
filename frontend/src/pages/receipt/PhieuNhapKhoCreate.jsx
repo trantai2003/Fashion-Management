@@ -19,10 +19,18 @@ export default function PhieuNhapKhoCreate() {
                 const res = await purchaseOrderService.filter({
                     page: 0,
                     size: 100,
-                    filters: [], // Bạn có thể thêm filter trangThai PO tại đây nếu cần
+                    filters: [
+                        {
+                            fieldName: "trangThai",
+                            operator: "EQUALS",
+                            value: 4 // Chỉ lấy những PO đã duyệt (trạng thái 4) để tạo phiếu nhập
+                        }
+                    ],
                     sorts: [{ fieldName: "id", direction: "DESC" }]
                 });
-                setPoList(res.data?.content || []);
+                const allContent = res.data?.content || [];
+                const filteredContent = allContent.filter(po => po.trangThai === 4);
+                setPoList(filteredContent);
             } catch (error) {
                 console.error("Lỗi load PO:", error);
             }
@@ -215,8 +223,8 @@ export default function PhieuNhapKhoCreate() {
                                                                     value={ct.soLuongNhapTay}
                                                                     onChange={(e) => handleQtyChange(ct.bienTheSanPham.id, e.target.value)}
                                                                     className={`w-24 h-10 px-3 text-right border rounded-lg outline-none transition-all ${isInvalid
-                                                                            ? "border-red-500 bg-red-50 text-red-600 focus:ring-red-100"
-                                                                            : "border-gray-300 focus:ring-purple-100 focus:border-purple-500"
+                                                                        ? "border-red-500 bg-red-50 text-red-600 focus:ring-red-100"
+                                                                        : "border-gray-300 focus:ring-purple-100 focus:border-purple-500"
                                                                         }`}
                                                                 />
                                                             </div>

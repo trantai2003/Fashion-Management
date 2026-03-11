@@ -91,7 +91,7 @@ export const SIDEBAR_MENU = [
       { label: "Kho", to: "/warehouse" },
       { label: "Phiếu xuất kho", to: "/goods-issues" },
       { label: "Chuyển kho nội bộ", to: "/transfer-tickets" },
-      { label: "Kiểm kê", to: "/stock-takes" },
+      { label: "Kiểm kê", to: "/stock-take" },
     ],
   },
 

@@ -9,4 +9,5 @@ import java.util.List;
 public interface ThongKeHeThongService {
 
     ResponseEntity<ResponseData<List<TonKhoChiTietDTO>>> findTonKhoChiTietByKho(Integer khoId);
+    ResponseEntity<ResponseData<List<TonKhoChiTietDTO>>> findTonKhoChiTietByBienThe(Integer bienTheId);
 }

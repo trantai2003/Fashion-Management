@@ -28,6 +28,7 @@ import PhieuXuatKhoList from "./pages/issue/PhieuXuatKhoList.jsx";
 import PurchaseOrderDetail from "./pages/order/PurchaseOrderDetail.jsx";
 import PurchaseOrder from "./pages/order/PurchaseOrder.jsx";
 import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
+import PurchaseOrderPayment from "./pages/order/PurchaseOrderPayment.jsx";
 import SkuBuilder from "./pages/product/SkuBuilder";
 import PhieuXuatKhoCreate from "./pages/issue/PhieuXuatKhoCreate.jsx";
 import PhieuXuatKhoDetail from "./pages/issue/PhieuXuatKhoDetail.jsx";
@@ -49,6 +50,14 @@ import DonBanHangCreate from "./pages/sales-orders/DonBanHangCreate";
 import ProductDetail from "./pages/product/components/product/ProductDetail";
 import PhieuChuyenKhoDetail from "./pages/chuyenKhoNoiBo/PhieuChuyenKhoDetail";
 import PhieuChuyenKhoCreate from "./pages/chuyenKhoNoiBo/PhieuChuyenKhoCreate";
+import StockTakeList from "./pages/stock-take/StockTakeList";
+import StockTakeCreate from "./pages/stock-take/StockTakeCreate";
+import StoreLayout from "@/components/store/StoreLayout";
+import StoreHome from "./pages/store/StoreHome";
+import ProductCategory from "./pages/store/ProductCategory";
+import ProductSearch from "./pages/store/ProductSearch";
+import PublicProductDetail from "./pages/store/PublicProductDetail";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -62,6 +71,14 @@ export default function App() {
         <Route path="/quote-success" element={<QuoteSuccess />} />
         <Route path="/supplier/login" element={<SupplierLogin />} />
         <Route path="/user/:id" element={<UserDetail />} />
+
+        {/* ========== STOREFRONT ROUTES (CÓ NAVBAR + FOOTER CỦA KHÁCH) ========== */}
+        <Route element={<StoreLayout />}>
+          <Route path="/store" element={<StoreHome />} />
+          <Route path="/category/:id" element={<ProductCategory />} />
+          <Route path="/search" element={<ProductSearch />} />
+          <Route path="/product/:id" element={<PublicProductDetail />} />
+        </Route>
 
         {/* ========== BACKOFFICE ROUTES (CÓ SIDEBAR + HEADER) ========== */}
         <Route element={<BackofficeLayout />}>
@@ -103,6 +120,7 @@ export default function App() {
           <Route path="/purchase-orders" element={<PurchaseOrder />} />
           <Route path="/purchase-orders/create" element={<PurchaseOrderCreate />} />
           <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
+          <Route path="/purchase-orders/:id/payment" element={<PurchaseOrderPayment />} />
 
           {/* Supplier */}
           <Route path="/supplier" element={<SupplierList />} />
@@ -138,6 +156,11 @@ export default function App() {
           <Route path="/transfer-tickets" element={<PhieuChuyenKhoList />} />
           <Route path="/transfer-tickets/create" element={<PhieuChuyenKhoCreate />} />
           <Route path="/transfer-tickets/:id" element={<PhieuChuyenKhoDetail />} />
+
+          {/* Kiểm kê kho hàng*/}
+          <Route path="/stock-take" element={<StockTakeList />} />
+          <Route path="/stock-take/new" element={<StockTakeCreate />} />
+          <Route path="/stock-take/:id" element={<StockTakeCreate />} /> {/* Để hoàn thành kiểm kê */}
         </Route>
 
         {/* ========== 404 ========== */}

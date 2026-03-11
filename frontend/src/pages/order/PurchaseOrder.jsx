@@ -55,6 +55,7 @@ import {
     MoreVertical,
     AlertCircle,
     Send,
+    CreditCard,
 } from "lucide-react";
 import purchaseOrderService from "../../services/purchaseOrderService";
 
@@ -100,33 +101,45 @@ export default function PurchaseOrderList() {
         0: {
             label: 'Chờ duyệt',
             color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            icon: Clock,
-            description: 'Đơn hàng đang chờ phê duyệt'
+            icon: AlertCircle,
+            description: 'Đơn hàng đang chờ quản lý phê duyệt'
         },
         1: {
             label: 'Đã duyệt',
             color: 'bg-blue-100 text-blue-800 border-blue-200',
             icon: CheckCircle,
-            description: 'Đơn hàng đã được phê duyệt'
+            description: 'Đơn hàng đã được duyệt nội bộ'
         },
         2: {
-            label: 'Đang giao',
+            label: 'Đang xử lý',
             color: 'bg-purple-100 text-purple-800 border-purple-200',
-            icon: Send,
-            description: 'Đơn hàng đang được giao'
+            icon: Package,
+            description: 'Đơn hàng đang được xử lý'
         },
         3: {
+            label: 'Chờ báo giá',
+            color: 'bg-orange-100 text-orange-800 border-orange-200',
+            icon: Clock,
+            description: 'Đã gửi yêu cầu đến nhà cung cấp, chờ báo giá'
+        },
+        4: {
+            label: 'Đã báo giá',
+            color: 'bg-green-100 text-green-800 border-green-200',
+            icon: FileText,
+            description: 'Nhà cung cấp đã gửi báo giá chi tiết'
+        },
+        5: {
+            label: 'Hoàn thành',
+            color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+            icon: CheckCircle,
+            description: 'Đơn hàng đã hoàn thành nhập kho'
+        },
+        6: {
             label: 'Đã hủy',
             color: 'bg-red-100 text-red-800 border-red-200',
             icon: XCircle,
             description: 'Đơn hàng đã bị hủy'
-        },
-        4: {
-            label: 'Hoàn thành',
-            color: 'bg-green-100 text-green-800 border-green-200',
-            icon: CheckCircle,
-            description: 'Đơn hàng đã hoàn thành'
-        },
+        }
     };
 
     // Format currency
@@ -171,7 +184,7 @@ export default function PurchaseOrderList() {
             if (filters.soDonMua) {
                 filterArray.push({
                     fieldName: "soDonMua",
-                    operation: "CONTAINS",
+                    operation: "LIKE",
                     value: filters.soDonMua,
                     logicType: "AND"
                 });
@@ -354,6 +367,9 @@ export default function PurchaseOrderList() {
     const handleViewDetail = (orderId) => {
         navigate(`/purchase-orders/${orderId}`);
     };
+    const handleViewPayment = (orderId) => {
+        navigate(`/purchase-orders/${orderId}/payment`);
+    }
 
     // Handle edit order
     const handleEditOrder = (order, event) => {
@@ -456,10 +472,9 @@ export default function PurchaseOrderList() {
         total: pagination.totalElements,
         totalValue: purchaseOrders.reduce((sum, order) => sum + (order.tongTien || 0), 0),
         pending: purchaseOrders.filter(o => o.trangThai === 0).length,
-        approved: purchaseOrders.filter(o => o.trangThai === 1).length,
-        inDelivery: purchaseOrders.filter(o => o.trangThai === 2).length,
-        completed: purchaseOrders.filter(o => o.trangThai === 4).length,
-        cancelled: purchaseOrders.filter(o => o.trangThai === 3).length,
+        approved: purchaseOrders.filter(o => o.trangThai === 1 || o.trangThai === 2 || o.trangThai === 3 || o.trangThai === 4).length,
+        completed: purchaseOrders.filter(o => o.trangThai === 5).length,
+        cancelled: purchaseOrders.filter(o => o.trangThai === 6).length,
     };
 
     // Get status icon
@@ -495,25 +510,36 @@ export default function PurchaseOrderList() {
                         <MoreVertical className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => handleViewDetail(order.id)}>
-                        <Eye className="h-4 w-4 mr-2" />
+                <DropdownMenuContent align="end" className="w-48 bg-white shadow-lg border border-gray-100 z-50">
+                    <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDetail(order.id);
+                    }} className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
+                        <Eye className="h-4 w-4 mr-2 text-indigo-600" />
                         Xem chi tiết
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewPayment(order.id);
+                    }} className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700">
+                        <CreditCard className="h-4 w-4 mr-2 text-blue-600" />
+                        Thanh toán
                     </DropdownMenuItem>
 
                     {order.trangThai === 0 && (
                         <>
-                            <DropdownMenuItem onClick={(e) => handleEditOrder(order, e)}>
-                                <Edit className="h-4 w-4 mr-2" />
+                            <DropdownMenuItem onClick={(e) => handleEditOrder(order, e)} className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700">
+                                <Edit className="h-4 w-4 mr-2 text-orange-500" />
                                 Chỉnh sửa
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => handleApproveOrder(order, e)}>
-                                <CheckCircle className="h-4 w-4 mr-2" />
+                            <DropdownMenuItem onClick={(e) => handleApproveOrder(order, e)} className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700">
+                                <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                                 Phê duyệt
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={(e) => handleDeleteOrder(order, e)}
-                                className="text-red-600"
+                                className="cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50"
                             >
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Xóa
@@ -524,7 +550,7 @@ export default function PurchaseOrderList() {
                     {(order.trangThai === 1 || order.trangThai === 2) && (
                         <DropdownMenuItem
                             onClick={(e) => handleCancelOrder(order, e)}
-                            className="text-red-600"
+                            className="cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50"
                         >
                             <XCircle className="h-4 w-4 mr-2" />
                             Hủy đơn
@@ -691,7 +717,7 @@ export default function PurchaseOrderList() {
                                         <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[280px] bg-white max-h-[400px] overflow-y-auto">
+                                <DropdownMenuContent className="w-[280px] bg-white shadow-lg border border-gray-100 z-50 max-h-[400px] overflow-y-auto">
                                     <DropdownMenuItem
                                         onClick={() => handleFilterChange('nhaCungCapId', 'all')}
                                         className="font-medium hover:bg-indigo-50"
@@ -752,7 +778,7 @@ export default function PurchaseOrderList() {
                                         <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[280px] bg-white max-h-[400px] overflow-y-auto">
+                                <DropdownMenuContent className="w-[280px] bg-white shadow-lg border border-gray-100 z-50 max-h-[400px] overflow-y-auto">
                                     <DropdownMenuItem
                                         onClick={() => handleFilterChange('khoId', 'all')}
                                         className="font-medium hover:bg-indigo-50"
@@ -808,7 +834,7 @@ export default function PurchaseOrderList() {
                                         <ChevronDown className="h-4 w-4 opacity-50" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[200px] bg-white">
+                                <DropdownMenuContent className="w-[200px] bg-white shadow-lg border border-gray-100 z-50">
                                     <DropdownMenuItem
                                         onClick={() => handleFilterChange('trangThai', 'all')}
                                         className="font-medium hover:bg-indigo-50"
@@ -1031,7 +1057,7 @@ export default function PurchaseOrderList() {
                                         <ChevronDown className="h-4 w-4 opacity-50" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[120px] bg-white">
+                                <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
                                     {[5, 10, 20, 50, 100].map(size => (
                                         <DropdownMenuItem
                                             key={size}

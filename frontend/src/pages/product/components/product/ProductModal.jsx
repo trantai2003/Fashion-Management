@@ -410,8 +410,8 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productId = n
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="1">Đang bán</SelectItem>
-                                                    <SelectItem value="0">Ngừng bán</SelectItem>
+                                                    <SelectItem value="1">Còn hàng</SelectItem>
+                                                    <SelectItem value="0">Hết hàng</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         )}

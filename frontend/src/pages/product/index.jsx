@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { productService } from "@/services/productService.js";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Loader2, Search, Eye, Settings, Trash2, RefreshCcw, Package } from "lucide-react";
+import { Loader2, Search, Eye, Settings, Trash2, RefreshCcw, Package, Layers, TrendingUp } from "lucide-react";
 import { useToggle } from "@/hooks/useToggle";
 import AddProductModal from "@/pages/product/components/product/AddProductModal";
 import EditProductModal from "@/pages/product/components/product/EditProductModal";
@@ -16,6 +16,9 @@ import ProductModal from "@/pages/product/components/product/ProductModal";
 import ConfirmModal from "@/components/ui/confirm-modal";
 import PaginationComponent from "./components/product/ProductComponent";
 import { formatCurrency, formatDate } from "@/utils/formatters";
+// ── 2 component mới ──────────────────────────────────────────────────────────
+import InventoryDrawer from "@/pages/product/components/product/InventoryDrawer";
+import TopSellingModal from "@/pages/product/components/product/TopSellingModal";
 
 function buildProductFilterPayload(filters) {
     const filterList = [];
@@ -71,12 +74,7 @@ function buildProductFilterPayload(filters) {
         page: filters.page,
         size: filters.size,
         filters: filterList,
-        sorts: [
-            {
-                fieldName: "ngayTao",
-                direction: "DESC",
-            },
-        ],
+        sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
     };
 }
 
@@ -106,22 +104,23 @@ export default function ProductList() {
     const [isEditModalOpen, openEditModal, closeEditModal] = useToggle(false);
     const [isViewModalOpen, openViewModal, closeViewModal] = useToggle(false);
     const [isConfirmOpen, openConfirm, closeConfirm] = useToggle(false);
+
+    // ── State mới: Inventory Drawer ──────────────────────────────────────────
+    const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+    const [selectedInventoryProduct, setSelectedInventoryProduct] = useState(null);
+
+    // ── State mới: Top Selling Modal ─────────────────────────────────────────
+    const [isTopSellingOpen, setIsTopSellingOpen] = useState(false);
+
     const [productToDelete, setProductToDelete] = useState(null);
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const CATEGORY_OPTIONS = useMemo(() => [
-        { value: "ALL", label: "Tất cả danh mục" },
-        ...categories.map(cat => ({
-            value: cat.id.toString(),
-            label: cat.tenDanhMuc
-        }))
-    ], [categories]);
-
     const STATUS_OPTIONS = useMemo(() => [
         { value: "ALL", label: "Tất cả trạng thái" },
-        { value: "1", label: "Đang bán" },
-        { value: "0", label: "Ngừng bán" },
+        { value: "1", label: "Còn hàng" },
+        { value: "0", label: "Hết hàng" },
+        { value: "2", label: "Ngừng hoạt động" },
     ], []);
 
     const fetchCategories = useCallback(async () => {
@@ -129,9 +128,7 @@ export default function ProductList() {
             setIsCategoriesLoading(true);
             const res = await productService.getCategories();
             const serverResponse = res.data;
-            if (serverResponse?.status === 200) {
-                setCategories(serverResponse.data || []);
-            }
+            if (serverResponse?.status === 200) setCategories(serverResponse.data || []);
         } catch (error) {
             console.error("Lỗi khi tải danh mục:", error);
             toast.error("Không thể tải danh mục sản phẩm");
@@ -144,13 +141,17 @@ export default function ProductList() {
         try {
             setIsLoading(true);
             const payload = buildProductFilterPayload(filters);
-
             const res = await productService.filterProducts(payload);
-
             const serverResponse = res.data;
             if (serverResponse?.status === 200) {
                 const pageData = serverResponse.data;
-                setProducts(pageData.content || []);
+                const statusOrder = { 1: 0, 0: 1, 2: 2 };
+                const sortedContent = [...(pageData.content || [])].sort((a, b) => {
+                    const orderA = statusOrder[a?.trangThai] ?? 99;
+                    const orderB = statusOrder[b?.trangThai] ?? 99;
+                    return orderA - orderB;
+                });
+                setProducts(sortedContent);
                 setTotal(pageData.totalElements || 0);
             }
         } catch (error) {
@@ -163,45 +164,23 @@ export default function ProductList() {
         }
     }, [filters]);
 
-    useEffect(() => {
-        fetchCategories();
-    }, [fetchCategories]);
+    useEffect(() => { fetchCategories(); }, [fetchCategories]);
 
     useEffect(() => {
-        if (searchTimeoutRef.current) {
-            clearTimeout(searchTimeoutRef.current);
-        }
-
-        searchTimeoutRef.current = setTimeout(() => {
-            fetchProducts();
-        }, filters.keyword ? 500 : 0);
-
-        return () => {
-            if (searchTimeoutRef.current) {
-                clearTimeout(searchTimeoutRef.current);
-            }
-        };
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = setTimeout(fetchProducts, filters.keyword ? 500 : 0);
+        return () => { if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current); };
     }, [filters, fetchProducts]);
 
     useEffect(() => {
-        if (!location.state?.success) return;
-        if (toastShownRef.current) return;
-
+        if (!location.state?.success || toastShownRef.current) return;
         toastShownRef.current = true;
         toast.success(location.state.message || "Thao tác thành công");
         navigate(location.pathname, { replace: true });
     }, [location.state, navigate, location.pathname]);
 
     const handleReset = useCallback(() => {
-        setFilters({
-            keyword: "",
-            danhMuc: "ALL",
-            trangThai: "ALL",
-            giaTu: "",
-            giaDen: "",
-            page: 0,
-            size: 10,
-        });
+        setFilters({ keyword: "", danhMuc: "ALL", trangThai: "ALL", giaTu: "", giaDen: "", page: 0, size: 10 });
     }, []);
 
     const handleDeleteClick = useCallback((product) => {
@@ -211,7 +190,6 @@ export default function ProductList() {
 
     const handleConfirmDelete = useCallback(async () => {
         if (!productToDelete) return;
-
         try {
             setIsDeleting(true);
             await productService.deleteProduct(productToDelete.id);
@@ -227,69 +205,42 @@ export default function ProductList() {
         }
     }, [productToDelete, closeConfirm, fetchProducts]);
 
-    const handleViewClick = useCallback((productId) => {
-        setSelectedProductId(productId);
-        openViewModal();
-    }, [openViewModal]);
-
     const handleCancelDelete = useCallback(() => {
-        if (!isDeleting) {
-            setProductToDelete(null);
-            closeConfirm();
-        }
+        if (!isDeleting) { setProductToDelete(null); closeConfirm(); }
     }, [isDeleting, closeConfirm]);
 
     const updateFilter = useCallback((field, value, resetPage = true) => {
         const actualValue = value?.target ? value.target.value : value;
-
-        setFilters(prev => ({
-            ...prev,
-            [field]: actualValue,
-            ...(resetPage && { page: 0 })
-        }));
+        setFilters(prev => ({ ...prev, [field]: actualValue, ...(resetPage && { page: 0 }) }));
     }, []);
 
     const handleFilterChange = useMemo(() => ({
-        keyword: (e) => updateFilter('keyword', e),
-        giaTu: (e) => updateFilter('giaTu', e),
-        giaDen: (e) => updateFilter('giaDen', e),
-
-        danhMuc: (value) => updateFilter('danhMuc', value),
-        trangThai: (value) => updateFilter('trangThai', value),
-        size: (value) => updateFilter('size', Number(value)),
-
-        page: (newPage) => updateFilter('page', newPage, false),
+        keyword:  (e) => updateFilter("keyword", e),
+        giaTu:    (e) => updateFilter("giaTu", e),
+        giaDen:   (e) => updateFilter("giaDen", e),
+        danhMuc:  (v) => updateFilter("danhMuc", v),
+        trangThai:(v) => updateFilter("trangThai", v),
+        size:     (v) => updateFilter("size", Number(v)),
+        page:     (v) => updateFilter("page", v, false),
     }), [updateFilter]);
 
-    const handleModalSuccess = useCallback(() => {
-        fetchProducts();
-    }, [fetchProducts]);
+    const handleModalSuccess = useCallback(() => { fetchProducts(); }, [fetchProducts]);
 
-    const handleAddClick = useCallback(() => {
-        openAddModal();
-    }, [openAddModal]);
+    // ── Handlers Inventory Drawer ────────────────────────────────────────────
+    const handleOpenInventory = useCallback((product) => {
+        setSelectedInventoryProduct(product);
+        setIsInventoryOpen(true);
+    }, []);
 
-    const handleEditClick = useCallback((productId) => {
-        setSelectedProductId(productId);
-        openEditModal();
-    }, [openEditModal]);
-
-    const handleCloseAddModal = useCallback(() => {
-        closeAddModal();
-    }, [closeAddModal]);
-
-    const handleCloseEditModal = useCallback(() => {
-        setSelectedProductId(null);
-        closeEditModal();
-    }, [closeEditModal]);
-
-    const handleCloseViewModal = useCallback(() => {
-        setSelectedProductId(null);
-        closeViewModal();
-    }, [closeViewModal]);
+    const handleCloseInventory = useCallback(() => {
+        setIsInventoryOpen(false);
+        setSelectedInventoryProduct(null);
+    }, []);
 
     return (
         <div className="h-screen w-full bg-gray-50 flex flex-col min-h-0">
+
+            {/* ── Filter card ── */}
             <div className="px-6 py-4 flex-none">
                 <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
                     <CardContent className="p-4 space-y-3">
@@ -314,96 +265,57 @@ export default function ProductList() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label className="text-[13px] text-gray-600 block leading-none">
-                                    Trạng thái
-                                </Label>
-
-                                <Select
-                                    value={filters.trangThai}
-                                    onValueChange={handleFilterChange.trangThai}
-                                    disabled={isLoading}
-                                >
+                                <Label className="text-[13px] text-gray-600 block leading-none">Trạng thái</Label>
+                                <Select value={filters.trangThai} onValueChange={handleFilterChange.trangThai} disabled={isLoading}>
                                     <SelectTrigger className="w-full h-10 px-3 text-sm">
                                         <SelectValue placeholder="Chọn trạng thái" />
                                     </SelectTrigger>
-
-                                    <SelectContent
-                                        position="popper"
-                                        side="bottom"
-                                        align="start"
-                                        sideOffset={4}
-                                        className="z-50 bg-white border border-gray-200 shadow-lg rounded-md"
-                                    >
-                                        {STATUS_OPTIONS.map((s) => {
-                                            const active = filters.trangThai === s.value;
-
-                                            return (
-                                                <SelectItem
-                                                    key={s.value}
-                                                    value={s.value}
-                                                    className={
-                                                        active
+                                    <SelectContent position="popper" side="bottom" align="start" sideOffset={4}
+                                                   className="z-50 bg-white border border-gray-200 shadow-lg rounded-md">
+                                        {STATUS_OPTIONS.map((s) => (
+                                            <SelectItem key={s.value} value={s.value}
+                                                        className={filters.trangThai === s.value
                                                             ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
-                                                            : "focus:bg-gray-100"
-                                                    }
-                                                >
-                                                    {s.label}
-                                                </SelectItem>
-                                            );
-                                        })}
+                                                            : "focus:bg-gray-100"}>
+                                                {s.label}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label className="text-[13px] text-gray-600 block leading-none">
-                                    Khoảng giá (VNĐ)
-                                </Label>
+                                <Label className="text-[13px] text-gray-600 block leading-none">Khoảng giá (VNĐ)</Label>
                                 <div className="flex gap-2">
-                                    <Input
-                                        type="number"
-                                        value={filters.giaTu}
-                                        onChange={handleFilterChange.giaTu}
-                                        placeholder="Từ"
-                                        min="0"
-                                        className="w-full h-10 px-3 text-sm focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
-                                        disabled={isLoading}
-                                    />
-                                    <Input
-                                        type="number"
-                                        value={filters.giaDen}
-                                        onChange={handleFilterChange.giaDen}
-                                        placeholder="Đến"
-                                        min="0"
-                                        className="w-full h-10 px-3 text-sm focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
-                                        disabled={isLoading}
-                                    />
+                                    <Input type="number" value={filters.giaTu} onChange={handleFilterChange.giaTu}
+                                           placeholder="Từ" min="0"
+                                           className="w-full h-10 px-3 text-sm focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
+                                           disabled={isLoading} />
+                                    <Input type="number" value={filters.giaDen} onChange={handleFilterChange.giaDen}
+                                           placeholder="Đến" min="0"
+                                           className="w-full h-10 px-3 text-sm focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
+                                           disabled={isLoading} />
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex items-center justify-end">
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleReset}
-                                    disabled={isLoading}
-                                    className="flex items-center gap-2 transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
-                                >
-                                    <RefreshCcw className="h-3.5 w-3.5" />
-                                    Reset lại
-                                </Button>
-                            </div>
+                            <Button variant="outline" size="sm" onClick={handleReset} disabled={isLoading}
+                                    className="flex items-center gap-2 transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300">
+                                <RefreshCcw className="h-3.5 w-3.5" />
+                                Reset lại
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
+            {/* ── Table card ── */}
             <div className="px-6 pb-4 flex-1 min-h-0">
                 <Card className="bg-white border border-gray-200 rounded-xl shadow-sm h-full min-h-0">
                     <CardContent className="p-0 flex flex-col h-full min-h-0">
 
+                        {/* Table header bar */}
                         <div className="p-4 border-b flex-none flex items-center justify-between bg-gradient-to-r from-purple-50 to-white">
                             <div className="flex items-center gap-2">
                                 <Package className="h-5 w-5 text-purple-600" />
@@ -420,26 +332,34 @@ export default function ProductList() {
                                         Tổng: <span className="font-semibold text-purple-600">{total}</span> sản phẩm
                                     </span>
                                 )}
+
+                                {/* ── Nút Top 10 bán chạy ── */}
                                 <Button
                                     size="sm"
-                                    onClick={handleAddClick}
-                                    className="bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
+                                    variant="outline"
+                                    onClick={() => setIsTopSellingOpen(true)}
+                                    className="flex items-center gap-1.5 border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300 transition-colors"
                                 >
+                                    <TrendingUp className="h-3.5 w-3.5" />
+                                    Top bán chạy
+                                </Button>
+
+                                <Button size="sm" onClick={openAddModal}
+                                        className="bg-purple-600 text-white hover:bg-purple-700 shadow-sm">
                                     + Thêm sản phẩm
                                 </Button>
                             </div>
                         </div>
 
+                        {/* Table body */}
                         <div className="flex-1 overflow-y-auto min-h-0">
                             <Table className="w-full">
-
                                 <TableHeader>
                                     <TableRow className="bg-gray-50 text-xs text-gray-500">
                                         <TableHead className="px-4 py-3">ID</TableHead>
                                         <TableHead className="px-4 py-3">Hình ảnh</TableHead>
                                         <TableHead className="px-4 py-3">Tên sản phẩm</TableHead>
                                         <TableHead className="px-4 py-3">Giá bán</TableHead>
-                                        <TableHead className="px-4 py-3">Tồn kho</TableHead>
                                         <TableHead className="px-4 py-3">Trạng thái</TableHead>
                                         <TableHead className="px-4 py-3">Ngày tạo</TableHead>
                                         <TableHead className="px-4 py-3 text-center">Thao tác</TableHead>
@@ -447,42 +367,21 @@ export default function ProductList() {
                                 </TableHeader>
 
                                 <TableBody className="text-sm text-gray-800">
-                                    {isLoading && (
-                                        <>
-                                            {[...Array(5)].map((_, idx) => (
-                                                <TableRow key={`skeleton-${idx}`} className="border-b">
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="h-4 w-8 bg-gray-200 rounded animate-pulse" />
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
-                                                    </TableCell>
-                                                </TableRow>
+                                    {/* Loading skeleton */}
+                                    {isLoading && [...Array(5)].map((_, idx) => (
+                                        <TableRow key={`skeleton-${idx}`} className="border-b">
+                                            {[...Array(7)].map((__, ci) => (
+                                                <TableCell key={ci} className="px-4 py-3">
+                                                    <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: `${50 + ci * 8}%` }} />
+                                                </TableCell>
                                             ))}
-                                        </>
-                                    )}
+                                        </TableRow>
+                                    ))}
 
+                                    {/* Empty state */}
                                     {!isLoading && products.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={8} className="py-16 text-center">
+                                            <TableCell colSpan={7} className="py-16 text-center">
                                                 <div className="flex flex-col items-center gap-3">
                                                     <Package className="h-12 w-12 text-gray-300" />
                                                     <div className="text-gray-500">
@@ -498,34 +397,31 @@ export default function ProductList() {
                                         </TableRow>
                                     )}
 
+                                    {/* Product rows */}
                                     {!isLoading && products.map((product) => (
                                         <TableRow key={product.id} className="border-b hover:bg-gray-50">
                                             <TableCell className="px-4 py-3">{product.id}</TableCell>
 
                                             <TableCell className="px-4 py-3">
                                                 <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                                                    {product.anhQuanAos?.[0]?.tepTin?.duongDan ? (  // ✅ Optional chaining
-                                                        <img
-                                                            src={product.anhQuanAos[0].tepTin.duongDan}
-                                                            alt={product.tenSanPham}
-                                                            className="w-full h-full object-cover"
-                                                        />
+                                                    {product.anhQuanAos?.[0]?.tepTin?.duongDan ? (
+                                                        <img src={product.anhQuanAos[0].tepTin.duongDan}
+                                                             alt={product.tenSanPham} className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <div className="text-gray-400 text-xs">Không có hình ảnh</div>
+                                                        <span className="text-gray-400 text-[10px]">Không có ảnh</span>
                                                     )}
                                                 </div>
                                             </TableCell>
 
-                                            <TableCell className="px-4 py-3 font-semibold max-w-[200px]"> {/* Giới hạn độ rộng cụ thể */}
-                                                <Button
-                                                    onClick={() => navigate(`/products/${product.id}`, '_blank')}
-                                                    rel="noopener noreferrer"
-                                                    // Thêm w-full và text-left để text căn đều
-                                                    className="truncate w-full text-left hover:text-purple-600 hover:underline cursor-pointer block"
+                                            <TableCell className="px-4 py-3 font-semibold max-w-xs">
+                                                <button
+                                                    onClick={() => navigate(`/products/${product.id}`)}
+                                                    className="truncate hover:text-purple-600 hover:underline cursor-pointer block text-left w-full"
                                                     title={product.tenSanPham}
+                                                    type="button"
                                                 >
                                                     {product.tenSanPham}
-                                                </Button>
+                                                </button>
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3 font-medium text-purple-700">
@@ -533,52 +429,66 @@ export default function ProductList() {
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3">
-                                                <span className="font-medium text-green-600">
-                                                    {product.soLuongTon || 0}
-                                                </span>
-                                            </TableCell>
-
-                                            <TableCell className="px-4 py-3">
                                                 {product.trangThai === 1 ? (
                                                     <span className="px-2 py-1 text-xs rounded bg-green-50 text-green-700">
-                                                        Đang bán
+                                                        Còn hàng
+                                                    </span>
+                                                ) : product.trangThai === 0 ? (
+                                                    <span className="px-2 py-1 text-xs rounded bg-red-50 text-red-700">
+                                                        Hết hàng
                                                     </span>
                                                 ) : (
-                                                    <span className="px-2 py-1 text-xs rounded bg-red-50 text-red-700">
-                                                        Ngừng bán
+                                                    <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-600">
+                                                        Ngừng hoạt động
                                                     </span>
                                                 )}
                                             </TableCell>
 
                                             <TableCell className="px-4 py-3">
-                                                {formatDate(product.ngayTao) !== 'N/A' ? formatDate(product.ngayTao) : '-'}
+                                                {formatDate(product.ngayTao) !== "N/A" ? formatDate(product.ngayTao) : "-"}
                                             </TableCell>
 
-                                            <TableCell className="px-4 py-3 text-right space-x-2 flex items-center justify-center">
-                                                <Button
-                                                    onClick={() => navigate(`/products/${product.id}`, '_blank')}
-                                                    className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:underline"
-                                                >
-                                                    <Eye className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button
-                                                    onClick={() => handleEditClick(product.id)}
-                                                    className="text-sm font-semibold text-blue-600 hover:underline flex items-center gap-2"
-                                                >
-                                                    <Settings className="h-3.5 w-3.5" />
-                                                </Button>
+                                            <TableCell className="px-4 py-3">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    {/* Xem chi tiết */}
+                                                    <button
+                                                        onClick={() => navigate(`/products/${product.id}`)}
+                                                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-purple-600 hover:bg-purple-50 transition-colors"
+                                                        title="Xem chi tiết"
+                                                        type="button"
+                                                    >
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                    </button>
 
-                                                <Button
-                                                    onClick={() => handleDeleteClick(product)}
-                                                    className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-2"
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
+                                                    {/* ── Tồn kho biến thể (NÚT MỚI) ── */}
+                                                    <button
+                                                        onClick={() => handleOpenInventory(product)}
+                                                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-teal-600 hover:bg-teal-50 transition-colors"
+                                                        title="Xem tồn kho chi tiết biến thể"
+                                                    >
+                                                        <Layers className="h-3.5 w-3.5" />
+                                                    </button>
+
+                                                    {/* Chỉnh sửa */}
+                                                    <button
+                                                        onClick={() => { setSelectedProductId(product.id); openEditModal(); }}
+                                                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-blue-600 hover:bg-blue-50 transition-colors"
+                                                        title="Chỉnh sửa">
+                                                        <Settings className="h-3.5 w-3.5" />
+                                                    </button>
+
+                                                    {/* Xóa */}
+                                                    <button
+                                                        onClick={() => handleDeleteClick(product)}
+                                                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-red-600 hover:bg-red-50 transition-colors"
+                                                        title="Xóa sản phẩm">
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
-
                             </Table>
                         </div>
 
@@ -594,40 +504,35 @@ export default function ProductList() {
                 </Card>
             </div>
 
-            <AddProductModal
-                isOpen={isAddModalOpen}
-                onClose={handleCloseAddModal}
-                onSuccess={handleModalSuccess}
+            {/* ── Modals & Drawer ── */}
+            <AddProductModal isOpen={isAddModalOpen} onClose={closeAddModal} onSuccess={handleModalSuccess} />
+
+            <EditProductModal isOpen={isEditModalOpen}
+                              onClose={() => { setSelectedProductId(null); closeEditModal(); }}
+                              onSuccess={handleModalSuccess} productId={selectedProductId} />
+
+            <ProductModal isOpen={isViewModalOpen}
+                          onClose={() => { setSelectedProductId(null); closeViewModal(); }}
+                          onSuccess={handleModalSuccess} productId={selectedProductId} />
+
+            <ConfirmModal isOpen={isConfirmOpen} onClose={handleCancelDelete} onConfirm={handleConfirmDelete}
+                          title="Xác nhận xóa sản phẩm"
+                          description={productToDelete
+                              ? `Bạn có chắc chắn muốn xóa sản phẩm "${productToDelete.tenSanPham}"? Hành động này không thể hoàn tác.`
+                              : "Bạn có chắc chắn muốn xóa sản phẩm này?"}
+                          confirmText="Xóa" cancelText="Hủy" variant="danger" isLoading={isDeleting} />
+
+            {/* ── Inventory Drawer ── */}
+            <InventoryDrawer
+                isOpen={isInventoryOpen}
+                onClose={handleCloseInventory}
+                product={selectedInventoryProduct}
             />
 
-            <EditProductModal
-                isOpen={isEditModalOpen}
-                onClose={handleCloseEditModal}
-                onSuccess={handleModalSuccess}
-                productId={selectedProductId}
-            />
-
-            <ProductModal
-                isOpen={isViewModalOpen}
-                onClose={handleCloseViewModal}
-                onSuccess={handleModalSuccess}
-                productId={selectedProductId}
-            />
-
-            <ConfirmModal
-                isOpen={isConfirmOpen}
-                onClose={handleCancelDelete}
-                onConfirm={handleConfirmDelete}
-                title="Xác nhận xóa sản phẩm"
-                description={
-                    productToDelete
-                        ? `Bạn có chắc chắn muốn xóa sản phẩm "${productToDelete.tenSanPham}"? Hành động này không thể hoàn tác.`
-                        : "Bạn có chắc chắn muốn xóa sản phẩm này?"
-                }
-                confirmText="Xóa"
-                cancelText="Hủy"
-                variant="danger"
-                isLoading={isDeleting}
+            {/* ── Top Selling Modal ── */}
+            <TopSellingModal
+                isOpen={isTopSellingOpen}
+                onClose={() => setIsTopSellingOpen(false)}
             />
         </div>
     );

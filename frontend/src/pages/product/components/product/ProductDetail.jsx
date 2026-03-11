@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    Loader2, Package, ChevronRight, Info, Tag, Box, ArrowLeft
+    Loader2, Package, ChevronRight, Info, Tag, Box, ArrowLeft, ChevronLeft
 } from "lucide-react";
 import { toast } from "sonner";
 import { productService } from "@/services/productService.js";
@@ -18,6 +18,17 @@ export default function ProductDetail() {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const navigate = useNavigate();
+    const totalImages = product?.anhQuanAos?.length || 0;
+
+    useEffect(() => {
+        if (totalImages === 0) {
+            if (selectedImageIndex !== 0) setSelectedImageIndex(0);
+            return;
+        }
+        if (selectedImageIndex > totalImages - 1) {
+            setSelectedImageIndex(totalImages - 1);
+        }
+    }, [totalImages, selectedImageIndex]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -43,6 +54,12 @@ export default function ProductDetail() {
         };
         if (id) fetchData();
     }, [id]);
+
+    const handlePrevImage = () => setSelectedImageIndex((prev) => Math.max(prev - 1, 0));
+    const handleNextImage = () => setSelectedImageIndex((prev) => Math.min(prev + 1, totalImages - 1));
+    const showImageControls = totalImages > 1;
+    const canGoPrev = selectedImageIndex > 0;
+    const canGoNext = selectedImageIndex < totalImages - 1;
 
     const breadcrumbs = useMemo(() => {
         if (!product?.danhMuc || !allCategories || allCategories.length === 0) return [];
@@ -113,6 +130,26 @@ export default function ProductDetail() {
                                     <p className="text-gray-400">Ảnh sản phẩm chưa được cập nhật</p>
                                 </div>
                             )}
+                            {showImageControls && (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={handlePrevImage}
+                                        disabled={!canGoPrev}
+                                        className={`absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-sm bg-white/90 backdrop-blur border border-gray-100 transition-all duration-200 hover:shadow-md ${canGoPrev ? "hover:-translate-x-0.5" : "opacity-50 cursor-not-allowed"}`}
+                                    >
+                                        <ChevronLeft className="w-5 h-5 text-gray-700" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleNextImage}
+                                        disabled={!canGoNext}
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full shadow-sm bg-white/90 backdrop-blur border border-gray-100 transition-all duration-200 hover:shadow-md ${canGoNext ? "hover:translate-x-0.5" : "opacity-50 cursor-not-allowed"}`}
+                                    >
+                                        <ChevronRight className="w-5 h-5 text-gray-700" />
+                                    </button>
+                                </>
+                            )}
                         </div>
 
                         <div className="flex gap-4 overflow-x-auto py-2 scrollbar-hide">
@@ -137,13 +174,32 @@ export default function ProductDetail() {
                                     <Badge variant="secondary" className="px-3 py-1 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border-none">
                                         {product.danhMuc?.tenDanhMuc}
                                     </Badge>
-                                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${product.trangThai === 1
-                                        ? "bg-emerald-50 text-emerald-700"
-                                        : "bg-gray-100 text-gray-600"
-                                        }`}>
-                                        <div className={`w-1.5 h-1.5 rounded-full ${product.trangThai === 1 ? "bg-emerald-500" : "bg-gray-400"}`} />
-                                        {product.trangThai === 1 ? "Đang kinh doanh" : "Ngừng kinh doanh"}
-                                    </div>
+                                    {(() => {
+                                        const configs = {
+                                            1: {
+                                                label: "Còn hàng",
+                                                container: "bg-emerald-50 text-emerald-700",
+                                                dot: "bg-emerald-500"
+                                            },
+                                            0: {
+                                                label: "Hết hàng",
+                                                container: "bg-rose-50 text-rose-700",
+                                                dot: "bg-rose-500"
+                                            },
+                                            2: {
+                                                label: "Ngừng hoạt động",
+                                                container: "bg-gray-100 text-gray-600",
+                                                dot: "bg-gray-400"
+                                            }
+                                        };
+                                        const config = configs[product.trangThai] || configs[2];
+                                        return (
+                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config.container}`}>
+                                                <div className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+                                                {config.label}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
 
                                 <h1 className="text-4xl font-bold text-gray-900 leading-tight tracking-tight">
@@ -152,7 +208,7 @@ export default function ProductDetail() {
 
                                 <div className="flex items-center gap-2 text-gray-400">
                                     <Box className="w-4 h-4" />
-                                    <span className="text-sm font-medium tracking-wide">Mã sản phẩm: {id}</span>
+                                    <span className="text-sm font-medium tracking-wide">Mã sản phẩm: {product.maSanPham || id}</span>
                                 </div>
 
                                 <div className="flex items-baseline gap-4 pt-2">

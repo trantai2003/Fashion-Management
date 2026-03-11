@@ -6,8 +6,10 @@ import com.dev.backend.constant.enums.OtpType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.dto.OtpScheduleObj;
 import com.dev.backend.dto.request.*;
+import com.dev.backend.dto.response.CassoResponse;
 import com.dev.backend.dto.response.GiaoDichDto;
 import com.dev.backend.dto.response.ResponseData;
+import com.dev.backend.dto.response.TransactionCasso;
 import com.dev.backend.dto.response.entities.DonMuaHangDto;
 import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
 import com.dev.backend.entities.*;
@@ -15,6 +17,7 @@ import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.DonMuaHangMapper;
 import com.dev.backend.repository.DonMuaHangRepository;
 import com.dev.backend.services.CalcService;
+import com.dev.backend.services.CassoService;
 import com.dev.backend.services.EmailService;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
@@ -25,6 +28,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -51,6 +56,9 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
     private EmailService emailService;
     @Autowired
     private CalcService calcService;
+
+    @Autowired
+    private CassoService cassoService;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -216,6 +224,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         );
     }
 
+
     @Transactional
     public ResponseEntity<ResponseData<DonMuaHangDto>> confirmOtpForSupplier(OtpDonMuaHangConfirming confirming) {
         for (OtpScheduleObj otpScheduleObj : GlobalCache.OTP_SCHEDULE_OBJS) {
@@ -256,19 +265,14 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         for (int i = 0; i < l; i++) {
             chiTietDonMuaHangs.get(i).setDonGia(chiTietDonMuaHangBaoGias.get(i).getDonGia());
             // so sánh thành tiền
-            BigDecimal thanhTienTinToan = chiTietDonMuaHangs.get(i).getSoLuongDat().multiply(chiTietDonMuaHangs.get(i).getDonGia());
 
-            if (thanhTienTinToan.compareTo(chiTietDonMuaHangs.get(i).getThanhTien()) != 0) {
-                throw new CommonException("Thành tiền tại mặt hàng có lỗi tên :" + chiTietDonMuaHangs.get(i).getBienTheSanPham().getSanPham().getTenSanPham());
-            }
+            BigDecimal thanhTienTinToan = chiTietDonMuaHangs.get(i).getSoLuongDat().multiply(baoGia.getChiTietDonMuaHangBaoGias().get(i).getDonGia());
+
             chiTietDonMuaHangs.get(i).setThanhTien(thanhTienTinToan);
             chiTietDonMuaHangService.update(chiTietDonMuaHangs.get(i).getId(), chiTietDonMuaHangs.get(i));
             tongTienTinhToan = tongTienTinhToan.add(thanhTienTinToan);
         }
-
-        if(tongTienTinhToan.compareTo(donMuaHang.getTongTien()) != 0){
-            throw new CommonException("Tổng tìn tính toán sai");
-        }
+        donMuaHang.setTongTien(tongTienTinhToan);
         donMuaHang.setTrangThai(4);
         update(donMuaHang.getId(), donMuaHang);
 
@@ -283,19 +287,20 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
     }
 
+
     @Transactional
     public ResponseEntity<ResponseData<GiaoDichDto>> layGiaoDich(Integer id) {
 
 
         DonMuaHang donMuaHang = getOne(id).orElseThrow(
-                () -> new CommonException("Không tìm thấy đơn hàng id: "+id)
+                () -> new CommonException("Không tìm thấy đơn hàng id: " + id)
         );
 
-        if(donMuaHang.getTrangThai() < 4){
-            throw  new CommonException("Nhà cung cấp chưa xác nhận gửi hàng");
+        if (donMuaHang.getTrangThai() < 4) {
+            throw new CommonException("Nhà cung cấp chưa xác nhận gửi hàng");
         }
 
-        if(donMuaHang.getTrangThai() == 6){
+        if (donMuaHang.getTrangThai() == 6) {
             throw new CommonException("Đơn hàng đã được thành toán");
         }
         return ResponseEntity.ok(
@@ -304,7 +309,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                         .data(
                                 GiaoDichDto.builder()
                                         .soDonMua(donMuaHang.getSoDonMua())
-                                        .maGiaoDich("tran_"+ donMuaHang.getSoDonMua())
+                                        .maGiaoDich("tran" + donMuaHang.getSoDonMua())
                                         .nganHang(donMuaHang.getNhaCungCap().getNganHang())
                                         .soNganHang(donMuaHang.getNhaCungCap().getSoNganHang())
                                         .tenNhaCungCap(donMuaHang.getNhaCungCap().getTenNhaCungCap())
@@ -318,13 +323,28 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
     }
 
+    @Transactional
     public ResponseEntity<ResponseData<String>> kiemTraThanhToan(Integer id) {
-        //api kiểm tra thanh toán
-        String api = "sample";
         // logic kiểm tranh thanh toán
         boolean isSuccess = false;
         {
-            isSuccess = true;
+            DonMuaHang donMuaHang = getOne(id).orElseThrow(
+                    () -> new CommonException("Không tìm thấy đơn mua hàng id: " + id)
+            );
+            String tranCode = "tran" + donMuaHang.getSoDonMua();
+            BigDecimal tongTien = donMuaHang.getTongTien();
+            // lấy ngày tháng hiện tại dạng string 2026-03-09
+            LocalDate now = LocalDate.now();
+            String ngayThang = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            System.out.println(ngayThang);
+            CassoResponse cassoResponse = cassoService.getListTransactionCasso(ngayThang, 1, 20, null);
+
+            for (TransactionCasso tran : cassoResponse.getData().getRecords()) {
+                if (tran.getDescription().equals(tranCode) && Math.abs(Math.abs(tran.getAmount()) - Double.parseDouble(donMuaHang.getTongTien().toString())) < 0.1) {
+                    isSuccess = true;
+                    break;
+                }
+            }
         }
         if (!isSuccess) {
             throw new CommonException("Chưa thanh toán");
@@ -332,7 +352,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
-                        .data(api)
+                        .data("Succsess")
                         .message("Success")
                         .error(null)
                         .build()

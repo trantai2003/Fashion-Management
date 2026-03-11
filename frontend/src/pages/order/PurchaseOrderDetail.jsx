@@ -525,304 +525,301 @@ export default function PurchaseOrderDetail() {
                 </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column - Main Info */}
-                <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-6">
+                {/* Info Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {/* Order Info */}
-                    <Card className="border-0 shadow-md">
-                        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
-                            <CardTitle className="flex items-center gap-2">
+                    <Card className="border-0 shadow-md h-full flex flex-col">
+                        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b pb-4">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <FileText className="h-5 w-5 text-purple-600" />
                                 Thông tin đơn hàng
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6">
-                            <div className="grid grid-cols-2 gap-6">
+                        <CardContent className="p-5 flex-1 space-y-4">
+                            <div className="flex justify-between items-start">
                                 <div>
-                                    <p className="text-sm text-gray-500 mb-1">Số đơn mua</p>
-                                    <p className="font-semibold text-gray-900">{orderData.soDonMua}</p>
+                                    <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Số đơn mua</p>
+                                    <p className="font-bold text-gray-900">{orderData.soDonMua}</p>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1">Trạng thái</p>
-                                    <Badge variant="outline" className={`${statusConfig[orderData.trangThai]?.color} border`}>
-                                        {statusConfig[orderData.trangThai]?.label}
-                                    </Badge>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                                        <Calendar className="h-3.5 w-3.5" />
-                                        Ngày đặt hàng
-                                    </p>
-                                    <p className="font-semibold text-gray-900">{formatDateTime(orderData.ngayDatHang)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                                        <Calendar className="h-3.5 w-3.5" />
-                                        Ngày giao dự kiến
-                                    </p>
-                                    <p className="font-semibold text-gray-900">{formatDate(orderData.ngayGiaoDuKien)}</p>
-                                </div>
-                                <div className="col-span-2">
-                                    <p className="text-sm text-gray-500 mb-1">Ghi chú</p>
-                                    <p className="text-gray-900">{orderData.ghiChu || 'Không có ghi chú'}</p>
-                                </div>
+                                <Badge variant="outline" className={`${statusConfig[orderData.trangThai]?.color} border`}>
+                                    {statusConfig[orderData.trangThai]?.label}
+                                </Badge>
+                            </div>
+                            <Separator />
+                            <div>
+                                <p className="text-xs text-gray-500 mb-1 flex items-center gap-1 font-semibold uppercase">
+                                    <Calendar className="h-3.5 w-3.5" />
+                                    Ngày đặt hàng
+                                </p>
+                                <p className="font-medium text-gray-900">{formatDateTime(orderData.ngayDatHang)}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 mb-1 flex items-center gap-1 font-semibold uppercase">
+                                    <Calendar className="h-3.5 w-3.5" />
+                                    Ngày giao dự kiến
+                                </p>
+                                <p className="font-medium text-gray-900">{formatDate(orderData.ngayGiaoDuKien)}</p>
+                            </div>
+                            <Separator />
+                            <div>
+                                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Ghi chú</p>
+                                <p className="text-gray-900 text-sm whitespace-pre-wrap">{orderData.ghiChu || 'Không có ghi chú'}</p>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Product Details */}
-                    <Card className="border-0 shadow-md">
-                        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
-                            <CardTitle className="flex items-center gap-2">
-                                <ShoppingCart className="h-5 w-5 text-purple-600" />
-                                Chi tiết sản phẩm
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow className="bg-gray-50 hover:bg-gray-50">
-                                            <TableHead className="font-semibold">Sản phẩm</TableHead>
-                                            <TableHead className="font-semibold text-center">Màu sắc</TableHead>
-                                            <TableHead className="font-semibold text-center">Size</TableHead>
-                                            <TableHead className="font-semibold text-center">Chất liệu</TableHead>
-                                            <TableHead className="font-semibold text-right">
-                                                {orderData.trangThai >= 4 ? 'Đơn giá (NCC báo)' : 'Đơn giá dự kiến'}
-                                            </TableHead>
-                                            <TableHead className="font-semibold text-center">SL đặt</TableHead>
-                                            <TableHead className="font-semibold text-center">SL đã nhận</TableHead>
-                                            <TableHead className="font-semibold text-right">Thành tiền</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {orderData.chiTietDonMuaHangs && orderData.chiTietDonMuaHangs.length > 0 ? (
-                                            orderData.chiTietDonMuaHangs.map((item, index) => (
-                                                <TableRow key={item.id || index} className="hover:bg-purple-50/30">
-                                                    <TableCell>
-                                                        <div className="flex items-center gap-3">
-                                                            {item.bienTheSanPham?.anhBienThe?.tepTin?.duongDan && (
-                                                                <img
-                                                                    src={item.bienTheSanPham.anhBienThe.tepTin.duongDan}
-                                                                    alt="Product"
-                                                                    className="h-12 w-12 rounded object-cover"
-                                                                />
-                                                            )}
-                                                            <div>
-                                                                <p className="font-medium text-gray-900">
-                                                                    {item.bienTheSanPham?.maSku}
-                                                                </p>
-                                                                <p className="text-xs text-gray-500">
-                                                                    {item.bienTheSanPham?.maVachSku}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <div className="flex items-center justify-center gap-2">
-                                                            <div
-                                                                className="h-6 w-6 rounded-full border-2 border-gray-300"
-                                                                style={{ backgroundColor: item.bienTheSanPham?.mauSac?.maMauHex }}
-                                                            />
-                                                            <span className="text-sm">{item.bienTheSanPham?.mauSac?.tenMau}</span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Badge variant="outline" className="bg-gray-50">
-                                                            {item.bienTheSanPham?.size?.maSize}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-center text-sm">
-                                                        {item.bienTheSanPham?.chatLieu?.tenChatLieu}
-                                                    </TableCell>
-                                                    <TableCell className="text-right font-medium">
-                                                        {item.donGia > 0 ? (
-                                                            <span className={orderData.trangThai >= 4 ? "text-green-600 font-bold" : ""}>
-                                                                {formatCurrency(item.donGia)}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-gray-400 italic text-xs">Chưa báo giá</span>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                                            {item.soLuongDat}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                                            {item.soLuongDaNhan || 0}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-right font-semibold text-purple-600">
-                                                        {item.thanhTien > 0 ? formatCurrency(item.thanhTien) : '-'}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                                                    Chưa có sản phẩm
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-
-                            {/* Summary */}
-                            <div className="border-t bg-gray-50 p-6">
-                                <div className="flex justify-end">
-                                    <div className="w-80 space-y-3">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Tổng số lượng:</span>
-                                            <span className="font-semibold">
-                                                {orderData.chiTietDonMuaHangs?.reduce((sum, item) => sum + item.soLuongDat, 0) || 0}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Đã nhận:</span>
-                                            <span className="font-semibold text-green-600">
-                                                {orderData.chiTietDonMuaHangs?.reduce((sum, item) => sum + (item.soLuongDaNhan || 0), 0) || 0}
-                                            </span>
-                                        </div>
-                                        <Separator />
-                                        <div className="flex justify-between text-lg">
-                                            <span className="font-semibold text-gray-900">Tổng tiền:</span>
-                                            <span className="font-bold text-purple-600">
-                                                {formatCurrency(orderData.tongTien)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Right Column - Additional Info */}
-                <div className="space-y-6">
                     {/* Supplier Info */}
-                    <Card className="border-0 shadow-md">
-                        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
-                            <CardTitle className="flex items-center gap-2">
+                    <Card className="border-0 shadow-md h-full flex flex-col">
+                        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b pb-4">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <Building2 className="h-5 w-5 text-purple-600" />
                                 Nhà cung cấp
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6 space-y-4">
+                        <CardContent className="p-5 flex-1 space-y-4">
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Tên nhà cung cấp</p>
+                                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Tên nhà cung cấp</p>
                                 <p className="font-semibold text-gray-900">{orderData.nhaCungCap?.tenNhaCungCap}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Mã NCC</p>
+                                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Mã NCC</p>
                                 <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
                                     {orderData.nhaCungCap?.maNhaCungCap}
                                 </Badge>
                             </div>
                             <Separator />
                             <div>
-                                <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
+                                <p className="text-xs text-gray-500 mb-1 flex items-center gap-1 font-semibold uppercase">
                                     <User className="h-3.5 w-3.5" />
                                     Người liên hệ
                                 </p>
-                                <p className="text-gray-900">{orderData.nhaCungCap?.nguoiLienHe}</p>
+                                <p className="font-medium text-gray-900">{orderData.nhaCungCap?.nguoiLienHe}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
+                                <p className="text-xs text-gray-500 mb-1 flex items-center gap-1 font-semibold uppercase">
                                     <Phone className="h-3.5 w-3.5" />
                                     Số điện thoại
                                 </p>
-                                <p className="text-gray-900">{orderData.nhaCungCap?.soDienThoai}</p>
+                                <p className="font-medium text-gray-900">{orderData.nhaCungCap?.soDienThoai}</p>
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
+                            <div className="truncate" title={orderData.nhaCungCap?.email}>
+                                <p className="text-xs text-gray-500 mb-1 flex items-center gap-1 font-semibold uppercase">
                                     <Mail className="h-3.5 w-3.5" />
                                     Email
                                 </p>
-                                <p className="text-gray-900 text-sm">{orderData.nhaCungCap?.email}</p>
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
-                                    <MapPin className="h-3.5 w-3.5" />
-                                    Địa chỉ
-                                </p>
-                                <p className="text-gray-900 text-sm">{orderData.nhaCungCap?.diaChi}</p>
+                                <p className="font-medium text-gray-900 truncate text-sm">{orderData.nhaCungCap?.email}</p>
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Warehouse Info */}
-                    <Card className="border-0 shadow-md">
-                        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
-                            <CardTitle className="flex items-center gap-2">
+                    <Card className="border-0 shadow-md h-full flex flex-col">
+                        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b pb-4">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <Warehouse className="h-5 w-5 text-purple-600" />
                                 Kho nhập hàng
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6 space-y-4">
+                        <CardContent className="p-5 flex-1 space-y-4">
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Tên kho</p>
+                                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Tên kho</p>
                                 <p className="font-semibold text-gray-900">{orderData.khoNhap?.tenKho}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Mã kho</p>
+                                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Mã kho</p>
                                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                                     {orderData.khoNhap?.maKho}
                                 </Badge>
                             </div>
                             <Separator />
                             <div>
-                                <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
+                                <p className="text-xs text-gray-500 mb-1 flex items-center gap-1 font-semibold uppercase">
                                     <User className="h-3.5 w-3.5" />
                                     Quản lý kho
                                 </p>
-                                <p className="text-gray-900">{orderData.khoNhap?.quanLy?.hoTen}</p>
+                                <p className="font-medium text-gray-900">{orderData.khoNhap?.quanLy?.hoTen}</p>
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-500 mb-1 flex items-center gap-1">
+                            <div title={orderData.khoNhap?.diaChi}>
+                                <p className="text-xs text-gray-500 mb-1 flex items-center gap-1 font-semibold uppercase">
                                     <MapPin className="h-3.5 w-3.5" />
                                     Địa chỉ kho
                                 </p>
-                                <p className="text-gray-900 text-sm">{orderData.khoNhap?.diaChi}</p>
+                                <p className="font-medium text-gray-900 text-sm line-clamp-2">{orderData.khoNhap?.diaChi}</p>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* User Info */}
-                    <Card className="border-0 shadow-md">
-                        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b">
-                            <CardTitle className="flex items-center gap-2">
+                    {/* Processing Info */}
+                    <Card className="border-0 shadow-md h-full flex flex-col">
+                        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b pb-4">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <User className="h-5 w-5 text-purple-600" />
                                 Thông tin xử lý
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6 space-y-4">
+                        <CardContent className="p-5 flex-1 space-y-4">
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Người tạo</p>
+                                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Người tạo</p>
                                 <p className="font-semibold text-gray-900">{orderData.nguoiTao?.hoTen}</p>
-                                <p className="text-xs text-gray-500">{orderData.nguoiTao?.email}</p>
+                                <p className="text-xs text-gray-500 truncate" title={orderData.nguoiTao?.email}>{orderData.nguoiTao?.email}</p>
                             </div>
                             {orderData.nguoiDuyet && (
                                 <div>
-                                    <p className="text-sm text-gray-500 mb-1">Người duyệt</p>
+                                    <p className="text-xs text-gray-500 mb-1 mt-2 font-semibold uppercase">Người duyệt</p>
                                     <p className="font-semibold text-gray-900">{orderData.nguoiDuyet?.hoTen}</p>
-                                    <p className="text-xs text-gray-500">{orderData.nguoiDuyet?.email}</p>
+                                    <p className="text-xs text-gray-500 truncate" title={orderData.nguoiDuyet?.email}>{orderData.nguoiDuyet?.email}</p>
                                 </div>
                             )}
                             <Separator />
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Ngày tạo</p>
-                                <p className="text-gray-900 text-sm">{formatDateTime(orderData.ngayTao)}</p>
+                                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Ngày tạo</p>
+                                <p className="font-medium text-gray-900 text-sm">{formatDateTime(orderData.ngayTao)}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Cập nhật lần cuối</p>
-                                <p className="text-gray-900 text-sm">{formatDateTime(orderData.ngayCapNhat)}</p>
+                                <p className="text-xs text-gray-500 mb-1 font-semibold uppercase">Cập nhật lần cuối</p>
+                                <p className="font-medium text-gray-900 text-sm">{formatDateTime(orderData.ngayCapNhat)}</p>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Main Product Table - Full Width Below */}
+                <Card className="border-0 shadow-md">
+                    <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 border-b pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                            <ShoppingCart className="h-5 w-5 text-purple-600" />
+                            Danh sách sản phẩm
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-gray-50 hover:bg-gray-50 border-b border-gray-200">
+                                        <TableHead className="font-semibold text-gray-700">Sản phẩm</TableHead>
+                                        <TableHead className="font-semibold text-center text-gray-700">Màu sắc</TableHead>
+                                        <TableHead className="font-semibold text-center text-gray-700">Size</TableHead>
+                                        <TableHead className="font-semibold text-center text-gray-700">Chất liệu</TableHead>
+                                        <TableHead className="font-semibold text-right text-gray-700">
+                                            {orderData.trangThai >= 4 ? 'Đơn giá (NCC báo)' : 'Đơn giá dự kiến'}
+                                        </TableHead>
+                                        <TableHead className="font-semibold text-center text-gray-700">SL đặt</TableHead>
+                                        <TableHead className="font-semibold text-center text-gray-700">SL đã nhận</TableHead>
+                                        <TableHead className="font-semibold text-right text-gray-700 w-[150px]">Thành tiền</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {orderData.chiTietDonMuaHangs && orderData.chiTietDonMuaHangs.length > 0 ? (
+                                        orderData.chiTietDonMuaHangs.map((item, index) => (
+                                            <TableRow key={item.id || index} className="hover:bg-purple-50/40 border-b border-gray-100 transition-colors">
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        {item.bienTheSanPham?.anhBienThe?.tepTin?.duongDan ? (
+                                                            <img
+                                                                src={item.bienTheSanPham.anhBienThe.tepTin.duongDan}
+                                                                alt="Product"
+                                                                className="h-12 w-12 rounded object-cover shadow-sm border border-gray-100"
+                                                            />
+                                                        ) : (
+                                                            <div className="h-12 w-12 rounded bg-gray-100 flex items-center justify-center border border-gray-200">
+                                                                <Package className="h-6 w-6 text-gray-300" />
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <p className="font-bold text-gray-900 tracking-tight">
+                                                                {item.bienTheSanPham?.maSku}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 font-medium tracking-wide">
+                                                                Mã Vạch: {item.bienTheSanPham?.maVachSku}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <div
+                                                            className="h-5 w-5 rounded-full border border-gray-300 shadow-sm"
+                                                            style={{ backgroundColor: item.bienTheSanPham?.mauSac?.maMauHex }}
+                                                            title={item.bienTheSanPham?.mauSac?.tenMau}
+                                                        />
+                                                        <span className="text-sm font-medium">{item.bienTheSanPham?.mauSac?.tenMau}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant="outline" className="bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-gray-200">
+                                                        {item.bienTheSanPham?.size?.maSize}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-center text-sm font-medium text-gray-600">
+                                                    {item.bienTheSanPham?.chatLieu?.tenChatLieu}
+                                                </TableCell>
+                                                <TableCell className="text-right font-medium">
+                                                    {item.donGia > 0 ? (
+                                                        <span className={orderData.trangThai >= 4 ? "text-green-600 font-bold" : "text-gray-900"}>
+                                                            {formatCurrency(item.donGia)}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400 italic text-xs bg-gray-50 px-2 py-1 rounded">Chưa báo giá</span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-bold px-2 py-0.5">
+                                                        {item.soLuongDat}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-bold px-2 py-0.5">
+                                                        {item.soLuongDaNhan || 0}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right font-bold text-purple-700 text-base">
+                                                    {item.thanhTien > 0 ? formatCurrency(item.thanhTien) : '-'}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="text-center py-12 text-gray-500">
+                                                <div className="flex flex-col items-center justify-center gap-2">
+                                                    <Package className="h-10 w-10 text-gray-300" />
+                                                    <p className="font-medium">Chưa có sản phẩm nào được thiết lập</p>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Summary Block */}
+                        <div className="bg-gradient-to-b from-gray-50 to-white p-6 border-t border-gray-200 rounded-b-xl">
+                            <div className="flex justify-end">
+                                <div className="w-80 space-y-4">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600 font-medium">Tổng số lượng đặt:</span>
+                                        <span className="font-bold text-gray-900 text-base border border-gray-200 bg-white px-3 py-1 rounded-md shadow-sm">
+                                            {orderData.chiTietDonMuaHangs?.reduce((sum, item) => sum + item.soLuongDat, 0) || 0}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600 font-medium">Tổng số lượng đã nhận:</span>
+                                        <span className="font-bold text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-md shadow-sm">
+                                            {orderData.chiTietDonMuaHangs?.reduce((sum, item) => sum + (item.soLuongDaNhan || 0), 0) || 0}
+                                        </span>
+                                    </div>
+                                    <Separator className="my-2 bg-gray-200" />
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-bold text-gray-900 text-lg uppercase tracking-tight">Tổng Thành Tiền</span>
+                                        <span className="font-black text-2xl text-purple-700 bg-purple-50 px-4 py-2 rounded-lg border border-purple-200 shadow-sm">
+                                            {formatCurrency(orderData.tongTien)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Approve Dialog */}

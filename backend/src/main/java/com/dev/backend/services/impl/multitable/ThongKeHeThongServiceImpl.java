@@ -28,4 +28,15 @@ public class ThongKeHeThongServiceImpl implements ThongKeHeThongService {
                         .build()
         );
     }
+
+    @Override
+    public ResponseEntity<ResponseData<List<TonKhoChiTietDTO>>> findTonKhoChiTietByBienThe(Integer bienTheId) {
+        return ResponseEntity.ok(
+                ResponseData.<List<TonKhoChiTietDTO>>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(tonKhoTheoLoService.findTonKhoChiTietByBienThe(bienTheId))
+                        .message("Success")
+                        .build()
+        );
+    }
 }

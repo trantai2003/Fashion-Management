@@ -22,8 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> {
@@ -58,6 +60,9 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     protected EntityManager getEntityManager() {
         return entityManager;
     }
+
+    @Autowired
+    private SanPhamQuanAoService sanPhamQuanAoService;
 
     public PhieuXuatKhoService(PhieuXuatKhoRepository repository) {
         super(repository);
@@ -234,6 +239,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository.findAll().stream()
                 .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
                 .toList();
+        Set<Integer> sanPhamIdsCanCapNhat = new HashSet<>();
 
         for (ChiTietPhieuXuatKho pick : detailedPicks) {
             TonKhoTheoLo tonKho = tonKhoTheoLoRepository
@@ -272,12 +278,17 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 updateSoLuongDaGiao(phieu.getDonBanHang().getId(), pick.getBienTheSanPham().getId(), soLuongXuat);
                 updateTrangThaiDonBanHang(phieu.getDonBanHang().getId());
             }
+            sanPhamIdsCanCapNhat.add(pick.getBienTheSanPham().getSanPham().getId());
         }
 
         phieu.setTrangThai(3); // Đã xuất (Completed)
         phieu.setNguoiXuat(nguoiXuat);
         phieu.setNgayXuat(Instant.now());
         repository.save(phieu);
+        entityManager.flush();
+        for (Integer spId : sanPhamIdsCanCapNhat) {
+            sanPhamQuanAoService.recalculatePriceAndStatus(spId);
+        }
     }
 
     private void updateTrangThaiDonBanHang(Integer donBanHangId) {
@@ -681,6 +692,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         if (detailedPicks.isEmpty()) {
             throw new RuntimeException("Phiếu chưa được pick lô hàng cụ thể, không thể xuất kho");
         }
+        Set<Integer> sanPhamIdsCanCapNhat = new HashSet<>();
 
         for (ChiTietPhieuXuatKho pick : detailedPicks) {
             BigDecimal qty = pick.getSoLuongXuat();
@@ -711,6 +723,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             // C. GHI LỊCH SỬ GIAO DỊCH (2 dòng: Xuất A và Nhập Transit)
             saveHistory(phieu, pick, phieu.getKho(), "xuat_kho", "Xuất chuyển kho: " + phieu.getSoPhieuXuat(), nguoiXuat, tonTruocA, tonA.getSoLuongTon());
             saveHistory(phieu, pick, khoTransit, "nhap_kho", "Hàng đang đi đường: " + phieu.getSoPhieuXuat(), nguoiXuat, tonTruocTransit, tonTransit.getSoLuongTon());
+            sanPhamIdsCanCapNhat.add(pick.getBienTheSanPham().getSanPham().getId());
         }
 
         // TỰ ĐỘNG SINH PHIẾU NHẬP KHO CHO KHO B
@@ -721,6 +734,10 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         phieu.setNgayXuat(Instant.now());
         phieu.setNguoiXuat(nguoiXuat);
         repository.save(phieu);
+        entityManager.flush();
+        for (Integer spId : sanPhamIdsCanCapNhat) {
+            sanPhamQuanAoService.recalculatePriceAndStatus(spId);
+        }
     }
 
     private String generateSoPhieuNhapTransfer() {

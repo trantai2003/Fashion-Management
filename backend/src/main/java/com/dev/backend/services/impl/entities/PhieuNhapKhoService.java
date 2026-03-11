@@ -2,6 +2,7 @@ package com.dev.backend.services.impl.entities;
 
 import com.dev.backend.config.SecurityContextHolder;
 import com.dev.backend.constant.enums.TrangThaiPhieuNhap;
+import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.dto.request.ChiTietPhieuNhapKhoCreating;
 import com.dev.backend.dto.request.KhaiBaoLoRequest;
 import com.dev.backend.dto.request.PhieuNhapKhoCreating;
@@ -50,6 +51,9 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     @Autowired
     private PhieuXuatKhoRepository phieuXuatKhoRepository;
 
+    @Autowired
+    private SanPhamQuanAoService sanPhamQuanAoService;
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -68,23 +72,29 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
 
         DonMuaHang donMuaHang = donMuaHangRepository.findById(request.getDonMuaHangId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy PO"));
-        Integer currentKhoId = SecurityContextHolder.getKhoId();
-
-        if (currentKhoId == null) {
-            throw new RuntimeException("Không xác định được kho hiện tại");
+        if (donMuaHang.getTrangThai() == null || donMuaHang.getTrangThai() != 4) {
+            throw new RuntimeException("Chỉ được tạo phiếu nhập cho đơn mua hàng ở trạng thái 4");
         }
+        var currentUser = SecurityContextHolder.getUser();
+        boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
+        Integer currentKhoId = SecurityContextHolder.getKhoId();
+        if (!isAdmin) {
+            if (currentKhoId == null) {
+                throw new RuntimeException("Không xác định được kho hiện tại");
+            }
 
-        if (donMuaHang.getKhoNhap() == null
-                || !donMuaHang.getKhoNhap().getId().equals(currentKhoId)) {
+            if (donMuaHang.getKhoNhap() == null
+                    || !donMuaHang.getKhoNhap().getId().equals(currentKhoId)) {
 
-            throw new RuntimeException(
-                    "PO không thuộc kho hiện tại. " +
-                            "Kho PO: " +
-                            (donMuaHang.getKhoNhap() != null
-                                    ? donMuaHang.getKhoNhap().getId()
-                                    : "null") +
-                            " | Kho hiện tại: " + currentKhoId
-            );
+                throw new RuntimeException(
+                        "PO không thuộc kho hiện tại. " +
+                                "Kho PO: " +
+                                (donMuaHang.getKhoNhap() != null
+                                        ? donMuaHang.getKhoNhap().getId()
+                                        : "null") +
+                                " | Kho hiện tại: " + currentKhoId
+                );
+            }
         }
 
         int retry = 0;
@@ -215,6 +225,9 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         BigDecimal tongTien = BigDecimal.ZERO;
         DonMuaHang donMuaHang = phieu.getDonMuaHang();
 
+        // Khởi tạo Set để lưu các ID Sản phẩm cha cần cập nhật giá
+        Set<Integer> sanPhamIdsCanCapNhat = new HashSet<>();
+
         for (ChiTietPhieuNhapKho ct : danhSachNhapTheoLo) {
             LoHang loHang = ct.getLoHang();
             BigDecimal soLuongNhap = ct.getSoLuongNhap();
@@ -260,7 +273,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                     .ghiChu("Nhập kho từ phiếu: " + phieu.getSoPhieuNhap())
                     .build();
             lichSuGiaoDichKhoRepository.save(history);
-
+            sanPhamIdsCanCapNhat.add(ct.getBienTheSanPham().getSanPham().getId());
             // Cộng tổng tiền cho phiếu
             tongTien = tongTien.add(soLuongNhap.multiply(ct.getDonGia()));
         }
@@ -271,6 +284,10 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         phieu.setNgayNhap(Instant.now());
         repository.save(phieu);
         donMuaHangRepository.save(donMuaHang);
+        entityManager.flush();
+        for (Integer spId : sanPhamIdsCanCapNhat) {
+            sanPhamQuanAoService.recalculatePriceAndStatus(spId);
+        }
     }
 
     @Transactional
@@ -504,7 +521,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
 
         //Xử lý dịch chuyển tồn kho: KHO_TRANSIT -> KHO_DICH
         List<ChiTietPhieuNhapKho> details = chiTietPhieuNhapKhoRepository.findAllByPhieuNhapKhoIdAndCoLo(phieuNhapId);
-
+        Set<Integer> sanPhamIdsCanCapNhat = new HashSet<>();
         for (ChiTietPhieuNhapKho ct : details) {
             BigDecimal qty = ct.getSoLuongNhap();
             LoHang lo = ct.getLoHang();
@@ -549,6 +566,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                     .ghiChu(loaiGiaoDichNote + phieuXuatGoc.getSoPhieuXuat())
                     .build();
             lichSuGiaoDichKhoRepository.save(history);
+            sanPhamIdsCanCapNhat.add(ct.getBienTheSanPham().getSanPham().getId());
         }
 
         //Cập nhật trạng thái kết thúc
@@ -562,6 +580,10 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         if (!ghiChu.contains("hoàn trả")) {
             phieuXuatGoc.setTrangThai(5); // Hoàn tất quy trình chuyển kho
             phieuXuatKhoRepository.save(phieuXuatGoc);
+        }
+        entityManager.flush();
+        for (Integer spId : sanPhamIdsCanCapNhat) {
+            sanPhamQuanAoService.recalculatePriceAndStatus(spId);
         }
     }
 }
