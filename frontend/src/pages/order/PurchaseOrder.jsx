@@ -515,7 +515,7 @@ export default function PurchaseOrderList() {
                         e.stopPropagation();
                         handleViewDetail(order.id);
                     }} className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                        <Eye className="h-4 w-4 mr-2 text-indigo-600" />
+                        <Eye className="h-4 w-4 mr-2 text-purple-600" />
                         Xem chi tiết
                     </DropdownMenuItem>
 
@@ -591,14 +591,14 @@ export default function PurchaseOrderList() {
                 <div className="flex gap-2">
                     <Button
                         variant="outline"
-                        className="gap-2 hover:bg-white transition-all duration-200"
+                        className="flex items-center gap-2 transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
                         onClick={() => fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize)}
                     >
                         <RefreshCw className="h-4 w-4" />
                         Làm mới
                     </Button>
                     <Button
-                        className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg shadow-indigo-200 transition-all duration-200"
+                        className="bg-purple-600 text-white hover:bg-purple-700 shadow-sm gap-2 transition-all duration-200"
                         onClick={() => navigate('/purchase-orders/create')}
                     >
                         <Plus className="h-4 w-4" />
@@ -896,7 +896,7 @@ export default function PurchaseOrderList() {
                     <div className="flex gap-2 mt-6">
                         <Button
                             onClick={handleSearch}
-                            className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-md"
+                            className="bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
                         >
                             <Search className="h-4 w-4 mr-2" />
                             Tìm kiếm
@@ -904,7 +904,7 @@ export default function PurchaseOrderList() {
                         <Button
                             variant="outline"
                             onClick={handleResetFilters}
-                            className="border-gray-200 hover:bg-gray-50"
+                            className="flex items-center gap-2 transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
                         >
                             Đặt lại
                         </Button>
@@ -1120,7 +1120,7 @@ export default function PurchaseOrderList() {
                                             onClick={() => handlePageChange(pageNum)}
                                             className={
                                                 pagination.pageNumber === pageNum
-                                                    ? "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+                                                    ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
                                                     : "border-gray-200"
                                             }
                                         >
