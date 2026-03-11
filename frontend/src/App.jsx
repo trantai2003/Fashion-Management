@@ -61,6 +61,7 @@ import BaoCaoDoanhThu from "./pages/bao-cao/BaoCaoDoanhThu";
 import KhachHangReport from "./pages/bao-cao/KhachHangReport";
 import NhatKyNhapXuat from "./pages/bao-cao/NhatKyNhapXuat";
 import PhieuNhapKhoPrint from "./pages/receipt/PhieuNhapKhoPrint";
+import PhieuXuatKhoPrint from "./pages/issue/PhieuXuatKhoPrint";
 
 export default function App() {
   return (
@@ -149,6 +150,7 @@ export default function App() {
           <Route path="/goods-issues/create" element={<PhieuXuatKhoCreate />} />
           <Route path="/goods-issues/:id" element={<PhieuXuatKhoDetail />} />
           <Route path="/goods-issues/:phieuXuatKhoId/pick-lot/:chiTietPhieuXuatKhoId" element={<PickLot />} />
+          <Route path="/goods-issues/:id/print" element={<PhieuXuatKhoPrint />} />
           <Route path="/goods-issues/:id/view" element={<PhieuXuatKhoView />} />
 
           {/* Sales-orders */}

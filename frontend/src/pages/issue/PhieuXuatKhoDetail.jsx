@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
-import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService"; 
+import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { toast } from "sonner";
 
 // Giữ nguyên bộ STATUS_MAP từ snippet mới nhất của bạn
@@ -136,8 +136,23 @@ export default function PhieuXuatKhoDetail() {
                             </button>
                         )}
 
+                        {/* NÚT IN PHIẾU */}
+                        {phieu.trangThai !== 4 && (
+                            <button
+                                onClick={() => navigate(`/goods-issues/${phieu.id}/print`)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm transition-all active:scale-95"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                In phiếu
+                            </button>
+                        )}
+
                         {/*Nút Hoàn thành/Vận chuyển: Trạng thái 2 */}
-                        {((!isChuyenKho && phieu.trangThai === 0) || (isChuyenKho && phieu.trangThai === 2))&& (
+                        {((!isChuyenKho && phieu.trangThai === 0) || (isChuyenKho && phieu.trangThai === 2)) && (
                             <button
                                 disabled={isProcessing || !isAllPicked}
                                 onClick={() => setShowConfirm(true)}
@@ -161,12 +176,12 @@ export default function PhieuXuatKhoDetail() {
                         </h2>
                         <div className="grid md:grid-cols-3 gap-6 text-sm">
                             <Info label="Số phiếu" value={phieu.soPhieuXuat} />
-                            
+
                             <Info
                                 label="Loại xuất"
                                 value={isChuyenKho ? "Chuyển kho nội bộ" : "Xuất bán hàng"}
                             />
-                            
+
                             {isChuyenKho ? (
                                 <Info label="Kho chuyển đến" value={phieu.khoChuyenDen?.tenKho} />
                             ) : (
@@ -174,7 +189,7 @@ export default function PhieuXuatKhoDetail() {
                             )}
 
                             <Info label="Kho xuất hàng" value={phieu.kho?.tenKho} />
-                            
+
                             <Info
                                 label="Ngày tạo phiếu"
                                 value={new Date(phieu.ngayTao).toLocaleDateString("vi-VN")}
@@ -184,12 +199,12 @@ export default function PhieuXuatKhoDetail() {
                                 label="Ngày xuất"
                                 value={phieu.ngayXuat ? new Date(phieu.ngayXuat).toLocaleDateString("vi-VN") : "Chưa xuất kho"}
                             />
-                            
+
                             <Info
                                 label="Người xuất"
                                 value={phieu.nguoiXuat?.hoTen || "---"}
                             />
-                            
+
                             {phieu.ghiChu && (
                                 <div className="md:col-span-3">
                                     <Info label="Ghi chú" value={phieu.ghiChu} />
@@ -208,7 +223,7 @@ export default function PhieuXuatKhoDetail() {
                                 </span>
                             )}
                         </div>
-                        
+
                         <table className="w-full text-sm">
                             <thead className="bg-gray-50 text-xs text-gray-500 font-medium">
                                 <tr>
@@ -219,7 +234,7 @@ export default function PhieuXuatKhoDetail() {
                                     <th className="px-4 py-3 text-center">Hành động</th>
                                 </tr>
                             </thead>
-                            
+
                             <tbody className="divide-y divide-gray-100">
                                 {chiTiet.map((ct) => {
                                     // LOGIC QUAN TRỌNG: Rẽ nhánh hiển thị nút Pick Lô
@@ -232,17 +247,17 @@ export default function PhieuXuatKhoDetail() {
                                                 <div className="font-bold text-gray-800">{ct.sku}</div>
                                                 <div className="text-[11px] text-gray-500">{ct.tenBienThe}</div>
                                             </td>
-                                            
+
                                             <td className="px-4 py-3 text-center font-semibold text-gray-700">
                                                 {ct.soLuongCanXuat}
                                             </td>
-                                            
+
                                             <td className="px-4 py-3 text-center">
                                                 <span className={ct.duSoLuong ? "text-green-600 font-bold" : "text-amber-600 font-bold"}>
                                                     {ct.soLuongDaPick} / {ct.soLuongCanXuat}
                                                 </span>
                                             </td>
-                                            
+
                                             <td className="px-4 py-3 text-center">
                                                 {ct.duSoLuong ? (
                                                     <span className="px-2 py-1 text-[10px] rounded bg-green-50 text-green-700 font-bold">Đủ hàng</span>
@@ -250,7 +265,7 @@ export default function PhieuXuatKhoDetail() {
                                                     <span className="px-2 py-1 text-[10px] rounded bg-red-50 text-red-700 font-bold">Chưa đủ</span>
                                                 )}
                                             </td>
-                                            
+
                                             <td className="px-4 py-3 text-center">
                                                 <button
                                                     onClick={() =>
@@ -270,8 +285,8 @@ export default function PhieuXuatKhoDetail() {
                                                         )
                                                     }
                                                     className={`px-3 py-1.5 text-[11px] font-bold rounded-md shadow-sm transition-all
-                                                        ${canEditLot 
-                                                            ? "bg-purple-600 text-white hover:bg-purple-700" 
+                                                        ${canEditLot
+                                                            ? "bg-purple-600 text-white hover:bg-purple-700"
                                                             : "bg-blue-600 text-white hover:bg-blue-700"}`}
                                                 >
                                                     {canEditLot ? "Pick lot →" : "Xem lô →"}
@@ -293,7 +308,7 @@ export default function PhieuXuatKhoDetail() {
                                 {isChuyenKho ? "Xác nhận vận chuyển" : "Xác nhận xuất kho"}
                             </h2>
                             <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                                {isChuyenKho 
+                                {isChuyenKho
                                     ? `Hàng hóa trong phiếu ${phieu.soPhieuXuat} sẽ được trừ tồn tại kho hiện tại và đưa vào kho Trung Chuyển để bắt đầu vận chuyển.`
                                     : `Phiếu xuất kho ${phieu.soPhieuXuat} sẽ được hoàn thành và trừ tồn kho thực tế của các lô đã chọn.`}
                             </p>
@@ -342,7 +357,7 @@ export default function PhieuXuatKhoDetail() {
                                             } else {
                                                 await phieuXuatKhoService.cancel(phieu.id);
                                             }
-                                            
+
                                             toast.success("Đã huỷ phiếu xuất thành công");
                                             navigate("/goods-issues");
                                         } catch (e) {

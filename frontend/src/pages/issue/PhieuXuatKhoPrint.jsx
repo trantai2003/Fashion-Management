@@ -1,71 +1,82 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
+import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { toast } from "sonner";
 
-export default function PhieuNhapKhoPrint() {
-
+export default function PhieuXuatKhoPrint() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [allLots, setAllLots] = useState({});
+  const [pickedLotsMap, setPickedLotsMap] = useState({});
+  // State mới để tra cứu tên lô từ ID
+  const [lotMasterMap, setLotMasterMap] = useState({});
 
   useEffect(() => {
     fetchFullData();
   }, [id]);
 
   async function fetchFullData() {
-
     setLoading(true);
-
     try {
+      // 1. Lấy chi tiết phiếu xuất
+      const res = await phieuXuatKhoService.getDetail(id);
+      const detailData = res?.data || res;
+      setData(detailData);
 
-      const resDetail = await phieuNhapKhoService.getDetail(id);
+      if (detailData?.chiTiet) {
+        // 2. Gọi song song: Lấy Lô đã pick VÀ Lô khả dụng (để lấy tên maLo)
+        const pickPromises = detailData.chiTiet.map(item =>
+          phieuXuatKhoService.getPickedLots(id, item.id)
+        );
 
-      setData(resDetail);
+        const availPromises = detailData.chiTiet.map(item =>
+          phieuXuatKhoService.getAvailableLots(id, item.bienTheSanPhamId)
+        );
 
-      const lotPromises = resDetail.items.map(item =>
-        phieuNhapKhoService.getLotInput(id, item.bienTheSanPhamId)
-      );
+        const pickResults = await Promise.all(pickPromises);
+        const availResults = await Promise.all(availPromises);
 
-      const lotResults = await Promise.all(lotPromises);
+        // 3. Xây dựng Danh bạ Lô hàng (Master Map) để tra cứu maLo từ ID
+        const masterMap = {};
+        availResults
+          .flat()
+          .filter(Boolean)
+          .forEach(lot => {
+            if (lot.loHangId) {
+              masterMap[lot.loHangId] = lot;
+            }
+          });
+        setLotMasterMap(masterMap);
 
-      const lotMap = {};
-
-      resDetail.items.forEach((item, index) => {
-        lotMap[item.bienTheSanPhamId] = lotResults[index].data || [];
-      });
-
-      setAllLots(lotMap);
-
+        // 4. Map kết quả pick vào từng chi tiết sản phẩm
+        const lotMap = {};
+        detailData.chiTiet.forEach((item, index) => {
+          const res = pickResults[index];
+          lotMap[item.id] = Array.isArray(res?.data)
+            ? res.data
+            : Array.isArray(res)
+              ? res
+              : [];
+        });
+        setPickedLotsMap(lotMap);
+      }
     } catch (e) {
-
-      console.error(e);
+      console.error("Lỗi fetch:", e);
       toast.error("Không thể tải dữ liệu in");
-
     } finally {
-
       setLoading(false);
-
     }
   }
 
   if (loading || !data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500 text-lg font-semibold">
-        Đang chuẩn bị bản in...
-      </div>
-    );
+    return <div className="p-10 text-center font-medium">Đang chuẩn bị bản in phiếu xuất...</div>;
   }
 
-  const isInternal = data.soPhieuNhap?.startsWith("PN-TRF-");
-
-  const tongSoLuong = data.items.reduce(
-    (acc, item) => acc + (item.soLuongDaKhaiBao || 0),
-    0
-  );
+  const { phieu, chiTiet } = data;
+  const isChuyenKho = phieu.loaiXuat === "chuyen_kho";
+  const tongSoLuong = chiTiet.reduce((acc, item) => acc + (item.soLuongDaPick || 0), 0);
 
   return (
 
@@ -104,21 +115,24 @@ export default function PhieuNhapKhoPrint() {
           <div>
 
             <h1 className="text-3xl font-black uppercase tracking-tight">
-              Phiếu Nhập Kho
+              Phiếu Xuất Kho
             </h1>
 
             <p className="mt-2 text-sm">
               Mã phiếu:
               <span className="font-mono text-lg ml-2">
-                {data.soPhieuNhap}
+                {phieu.soPhieuXuat}
               </span>
             </p>
 
             <p className="text-xs text-gray-500 uppercase tracking-wider">
-              Ngày nhập: {new Date().toLocaleDateString("vi-VN")}
+              Ngày xuất: {phieu.ngayXuat
+                ? new Date(phieu.ngayXuat).toLocaleDateString("vi-VN")
+                : "---"}
             </p>
 
           </div>
+
 
           <div className="text-right">
 
@@ -142,16 +156,22 @@ export default function PhieuNhapKhoPrint() {
           <div className="space-y-3">
 
             <div>
-              <p className="text-xs text-gray-400 uppercase">Kho tiếp nhận</p>
-              <p className="font-bold text-lg">{data.tenKho}</p>
+              <p className="text-xs text-gray-400 uppercase">
+                Kho xuất hàng
+              </p>
+              <p className="font-bold text-lg">
+                {phieu.kho?.tenKho}
+              </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-400 uppercase">Loại nghiệp vụ</p>
+              <p className="text-xs text-gray-400 uppercase">
+                Loại nghiệp vụ
+              </p>
               <p className="font-semibold">
-                {isInternal
+                {isChuyenKho
                   ? "Chuyển kho nội bộ"
-                  : "Nhập hàng từ nhà cung cấp"}
+                  : "Xuất bán hàng"}
               </p>
             </div>
 
@@ -160,22 +180,28 @@ export default function PhieuNhapKhoPrint() {
 
           <div className="space-y-3 text-right">
 
-            <div>
-              <p className="text-xs text-gray-400 uppercase">Đối tác</p>
-              <p className="font-bold text-lg">
-                {isInternal ? "Kho nội bộ" : data.tenNhaCungCap}
-              </p>
-            </div>
+            {isChuyenKho ? (
 
-            {!isInternal && (
               <div>
                 <p className="text-xs text-gray-400 uppercase">
-                  Đơn mua hàng
+                  Kho nhận
                 </p>
-                <p className="font-semibold">
-                  #{data.soDonMua}
+                <p className="font-bold text-lg">
+                  {phieu.khoChuyenDen?.tenKho}
                 </p>
               </div>
+
+            ) : (
+
+              <div>
+                <p className="text-xs text-gray-400 uppercase">
+                  Đơn bán hàng
+                </p>
+                <p className="font-semibold">
+                  #{phieu.donBanHang?.soDonHang}
+                </p>
+              </div>
+
             )}
 
           </div>
@@ -209,13 +235,13 @@ export default function PhieuNhapKhoPrint() {
 
             <tbody className="divide-y">
 
-              {data.items.map((item, idx) => {
+              {chiTiet.map((item, idx) => {
 
-                const lots = allLots[item.bienTheSanPhamId] || [];
+                const lots = pickedLotsMap[item.id] || [];
 
                 return (
 
-                  <tr key={item.bienTheSanPhamId}>
+                  <tr key={item.id}>
 
                     <td className="p-3 text-gray-500 font-bold">
                       {idx + 1}
@@ -223,7 +249,9 @@ export default function PhieuNhapKhoPrint() {
 
                     <td className="p-3">
 
-                      <div className="font-bold">{item.sku}</div>
+                      <div className="font-bold">
+                        {item.sku}
+                      </div>
 
                       <div className="text-xs text-gray-500">
                         {item.tenBienThe}
@@ -238,38 +266,37 @@ export default function PhieuNhapKhoPrint() {
 
                         <div className="space-y-1">
 
-                          {lots.map((lo, lIdx) => (
+                          {lots.map((lo, i) => {
 
-                            <div
-                              key={lIdx}
-                              className="flex justify-between text-xs bg-gray-50 px-2 py-1 rounded"
-                            >
+                            const lotInfo = lotMasterMap[lo.loHangId];
 
-                              <span className="font-semibold text-purple-600">
-                                {lo.maLo}
-                              </span>
+                            return (
 
-                              <span className="text-gray-500">
-                                {lo.ngaySanXuat
-                                  ? new Date(lo.ngaySanXuat)
-                                      .toLocaleDateString("vi-VN")
-                                  : "---"}
-                              </span>
+                              <div
+                                key={i}
+                                className="flex justify-between text-xs bg-gray-50 px-2 py-1 rounded"
+                              >
 
-                              <span className="font-semibold">
-                                {lo.soLuongNhap}
-                              </span>
+                                <span className="font-semibold text-purple-600">
+                                  {lotInfo?.maLo || lo.loHangId}
+                                </span>
 
-                            </div>
+                                <span className="font-semibold">
+                                  {lo.soLuongDaPick}
+                                </span>
 
-                          ))}
+                              </div>
+
+                            );
+
+                          })}
 
                         </div>
 
                       ) : (
 
                         <span className="text-red-500 text-xs italic">
-                          Chưa khai báo lô
+                          Chưa pick lô
                         </span>
 
                       )}
@@ -278,7 +305,7 @@ export default function PhieuNhapKhoPrint() {
 
 
                     <td className="p-3 text-right font-bold">
-                      {item.soLuongDaKhaiBao || 0}
+                      {item.soLuongDaPick}
                     </td>
 
                   </tr>
@@ -318,11 +345,11 @@ export default function PhieuNhapKhoPrint() {
           <div>
 
             <p className="font-semibold uppercase mb-16">
-              Người nhập
+              Người xuất
             </p>
 
             <p className="font-semibold">
-              {data.tenNguoiNhap || "Nhân viên"}
+              {phieu.nguoiXuat?.hoTen || "Nhân viên"}
             </p>
 
             <p className="text-xs text-gray-400">
@@ -335,7 +362,7 @@ export default function PhieuNhapKhoPrint() {
           <div>
 
             <p className="font-semibold uppercase mb-16">
-              Người giao hàng
+              Người nhận hàng
             </p>
 
             <p className="text-xs text-gray-400">
