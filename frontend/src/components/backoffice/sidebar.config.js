@@ -25,9 +25,6 @@ export const SIDEBAR_MENU = [
     icon: ShieldAlert,
     roles: ["quan_tri_vien"],
     children: [
-      { label: "Báo cáo doanh thu", to: "/bao-cao/doanh-thu" },
-      { label: "Báo cáo khách hàng", to: "/bao-cao/khach-hang" },
-      { label: "Báo cáo xuất nhập", to: "/bao-cao/xuat-nhap" },
       { label: "Người dùng", to: "/users" },
       { label: "Nhật ký sự cố / lỗi", to: "/issues" },
     ],
@@ -97,7 +94,8 @@ export const SIDEBAR_MENU = [
         roles: ["quan_tri_vien", "quan_ly_kho"],
       },
       { label: "Phiếu xuất kho", to: "/goods-issues" },
-      { label: "Chuyển kho nội bộ", 
+      {
+        label: "Chuyển kho nội bộ",
         to: "/transfer-tickets",
         roles: ["quan_tri_vien", "quan_ly_kho"]
       },
@@ -151,12 +149,17 @@ export const SIDEBAR_MENU = [
       },
       {
         label: "Báo cáo nhập – xuất",
-        to: "/reports/import-export",
+        to: "/bao-cao/xuat-nhap",
         roles: ["quan_tri_vien", "quan_ly_kho"],
       },
       {
         label: "Báo cáo doanh thu",
-        to: "/reports/sales",
+        to: "/bao-cao/doanh-thu",
+        roles: ["quan_tri_vien", "quan_ly_kho"],
+      },
+      {
+        label: "Báo cáo khách hàng",
+        to: "/bao-cao/khach-hang",
         roles: ["quan_tri_vien", "quan_ly_kho"],
       },
       {

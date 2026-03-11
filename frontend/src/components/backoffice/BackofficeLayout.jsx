@@ -4,6 +4,7 @@ import BackofficeHeader from "./BackofficeHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import "@/styles/print.css";
+import { sub } from "date-fns";
 
 export default function BackofficeLayout() {
     const { pathname } = useLocation();
@@ -171,6 +172,24 @@ export default function BackofficeLayout() {
             match: (path) => path === "/sales-orders/create",
             title: "Tạo đơn bán hàng",
             subtitle: "Tạo mới đơn bán hàng",
+        },
+        {
+            key: "BAO_CAO_DOANH_THU",
+            match: (path) => path === "/bao-cao/doanh-thu",
+            title: "Báo cáo doanh thu",
+            subtitle: "Xem báo cáo doanh thu theo thời gian",
+        },
+        {
+            key: "BAO_CAO_KHACH_HANG",
+            match: (path) => path === "/bao-cao/khach-hang",
+            title: "Báo cáo khách hàng",
+            subtitle: "Xem báo cáo về khách hàng theo thời gian",
+        },
+        {
+            key: "BAO_CAO_NHAP_XUAT",
+            match: (path) => path === "/bao-cao/xuat-nhap",
+            title: "Báo cáo nhập xuất",
+            subtitle: "Xem báo cáo về nhập xuất hàng hóa theo thời gian",
         }
     ];
 
