@@ -3,251 +3,528 @@ import { adminDashboardService } from "@/services/adminDashboardService";
 import { adminService } from "@/services/adminService";
 import { Link } from "react-router-dom";
 
+import {
+    Users,
+    ShoppingCart,
+    DollarSign,
+    ChevronLeft,
+    ChevronRight,
+    ChevronDown
+} from "lucide-react";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
+
 export default function DashboardByAdmin() {
+
     const [data, setData] = useState(null);
     const [latestUsers, setLatestUsers] = useState([]);
 
+    const [pagination, setPagination] = useState({
+        pageNumber: 0,
+        pageSize: 5,
+        totalPages: 0,
+        totalElements: 0,
+    });
+
+    /* ================= LOAD USERS ================= */
+
+    const loadUsers = async (page = 0, size = pagination.pageSize) => {
+
+        try {
+
+            const res = await adminService.getUserListByAdmin({
+                page,
+                size,
+                sort: "ngayTao,desc",
+            });
+
+            const pageData = res.data.data;
+
+            setLatestUsers(pageData.content);
+
+            setPagination({
+                pageNumber: pageData.number,
+                pageSize: pageData.size,
+                totalPages: pageData.totalPages,
+                totalElements: pageData.totalElements,
+            });
+
+        } catch (err) {
+            console.error(err);
+        }
+
+    };
+
     useEffect(() => {
+
         adminDashboardService.getDashboardByAdmin().then((res) => {
             setData(res.data.data);
         });
-        adminService
-            .getUserListByAdmin({
-                page: 0,
-                size: 3,
-                sort: "ngayTao,desc",
-            })
-            .then((res) => {
-                setLatestUsers(res.data.data.content);
-            });
+
+        loadUsers();
+
     }, []);
+
+
+    const handlePageChange = (page) => {
+        if (page < 0 || page >= pagination.totalPages) return;
+        loadUsers(page, pagination.pageSize);
+    };
+
+    const handlePageSizeChange = (size) => {
+        loadUsers(0, size);
+    };
+
 
     if (!data) return null;
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-            {/* Quick Stats */}
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+
+            {/* ===== STATS ===== */}
+
             <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
                 <Stat
-                    label="User mới (hôm nay)"
+                    icon={<Users className="w-5 h-5 text-blue-600" />}
+                    label="User mới hôm nay"
                     value={data.newUsersToday}
                 />
+
                 <Stat
+                    icon={<Users className="w-5 h-5 text-purple-600" />}
                     label="Tổng user"
                     value={data.totalUsers}
                 />
+
                 <Stat
+                    icon={<DollarSign className="w-5 h-5 text-emerald-600" />}
                     label="Doanh thu ngày"
                     value={`${data.revenueToday.toLocaleString()}₫`}
                 />
+
                 <Stat
+                    icon={<ShoppingCart className="w-5 h-5 text-orange-600" />}
                     label="Đơn bán hôm nay"
                     value={data.totalOrdersToday}
                 />
+
             </section>
 
-            {/* Charts / Insights */}
+
+            {/* ===== CHART + ALERT ===== */}
+
             <section className="grid lg:grid-cols-3 gap-4">
 
-                {/* Chart */}
-                <div className="bg-white border rounded-xl p-5 shadow-sm lg:col-span-2">
+                {/* CHART */}
+
+                <div className="bg-white border-0 shadow-md rounded-xl p-5 lg:col-span-2">
+
                     <div className="flex items-center justify-between">
+
                         <div>
                             <div className="text-sm font-semibold text-gray-900">
                                 Doanh thu 7 ngày
                             </div>
+
                             <div className="text-xs text-gray-500">
                                 don_ban_hang.ngay_dat_hang
                             </div>
                         </div>
+
                         <div className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-600">
-                            Last 7 days
+                            7 ngày gần nhất
                         </div>
+
                     </div>
 
-                    <div className="mt-4 h-48 w-full rounded-lg bg-gray-50 border flex items-end gap-3 p-4">
-                        {data.revenueLast7Days.map((item) => {
-                            const height =
-                                item.value === 0
-                                    ? "8%"
-                                    : Math.min(item.value / 1_000_000, 100) + "%";
+                    <div className="mt-4 h-48 flex items-end justify-between gap-3 p-4 bg-slate-50 rounded-lg">
 
-                            return (
-                                <div
-                                    key={item.date}
-                                    className="w-8 bg-purple-400 rounded-t-md"
-                                    style={{ height }}
-                                    title={`${item.date}: ${item.value.toLocaleString()}₫`}
-                                />
-                            );
-                        })}
+                        {(() => {
+
+                            const max = Math.max(...data.revenueLast7Days.map(i => i.value), 1);
+
+                            return data.revenueLast7Days.map((item) => {
+
+                                const height = Math.max((item.value / max) * 100, 8);
+
+                                return (
+                                    <div
+                                        key={item.date}
+                                        className="flex flex-col items-center gap-1 group"
+                                    >
+
+                                        <div className="text-[10px] opacity-0 group-hover:opacity-100 bg-gray-700 text-white px-1.5 py-0.5 rounded">
+                                            {(item.value / 1000).toFixed(0)}k
+                                        </div>
+
+                                        <div
+                                            key={item.date}
+                                            className="w-8 rounded-t-md bg-purple-600 hover:bg-purple-700 transition shadow-sm"
+                                            style={{ height }}
+                                            title={`${item.date}: ${item.value.toLocaleString()}₫`}
+                                        />
+
+                                        <span className="text-[10px] text-gray-500">
+                                            {item.date.slice(5)}
+                                        </span>
+
+                                    </div>
+                                );
+
+                            });
+
+                        })()}
+
                     </div>
+
                 </div>
 
-                {/* Quick alerts – giữ UI, data để sau */}
-                <div className="bg-white border rounded-xl p-5 shadow-sm">
+
+                {/* ALERT */}
+
+                <div className="bg-white border-0 shadow-md rounded-xl p-5">
+
                     <div className="text-sm font-semibold text-gray-900">
                         Cảnh báo nhanh
                     </div>
+
                     <div className="text-xs text-gray-500 mt-1">
-                        Gợi ý sau này lấy từ bảng canh_bao
+                        Tổng hợp từ hệ thống
                     </div>
 
                     <div className="mt-4 space-y-3">
+
                         <AlertBox
                             title="Tồn kho thấp"
-                            subtitle={`${data.lowStockCount} cảnh báo đang chờ xử lý`}
+                            subtitle={`${data.lowStockCount} cảnh báo`}
                             color="red"
                         />
 
                         <AlertBox
                             title="Đơn chờ duyệt"
-                            subtitle={`${data.pendingPurchaseOrders} đơn mua / ${data.pendingSaleOrders} đơn bán`}
+                            subtitle={`${data.pendingPurchaseOrders} mua / ${data.pendingSaleOrders} bán`}
                             color="yellow"
                         />
 
                         <AlertBox
                             title="User bị khóa"
-                            subtitle={`Hiện có ${data.bannedUsers} user`}
+                            subtitle={`${data.bannedUsers} tài khoản`}
                             color="gray"
                         />
-                    </div>
-                </div>
-                <div className="bg-white border rounded-xl p-5 shadow-sm lg:col-span-3">
-                    {/* Header */}
-                    <div className="flex items-start justify-between">
-                        <div>
-                            <div className="text-sm font-semibold text-gray-900">
-                                User mới tạo gần đây
-                            </div>
-                            <div className="text-xs text-gray-500 mt-1">
-                                nguoi_dung (id, ten_dang_nhap, vai_tro, ngay_tao)
-                            </div>
-                        </div>
 
-                        <Link
-                            to="/users"
-                            className="text-sm text-purple-600 hover:underline font-medium"
-                        >
-                            Xem tất cả
-                        </Link>
                     </div>
 
-                    {/* Table */}
-                    <div className="mt-4 overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="text-left text-xs text-gray-500 border-b">
-                                    <th className="py-2 pr-3 font-medium">Tên đăng nhập</th>
-                                    <th className="py-2 pr-3 font-medium">Họ tên</th>
-                                    <th className="py-2 pr-3 font-medium">Vai trò</th>
-                                    <th className="py-2 pr-3 font-medium">Trạng thái</th>
-                                    <th className="py-2 font-medium">Ngày tạo</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {latestUsers.map((user) => (
-                                    <tr
-                                        key={user.id}
-                                        className="border-b last:border-b-0 text-sm"
-                                    >
-
-                                        <td className="py-3 pr-3 font-medium text-gray-900">
-                                            {user.tenDangNhap}
-                                        </td>
-
-                                        <td className="py-3 pr-3 text-gray-800">
-                                            {user.hoTen}
-                                        </td>
-
-                                        <td className="py-3 pr-3">
-                                            <span
-                                                className={`
-                  inline-flex items-center px-2 py-1 rounded-md text-xs font-medium
-                  ${user.vaiTro === "nhan_vien_kho"
-                                                        ? "bg-blue-50 text-blue-600"
-                                                        : user.vaiTro === "quan_ly_kho"
-                                                            ? "bg-purple-50 text-purple-600"
-                                                            : "bg-orange-50 text-orange-600"
-                                                    }
-                `}
-                                            >
-                                                {user.vaiTro}
-                                            </span>
-                                        </td>
-
-                                        <td className="py-3 pr-3">
-                                            <span
-                                                className={`
-                  inline-flex items-center px-2 py-1 rounded-md text-xs font-medium
-                  ${user.trangThai === 1
-                                                        ? "bg-green-50 text-green-700"
-                                                        : "bg-red-50 text-red-600"
-                                                    }
-                `}
-                                            >
-                                                {user.trangThai === 1 ? "Active" : "Banned"}
-                                            </span>
-                                        </td>
-
-                                        <td className="py-3 text-gray-700">
-                                            {new Date(user.ngayTao).toISOString().slice(0, 10)}
-                                        </td>
-                                    </tr>
-                                ))}
-
-                                {latestUsers.length === 0 && (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className="py-6 text-center text-sm text-gray-500"
-                                        >
-                                            Chưa có user mới
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
 
             </section>
+
+
+            {/* ===== LATEST USERS ===== */}
+
+            <section className="bg-white border-0 shadow-md rounded-xl p-5">
+
+                <div className="flex items-start justify-between">
+
+                    <div>
+
+                        <div className="text-sm font-semibold text-gray-900">
+                            User mới tạo gần đây
+                        </div>
+
+                        <div className="text-xs text-gray-500 mt-1">
+                            nguoi_dung (id, ten_dang_nhap, vai_tro)
+                        </div>
+
+                    </div>
+
+                    <Link
+                        to="/users"
+                        className="text-sm border-b font-medium"
+                    >
+                        Xem tất cả
+                    </Link>
+
+                </div>
+
+
+                <div className="mt-4 overflow-x-auto">
+
+                    <table className="w-full text-sm">
+
+                        <thead>
+
+                            <tr className="border-b text-xs text-gray-500">
+
+                                <th className="py-2 text-left">Username</th>
+                                <th className="py-2 text-left">Họ tên</th>
+                                <th className="py-2 text-left">Vai trò</th>
+                                <th className="py-2 text-left">Trạng thái</th>
+                                <th className="py-2 text-left">Ngày tạo</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {latestUsers.map((user) => (
+
+                                <tr
+                                    key={user.id}
+                                    className="border-b hover:bg-violet-50/50"
+                                >
+
+                                    <td className="py-3 font-semibold">
+                                        {user.tenDangNhap}
+                                    </td>
+
+                                    <td>{user.hoTen}</td>
+
+                                    <td>
+                                        <span className="px-2 py-1 text-xs rounded-lg bg-blue-50 text-blue-700">
+                                            {user.vaiTro}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <StatusBadge status={user.trangThai} />
+                                    </td>
+
+                                    <td>
+                                        {new Date(user.ngayTao).toLocaleDateString("vi-VN")}
+                                    </td>
+
+                                </tr>
+
+                            ))}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                {/* ===== PAGINATION ===== */}
+
+                <Card className="border-none bg-white mt-4">
+
+                    <CardContent className="p-4">
+
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+
+                            {/* Page size */}
+
+                            <div className="flex items-center gap-2">
+                                <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
+                                            {pagination.pageSize} dòng
+                                            <ChevronDown className="h-4 w-4 opacity-50" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                                        {[5, 10, 20, 50, 100].map(size => (
+                                            <DropdownMenuItem
+                                                key={size}
+                                                onClick={() => handlePageSizeChange(size)}
+                                                className="cursor-pointer"
+                                            >
+                                                {size} dòng
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+
+
+                            {/* Page info */}
+
+                            <div className="text-sm text-gray-600">
+
+                                Hiển thị{" "}
+
+                                <span className="font-semibold text-gray-900">
+                                    {pagination.pageNumber * pagination.pageSize + 1}
+                                </span>
+
+                                {" - "}
+
+                                <span className="font-semibold text-gray-900">
+                                    {Math.min(
+                                        (pagination.pageNumber + 1) * pagination.pageSize,
+                                        pagination.totalElements
+                                    )}
+                                </span>
+
+                                {" trong tổng số "}
+
+                                <span className="font-semibold text-purple-600">
+                                    {pagination.totalElements}
+                                </span>
+
+                                {" kết quả"}
+
+                            </div>
+
+
+                            {/* Navigation */}
+
+                            <div className="flex items-center gap-2">
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(pagination.pageNumber - 1)}
+                                    disabled={pagination.pageNumber === 0}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                    Trước
+                                </Button>
+
+
+                                {[...Array(Math.min(5, pagination.totalPages))].map((_, idx) => {
+
+                                    let pageNum;
+
+                                    if (pagination.totalPages <= 5) {
+                                        pageNum = idx;
+                                    } else if (pagination.pageNumber < 3) {
+                                        pageNum = idx;
+                                    } else if (pagination.pageNumber > pagination.totalPages - 4) {
+                                        pageNum = pagination.totalPages - 5 + idx;
+                                    } else {
+                                        pageNum = pagination.pageNumber - 2 + idx;
+                                    }
+
+                                    return (
+
+                                        <Button
+                                            key={idx}
+                                            size="sm"
+                                            onClick={() => handlePageChange(pageNum)}
+                                            className={
+                                                pagination.pageNumber === pageNum
+                                                    ? "bg-purple-600 text-white"
+                                                    : "border-gray-200"
+                                            }
+                                        >
+                                            {pageNum + 1}
+                                        </Button>
+
+                                    );
+
+                                })}
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(pagination.pageNumber + 1)}
+                                    disabled={pagination.pageNumber >= pagination.totalPages - 1}
+                                >
+                                    Sau
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+
+                            </div>
+
+                        </div>
+
+                    </CardContent>
+
+                </Card>
+
+            </section>
+
         </div>
+
     );
-}
+    function Stat({ icon, label, value }) {
 
-/* ================= SUB COMPONENTS ================= */
+        return (
 
-function Stat({ label, value }) {
-    return (
-        <div className="bg-white border rounded-xl p-4 shadow-sm">
-            <div className="text-xs text-gray-500">{label}</div>
-            <div className="mt-2 text-2xl font-bold text-gray-900">
-                {value}
+            <div className="bg-white border-0 shadow-md rounded-xl p-4">
+
+                <div className="flex items-center justify-between">
+
+                    <div className="text-xs text-gray-500">
+                        {label}
+                    </div>
+
+                    {icon}
+
+                </div>
+
+                <div className="mt-2 text-2xl font-bold text-gray-900">
+                    {value}
+                </div>
+
             </div>
-        </div>
-    );
-}
 
-function AlertBox({ title, subtitle, color }) {
-    const colorMap = {
-        red: "bg-red-50 border-red-200 text-red-700",
-        yellow: "bg-yellow-50 border-yellow-200 text-yellow-700",
-        gray: "bg-gray-50 border-gray-200 text-gray-800",
-    };
+        );
 
-    return (
-        <div
-            className={`p-3 rounded-lg border ${colorMap[color]}`}
-        >
-            <div className="text-sm font-semibold">
-                {title}
+    }
+    function AlertBox({ title, subtitle, color }) {
+
+        const colorMap = {
+            red: "bg-red-50 border-red-200 text-red-700",
+            yellow: "bg-yellow-50 border-yellow-200 text-yellow-700",
+            gray: "bg-gray-50 border-gray-200 text-gray-800",
+        };
+
+        return (
+
+            <div className={`p-3 rounded-lg border ${colorMap[color]}`}>
+
+                <div className="text-sm font-semibold">
+                    {title}
+                </div>
+
+                <div className="text-xs mt-1">
+                    {subtitle}
+                </div>
+
             </div>
-            <div className="text-xs mt-1">
-                {subtitle}
-            </div>
-        </div>
-    );
+
+        );
+
+    }
+    function StatusBadge({ status }) {
+
+        return status === 1 ? (
+
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+
+                Hoạt động
+
+            </span>
+
+        ) : (
+
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600">
+
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+
+                Bị khóa
+
+            </span>
+
+        );
+
+    }
+
 }

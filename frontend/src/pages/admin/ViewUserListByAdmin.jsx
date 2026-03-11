@@ -1,18 +1,33 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import {
+    Search,
+    Filter,
+    ChevronLeft,
+    ChevronRight,
+    ChevronDown,
+    Users,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "@/components/ui/select";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, } from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
-import { adminService } from "@/services/adminService.js";
+
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { adminService } from "@/services/adminService";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 function buildUserFilterPayload(filters) {
     const filterList = [];
 
-    // 🔍 Keyword: hoTen OR tenDangNhap OR email
     if (filters.keyword?.trim()) {
         ["hoTen", "tenDangNhap", "email"].forEach((field) => {
             filterList.push({
@@ -24,8 +39,7 @@ function buildUserFilterPayload(filters) {
         });
     }
 
-    // 🎭 Vai trò
-    if (filters.vaiTro && filters.vaiTro !== "ALL") {
+    if (filters.vaiTro !== "ALL") {
         filterList.push({
             fieldName: "vaiTro",
             operation: "EQUALS",
@@ -34,8 +48,7 @@ function buildUserFilterPayload(filters) {
         });
     }
 
-    // 🚦 Trạng thái
-    if (filters.trangThai && filters.trangThai !== "ALL") {
+    if (filters.trangThai !== "ALL") {
         filterList.push({
             fieldName: "trangThai",
             operation: "EQUALS",
@@ -48,17 +61,11 @@ function buildUserFilterPayload(filters) {
         page: filters.page,
         size: filters.size,
         filters: filterList,
-        sorts: [
-            {
-                fieldName: "ngayTao",
-                direction: "DESC",
-            },
-        ],
+        sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
     };
 }
 
 export default function ViewUserListByAdmin() {
-    // ===== STATE =====
     const [users, setUsers] = useState([]);
     const [total, setTotal] = useState(0);
 
@@ -86,469 +93,395 @@ export default function ViewUserListByAdmin() {
 
     const STATUS_OPTIONS = [
         { value: "ALL", label: "Tất cả" },
-        { value: "1", label: "Active" },
-        { value: "0", label: "Banned" },
+        { value: "1", label: "Hoạt động" },
+        { value: "0", label: "Bị khóa" },
     ];
 
-
-    // ===== FETCH DATA =====
-    useEffect(() => {
-        fetchUsers();
-    }, [filters.page, filters.size, filters.keyword, filters.vaiTro, filters.trangThai]);
-
-    useEffect(() => {
-        if (!location.state?.success) return;
-        if (toastShownRef.current) return; // chặn lần 2
-
-        toastShownRef.current = true;
-
-        toast.success(
-            location.state.message || "Tạo người dùng thành công"
-        );
-
-        navigate(location.pathname, { replace: true });
-    }, []);
-
-
-
-
-    async function fetchUsers() {
+    const fetchUsers = useCallback(async () => {
         try {
             const payload = buildUserFilterPayload(filters);
 
             const res = await adminService.filterUsersByAdmin(payload);
 
-            const serverResponse = res.data;
-            if (serverResponse?.status === 200) {
-                const pageData = serverResponse.data;
+            if (res.data?.status === 200) {
+                const pageData = res.data.data;
+
                 setUsers(pageData.content || []);
                 setTotal(pageData.totalElements || 0);
             }
         } catch (error) {
-            console.error("Lỗi chi tiết:", error.response?.data || error.message);
+            console.error(error);
+            toast.error("Không thể tải danh sách người dùng");
+        }
+    }, [filters]);
+    const pagination = {
+        pageNumber: filters.page,
+        pageSize: filters.size,
+        totalElements: total,
+        totalPages: Math.max(Math.ceil(total / filters.size), 1),
+    };
+    function handlePageChange(newPage) {
+        if (newPage >= 0 && newPage < pagination.totalPages) {
+            setFilters((prev) => ({
+                ...prev,
+                page: newPage,
+            }));
         }
     }
 
-    // ===== HANDLERS =====
-
-    const handleReset = () => {
-        setFilters({
-            keyword: "",
-            vaiTro: "ALL",
-            trangThai: "ALL",
+    function handlePageSizeChange(newSize) {
+        setFilters((prev) => ({
+            ...prev,
+            size: newSize,
             page: 0,
-            size: 10,
-        });
-    };
+        }));
+    }
 
-    const totalPages = Math.ceil(total / filters.size);
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
+
+    useEffect(() => {
+        if (!location.state?.success) return;
+        if (toastShownRef.current) return;
+
+        toastShownRef.current = true;
+
+        toast.success(location.state.message || "Tạo người dùng thành công");
+
+        navigate(location.pathname, { replace: true });
+    }, []);
+
+    const totalPages = Math.max(Math.ceil(total / filters.size), 1);
+
+    const formatRole = (role) =>
+        ROLE_OPTIONS.find((r) => r.value === role)?.label || role;
+    function StatusBadge({ status }) {
+        return status === 1 ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 whitespace-nowrap">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Hoạt động
+            </span>
+        ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 whitespace-nowrap">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                Bị khóa
+            </span>
+        );
+    }
 
     return (
-        <div className="h-screen w-full bg-gray-50 flex flex-col min-h-0">
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
 
-            {/* ===== FILTER (KHÔNG SCROLL) ===== */}
-            <div className="px-6 py-4 flex-none">
-                <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
-                    <CardContent className="p-4 space-y-3">
-                        <div className="grid md:grid-cols-4 gap-4">
-                            {/* Search */}
-                            <div className="col-span-2 space-y-1.5">
-                                <Label className="text-[13px] text-gray-600 block leading-none">
-                                    Tìm theo tên / username / email
-                                </Label>
-                                <Input
-                                    value={filters.keyword}
-                                    onChange={(e) =>
-                                        setFilters({ ...filters, keyword: e.target.value })
-                                    }
-                                    placeholder="VD: Nguyễn Văn A / nv_kho_01 / a@gmail.com"
-                                    className="w-full h-10 px-3 text-sm 
-            focus:ring-0
-            focus-visible:ring-0
-            focus-visible:outline-none"
-                                />
-                            </div>
-
-                            {/* Role */}
-                            <div className="space-y-1.5">
-                                <Label className="text-[13px] text-gray-600 block leading-none">
-                                    Lọc Vai trò
-                                </Label>
-
-                                <Select
-                                    value={filters.vaiTro}
-                                    onValueChange={(v) =>
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            vaiTro: v,
-                                            page: 0,
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger className="w-full h-10 px-3 text-sm">
-                                        <SelectValue />
-                                    </SelectTrigger>
-
-                                    <SelectContent
-                                        position="popper"
-                                        side="bottom"
-                                        align="start"
-                                        sideOffset={4}
-                                        className="bg-white z-50"
-                                    >
-                                        {ROLE_OPTIONS.map((r) => {
-                                            const active = filters.vaiTro === r.value;
-
-                                            return (
-                                                <SelectItem
-                                                    key={r.value}
-                                                    value={r.value}
-                                                    className={
-                                                        active
-                                                            ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
-                                                            : "focus:bg-gray-100"
-                                                    }
-                                                >
-                                                    {r.label}
-                                                </SelectItem>
-                                            );
-                                        })}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Status */}
-                            <div className="space-y-1.5">
-                                <Label className="text-[13px] text-gray-600 block leading-none">
-                                    Trạng thái
-                                </Label>
-
-                                <Select
-                                    value={filters.trangThai}
-                                    onValueChange={(v) =>
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            trangThai: v,
-                                            page: 0,
-                                        }))
-                                    }
-                                >
-                                    <SelectTrigger className="w-full h-10 px-3 text-sm">
-                                        <SelectValue />
-                                    </SelectTrigger>
-
-                                    <SelectContent
-                                        position="popper"
-                                        side="bottom"
-                                        align="start"
-                                        sideOffset={4}
-                                        className="z-50
-                                        bg-white
-                                        border border-gray-200
-                                        shadow-lg
-                                        rounded-md
-                                              "
-                                    >
-                                        {STATUS_OPTIONS.map((s) => {
-                                            const active = filters.trangThai === s.value;
-
-                                            return (
-                                                <SelectItem
-                                                    key={s.value}
-                                                    value={s.value}
-                                                    className={
-                                                        active
-                                                            ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
-                                                            : "focus:bg-gray-100"
-                                                    }
-                                                >
-                                                    {s.label}
-                                                </SelectItem>
-                                            );
-                                        })}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500">
-                                Columns: id, ten_dang_nhap, ho_ten, email, so_dien_thoai, vai_tro,
-                                trang_thai_hoat_dong, ngay_tao
-                            </span>
-
-                            <div className="flex gap-2">
-                                <Button variant="outline"
-                                    size="sm"
-                                    onClick={handleReset}
-                                    className="flex items-center gap-2 transition-all duration-300 hover:bg-black hover:text-white border-gray-300"
-                                >
-                                    Reset
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+            {/* HEADER */}
+            <div className="flex justify-end">
+                <Link to="/users/add">
+                    <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                        + Thêm người dùng
+                    </Button>
+                </Link>
             </div>
 
-            {/* ===== TABLE (ĂN PHẦN CÒN LẠI) ===== */}
-            <div className="px-6 pb-4 flex-1 min-h-0">
-                <Card className="bg-white border border-gray-200 rounded-xl shadow-sm h-full min-h-0">
-                    <CardContent className="p-0 flex flex-col h-full min-h-0">
+            {/* FILTER */}
+            <Card className="border-0 shadow-lg bg-white">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                        <Filter className="h-5 w-5 text-purple-600" />
+                        Bộ lọc tìm kiếm
+                    </CardTitle>
+                </CardHeader>
 
-                        {/* Header bảng */}
-                        <div className="p-4 border-b flex-none flex items-center justify-between">
-                            <div className="text-sm font-semibold">Danh sách Users</div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs text-gray-500">Tổng: {total}</span>
-                                <Link to="/users/add">
-                                    <Button size="sm" className="bg-purple-600 text-white hover:bg-purple-700">
-                                        + Add New User
-                                    </Button>
-                                </Link>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                        {/* SEARCH */}
+                        <div className="md:col-span-2 space-y-2">
+                            <Label>Tìm kiếm</Label>
+
+                            <div className="relative">
+                                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+
+                                <Input
+                                    className="pl-9"
+                                    placeholder="Tên / username / email"
+                                    value={filters.keyword}
+                                    onChange={(e) =>
+                                        setFilters((p) => ({
+                                            ...p,
+                                            keyword: e.target.value,
+                                            page: 0,
+                                        }))
+                                    }
+                                />
                             </div>
                         </div>
 
-                        {/* TABLE SCROLL */}
-                        <div className="flex-1 overflow-y-auto min-h-0">
-                            <Table className="w-full">
+                        {/* ROLE */}
+                        <div className="space-y-2">
+                            <Label>Vai trò</Label>
 
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50 text-xs text-gray-500">
-                                        <TableHead className="px-4 py-3">Username</TableHead>
-                                        <TableHead className="px-4 py-3">Họ tên</TableHead>
-                                        <TableHead className="px-4 py-3">Email</TableHead>
-                                        <TableHead className="px-4 py-3">SĐT</TableHead>
-                                        <TableHead className="px-4 py-3">Vai trò</TableHead>
-                                        <TableHead className="px-4 py-3">Trạng thái</TableHead>
-                                        <TableHead className="px-4 py-3">Ngày tạo</TableHead>
-                                        <TableHead className="px-4 py-3 text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="w-full justify-between">
+                                        {ROLE_OPTIONS.find((r) => r.value === filters.vaiTro)?.label}
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
 
-                                <TableBody className="text-sm text-gray-800">
-                                    {users.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={9} className="py-10 text-center text-gray-500">
-                                                Không có dữ liệu
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-
-                                    {users.map((u) => (
-                                        <TableRow
-                                            key={u.id}
-                                            onClick={() => navigate(`/users/${u.id}`)}
-                                            className="border-b hover:bg-gray-50">
-                                            <TableCell className="px-4 py-3 font-semibold text-purple-600">
-                                                {u.tenDangNhap}
-                                            </TableCell>
-
-                                            <TableCell className="px-4 py-3">{u.hoTen}</TableCell>
-
-                                            <TableCell className="px-4 py-3">{u.email}</TableCell>
-
-                                            <TableCell className="px-4 py-3">{u.soDienThoai}</TableCell>
-
-                                            <TableCell className="px-4 py-3">
-                                                <span className="px-2 py-1 text-xs rounded bg-blue-50 text-blue-700">
-                                                    {u.vaiTro}
-                                                </span>
-                                            </TableCell>
-
-                                            <TableCell className="px-4 py-3">
-                                                {u.trangThai === 1 ? (
-                                                    <span className="px-2 py-1 text-xs rounded bg-green-50 text-green-700">
-                                                        Active
-                                                    </span>
-                                                ) : (
-                                                    <span className="px-2 py-1 text-xs rounded bg-red-50 text-red-700">
-                                                        Banned
-                                                    </span>
-                                                )}
-                                            </TableCell>
-
-                                            <TableCell className="px-4 py-3">
-                                                {u.ngayTao
-                                                    ? new Date(u.ngayTao).toLocaleDateString("vi-VN")
-                                                    : "-"}
-                                            </TableCell>
-
-                                            <TableCell className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigate(`/users/${u.id}/edit-role`);
-                                                    }}
-                                                    className="text-sm font-semibold text-gray-700 hover:underline"
-                                                >
-                                                    Role
-                                                </button>
-
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigate(`/users/${u.id}/reset-password`);
-                                                    }}
-                                                    className="text-sm font-semibold text-red-600 hover:underline"
-                                                >
-                                                    Reset
-                                                </button>
-                                            </TableCell>
-                                        </TableRow>
+                                <DropdownMenuContent className="bg-white shadow-lg border border-gray-100 z-50">
+                                    {ROLE_OPTIONS.map((r) => (
+                                        <DropdownMenuItem
+                                            key={r.value}
+                                            onClick={() =>
+                                                setFilters((p) => ({ ...p, vaiTro: r.value, page: 0 }))
+                                            }
+                                        >
+                                            {r.label}
+                                        </DropdownMenuItem>
                                     ))}
-                                </TableBody>
-
-                            </Table>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
 
-                        {/* PAGINATION – LUÔN HIỆN */}
-                        <div className="p-4 border-t flex-none bg-white">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-500">
-                                    Showing {users.length} / {total}
-                                </span>
+                        {/* STATUS */}
+                        <div className="space-y-2">
+                            <Label>Trạng thái</Label>
 
-                                <div className="flex items-center gap-4">
-                                    {/* Page size */}
-                                    <div className="flex items-center gap-2">
-                                        <Label className="text-xs text-gray-500">Rows:</Label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="w-full justify-between">
+                                        {STATUS_OPTIONS.find((s) => s.value === filters.trangThai)
+                                            ?.label}
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
 
-                                        <Select
-                                            value={String(filters.size)}
-                                            onValueChange={(value) =>
-                                                setFilters((prev) => ({
-                                                    ...prev,
-                                                    size: Number(value),
+                                <DropdownMenuContent className="bg-white shadow-lg border border-gray-100 z-50">
+                                    {STATUS_OPTIONS.map((s) => (
+                                        <DropdownMenuItem
+                                            key={s.value}
+                                            onClick={() =>
+                                                setFilters((p) => ({
+                                                    ...p,
+                                                    trangThai: s.value,
                                                     page: 0,
                                                 }))
                                             }
                                         >
-                                            <SelectTrigger className="h-8 w-20 px-2 text-xs">
-                                                <SelectValue />
-                                            </SelectTrigger>
-
-                                            <SelectContent
-                                                position="popper"
-                                                side="bottom"
-                                                align="start"
-                                                sideOffset={4}
-                                                className="
-                z-50
-                bg-white
-                border border-gray-200
-                shadow-lg
-                rounded-md
-            "
-                                            >
-                                                {[10, 20, 30, 40, 50].map((s) => {
-                                                    const active = String(filters.size) === String(s);
-
-                                                    return (
-                                                        <SelectItem
-                                                            key={s}
-                                                            value={String(s)}
-                                                            className={
-                                                                active
-                                                                    ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
-                                                                    : "focus:bg-gray-100"
-                                                            }
-                                                        >
-                                                            {s}
-                                                        </SelectItem>
-                                                    );
-                                                })}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-
-                                    {/* Pagination */}
-                                    <div className="flex items-center gap-2">
-                                        {/* Prev */}
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={filters.page === 0}
-                                            onClick={() =>
-                                                setFilters((p) => ({ ...p, page: p.page - 1 }))
-                                            }
-                                        >
-                                            Prev
-                                        </Button>
-
-                                        {/* Pages */}
-                                        {[1, 2, 3].map((p) => {
-                                            if (p > totalPages) return null;
-
-                                            const active = filters.page + 1 === p;
-
-                                            return (
-                                                <Button
-                                                    key={p}
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        setFilters((prev) => ({ ...prev, page: p - 1 }))
-                                                    }
-                                                    className={
-                                                        active
-                                                            ? "bg-purple-600 text-white hover:bg-purple-600"
-                                                            : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-100"
-                                                    }
-                                                >
-                                                    {p}
-                                                </Button>
-                                            );
-                                        })}
-
-                                        {/* ... */}
-                                        {totalPages > 4 && (
-                                            <span className="px-2 text-gray-500">...</span>
-                                        )}
-
-                                        {/* Last page */}
-                                        {totalPages > 3 && (() => {
-                                            const active = filters.page + 1 === totalPages;
-
-                                            return (
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        setFilters((prev) => ({ ...prev, page: totalPages - 1 }))
-                                                    }
-                                                    className={
-                                                        active
-                                                            ? "bg-purple-600 text-white hover:bg-purple-600"
-                                                            : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-100"
-                                                    }
-                                                >
-                                                    {totalPages}
-                                                </Button>
-                                            );
-                                        })()}
-
-                                        {/* Next */}
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={filters.page + 1 >= totalPages}
-                                            onClick={() =>
-                                                setFilters((p) => ({ ...p, page: p.page + 1 }))
-                                            }
-                                        >
-                                            Next
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
+                                            {s.label}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
 
+                    </div>
+                </CardContent>
+            </Card>
 
-                    </CardContent>
-                </Card>
+            {/* TABLE */}
+            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                <div className="overflow-x-auto">
+
+                    <table className="w-full text-sm">
+
+                        <thead>
+                            <tr className="border-b border-slate-200 bg-slate-50">
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Username</th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Họ tên</th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Email</th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">SĐT</th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Vai trò</th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Trạng thái</th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Ngày tạo</th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
+                            </tr>
+                        </thead>
+
+                        <tbody className="divide-y divide-slate-100">
+
+                            {users.length === 0 && (
+                                <tr>
+                                    <td colSpan={8} className="py-14 text-center text-gray-500">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Users className="h-8 w-8 text-gray-300" />
+                                            Không có dữ liệu
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+
+                            {users.map((u) => (
+                                <tr
+                                    key={u.id}
+                                    onClick={() => navigate(`/users/${u.id}`)}
+                                    className="hover:bg-violet-50/50 transition cursor-pointer"
+                                >
+                                    <td className="px-4 py-3 font-semibold">
+                                        {u.tenDangNhap}
+                                    </td>
+
+                                    <td className="px-4 py-3">{u.hoTen}</td>
+
+                                    <td className="px-4 py-3 text-slate-600">{u.email}</td>
+
+                                    <td className="px-4 py-3 text-slate-600">{u.soDienThoai}</td>
+
+                                    <td className="px-4 py-3 text-center">
+                                        <span className="px-2.5 py-1 text-xs rounded-lg bg-blue-50 text-blue-700">
+                                            {formatRole(u.vaiTro)}
+                                        </span>
+                                    </td>
+
+                                    <td className="px-4 py-3 text-center">
+                                        <StatusBadge status={u.trangThai} />
+                                    </td>
+
+                                    <td className="px-4 py-3 text-center">
+                                        {u.ngayTao
+                                            ? new Date(u.ngayTao).toLocaleDateString("vi-VN")
+                                            : "-"}
+                                    </td>
+
+                                    <td className="px-4 py-3 text-center space-x-2">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-red-600 border-red-200 hover:bg-red-700 hover:text-white"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/users/${u.id}/reset-password`);
+                                            }}
+                                        >
+                                            Reset
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+
+                    </table>
+                </div>
             </div>
+
+            {/* PAGINATION */}
+            <Card className="border-0 shadow-md bg-white">
+                <CardContent className="p-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+
+                        {/* Page size */}
+                        <div className="flex items-center gap-2">
+                            <Label className="text-sm text-gray-600 whitespace-nowrap">
+                                Hiển thị:
+                            </Label>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-[120px] justify-between font-normal bg-white border-gray-200"
+                                    >
+                                        {pagination.pageSize} dòng
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100">
+                                    {[5, 10, 20, 50, 100].map((size) => (
+                                        <DropdownMenuItem
+                                            key={size}
+                                            onClick={() => handlePageSizeChange(size)}
+                                            className="cursor-pointer"
+                                        >
+                                            {size} dòng
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {/* Page info */}
+                        <div className="text-sm text-gray-600">
+                            Hiển thị{" "}
+                            <span className="font-semibold text-gray-900">
+                                {pagination.pageNumber * pagination.pageSize + 1}
+                            </span>{" "}
+                            -{" "}
+                            <span className="font-semibold text-gray-900">
+                                {Math.min(
+                                    (pagination.pageNumber + 1) * pagination.pageSize,
+                                    pagination.totalElements
+                                )}
+                            </span>{" "}
+                            trong tổng số{" "}
+                            <span className="font-semibold text-purple-600">
+                                {pagination.totalElements}
+                            </span>{" "}
+                            kết quả
+                        </div>
+
+                        {/* Navigation */}
+                        <div className="flex items-center gap-2">
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(pagination.pageNumber - 1)}
+                                disabled={pagination.pageNumber === 0}
+                                className="gap-1 disabled:opacity-50"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                                Trước
+                            </Button>
+
+                            <div className="hidden sm:flex gap-1">
+                                {[...Array(Math.min(5, pagination.totalPages))].map((_, idx) => {
+                                    let pageNum;
+
+                                    if (pagination.totalPages <= 5) {
+                                        pageNum = idx;
+                                    } else if (pagination.pageNumber < 3) {
+                                        pageNum = idx;
+                                    } else if (pagination.pageNumber > pagination.totalPages - 4) {
+                                        pageNum = pagination.totalPages - 5 + idx;
+                                    } else {
+                                        pageNum = pagination.pageNumber - 2 + idx;
+                                    }
+
+                                    return (
+                                        <Button
+                                            key={idx}
+                                            variant={pagination.pageNumber === pageNum ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handlePageChange(pageNum)}
+                                            className={
+                                                pagination.pageNumber === pageNum
+                                                    ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
+                                                    : "border-gray-200"
+                                            }
+                                        >
+                                            {pageNum + 1}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(pagination.pageNumber + 1)}
+                                disabled={pagination.pageNumber >= pagination.totalPages - 1}
+                                className="gap-1 disabled:opacity-50"
+                            >
+                                Sau
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
         </div>
     );
 }

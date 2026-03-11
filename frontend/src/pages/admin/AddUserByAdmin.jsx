@@ -28,7 +28,7 @@ export default function AddUserByAdmin() {
 
     const [loading, setLoading] = useState(false);
 
-    // ===== SUBMIT =====
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -53,19 +53,17 @@ export default function AddUserByAdmin() {
     };
 
     return (
-        <div className="px-6 py-8 max-w-3xl mx-auto">
-            <form onSubmit={handleSubmit}>
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+            {/* FORM CARD */}
+            <Card className="border-0 shadow-md bg-white max-w-3xl mx-auto">
+                <CardContent className="p-8 space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
 
-                {/* ===== CARD ===== */}
-                <Card className="bg-white border border-gray-200 rounded-t-2xl rounded-b-none shadow-sm">
-
-                    <CardContent className="p-5 space-y-4">
-
-                        {/* Row 1 */}
-                        <div className="grid grid-cols-2 gap-6">
+                        {/* ROW 1 */}
+                        <div className="grid md:grid-cols-2 gap-6">
                             <div>
-                                <Label className="text-sm font-semibold text-gray-800">
-                                    Tên đăng nhập <span className="text-red-500">*</span>
+                                <Label className="font-semibold">
+                                    Tên đăng nhập
                                 </Label>
                                 <Input
                                     placeholder="username"
@@ -73,14 +71,13 @@ export default function AddUserByAdmin() {
                                     onChange={(e) =>
                                         setForm({ ...form, tenDangNhap: e.target.value })
                                     }
-                                    className="mt-2 h-10 rounded-lg"
+                                    className="mt-2"
                                     required
                                 />
                             </div>
-
                             <div>
-                                <Label className="text-sm font-semibold text-gray-800">
-                                    Họ và tên <span className="text-red-500">*</span>
+                                <Label className="font-semibold">
+                                    Họ và tên
                                 </Label>
                                 <Input
                                     placeholder="Nguyễn Văn A"
@@ -88,98 +85,88 @@ export default function AddUserByAdmin() {
                                     onChange={(e) =>
                                         setForm({ ...form, hoTen: e.target.value })
                                     }
-                                    className="mt-2 h-10 rounded-lg"
+                                    className="mt-2"
                                     required
                                 />
                             </div>
                         </div>
-
-                        {/* Row 2 */}
-                        <div className="grid grid-cols-2 gap-6">
+                        {/* ROW 2 */}
+                        <div className="grid md:grid-cols-2 gap-6">
                             <div>
-                                <Label className="text-sm font-semibold text-gray-800">
-                                    Email
-                                </Label>
+                                <Label>Email</Label>
                                 <Input
-                                    placeholder="example@gmail.com"
                                     type="email"
+                                    placeholder="example@gmail.com"
                                     value={form.email}
                                     onChange={(e) =>
                                         setForm({ ...form, email: e.target.value })
                                     }
-                                    className="mt-2 h-10 rounded-lg"
+                                    className="mt-2"
                                 />
                             </div>
-
                             <div>
-                                <Label className="text-sm font-semibold text-gray-800">
-                                    Số điện thoại
-                                </Label>
+                                <Label>Số điện thoại</Label>
                                 <Input
                                     placeholder="090..."
                                     value={form.soDienThoai}
                                     onChange={(e) =>
                                         setForm({ ...form, soDienThoai: e.target.value })
                                     }
-                                    className="mt-2 h-10 rounded-lg"
+                                    className="mt-2"
                                 />
                             </div>
                         </div>
 
-                        {/* Role */}
-                        <div className="space-y-1.5">
-                            <Label className="text-sm font-semibold text-gray-800">
-                                Vai trò (vai_tro)
+                        {/* ROLE */}
+                        <div>
+                            <Label className="font-semibold">
+                                Vai trò hệ thống
                             </Label>
-
                             <Select
                                 value={form.vaiTro}
                                 onValueChange={(v) =>
                                     setForm({ ...form, vaiTro: v })
                                 }
                             >
-                                <SelectTrigger className="w-full h-10 px-3 text-sm rounded-lg">
+                                <SelectTrigger className="mt-2">
                                     <SelectValue />
                                 </SelectTrigger>
-
                                 <SelectContent
                                     position="popper"
                                     side="bottom"
                                     align="start"
                                     sideOffset={4}
-                                    className="bg-white z-50"
-                                >
-                                    {[
-                                        { value: "nhan_vien_kho", label: "Nhân viên kho" },
-                                        { value: "quan_ly_kho", label: "Quản lý kho" },
-                                        { value: "nhan_vien_ban_hang", label: "Nhân viên bán hàng" },
-                                        { value: "nhan_vien_mua_hang", label: "Nhân viên mua hàng" },
-                                        { value: "quan_tri_vien", label: "Quản trị viên" },
-                                    ].map((r) => {
-                                        const active = form.vaiTro === r.value;
+                                    className="bg-white shadow-lg border border-gray-100 z-50">
+                                    <SelectItem value="nhan_vien_kho">
+                                        Nhân viên kho
+                                    </SelectItem>
 
-                                        return (
-                                            <SelectItem
-                                                key={r.value}
-                                                value={r.value}
-                                                className={
-                                                    active
-                                                        ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
-                                                        : "focus:bg-gray-100"
-                                                }
-                                            >
-                                                {r.label}
-                                            </SelectItem>
-                                        );
-                                    })}
+                                    <SelectItem value="quan_ly_kho">
+                                        Quản lý kho
+                                    </SelectItem>
+
+                                    <SelectItem value="nhan_vien_ban_hang">
+                                        Nhân viên bán hàng
+                                    </SelectItem>
+
+                                    <SelectItem value="nhan_vien_mua_hang">
+                                        Nhân viên mua hàng
+                                    </SelectItem>
+
+                                    <SelectItem value="quan_tri_vien">
+                                        Quản trị viên
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        {/* Password */}
+
+
+                        {/* PASSWORD */}
                         <div>
-                            <Label className="text-sm font-semibold text-gray-800">
-                                Mật khẩu tạm thời <span className="text-red-500">*</span>
+
+                            <Label className="font-semibold">
+                                Mật khẩu tạm thời
                             </Label>
                             <Input
                                 type="password"
@@ -187,36 +174,30 @@ export default function AddUserByAdmin() {
                                 onChange={(e) =>
                                     setForm({ ...form, matKhau: e.target.value })
                                 }
-                                className="mt-2 h-10 rounded-lg"
+                                className="mt-2"
                                 required
                             />
                         </div>
-                    </CardContent>
-
-
-
-                </Card>
-                {/* ===== FOOTER ===== */}
-                <div className="px-5 py-4 bg-gray-50 border border-gray-200 border-t border-t-gray-300/50 -mt-px flex justify-end gap-3 rounded-b-2xl shadow-sm">
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => navigate("/users")}
-                        className="h-10 px-5 rounded-lg"
-                    >
-                        Hủy
-                    </Button>
-
-                    <Button
-                        type="submit"
-                        disabled={loading}
-                        className="h-10 px-6 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                        {loading ? "Đang lưu..." : "Lưu người dùng"}
-                    </Button>
-                </div>
-            </form>
+                        {/* ACTION */}
+                        <div className="flex justify-end gap-3 pt-4 border-t">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => navigate("/users")}
+                            >
+                                Hủy
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="bg-purple-600 hover:bg-purple-700 text-white"
+                            >
+                                {loading ? "Đang lưu..." : "Lưu người dùng"}
+                            </Button>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
         </div>
     );
 

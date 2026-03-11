@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { adminService } from "@/services/adminService";
 import { toast } from "sonner";
-import { KeyRound } from "lucide-react";
+import { KeyRound, ArrowLeft } from "lucide-react";
 
-export default function resetUserPasswordByAdmin() {
-    const [username, setUsername] = useState("");
-    const [loadingUser, setLoadingUser] = useState(true);
+export default function ResetUserPasswordByAdmin() {
+
     const { id } = useParams();
     const navigate = useNavigate();
+    const [username, setUsername] = useState("");
+    const [loadingUser, setLoadingUser] = useState(true);
 
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -34,7 +35,7 @@ export default function resetUserPasswordByAdmin() {
         try {
             setLoading(true);
             await adminService.resetUserPasswordByAdmin(id, {
-                newPassword: password,
+                newPassword: password
             });
 
             toast.success("Reset mật khẩu thành công");
@@ -50,9 +51,11 @@ export default function resetUserPasswordByAdmin() {
         const fetchUser = async () => {
             try {
                 const result = await adminService.getByIdByAdmin(id);
-                // result = { status, data, message, error }
+
                 setUsername(result.data.tenDangNhap);
-            } catch (err) {
+
+            } catch {
+
                 toast.error("Không lấy được thông tin người dùng");
             } finally {
                 setLoadingUser(false);
@@ -64,15 +67,38 @@ export default function resetUserPasswordByAdmin() {
 
 
     return (
-        <div className="flex flex-col h-full">
-            {/* CONTENT */}
-            <div className="flex-1 flex items-center justify-center bg-gray-50 p-6">
-                <Card className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-sm">
+
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+
+
+            {/* HEADER */}
+            <div className="flex items-center justify-between">
+
+                <Link
+                    to="/users"
+                    className="flex items-center gap-2 text-sm font-semibold hover:underline"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Quay lại danh sách
+                </Link>
+
+            </div>
+
+
+            {/* CARD */}
+            <div className="flex justify-center">
+
+                <Card className="w-full max-w-md border-0 shadow-md bg-white">
+
                     <CardContent className="p-8 space-y-6">
                         <div className="text-center">
-                            <div className="flex justify-center">
-                                <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-50 text-purple-600 rounded-full mb-2">
-                                    <KeyRound className="w-8 h-8" />
+
+                            <div className="flex justify-center mb-3">
+
+                                <div className="inline-flex items-center justify-center w-14 h-14 bg-purple-100 text-purple-600 rounded-full">
+
+                                    <KeyRound className="w-6 h-6" />
+
                                 </div>
                             </div>
 
@@ -80,19 +106,22 @@ export default function resetUserPasswordByAdmin() {
                             <h2 className="text-xl font-bold text-gray-900">
                                 Cấp lại mật khẩu
                             </h2>
-                            <p className="text-xs text-gray-500 mt-1">
+
+                            <p className="text-sm text-gray-500 mt-1">
                                 Dành cho user{" "}
-                                <span className="font-semibold text-purple-600 italic">
+                                <span className="font-semibold italic">
                                     {loadingUser ? "..." : username}
                                 </span>
                             </p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="space-y-1">
-                                <Label className="text-xs text-gray-600">
-                                    Mật khẩu mới
-                                </Label>
+
+                        {/* FORM */}
+                        <form onSubmit={handleSubmit} className="space-y-5">
+
+                            <div className="space-y-2">
+                                <Label>Mật khẩu mới</Label>
+
                                 <Input
                                     type="password"
                                     value={password}
@@ -101,10 +130,10 @@ export default function resetUserPasswordByAdmin() {
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <Label className="text-xs text-gray-600">
-                                    Xác nhận mật khẩu
-                                </Label>
+
+                            <div className="space-y-2">
+                                <Label>Xác nhận mật khẩu</Label>
+
                                 <Input
                                     type="password"
                                     value={confirmPassword}
@@ -115,19 +144,22 @@ export default function resetUserPasswordByAdmin() {
                                 />
                             </div>
 
-                            <div className="pt-4 space-y-3">
+
+                            {/* ACTION */}
+                            <div className="pt-2 space-y-3">
+
                                 <Button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
+                                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                                 >
-                                    {loading ? "Đang Xử Lý..." : "Cập Nhật Mật Khẩu"}
+                                    {loading ? "Đang xử lý..." : "Cập nhật mật khẩu"}
                                 </Button>
 
                                 <Button
                                     type="button"
-                                    variant="ghost"
-                                    className="w-full font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+                                    variant="outline"
+                                    className="w-full"
                                     onClick={() => navigate("/users")}
                                 >
                                     Hủy thao tác
