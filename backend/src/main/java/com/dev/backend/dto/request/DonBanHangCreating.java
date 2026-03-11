@@ -14,6 +14,7 @@ import java.util.List;
 public class DonBanHangCreating {
     private String soDonHang;
     private Integer khachHangId;
+    Integer khoXuatId;
     private String diaChiGiaoHang;
     private BigDecimal phiVanChuyen;
     private String ghiChu;
