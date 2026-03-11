@@ -190,6 +190,12 @@ export default function BackofficeLayout() {
             match: (path) => path === "/bao-cao/xuat-nhap",
             title: "Báo cáo nhập xuất",
             subtitle: "Xem báo cáo về nhập xuất hàng hóa theo thời gian",
+        },
+        {
+            key: "PHIEU_NHAP_KHO_PRINT",
+            match: (path) => /^\/goods-receipts\/\d+\/print$/.test(path),
+            title: "In phiếu nhập kho",
+            subtitle: "Xem bản in phiếu nhập kho",
         }
     ];
 
