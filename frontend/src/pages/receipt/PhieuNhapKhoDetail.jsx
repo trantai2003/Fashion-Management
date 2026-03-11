@@ -4,10 +4,11 @@ import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { toast } from "sonner";
 
+// Cập nhật lại Map trạng thái để phù hợp với luồng không duyệt
 const STATUS_MAP = {
-    0: { label: "Nháp", className: "bg-amber-50 text-amber-700" },
-    1: { label: "Chờ duyệt", className: "bg-blue-50 text-blue-700" },
-    2: { label: "Đã duyệt", className: "bg-indigo-50 text-indigo-700" },
+    0: { label: "Đang kiểm đếm", className: "bg-amber-50 text-amber-700" },
+    1: { label: "Đang kiểm đếm", className: "bg-amber-50 text-amber-700" }, 
+    2: { label: "Chờ nhận hàng", className: "bg-blue-50 text-blue-700" }, // Dành cho luồng Chuyển kho
     3: { label: "Hoàn thành", className: "bg-green-50 text-green-700" },
     4: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
 };
@@ -18,15 +19,11 @@ export default function PhieuNhapKhoDetail() {
 
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    // Modal Confirm States
+    // Chỉ giữ lại Modal cần thiết
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
-    const [showApproveConfirm, setShowApproveConfirm] = useState(false);
-    const [showSendApproveConfirm, setShowSendApproveConfirm] = useState(false);
-
-    const role = localStorage.getItem("role");
-    const isQuanLy = role === "quan_ly_kho" || role === "quan_tri_vien";
 
     useEffect(() => {
         fetchDetail();
@@ -50,23 +47,21 @@ export default function PhieuNhapKhoDetail() {
     }
 
     const isAllDuLo = data.items.every(item => item.daDuLo === true);
-
-    /**
-     * VALIDATE LUỒNG:
-     * 1. Số phiếu bắt đầu bằng PN-TRF-
-     * 2. Hoặc không có đơn mua hàng (soDonMua = null)
-     */
     const isInternalTransfer = data.soPhieuNhap?.startsWith("PN-TRF-") || !data.soDonMua;
 
-    // Xử lý các hành động
-    const handleAction = async (actionFn, successMsg, closeModals) => {
+    // Hàm xử lý chung
+    const handleAction = async (actionFn, successMsg) => {
+        setIsProcessing(true);
         try {
             await actionFn(id);
             toast.success(successMsg);
-            closeModals();
+            setShowCompleteConfirm(false);
+            setShowCancelConfirm(false);
             fetchDetail();
         } catch (e) {
             toast.error(e?.response?.data?.message || "Thao tác thất bại");
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -74,10 +69,10 @@ export default function PhieuNhapKhoDetail() {
         <div className="min-h-screen bg-gray-50 flex">
             <main className="flex-1">
                 {/* ===== HEADER ===== */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between bg-white border-b sticky top-0 z-10">
                     <button
                         onClick={() => navigate("/goods-receipts")}
-                        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
+                        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 font-medium"
                     >
                         ← Quay lại
                     </button>
@@ -87,41 +82,28 @@ export default function PhieuNhapKhoDetail() {
                             {STATUS_MAP[data.trangThai]?.label}
                         </span>
 
+                        {/* Nút Hủy: Hiện cho phiếu chưa hoàn thành */}
                         {data.trangThai < 3 && (
                             <button
-                                className="px-4 py-2 rounded-md text-sm border border-red-200 text-red-600 hover:bg-red-50"
+                                disabled={isProcessing}
+                                className="px-4 py-2 rounded-md text-sm border border-red-200 text-red-600 hover:bg-red-50 font-medium"
                                 onClick={() => setShowCancelConfirm(true)}
                             >
                                 Huỷ phiếu
                             </button>
                         )}
 
-                        {data.trangThai === 0 && (
+                        {/* LOGIC NÚT XÁC NHẬN MỚI */}
+                        {((!isInternalTransfer && data.trangThai === 0) || (isInternalTransfer && data.trangThai === 2)) && (
                             <button
-                                disabled={!isAllDuLo}
-                                onClick={() => setShowSendApproveConfirm(true)}
-                                className={`px-4 py-2 rounded-md text-sm font-semibold text-white 
-                                    ${isAllDuLo ? "bg-orange-500 hover:bg-orange-600" : "bg-gray-300 cursor-not-allowed"}`}
-                            >
-                                Gửi duyệt
-                            </button>
-                        )}
-
-                        {data.trangThai === 1 && isQuanLy && (
-                            <button
-                                onClick={() => setShowApproveConfirm(true)}
-                                className="px-4 py-2 rounded-md text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700"
-                            >
-                                Phê duyệt
-                            </button>
-                        )}
-
-                        {data.trangThai === 2 && (
-                            <button
+                                disabled={!isAllDuLo || isProcessing}
                                 onClick={() => setShowCompleteConfirm(true)}
-                                className="px-4 py-2 rounded-md text-sm font-semibold bg-green-600 text-white hover:bg-green-700"
+                                className={`px-4 py-2 rounded-md text-sm font-bold text-white shadow-sm transition-all
+                                    ${isAllDuLo && !isProcessing 
+                                        ? "bg-green-600 hover:bg-green-700" 
+                                        : "bg-gray-300 cursor-not-allowed"}`}
                             >
-                                {isInternalTransfer ? "Xác nhận đã nhận hàng" : "Xác nhận nhập kho"}
+                                {isInternalTransfer ? "Xác nhận nhận hàng →" : "Xác nhận nhập kho thực tế"}
                             </button>
                         )}
                     </div>
@@ -129,71 +111,67 @@ export default function PhieuNhapKhoDetail() {
 
                 {/* ===== CONTENT ===== */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-                    {/* INFO */}
+                    {/* INFO SECTION */}
                     <section className="bg-white border rounded-xl p-6 shadow-sm">
-                        <h2 className="text-sm font-semibold mb-4 text-gray-800 tracking-wider">Thông tin phiếu nhập</h2>
+                        <div className="flex justify-between items-start mb-4">
+                            <h2 className="text-sm font-bold text-gray-800 uppercase tracking-tight">Thông tin chi tiết</h2>
+                            {!isAllDuLo && data.trangThai === 0 && (
+                                <span className="text-[10px] text-amber-600 font-bold animate-pulse">
+                                    ⚠️ Cần khai báo đủ lô hàng để nhập kho
+                                </span>
+                            )}
+                        </div>
                         <div className="grid md:grid-cols-3 gap-6 text-sm">
                             <Info label="Số phiếu" value={data.soPhieuNhap} />
                             <Info label="Kho nhập hàng" value={data.tenKho} />
-
-                            {isInternalTransfer ? (
-                                <Info label="Loại nghiệp vụ" value="Chuyển kho nội bộ" />
-                            ) : (
-                                <>
-                                    <Info label="Đơn mua hàng" value={data.soDonMua} />
-                                    <Info label="Nhà cung cấp" value={data.tenNhaCungCap} />
-                                </>
-                            )}
-
-                            <Info label="Người duyệt" value={data.tenNguoiDuyet} />
-                            <Info label="Người nhập" value={data.tenNguoiNhap} />
-                            <Info label="Ngày nhập phiếu" value={data.ngayNhap
-                                ? new Date(data.ngayNhap).toLocaleDateString("vi-VN")
-                                : "Chưa nhập kho"} />
+                            <Info label="Loại nghiệp vụ" value={isInternalTransfer ? "Chuyển kho nội bộ" : "Nhập từ nhà cung cấp (PO)"} />
+                            {!isInternalTransfer && <Info label="Đơn mua hàng" value={data.soDonMua} />}
+                            {!isInternalTransfer && <Info label="Nhà cung cấp" value={data.tenNhaCungCap} />}
+                            <Info label="Người nhập thực tế" value={data.tenNguoiNhap || "---"} />
                         </div>
                     </section>
 
                     {/* PRODUCT LIST */}
                     <section className="bg-white border rounded-xl shadow-sm overflow-hidden">
-                        <div className="p-4 border-b flex justify-between items-center">
-                            <h2 className="text-sm font-semibold">Danh sách sản phẩm</h2>
-                        </div>
-
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-gray-50 text-xs text-gray-500">
+                            <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
                                 <tr>
-                                    <th className="px-4 py-3 font-medium text-gray-600">SKU / Biến thể</th>
-                                    <th className="px-4 py-3 text-center">SL cần nhập</th>
-                                    <th className="px-4 py-3 text-center">SL đã khai báo</th>
-                                    <th className="px-4 py-3 text-center">Trạng thái</th>
-                                    <th className="px-4 py-3 text-right">Thao tác</th>
+                                    <th className="px-4 py-4 font-bold">Sản phẩm / Biến thể</th>
+                                    <th className="px-4 py-4 text-center">SL yêu cầu</th>
+                                    <th className="px-4 py-4 text-center">SL kiểm thực tế</th>
+                                    <th className="px-4 py-4 text-center">Trạng thái</th>
+                                    <th className="px-4 py-4 text-right">Thao tác</th>
                                 </tr>
                             </thead>
-
                             <tbody className="divide-y divide-gray-100">
                                 {data.items.map((item) => (
-                                    <tr key={item.bienTheSanPhamId} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3">
-                                            <div className="font-semibold text-purple-700">{item.sku}</div>
+                                    <tr key={item.bienTheSanPhamId} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-4 py-4">
+                                            <div className="font-bold text-gray-900">{item.sku}</div>
                                             <div className="text-gray-500 text-xs">{item.tenBienThe}</div>
                                         </td>
-                                        <td className="px-4 py-3 text-center font-medium">{item.soLuongCanNhap}</td>
-                                        <td className="px-4 py-3 text-center font-bold">
-                                            {item.soLuongDaKhaiBao ?? 0} / {item.soLuongCanNhap}
+                                        <td className="px-4 py-4 text-center font-medium">{item.soLuongCanNhap}</td>
+                                        <td className="px-4 py-4 text-center">
+                                            <span className={`font-bold ${item.daDuLo ? "text-green-600" : "text-amber-600"}`}>
+                                                {item.soLuongDaKhaiBao ?? 0} / {item.soLuongCanNhap}
+                                            </span>
                                         </td>
-                                        <td className="px-4 py-3 text-center">
+                                        <td className="px-4 py-4 text-center">
                                             {item.daDuLo ? (
-                                                <span className="px-2 py-0.5 text-[10px] rounded bg-green-100 text-green-700">Đã đủ lô</span>
+                                                <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Đã đủ</span>
                                             ) : (
-                                                <span className="px-2 py-0.5 text-[10px] rounded bg-amber-100 text-amber-700">Chưa đủ lô</span>
+                                                <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Thiếu lô</span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 text-right">
+                                        <td className="px-4 py-4 text-right">
                                             <button
                                                 onClick={() => navigate(`/goods-receipts/${data.id}/lot-input/${item.bienTheSanPhamId}`)}
-                                                className="px-3 py-1.5 text-xs font-bold rounded shadow-sm bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all"
+                                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm
+                                                    ${data.trangThai === 0 
+                                                        ? "bg-purple-600 text-white hover:bg-purple-700" 
+                                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                                             >
-                                                {data.trangThai === 0 ? "Khai báo lô" : "Xem lô"}
+                                                {data.trangThai === 0 ? "Khai báo lô →" : "Xem lô"}
                                             </button>
                                         </td>
                                     </tr>
@@ -203,70 +181,38 @@ export default function PhieuNhapKhoDetail() {
                     </section>
                 </div>
 
-                {/* ===== MODAL: GỬI DUYỆT ===== */}
-                {showSendApproveConfirm && (
-                    <ConfirmModal
-                        title="Xác nhận gửi duyệt"
-                        content={`Bạn muốn gửi duyệt phiếu ${data.soPhieuNhap}?`}
-                        onClose={() => setShowSendApproveConfirm(false)}
-                        onConfirm={() => handleAction(phieuNhapKhoService.sendToApprove, "Đã gửi duyệt thành công", () => setShowSendApproveConfirm(false))}
-                        confirmClass="bg-orange-500 hover:bg-orange-600"
-                    />
-                )}
-
-                {/* ===== MODAL: PHÊ DUYỆT ===== */}
-                {showApproveConfirm && (
-                    <ConfirmModal
-                        title="Phê duyệt phiếu nhập"
-                        content={`Xác nhận phê duyệt phiếu ${data.soPhieuNhap}. Phiếu sẽ sẵn sàng để nhập kho.`}
-                        onClose={() => setShowApproveConfirm(false)}
-                        onConfirm={() => handleAction(phieuNhapKhoService.approve, "Phê duyệt thành công", () => setShowApproveConfirm(false))}
-                        confirmClass="bg-blue-600 hover:bg-blue-700"
-                    />
-                )}
-
-                {/* ===== MODAL: HOÀN TẤT ===== */}
+                {/* ===== MODAL: XÁC NHẬN HOÀN TẤT ===== */}
                 {showCompleteConfirm && (
                     <ConfirmModal
-                        title={isInternalTransfer ? "Xác nhận nhận hàng chuyển kho" : "Xác nhận nhập kho thực tế"}
-                        content={isInternalTransfer
-                            ? "Hệ thống sẽ trừ tồn tại Kho Trung Chuyển và cộng vào kho của bạn."
-                            : `Hoàn tất nhập kho cho phiếu ${data.soPhieuNhap}.`}
+                        title={isInternalTransfer ? "Xác nhận nhận hàng" : "Hoàn tất nhập kho"}
+                        content={isInternalTransfer 
+                            ? "Xác nhận hàng đã về kho an toàn. Tồn kho sẽ được cộng vào kho của bạn."
+                            : `Hệ thống sẽ ghi nhận nhập ${data.items.reduce((acc, i) => acc + i.soLuongDaKhaiBao, 0)} sản phẩm vào kho thực tế.`}
                         onClose={() => setShowCompleteConfirm(false)}
                         onConfirm={() => handleAction(
-                            isInternalTransfer ? phieuChuyenKhoService.completeReceipt : phieuNhapKhoService.complete,
-                            "Nhập kho thành công",
-                            () => setShowCompleteConfirm(false)
+                            isInternalTransfer ? phieuChuyenKhoService.completeReceipt : phieuNhapKhoService.complete, 
+                            "Nhập kho thành công"
                         )}
                         confirmClass="bg-green-600 hover:bg-green-700"
+                        isLoading={isProcessing}
                     />
                 )}
 
+                {/* ===== MODAL: HỦY PHIẾU ===== */}
                 {showCancelConfirm && (
                     <ConfirmModal
-                        title="Xác nhận huỷ phiếu"
-                        content={`Bạn chắc chắn muốn huỷ phiếu ${data.soPhieuNhap}? Thao tác này sẽ huỷ toàn bộ quy trình liên quan và không thể hoàn tác.`}
+                        title="Hủy phiếu nhập kho"
+                        content="Thao tác này sẽ hủy phiếu và các lô hàng đã khai báo. Bạn có chắc chắn?"
                         onClose={() => setShowCancelConfirm(false)}
                         onConfirm={() => {
                             const targetId = isInternalTransfer ? data.phieuXuatGocId : id;
-                            if (!targetId) {
-                                toast.error("Lỗi: Không tìm thấy ID phiếu gốc để thực hiện hủy quy trình!");
-                                return;
-                            }
-
-                            // 3. Gọi handleAction với đúng Service tương ứng
                             handleAction(
-                                () => isInternalTransfer
-                                    ? phieuChuyenKhoService.cancel(targetId)
-                                    : phieuNhapKhoService.cancel(targetId),
-                                "Đã huỷ quy trình thành công",
-                                () => {
-                                    setShowCancelConfirm(false);
-                                    navigate("/goods-receipts");
-                                }
-                            );
+                                () => isInternalTransfer ? phieuChuyenKhoService.cancel(targetId) : phieuNhapKhoService.cancel(targetId),
+                                "Đã hủy phiếu thành công"
+                            ).then(() => navigate("/goods-receipts"));
                         }}
                         confirmClass="bg-red-600 hover:bg-red-700"
+                        isLoading={isProcessing}
                     />
                 )}
             </main>
@@ -274,16 +220,20 @@ export default function PhieuNhapKhoDetail() {
     );
 }
 
-// Sub-components
-function ConfirmModal({ title, content, onClose, onConfirm, confirmClass }) {
+// Reusable Components
+function ConfirmModal({ title, content, onClose, onConfirm, confirmClass, isLoading }) {
     return (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-xl animate-in fade-in zoom-in duration-200">
-                <h2 className="text-lg font-bold mb-2 text-gray-900">{title}</h2>
-                <p className="text-sm text-gray-600 mb-6">{content}</p>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[2px]">
+            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+                <h2 className="text-xl font-bold mb-2 text-gray-900">{title}</h2>
+                <p className="text-sm text-gray-600 mb-8 leading-relaxed">{content}</p>
                 <div className="flex justify-end gap-3">
-                    <button onClick={onClose} className="px-4 py-2 rounded-md border text-sm hover:bg-gray-50 font-medium">Hủy</button>
-                    <button onClick={onConfirm} className={`px-4 py-2 rounded-md text-white text-sm font-bold ${confirmClass}`}>Xác nhận</button>
+                    <button disabled={isLoading} onClick={onClose} className="px-5 py-2.5 rounded-xl border text-sm font-semibold hover:bg-gray-50 transition-colors">
+                        Đóng
+                    </button>
+                    <button disabled={isLoading} onClick={onConfirm} className={`px-5 py-2.5 rounded-xl text-white text-sm font-bold shadow-lg transition-all ${confirmClass}`}>
+                        {isLoading ? "Đang xử lý..." : "Xác nhận"}
+                    </button>
                 </div>
             </div>
         </div>
@@ -292,9 +242,9 @@ function ConfirmModal({ title, content, onClose, onConfirm, confirmClass }) {
 
 function Info({ label, value }) {
     return (
-        <div>
-            <div className="text-[11px] text-gray-400 tracking-wider mb-1 uppercase font-bold">{label}</div>
-            <div className="font-semibold text-gray-900">{value || "-"}</div>
+        <div className="space-y-1">
+            <div className="text-[11px] text-gray-400 uppercase font-black tracking-widest">{label}</div>
+            <div className="font-bold text-gray-900">{value || "---"}</div>
         </div>
     );
 }

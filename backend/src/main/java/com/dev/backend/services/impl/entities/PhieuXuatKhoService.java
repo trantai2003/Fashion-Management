@@ -56,6 +56,9 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     @Autowired
     private ChiTietPhieuNhapKhoRepository chiTietPhieuNhapKhoRepository;
 
+    @Autowired
+    private PhanQuyenNguoiDungKhoRepository phanQuyenNguoiDungKhoRepository;
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -82,32 +85,24 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             throw new RuntimeException("Đơn bán đã bị huỷ");
         }
 
-        // 1. Lấy thông tin người dùng và kho từ Request
-        Integer requestKhoId = request.getKhoId();
-        if (requestKhoId == null) {
-            throw new RuntimeException("Vui lòng chọn kho xuất hàng");
-        }
-
-        // 2. Kiểm tra quyền hạn kho
-        // Admin được phép chọn mọi kho, Nhân viên chỉ được chọn kho mình thuộc về
-        boolean isAdmin = SecurityContextHolder.getUser().getVaiTro()
-                .contains(IRoleType.quan_tri_vien);
-        Integer userInventoryId = SecurityContextHolder.getKhoId();
-
-        if (!isAdmin && !requestKhoId.equals(userInventoryId)) {
-            throw new RuntimeException("Bạn không có quyền xuất hàng từ kho này");
-        }
-
-        Kho khoXuat = entityManager.find(Kho.class, requestKhoId);
+        Kho khoXuat = donBanHang.getKhoXuat();
         if (khoXuat == null) {
-            throw new RuntimeException("Kho đã chọn không tồn tại");
+            throw new CommonException("Đơn bán hàng này chưa được chỉ định kho xuất. Vui lòng liên hệ Sales.");
         }
 
-        // 3. Kiểm tra logic đơn hàng với kho đã chọn
-        if (donBanHang.getKhoXuat() == null) {
-            donBanHang.setKhoXuat(khoXuat);
-        } else if (!donBanHang.getKhoXuat().getId().equals(requestKhoId)) {
-            throw new RuntimeException("Đơn bán này đã được chỉ định cho kho: " + donBanHang.getKhoXuat().getTenKho());
+        NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
+        boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
+
+        if (!isAdmin) {
+            PhanQuyenNguoiDungKho phanQuyen = phanQuyenNguoiDungKhoRepository
+                    .findByNguoiDungIdAndKhoId(currentUser.getId(), khoXuat.getId())
+                    .orElseThrow(() -> new CommonException("Bạn không phụ trách kho [" + khoXuat.getTenKho() +
+                            "]. Không thể thực hiện xuất kho cho đơn hàng này."));
+
+            if (phanQuyen.getTrangThai() != 1 ||
+                    (phanQuyen.getNgayKetThuc() != null && phanQuyen.getNgayKetThuc().isBefore(Instant.now()))) {
+                throw new CommonException("Quyền truy cập kho [" + khoXuat.getTenKho() + "] của bạn đã hết hạn hoặc bị khóa.");
+            }
         }
 
         // Kiểm tra sản phẩm còn lại
@@ -129,7 +124,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                         .soPhieuXuat(generateSoPhieu())
                         .donBanHang(donBanHang)
                         .ngayXuat(null)
-                        .kho(khoXuat) // Sử dụng kho từ request
+                        .kho(khoXuat)
                         .ghiChu(request.getGhiChu())
                         .loaiXuat("ban_hang")
                         .trangThai(0)
@@ -172,70 +167,17 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     }
 
     @Transactional
-    public void submit(Integer id) {
-        PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
-        if (phieu.getTrangThai() != 0) throw new RuntimeException("Chỉ được gửi duyệt phiếu ở trạng thái Mới tạo");
-
-        // Kiểm tra xem đã pick đủ hàng cho tất cả các dòng chưa
-        validatePickedQuantity(id);
-
-        phieu.setTrangThai(1); // Chờ duyệt
-        repository.save(phieu);
-    }
-
-    @Transactional
-    public void approve(Integer id, Integer nguoiDuyetId) {
-        PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
-        if (phieu.getTrangThai() != 1) throw new RuntimeException("Chỉ được duyệt phiếu ở trạng thái Chờ duyệt");
-        NguoiDung nguoiDuyet = nguoiDungRepository.findById(nguoiDuyetId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người duyệt"));
-        //Lấy toàn bộ danh sách các dòng đã pick lô của phiếu này
-        List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository
-                .findAll()
-                .stream()
-                .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
-                .toList();
-
-        if (detailedPicks.isEmpty()) {
-            throw new RuntimeException("Phiếu chưa được pick lô hàng, không thể duyệt");
-        }
-
-        //Kiểm tra tồn khả dụng của từng lô TRƯỚC khi thực hiện thay đổi
-        for (ChiTietPhieuXuatKho pick : detailedPicks) {
-            TonKhoTheoLo tonKho = tonKhoTheoLoRepository
-                    .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy dữ liệu tồn kho cho lô: " + pick.getLoHang().getMaLo()));
-
-            //Tồn khả dụng hiện tại có đủ để đáp ứng số lượng xuất không?
-            if (tonKho.getSoLuongKhaDung().compareTo(pick.getSoLuongXuat()) < 0) {
-                throw new RuntimeException("Lô [" + pick.getLoHang().getMaLo() + "] của biến thể ["
-                        + pick.getBienTheSanPham().getMaSku() + "] hiện không còn đủ tồn khả dụng (Chỉ còn: "
-                        + tonKho.getSoLuongKhaDung() + "). Vui lòng yêu cầu nhân viên kho chọn lại lô khác.");
-            }
-        }
-
-        //Nếu tất cả đều đủ tiến hành tăng so_luong_da_dat để giữ hàng
-        for (ChiTietPhieuXuatKho pick : detailedPicks) {
-            TonKhoTheoLo tonKho = tonKhoTheoLoRepository
-                    .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
-                    .get();
-
-            BigDecimal currentDaDat = tonKho.getSoLuongDaDat() != null ? tonKho.getSoLuongDaDat() : BigDecimal.ZERO;
-            tonKho.setSoLuongDaDat(currentDaDat.add(pick.getSoLuongXuat()));
-
-            tonKhoTheoLoRepository.save(tonKho);
-        }
-        phieu.setTrangThai(2); // Đã duyệt
-        phieu.setNguoiDuyet(nguoiDuyet);
-        repository.save(phieu);
-    }
-
-    @Transactional
     public void complete(Integer id, Integer nguoiXuatId) {
         PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
-        if (phieu.getTrangThai() != 2) throw new RuntimeException("Chỉ phiếu đã duyệt mới có thể xuất kho");
-        NguoiDung nguoiXuat = nguoiDungRepository.findById(nguoiXuatId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người xuất"));
+        if ("ban_hang".equals(phieu.getLoaiXuat())) {
+            if (phieu.getTrangThai() != 0) throw new RuntimeException("Phiếu bán hàng không ở trạng thái chờ xuất");
+        } else {
+            if (phieu.getTrangThai() != 2) throw new RuntimeException("Phiếu chuyển kho chưa được duyệt");
+        }
+
+        validatePickedQuantity(id);
+        NguoiDung nguoiXuat = nguoiDungRepository.findById(nguoiXuatId).orElseThrow();
+
         List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository.findAll().stream()
                 .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
                 .toList();
@@ -244,14 +186,19 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         for (ChiTietPhieuXuatKho pick : detailedPicks) {
             TonKhoTheoLo tonKho = tonKhoTheoLoRepository
                     .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
-                    .orElseThrow(() -> new RuntimeException("Lỗi dữ liệu tồn kho"));
+                    .orElseThrow(() -> new RuntimeException("Lỗi dữ liệu tồn kho lô: " + pick.getLoHang().getMaLo()));
 
             BigDecimal soLuongTruoc = tonKho.getSoLuongTon();
             BigDecimal soLuongXuat = pick.getSoLuongXuat();
 
-            // 1. Cập nhật tồn kho
+            if (soLuongTruoc.compareTo(soLuongXuat) < 0) {
+                throw new RuntimeException("Lô " + pick.getLoHang().getMaLo() + " không đủ tồn kho thực tế");
+            }
             tonKho.setSoLuongTon(soLuongTruoc.subtract(soLuongXuat));
-            tonKho.setSoLuongDaDat(tonKho.getSoLuongDaDat().subtract(soLuongXuat));
+            if ("chuyen_kho".equals(phieu.getLoaiXuat())) {
+                BigDecimal daDat = tonKho.getSoLuongDaDat() != null ? tonKho.getSoLuongDaDat() : BigDecimal.ZERO;
+                tonKho.setSoLuongDaDat(daDat.subtract(soLuongXuat));
+            }
             tonKho.setNgayXuatGanNhat(Instant.now());
             tonKhoTheoLoRepository.save(tonKho);
 
@@ -336,26 +283,6 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
         if (phieu.getTrangThai() == 3) throw new RuntimeException("Phiếu đã xuất kho, không thể hủy");
         if (phieu.getTrangThai() == 4) throw new RuntimeException("Phiếu đã bị hủy trước đó");
-        if (phieu.getTrangThai() == 2) {
-            // Lấy tất cả chi tiết đã được pick lô
-            List<ChiTietPhieuXuatKho> detailedPicks = chiTietPhieuXuatKhoRepository.findAll().stream()
-                    .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null)
-                    .toList();
-            for (ChiTietPhieuXuatKho pick : detailedPicks) {
-                // Tìm bản ghi tồn kho của lô đó tại kho xuất
-                TonKhoTheoLo tonKho = tonKhoTheoLoRepository
-                        .findByKho_IdAndLoHang_Id(phieu.getKho().getId(), pick.getLoHang().getId())
-                        .orElse(null);
-                if (tonKho != null) {
-                    BigDecimal currentDaDat = tonKho.getSoLuongDaDat() != null ? tonKho.getSoLuongDaDat() : BigDecimal.ZERO;
-                    // Trừ số lượng đã đặt
-                    BigDecimal extensionDaDat = currentDaDat.subtract(pick.getSoLuongXuat());
-                    // Đảm bảo không bị âm do lỗi logic dữ liệu
-                    tonKho.setSoLuongDaDat(extensionDaDat.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : extensionDaDat);
-                    tonKhoTheoLoRepository.save(tonKho);
-                }
-            }
-        }
         phieu.setTrangThai(4); // Đã hủy
         repository.save(phieu);
     }

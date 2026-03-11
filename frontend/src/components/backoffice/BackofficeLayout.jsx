@@ -147,6 +147,30 @@ export default function BackofficeLayout() {
             match: (path) => path === "/transfer-tickets/create",
             title: "Tạo phiếu chuyển kho nội bộ",
             subtitle: "Tạo mới phiếu chuyển kho nội bộ",
+        },
+        {
+            key: "TRANSFER_TICKET_DETAIL",
+            match: (path) => /^\/transfer-tickets\/\d+$/.test(path),
+            title: "Chi tiết phiếu chuyển kho nội bộ",
+            subtitle: "Xem chi tiết phiếu chuyển kho nội bộ",
+        },
+        {
+            key: "SALES_ORDERS",
+            match: (path) => path === "/sales-orders",
+            title: "Quản lý đơn bán hàng",
+            subtitle: "Danh sách đơn bán hàng",
+        },
+        {
+            key: "SALES_ORDER_DETAIL",
+            match: (path) => /^\/sales-orders\/\d+$/.test(path),
+            title: "Chi tiết đơn bán hàng",
+            subtitle: "Xem chi tiết đơn bán hàng",
+        },
+        {
+            key: "CREATE_SALES_ORDER",
+            match: (path) => path === "/sales-orders/create",
+            title: "Tạo đơn bán hàng",
+            subtitle: "Tạo mới đơn bán hàng",
         }
     ];
 

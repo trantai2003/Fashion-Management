@@ -123,14 +123,6 @@ export default function PhieuNhapKhoCreate() {
         <main className="flex-1 bg-gray-50/50 min-h-screen pb-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Tạo phiếu nhập kho</h1>
-                        <p className="text-sm text-gray-500 mt-1">Chọn đơn mua hàng để bắt đầu kê khai số lượng nhập</p>
-                    </div>
-                </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     {/* Sidebar Info */}
                     <div className="lg:col-span-1 space-y-6">

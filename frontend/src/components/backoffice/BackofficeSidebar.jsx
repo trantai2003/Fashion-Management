@@ -108,20 +108,22 @@ export default function BackofficeSidebar() {
                     {open && (
                       <CollapsibleContent>
                         <div className="ml-8 mt-1 space-y-1">
-                          {item.children.map((child) => (
-                            <NavLink
-                              key={child.to}
-                              to={child.to}
-                              className={({ isActive }) =>
-                                `block rounded-md px-3 py-2 text-sm ${isActive
-                                  ? "bg-purple-100 text-purple-700 font-medium"
-                                  : "text-gray-600 hover:bg-gray-100"
-                                }`
-                              }
-                            >
-                              {child.label}
-                            </NavLink>
-                          ))}
+                          {item.children
+                            .filter((child) => !child.roles || child.roles.includes(role))
+                            .map((child) => (
+                              <NavLink
+                                key={child.to}
+                                to={child.to}
+                                className={({ isActive }) =>
+                                  `block rounded-md px-3 py-2 text-sm ${isActive
+                                    ? "bg-purple-100 text-purple-700 font-medium"
+                                    : "text-gray-600 hover:bg-gray-100"
+                                  }`
+                                }
+                              >
+                                {child.label}
+                              </NavLink>
+                            ))}
                         </div>
                       </CollapsibleContent>
                     )}

@@ -127,7 +127,8 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                         bienThe.setGiaVon(giaVonTongVariant);
 
                                         // Công thức 3: Giá bán biến thể = Giá vốn * 1.2
-                                        BigDecimal giaBanVariant = giaVonTongVariant.multiply(new BigDecimal("1.2")).setScale(2, RoundingMode.HALF_UP);
+                                        BigDecimal giaBanVariant = giaVonTongVariant.multiply(new BigDecimal("1.2"))
+                                                .setScale(0, RoundingMode.CEILING);
                                         bienThe.setGiaBan(giaBanVariant);
 
                                         bienThe.setTrangThai(1);
@@ -152,7 +153,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                         // Giá vốn sản phẩm = Trung bình cộng giá vốn các biến thể còn hàng
                         sp.setGiaVonMacDinh(tongGiaVonBienThe.divide(new BigDecimal(soBienTheCoHang), 2, RoundingMode.HALF_UP));
                         // Giá bán sản phẩm = Trung bình cộng giá bán các biến thể còn hàng
-                        sp.setGiaBanMacDinh(tongGiaBanBienThe.divide(new BigDecimal(soBienTheCoHang), 2, RoundingMode.HALF_UP));
+                        sp.setGiaBanMacDinh(tongGiaBanBienThe.divide(new BigDecimal(soBienTheCoHang), 0, RoundingMode.CEILING));
                         sp.setTrangThai(1);
                 } else {
                         // Nếu tất cả biến thể hết hàng

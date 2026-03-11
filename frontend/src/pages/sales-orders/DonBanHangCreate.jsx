@@ -8,25 +8,32 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, ArrowLeft, Search, ShoppingCart, User, Truck, Check } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Search, ShoppingCart, User, Truck, Check, Warehouse, Home } from "lucide-react";
 
 import { donBanHangService } from "@/services/donBanHangService";
+import { getKhoList } from "@/services/khoService";
 
 export default function SalesOrderCreate() {
     const navigate = useNavigate();
 
     const [customers, setCustomers] = useState([]);
     const [variants, setVariants] = useState([]);
+    const [warehouses, setWarehouses] = useState([]); // State danh sách kho
     const [showProductDialog, setShowProductDialog] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // State bổ sung cho tìm kiếm khách hàng
+    // State tìm kiếm khách hàng
     const [customerSearch, setCustomerSearch] = useState("");
     const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
 
+    // State tìm kiếm kho
+    const [warehouseSearch, setWarehouseSearch] = useState("");
+    const [showWarehouseDropdown, setShowWarehouseDropdown] = useState(false);
+
     const [formData, setFormData] = useState({
         khachHangId: "",
+        khoXuatId: "", // Bắt buộc chọn kho
         phiVanChuyen: 0,
         diaChiGiaoHang: "",
         ghiChu: "",
@@ -40,21 +47,31 @@ export default function SalesOrderCreate() {
 
     async function loadData() {
         try {
-            const [variantRes, customerRes] = await Promise.all([
+            const [variantRes, customerRes, warehouseRes] = await Promise.all([
                 donBanHangService.getVariantsForCreate(),
-                donBanHangService.getCustomersForCreate()
+                donBanHangService.getCustomersForCreate(),
+                getKhoList() // Lấy danh sách kho từ Service của bạn
             ]);
             setVariants(variantRes?.data?.data || []);
             setCustomers(customerRes?.data?.data || []);
+            setWarehouses(warehouseRes || []); // getKhoList trả về array content
         } catch (err) {
-            toast.error("Không thể tải dữ liệu");
+            toast.error("Không thể tải dữ liệu hệ thống");
         }
     }
 
-    // Logic lọc khách hàng dựa trên từ khóa tìm kiếm
+    const selectedCustomer = useMemo(() =>
+        customers.find(c => c.id === Number(formData.khachHangId)),
+        [customers, formData.khachHangId]);
+
+    const selectedWarehouse = useMemo(() =>
+        warehouses.find(w => w.id === Number(formData.khoXuatId)),
+        [warehouses, formData.khoXuatId]);
+
+    // Logic lọc khách hàng
     const filteredCustomers = useMemo(() => {
         const lower = customerSearch.toLowerCase();
-        if (!lower.trim()) return []; // Không hiện list nếu chưa nhập
+        if (!lower.trim()) return [];
         return customers.filter(c =>
             c.tenKhachHang?.toLowerCase().includes(lower) ||
             c.soDienThoai?.includes(lower)
@@ -62,13 +79,27 @@ export default function SalesOrderCreate() {
     }, [customerSearch, customers]);
 
     const handleSelectCustomer = (customer) => {
-        setFormData({
-            ...formData,
+        setFormData(prev => ({
+            ...prev,
             khachHangId: customer.id,
-            diaChiGiaoHang: customer.diaChi || "" // Tự động gợi ý địa chỉ khi chọn khách
-        });
+            diaChiGiaoHang: customer.diaChi || ""
+        }));
         setCustomerSearch(customer.tenKhachHang);
         setShowCustomerDropdown(false);
+    };
+    const filteredWarehouses = useMemo(() => {
+        const lower = warehouseSearch.toLowerCase();
+        if (!lower.trim()) return warehouses;
+        return warehouses.filter(w =>
+            w.tenKho?.toLowerCase().includes(lower) ||
+            w.maKho?.toLowerCase().includes(lower)
+        );
+    }, [warehouseSearch, warehouses]);
+
+    const handleSelectWarehouse = (warehouse) => {
+        setFormData(prev => ({ ...prev, khoXuatId: warehouse.id }));
+        setWarehouseSearch(warehouse.tenKho);
+        setShowWarehouseDropdown(false);
     };
 
     const filteredProducts = useMemo(() => {
@@ -119,17 +150,16 @@ export default function SalesOrderCreate() {
     const totalOrderMoney = totalProductMoney + Number(formData.phiVanChuyen || 0);
 
     async function handleCreate() {
-        // 1. Validate phía Client
         if (!formData.khachHangId) return toast.error("Vui lòng chọn khách hàng");
+        if (!formData.khoXuatId) return toast.error("Vui lòng chọn kho xuất hàng");
         if (orderItems.length === 0) return toast.error("Chưa có sản phẩm nào trong đơn hàng");
 
         try {
             setLoading(true);
 
-            // 2. Chuẩn bị payload chuẩn định dạng Backend
             const payload = {
                 khachHangId: parseInt(formData.khachHangId),
-                // Fix lỗi 400: Đảm bảo phiVanChuyen luôn là số, không phải chuỗi rỗng
+                khoXuatId: parseInt(formData.khoXuatId),
                 phiVanChuyen: formData.phiVanChuyen === "" ? 0 : Number(formData.phiVanChuyen),
                 diaChiGiaoHang: formData.diaChiGiaoHang?.trim() || "",
                 ghiChu: formData.ghiChu?.trim() || "",
@@ -140,11 +170,10 @@ export default function SalesOrderCreate() {
                 }))
             };
 
-            const response = await donBanHangService.create(payload);
+            await donBanHangService.create(payload);
             toast.success("Tạo đơn bán thành công");
             navigate("/sales-orders");
         } catch (e) {
-            // Hiển thị lỗi chi tiết từ Server để dễ debug
             const errorMsg = e?.response?.data?.message || e?.response?.data?.errors?.[0] || "Lỗi tạo đơn hàng";
             toast.error(errorMsg);
             console.error("Chi tiết lỗi 400:", e?.response?.data);
@@ -153,27 +182,12 @@ export default function SalesOrderCreate() {
         }
     }
 
-    const selectedCustomer = customers.find(c => c.id === Number(formData.khachHangId));
-
     return (
         <main className="flex-1 bg-gray-50/50 min-h-screen pb-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="rounded-full w-9 h-9 border-gray-300 hover:text-purple-600">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Tạo đơn bán hàng</h1>
-                            <p className="text-sm text-gray-500">Thiết lập đơn hàng và thông tin giao nhận khách hàng.</p>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left: Info Section */}
+                    {/* Cột trái: Form thông tin */}
                     <div className="space-y-6">
                         <Card className="shadow-sm border-gray-200">
                             <CardHeader className="pb-4">
@@ -182,31 +196,62 @@ export default function SalesOrderCreate() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {/* Searchable Customer Input */}
+
+                                {/* 1. CHỌN KHO XUẤT HÀNG */}
+                                <div className="relative">
+                                    <Label className="text-xs font-bold text-gray-500 uppercase block mb-2 flex items-center gap-1">
+                                        <Warehouse className="h-3 w-3 text-purple-600" /> Kho xuất hàng *
+                                    </Label>
+                                    <div className="relative">
+                                        <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <Input
+                                            placeholder="Gõ tên hoặc mã kho..."
+                                            value={warehouseSearch}
+                                            onChange={(e) => {
+                                                setWarehouseSearch(e.target.value);
+                                                setShowWarehouseDropdown(true);
+                                            }}
+                                            onFocus={() => setShowWarehouseDropdown(true)}
+                                            className="pl-9 h-10 border-gray-200 focus-visible:ring-purple-500"
+                                        />
+                                    </div>
+                                    {showWarehouseDropdown && filteredWarehouses.length > 0 && (
+                                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                            {filteredWarehouses.map(w => (
+                                                <div key={w.id} onClick={() => handleSelectWarehouse(w)} className="px-4 py-2 hover:bg-purple-50 cursor-pointer border-b last:border-0 flex justify-between items-center transition-colors">
+                                                    <div>
+                                                        <div className="text-sm font-bold text-gray-800">{w.tenKho}</div>
+                                                        <div className="text-[10px] text-gray-400 uppercase font-mono">{w.maKho}</div>
+                                                    </div>
+                                                    {formData.khoXuatId === w.id && <Check className="h-4 w-4 text-green-600" />}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <hr className="opacity-50" />
+
+                                {/* 2. TÌM KHÁCH HÀNG */}
                                 <div className="relative">
                                     <Label className="text-xs font-bold text-gray-500 uppercase block mb-2">Tìm khách hàng *</Label>
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                         <Input
-                                            placeholder="Nhập tên hoặc SĐT khách hàng..."
+                                            placeholder="Tên hoặc SĐT khách hàng..."
                                             value={customerSearch}
                                             onChange={(e) => {
                                                 setCustomerSearch(e.target.value);
                                                 setShowCustomerDropdown(true);
                                             }}
                                             onFocus={() => setShowCustomerDropdown(true)}
-                                            className="pl-9 h-10 focus-visible:ring-purple-500"
+                                            className="pl-9 h-10 border-gray-200 focus-visible:ring-purple-500"
                                         />
                                     </div>
-
                                     {showCustomerDropdown && filteredCustomers.length > 0 && (
-                                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
                                             {filteredCustomers.map(c => (
-                                                <div
-                                                    key={c.id}
-                                                    onClick={() => handleSelectCustomer(c)}
-                                                    className="px-4 py-3 hover:bg-purple-50 cursor-pointer border-b last:border-0 flex justify-between items-center transition-colors"
-                                                >
+                                                <div key={c.id} onClick={() => handleSelectCustomer(c)} className="px-4 py-3 hover:bg-purple-50 cursor-pointer border-b last:border-0 flex justify-between items-center transition-colors">
                                                     <div>
                                                         <div className="text-sm font-semibold text-gray-900">{c.tenKhachHang}</div>
                                                         <div className="text-xs text-gray-500">{c.soDienThoai}</div>
@@ -241,17 +286,17 @@ export default function SalesOrderCreate() {
                                 </div>
 
                                 <div>
-                                    <Label className="text-xs font-bold text-gray-500 uppercase">Địa chỉ giao hàng</Label>
+                                    <Label className="text-xs font-bold text-gray-500 uppercase">Địa chỉ nhận hàng</Label>
                                     <Input
                                         value={formData.diaChiGiaoHang}
-                                        placeholder="Nhập địa chỉ giao hàng cụ thể..."
+                                        placeholder="Nhập địa chỉ cụ thể..."
                                         onChange={(e) => setFormData({ ...formData, diaChiGiaoHang: e.target.value })}
                                         className="mt-2 bg-gray-50 focus-visible:ring-purple-500"
                                     />
                                 </div>
 
                                 <div>
-                                    <Label className="text-xs font-bold text-gray-500 uppercase">Ghi chú</Label>
+                                    <Label className="text-xs font-bold text-gray-500 uppercase">Ghi chú đơn hàng</Label>
                                     <Textarea
                                         value={formData.ghiChu}
                                         onChange={(e) => setFormData({ ...formData, ghiChu: e.target.value })}
@@ -263,9 +308,9 @@ export default function SalesOrderCreate() {
                         </Card>
                     </div>
 
-                    {/* Right Column: Products Table */}
+                    {/* Cột phải: Chi tiết đơn hàng */}
                     <div className="lg:col-span-2 space-y-6">
-                        <Card className="shadow-sm border-gray-200 overflow-hidden flex flex-col">
+                        <Card className="shadow-sm border-gray-200 overflow-hidden flex flex-col min-h-[438px]">
                             <CardHeader className="flex flex-row items-center justify-between px-6 py-4 space-y-0 bg-white border-b">
                                 <CardTitle className="text-sm font-bold  text-gray-700 flex items-center gap-2">
                                     <ShoppingCart className="h-4 w-4 text-purple-600" />
@@ -310,12 +355,16 @@ export default function SalesOrderCreate() {
                                                             <div className="font-bold text-gray-900 leading-none">{item.tenSanPham}</div>
                                                             <div className="text-[11px] text-gray-400 font-mono mt-1.5 flex items-center gap-2">
                                                                 {item.maBienThe}
-                                                                {item.donGia < item.giaGoc && (
-                                                                    <span className="text-orange-600 font-semibold bg-orange-50 px-1.5 py-0.5 rounded text-[10px]">
-                                                                        Thấp hơn {Math.ceil(((item.giaGoc - item.donGia) / item.giaGoc) * 100)}% so với niêm yết
-                                                                    </span>
-                                                                )}
                                                             </div>
+                                                            {item.donGia < item.giaGoc && (
+
+                                                                <span className="text-orange-600 font-semibold bg-orange-50 px-1.5 py-0.5 rounded text-[10px]">
+
+                                                                    Thấp hơn {Math.ceil(((item.giaGoc - item.donGia) / item.giaGoc) * 100)}% so với niêm yết
+
+                                                                </span>
+
+                                                            )}
                                                         </TableCell>
                                                         <TableCell className="text-center">
                                                             <input
@@ -323,19 +372,16 @@ export default function SalesOrderCreate() {
                                                                 min="1"
                                                                 value={item.soLuongDat}
                                                                 onChange={(e) => handleUpdateQty(index, e.target.value)}
-                                                                className="w-16 h-9 text-center border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-600 outline-none"
+                                                                className="w-16 h-9 text-center border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 outline-none"
                                                             />
                                                         </TableCell>
                                                         <TableCell className="text-right">
-                                                            <div className="flex items-center justify-end gap-2">
-                                                                <input
-                                                                    type="number"
-                                                                    value={item.donGia}
-                                                                    onChange={(e) => handleUpdatePrice(index, e.target.value)}
-                                                                    className="w-24 h-9 text-right border border-gray-300 rounded px-2 focus:ring-2 focus:ring-purple-500 outline-none font-medium"
-                                                                />
-                                                                <span className="text-xs text-gray-400">đ</span>
-                                                            </div>
+                                                            <input
+                                                                type="number"
+                                                                value={item.donGia}
+                                                                onChange={(e) => handleUpdatePrice(index, e.target.value)}
+                                                                className="w-24 h-9 text-right border border-gray-300 rounded px-2 focus:ring-2 focus:ring-purple-500 outline-none font-medium"
+                                                            />
                                                         </TableCell>
                                                         <TableCell className="text-right font-bold text-purple-600 pr-6 text-base">
                                                             {item.thanhTien?.toLocaleString()}đ
@@ -377,17 +423,20 @@ export default function SalesOrderCreate() {
                                 )}
                             </CardContent>
                         </Card>
-
-                        <div className="flex justify-end pt-2">
-                            <Button
-                                onClick={handleCreate}
-                                disabled={loading}
-                                className="h-12 px-12 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-200 transition-all active:scale-95  tracking-wide"
-                            >
-                                {loading ? "Đang tạo..." : "Xác nhận tạo đơn hàng"}
-                            </Button>
-                        </div>
                     </div>
+                </div>
+
+                <div className="pt-6 border-t border-gray-200 flex justify-between items-center">
+                    <Button onClick={() => navigate("/sales-orders")} className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1" variant="ghost">
+                        <ArrowLeft className="h-4 w-4" /> Quay lại danh sách
+                    </Button>
+                    <Button
+                        onClick={handleCreate}
+                        disabled={loading}
+                        className="px-12 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md shadow-purple-100 transition-all active:scale-95 h-11"
+                    >
+                        {loading ? "Đang tạo..." : "Xác nhận tạo đơn hàng"}
+                    </Button>
                 </div>
             </div>
 
@@ -396,7 +445,6 @@ export default function SalesOrderCreate() {
                 <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
                     <DialogHeader className="p-6 pb-4 bg-white border-b border-gray-100">
                         <DialogTitle className="text-xl font-bold text-gray-800">Tìm kiếm sản phẩm</DialogTitle>
-                        <DialogDescription className="text-gray-500">Tìm theo mã SKU hoặc tên sản phẩm để thêm vào đơn.</DialogDescription>
                         <div className="relative mt-4">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input

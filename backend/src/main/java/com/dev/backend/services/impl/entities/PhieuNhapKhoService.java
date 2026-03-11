@@ -174,47 +174,17 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     }
 
     @Transactional
-    public void guiDuyet(Integer id) {
-        PhieuNhapKho phieu = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
-
-        if (phieu.getTrangThai() != TrangThaiPhieuNhap.DRAFT.getValue()) {
-            throw new RuntimeException("Chỉ phiếu Nháp mới có thể gửi duyệt");
-        }
-
-        long chuaDuLo = chiTietPhieuNhapKhoRepository.countBienTheChuaDuLo(id);
-        if (chuaDuLo > 0) {
-            throw new RuntimeException("Vui lòng khai báo đủ lô cho sản phẩm trước khi gửi duyệt");
-        }
-
-        phieu.setTrangThai(TrangThaiPhieuNhap.PENDING.getValue());
-        repository.save(phieu);
-    }
-
-    @Transactional
-    public void approvePhieu(Integer id, Integer nguoiDuyetId) {
-        PhieuNhapKho phieu = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
-
-        if (phieu.getTrangThai() != TrangThaiPhieuNhap.PENDING.getValue()) {
-            throw new RuntimeException("Phiếu không ở trạng thái chờ duyệt");
-        }
-
-        NguoiDung nguoiDuyet = nguoiDungRepository.findById(nguoiDuyetId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người duyệt"));
-
-        phieu.setTrangThai(TrangThaiPhieuNhap.APPROVED.getValue());
-        phieu.setNguoiDuyet(nguoiDuyet);
-        repository.save(phieu);
-    }
-
-    @Transactional
     public void completePhieuNhap(Integer phieuNhapKhoId, Integer nguoiNhapId) {
         PhieuNhapKho phieu = repository.findById(phieuNhapKhoId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
 
-        if (phieu.getTrangThai() != TrangThaiPhieuNhap.APPROVED.getValue()) {
-            throw new RuntimeException("Chỉ phiếu đã duyệt mới có thể hoàn tất nhập kho");
+        if (phieu.getTrangThai() != 0) {
+            throw new RuntimeException("Phiếu không ở trạng thái có thể nhập kho");
+        }
+
+        long chuaDuLo = chiTietPhieuNhapKhoRepository.countBienTheChuaDuLo(phieuNhapKhoId);
+        if (chuaDuLo > 0) {
+            throw new RuntimeException("Vui lòng khai báo đầy đủ thông tin lô cho sản phẩm trước khi hoàn tất");
         }
 
         NguoiDung nguoiNhap = nguoiDungRepository.findById(nguoiNhapId)

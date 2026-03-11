@@ -15,6 +15,7 @@ import com.dev.backend.dto.response.entities.ChiTietDonBanHangDto;
 import com.dev.backend.dto.response.entities.DonBanHangDto;
 import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
 import com.dev.backend.entities.*;
+import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.ChiTietDonBanHangMapper;
 import com.dev.backend.mapper.DonBanHangMapper;
 import com.dev.backend.mapper.PhieuXuatKhoMapper;
@@ -58,6 +59,9 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
     @Autowired
     private BienTheSanPhamRepository bienTheSanPhamRepository;
 
+    @Autowired
+    private TonKhoTheoLoRepository tonKhoTheoLoRepository;
+
 
     @Override
     protected EntityManager getEntityManager() {
@@ -71,25 +75,50 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
     @Override
     @Transactional(readOnly = true)
     public Page<DonBanHang> filter(BaseFilterRequest request) {
-
         NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
-        boolean isAdmin = currentUser.getVaiTro()
-                .contains(IRoleType.quan_tri_vien);
-        if (!isAdmin) {
-            List<FilterCriteria> filters =
-                    request.getFilters() == null
-                            ? new ArrayList<>()
-                            : new ArrayList<>(request.getFilters());
-            filters.add(
-                    FilterCriteria.builder()
-                            .fieldName("nguoiTao.id")
-                            .operation(FilterOperation.EQUALS)
-                            .value(currentUser.getId())
-                            .logicType(FilterLogicType.AND)
-                            .build()
-            );
-            request.setFilters(filters);
+        Set<String> roles = currentUser.getVaiTro();
+
+        // 1. Nếu là Admin thì không lọc gì thêm, để super.filter xử lý theo request từ FE
+        if (roles.contains(IRoleType.quan_tri_vien)) {
+            return super.filter(request);
         }
+
+        List<FilterCriteria> filters = request.getFilters() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(request.getFilters());
+
+        // 2. ƯU TIÊN: Nếu là nhân viên kho hoặc quản lý kho
+        if (roles.contains(IRoleType.nhan_vien_kho) || roles.contains(IRoleType.quan_ly_kho)) {
+            List<Integer> myWarehouseIds = currentUser.getPhanQuyenNguoiDungKhos()
+                    .stream()
+                    .map(pq -> pq.getKho().getId())
+                    .toList();
+
+            if (!myWarehouseIds.isEmpty()) {
+                filters.add(FilterCriteria.builder()
+                        .fieldName("khoXuat.id")
+                        .operation(FilterOperation.IN)
+                        .value(myWarehouseIds)
+                        .build());
+            } else {
+                // Nếu nhân viên kho chưa được gán kho nào, chặn không cho thấy đơn nào
+                filters.add(FilterCriteria.builder()
+                        .fieldName("id")
+                        .operation(FilterOperation.EQUALS)
+                        .value(-1)
+                        .build());
+            }
+        }
+        // 3. Nếu CHỈ là nhân viên bán hàng (không có quyền kho)
+        else if (roles.contains(IRoleType.nhan_vien_ban_hang)) {
+            filters.add(FilterCriteria.builder()
+                    .fieldName("nguoiTao.id")
+                    .operation(FilterOperation.EQUALS)
+                    .value(currentUser.getId())
+                    .build());
+        }
+
+        request.setFilters(filters);
         return super.filter(request);
     }
 
@@ -175,6 +204,12 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
             throw new RuntimeException("Khách hàng không tồn tại");
         }
 
+        if (request.getKhoXuatId() == null) {
+            throw new RuntimeException("Vui lòng chọn kho xuất hàng");
+        }
+        Kho khoXuat = entityManager.find(Kho.class, request.getKhoXuatId());
+        if (khoXuat == null) throw new RuntimeException("Kho đã chọn không tồn tại");
+
         int retry = 0;
         int maxRetry = 5;
 
@@ -185,6 +220,7 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
                         .soDonHang(generateSoDonHang())
                         .khachHang(khachHang)
                         .ngayDatHang(Instant.now())
+                        .khoXuat(khoXuat)
                         .trangThai(0)
                         .tienHang(BigDecimal.ZERO)
                         .phiVanChuyen(
@@ -225,6 +261,14 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
                         );
                     }
 
+                    BigDecimal qtyDat = item.getSoLuongDat();
+                    BigDecimal qtyKhaDung = tonKhoTheoLoRepository.sumSoLuongKhaDungByKhoAndBienThe(khoXuat.getId(), bienThe.getId());
+
+                    if (qtyKhaDung == null || qtyKhaDung.compareTo(qtyDat) < 0) {
+                        throw new CommonException("Sản phẩm [" + bienThe.getMaSku() + "] tại kho [" + khoXuat.getTenKho() +
+                                "] không đủ hàng (Hiện có: " + (qtyKhaDung != null ? qtyKhaDung : 0) + ")");
+                    }
+
                     BigDecimal giaNiemYet = bienThe.getGiaBan();
                     BigDecimal giaThoaThuan = item.getDonGia() != null ? item.getDonGia() : giaNiemYet;
                     BigDecimal mucGiamToiDa = giaNiemYet.multiply(new BigDecimal("0.9")); // 90% giá gốc
@@ -233,12 +277,12 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
                                 " không được thấp hơn 10% so với giá niêm yết (" + mucGiamToiDa + ")");
                     }
 
-                    BigDecimal thanhTien = giaThoaThuan.multiply(item.getSoLuongDat());
+                    BigDecimal thanhTien = giaThoaThuan.multiply(qtyDat);
 
                     ChiTietDonBanHang chiTiet = ChiTietDonBanHang.builder()
                             .donBanHang(don)
                             .bienTheSanPham(bienThe)
-                            .soLuongDat(item.getSoLuongDat())
+                            .soLuongDat(qtyDat)
                             .soLuongDaGiao(BigDecimal.ZERO)
                             .donGia(giaThoaThuan)
                             .thanhTien(thanhTien)

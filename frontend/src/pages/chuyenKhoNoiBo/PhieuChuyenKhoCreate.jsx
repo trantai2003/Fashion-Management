@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Search, ArrowLeft, Package, Warehouse, Save, ArrowRight } from "lucide-react";
+import { Plus, Trash2, Search, Package, ArrowDown } from "lucide-react";
 
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { donBanHangService } from "@/services/donBanHangService";
@@ -117,15 +114,6 @@ export default function PhieuChuyenKhoCreate() {
         <main className="flex-1 bg-gray-50/50 min-h-screen pb-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
-                {/* Header Section */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 font-medium">
-                            ← Quay lại
-                        </Button>
-                    </div>
-                </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     {/* Left: Configuration */}
                     <div className="lg:col-span-1 space-y-6">
@@ -148,7 +136,7 @@ export default function PhieuChuyenKhoCreate() {
                                 </div>
 
                                 <div className="flex justify-center py-1">
-                                    <ArrowRight className="h-5 w-5 text-gray-300" />
+                                    <ArrowDown className="h-5 w-5 text-gray-300" />
                                 </div>
 
                                 <div>
@@ -181,7 +169,7 @@ export default function PhieuChuyenKhoCreate() {
 
                     {/* Right: Items Table */}
                     <div className="lg:col-span-3 space-y-6">
-                        <section className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+                        <section className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[427px]">
                             <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
                                 <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                                     <Package className="h-4 w-4 text-purple-600" /> Danh mục hàng điều chuyển
@@ -268,29 +256,21 @@ export default function PhieuChuyenKhoCreate() {
                                 </div>
                             )}
                         </section>
-
-                        {/* Footer Actions */}
-                        <div className="pt-6 border-t border-gray-200 flex justify-between items-center">
-                            <Link to="/transfer-tickets" className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1">
-                                ← Quay lại danh sách
-                            </Link>
-                            <div className="flex gap-3">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => navigate("/transfer-tickets")}
-                                    className="px-6 border-gray-300 hover:bg-gray-50 text-gray-700"
-                                >
-                                    Hủy bỏ
-                                </Button>
-                                <Button
-                                    onClick={handleCreate}
-                                    disabled={loading}
-                                    className="px-8 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md shadow-purple-100 transition-all active:scale-95"
-                                >
-                                    {loading ? "Đang xử lý..." : <><Save className="h-4 w-4 mr-2" /> Tạo phiếu điều chuyển</>}
-                                </Button>
-                            </div>
-                        </div>
+                    </div>
+                </div>
+                {/* Footer Actions */}
+                <div className="pt-6 border-t border-gray-200 flex justify-between items-center">
+                    <Link to="/transfer-tickets" className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1">
+                        ← Quay lại danh sách
+                    </Link>
+                    <div className="flex gap-3">
+                        <Button
+                            onClick={handleCreate}
+                            disabled={loading}
+                            className="px-8 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md shadow-purple-100 transition-all active:scale-95"
+                        >
+                            {loading ? "Đang xử lý..." : <>Tạo phiếu điều chuyển</>}
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -324,9 +304,9 @@ export default function PhieuChuyenKhoCreate() {
                                     </TableRow>
                                 ) : (
                                     filteredProducts.map(product => (
-                                        <TableRow 
-                                            key={product.id} 
-                                            className="hover:bg-purple-50/50 cursor-pointer group transition-all" 
+                                        <TableRow
+                                            key={product.id}
+                                            className="hover:bg-purple-50/50 cursor-pointer group transition-all"
                                             onClick={() => handleAddProduct(product)}
                                         >
                                             <TableCell className="py-4 px-6">

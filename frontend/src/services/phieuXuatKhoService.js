@@ -13,15 +13,7 @@ export const phieuXuatKhoService = {
         const res = await apiClient.get(`/api/v1/phieu-xuat-kho/${id}`);
         return res.data;
     },
-    // Gửi duyệt (0 -> 1)
-    async submit(id) {
-        return apiClient.put(`/api/v1/phieu-xuat-kho/${id}/submit`);
-    },
-    // Phê duyệt (1 -> 2)
-    async approve(id) {
-        return apiClient.put(`/api/v1/phieu-xuat-kho/${id}/approve`);
-    },
-    // Hoàn thành/Xuất kho (2 -> 3)
+    // Hoàn thành/Xuất kho (0 -> 3)
     async complete(id) {
         return apiClient.put(`/api/v1/phieu-xuat-kho/${id}/complete`);
     },

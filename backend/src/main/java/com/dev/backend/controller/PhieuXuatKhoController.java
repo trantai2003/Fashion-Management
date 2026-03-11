@@ -65,42 +65,6 @@ public class PhieuXuatKhoController {
         return phieuXuatKhoService.getDetail(id);
     }
 
-    @PutMapping("/{id}/submit")
-    @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
-            inWarehouse = true,
-            rolesLogic = RequireAuth.LogicType.OR
-    )
-    public ResponseEntity<ResponseData<String>> submit(@PathVariable Integer id) {
-        phieuXuatKhoService.submit(id);
-        return ResponseEntity.ok(
-                ResponseData.<String>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Gửi duyệt phiếu xuất thành công")
-                        .data("SUCCESS")
-                        .build()
-        );
-    }
-
-    @PutMapping("/{id}/approve")
-    @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
-            permissions = {IPermissionType.duyet_phieu_xuat},
-            inWarehouse = true,
-            rolesLogic = RequireAuth.LogicType.OR
-    )
-    public ResponseEntity<ResponseData<String>> approve(@PathVariable Integer id) {
-        Integer managerId = SecurityContextHolder.getUser().getId();
-        phieuXuatKhoService.approve(id, managerId);
-        return ResponseEntity.ok(
-                ResponseData.<String>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Phê duyệt phiếu xuất thành công")
-                        .data("SUCCESS")
-                        .build()
-        );
-    }
-
     @PutMapping("/{id}/complete")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
