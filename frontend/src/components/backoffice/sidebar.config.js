@@ -94,7 +94,10 @@ export const SIDEBAR_MENU = [
         roles: ["quan_tri_vien", "quan_ly_kho"],
       },
       { label: "Phiếu xuất kho", to: "/goods-issues" },
-      { label: "Chuyển kho nội bộ", to: "/transfer-tickets" },
+      { label: "Chuyển kho nội bộ", 
+        to: "/transfer-tickets",
+        roles: ["quan_tri_vien", "quan_ly_kho"]
+      },
       { label: "Kiểm kê", to: "/stock-take" },
     ],
   },
