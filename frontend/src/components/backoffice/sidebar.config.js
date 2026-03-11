@@ -25,6 +25,9 @@ export const SIDEBAR_MENU = [
     icon: ShieldAlert,
     roles: ["quan_tri_vien"],
     children: [
+      { label: "Báo cáo doanh thu", to: "/bao-cao/doanh-thu" },
+      { label: "Báo cáo khách hàng", to: "/bao-cao/khach-hang" },
+      { label: "Báo cáo xuất nhập", to: "/bao-cao/xuat-nhap" },
       { label: "Người dùng", to: "/users" },
       { label: "Nhật ký sự cố / lỗi", to: "/issues" },
     ],

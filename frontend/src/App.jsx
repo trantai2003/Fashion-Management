@@ -57,6 +57,9 @@ import StoreHome from "./pages/store/StoreHome";
 import ProductCategory from "./pages/store/ProductCategory";
 import ProductSearch from "./pages/store/ProductSearch";
 import PublicProductDetail from "./pages/store/PublicProductDetail";
+import BaoCaoDoanhThu from "./pages/bao-cao/BaoCaoDoanhThu";
+import KhachHangReport from "./pages/bao-cao/KhachHangReport";
+import NhatKyNhapXuat from "./pages/bao-cao/NhatKyNhapXuat";
 
 export default function App() {
   return (
@@ -161,6 +164,10 @@ export default function App() {
           <Route path="/stock-take" element={<StockTakeList />} />
           <Route path="/stock-take/new" element={<StockTakeCreate />} />
           <Route path="/stock-take/:id" element={<StockTakeCreate />} /> {/* Để hoàn thành kiểm kê */}
+
+          <Route path="/bao-cao/doanh-thu" element={<BaoCaoDoanhThu />} />
+          <Route path="/bao-cao/khach-hang" element={<KhachHangReport />} />
+          <Route path="/bao-cao/xuat-nhap" element={<NhatKyNhapXuat />} />
         </Route>
 
         {/* ========== 404 ========== */}
