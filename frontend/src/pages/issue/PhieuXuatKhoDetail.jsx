@@ -104,9 +104,6 @@ export default function PhieuXuatKhoDetail() {
         && chiTiet.length > 0
         && chiTiet.every(ct => ct.duSoLuong === true);
 
-    // Xác định quyền bốc hàng (Kho nguồn)
-    const isSourceWarehouse = isAdmin || phieu.kho?.id === currentWarehouseId;
-
     return (
         <div className="min-h-screen bg-gray-50 flex">
             <main className="flex-1">
@@ -139,35 +136,8 @@ export default function PhieuXuatKhoDetail() {
                             </button>
                         )}
 
-                        {/* 1. Nút Gửi duyệt: Chỉ hiện ở trạng thái Nháp - 0 */}
-                        {phieu.trangThai === 0 && (
-                            <button
-                                disabled={(!isChuyenKho && !isAllPicked) || isProcessing}
-                                onClick={() => handleStatusChange(phieuXuatKhoService.submit, "Đã gửi duyệt phiếu xuất")}
-                                className={`
-                                    px-4 py-2 rounded-md text-sm font-semibold
-                                    ${(isChuyenKho || isAllPicked) && !isProcessing
-                                        ? "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
-                                        : "bg-gray-300 text-white cursor-not-allowed"}
-                                `}
-                            >
-                                Gửi duyệt
-                            </button>
-                        )}
-
-                        {/* 2. Nút Phê duyệt: Trạng thái 1 và có quyền quản lý */}
-                        {phieu.trangThai === 1 && isQuanLy && (
-                            <button
-                                disabled={isProcessing}
-                                onClick={() => handleStatusChange(phieuXuatKhoService.approve, "Đã phê duyệt phiếu xuất")}
-                                className="px-4 py-2 rounded-md text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
-                            >
-                                Phê duyệt
-                            </button>
-                        )}
-
-                        {/* 3. Nút Hoàn thành/Vận chuyển: Trạng thái 2 */}
-                        {phieu.trangThai === 2 && (
+                        {/*Nút Hoàn thành/Vận chuyển: Trạng thái 2 */}
+                        {((!isChuyenKho && phieu.trangThai === 0) || (isChuyenKho && phieu.trangThai === 2))&& (
                             <button
                                 disabled={isProcessing || !isAllPicked}
                                 onClick={() => setShowConfirm(true)}
@@ -200,14 +170,19 @@ export default function PhieuXuatKhoDetail() {
                             {isChuyenKho ? (
                                 <Info label="Kho chuyển đến" value={phieu.khoChuyenDen?.tenKho} />
                             ) : (
-                                <Info label="Sales Order" value={phieu.donBanHang?.soDonHang} />
+                                <Info label="Đơn bán hàng" value={phieu.donBanHang?.soDonHang} />
                             )}
 
                             <Info label="Kho xuất hàng" value={phieu.kho?.tenKho} />
                             
                             <Info
-                                label="Ngày lập phiếu"
+                                label="Ngày tạo phiếu"
                                 value={new Date(phieu.ngayTao).toLocaleDateString("vi-VN")}
+                            />
+
+                            <Info
+                                label="Ngày xuất"
+                                value={phieu.ngayXuat ? new Date(phieu.ngayXuat).toLocaleDateString("vi-VN") : "Chưa xuất kho"}
                             />
                             
                             <Info
