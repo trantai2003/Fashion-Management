@@ -264,7 +264,7 @@ export default function SupplierList() {
                         </div>
                         <Button
                             onClick={() => navigate("/supplier/new")}
-                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+                            className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200"
                         >
                             <Plus className="w-4 h-4 mr-2" />
                             Thêm nhà cung cấp
@@ -501,7 +501,7 @@ export default function SupplierList() {
                                                     onClick={() => handlePageChange(pageNum)}
                                                     className={
                                                         safePage === pageNum
-                                                            ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
+                                                            ? "bg-violet-600 text-white hover:bg-violet-700 shadow-sm"
                                                             : "border-gray-200"
                                                     }
                                                 >

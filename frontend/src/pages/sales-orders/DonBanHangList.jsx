@@ -180,7 +180,7 @@ export default function DonBanHangList() {
               <span className="text-xs text-gray-500">Tổng: {total}</span>
               <Link
                 to="/sales-orders/create"
-                className="px-3 py-2 text-sm text-white rounded-md bg-slate-900 border border-slate-900 hover:bg-white hover:text-slate-900 hover:border-slate-900"
+                className="px-3 py-2 text-sm text-white rounded-md bg-purple-600 hover:bg-purple-700"
               >
                 + Tạo Đơn Bán
               </Link>
@@ -294,7 +294,7 @@ export default function DonBanHangList() {
                         <button
                           key={idx}
                           onClick={() => setFilters((p) => ({ ...p, page: idx }))}
-                          className={`px-3 py-1 text-sm border rounded transition-colors ${filters.page === idx ? "bg-slate-900 text-white border-slate-900 hover:bg-white hover:text-slate-900" : "bg-white hover:bg-gray-50"
+                          className={`px-3 py-1 text-sm border rounded transition-colors ${filters.page === idx ? "bg-purple-600 text-white border-purple-600" : "bg-white hover:bg-gray-50"
                             }`}
                         >
                           {idx + 1}

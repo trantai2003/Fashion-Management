@@ -240,7 +240,7 @@ const DanhMucQuanAoTree = () => {
           <Button size="sm" variant="outline" onClick={handleCancelCreate} className="h-8 gap-1.5 border-gray-300 hover:bg-gray-100">
             <X className="h-3.5 w-3.5" /> Hủy
           </Button>
-          <Button size="sm" onClick={handleSaveCreate} className="h-8 gap-1.5 bg-slate-900 hover:bg-white hover:text-slate-900 border border-slate-900 text-white">
+          <Button size="sm" onClick={handleSaveCreate} className="h-8 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white">
             <Save className="h-3.5 w-3.5" /> Lưu
           </Button>
         </div>
@@ -484,7 +484,7 @@ const DanhMucQuanAoTree = () => {
               <Button
                 size="sm"
                 onClick={handleAddRoot}
-                className="gap-1.5 bg-slate-900 hover:bg-white hover:text-slate-900 border border-slate-900 text-white shadow-sm"
+                className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
               >
                 <Plus className="h-4 w-4" />
                 Thêm danh mục gốc
