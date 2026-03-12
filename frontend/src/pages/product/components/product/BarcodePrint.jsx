@@ -21,24 +21,27 @@ export default function BarcodePrint({ isOpen, onClose, products = [] }) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+            <DialogContent
+                className="max-w-4xl max-h-[90vh] flex flex-col !bg-white !text-black border-gray-200"
+                style={{ colorScheme: 'light' }}
+            >
                 <DialogHeader>
-                    <DialogTitle>In Mã Vạch Sản Phẩm</DialogTitle>
+                    <DialogTitle className="!text-gray-900">In Mã Vạch Sản Phẩm</DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto p-4 border rounded bg-gray-50">
+                <div className="flex-1 overflow-y-auto p-4 border border-gray-200 rounded bg-gray-50">
                     <div
                         ref={componentRef}
                         className="bg-white p-4 flex flex-col items-center gap-8 print:p-0"
                     >
-                        {products.map((product, index) => {
+                        {products.map((product) => {
                             const itemsToPrint = product.bienTheSanPhams && product.bienTheSanPhams.length > 0
                                 ? product.bienTheSanPhams
                                 : [product];
 
                             return itemsToPrint.map((item, idx) => (
                                 <div key={`${product.id}-${idx}`} className="flex flex-col items-center justify-center border border-dashed border-gray-300 p-6 bg-white w-[300px] mb-4 last:mb-0 print:border-none print:shadow-none print:mb-0 break-inside-avoid">
-                                    <div className="text-sm font-black mb-1 text-center uppercase tracking-tighter">
+                                    <div className="text-sm font-black mb-1 text-center uppercase tracking-tighter text-black">
                                         {product.tenSanPham}
                                     </div>
                                     <div className="text-[10px] text-gray-500 mb-3 font-medium uppercase">
@@ -70,7 +73,7 @@ export default function BarcodePrint({ isOpen, onClose, products = [] }) {
                 </div>
 
                 <div className="flex justify-end gap-3 mt-4 px-6 pb-6">
-                    <Button variant="ghost" onClick={onClose} className="text-gray-500">
+                    <Button variant="ghost" onClick={onClose} className="text-gray-500 hover:text-gray-700 hover:bg-gray-100">
                         Đóng
                     </Button>
                     <Button onClick={handlePrint} className="bg-purple-600 hover:bg-purple-700 text-white flex gap-2 h-11 px-8 rounded-xl shadow-lg shadow-purple-100 font-bold uppercase text-xs tracking-widest transition-all active:scale-95">

@@ -5,14 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { productService } from "@/services/productService.js";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 import {
     Loader2, Search, Save, Printer, RefreshCcw, Package,
-    Layers, Tag, ChevronDown, Check, Filter, DollarSign,
+    Layers, Tag, ChevronDown, ChevronLeft, ChevronRight, Check, Filter, DollarSign,
 } from "lucide-react";
 
 import BarcodePrint from "@/pages/product/components/product/BarcodePrint";
 import { useToggle } from "@/hooks/useToggle";
-import PaginationComponent from "./components/product/ProductComponent";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -100,7 +100,6 @@ export default function SkuBuilder() {
         setPage(0);
     }, [skus, keyword, statusFilter]);
 
-    // ── Stats ──────────────────────────────────────────────────────────────
     const stats = useMemo(() => ({
         total: skus.length,
         active: skus.filter((s) => s.trangThai === 1).length,
@@ -130,59 +129,71 @@ export default function SkuBuilder() {
     };
 
     const currentPageSkus = processedSkus.slice(page * pageSize, (page + 1) * pageSize);
+    const totalPages = Math.max(1, Math.ceil(processedSkus.length / pageSize));
 
     return (
         <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
 
-            {/* ── Stats ── */}
+            {/* ══ STATS ════════════════════════════════════════════════════════ */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-blue-50 to-white">
-                    <CardContent className="p-6 flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Tổng biến thể</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
-                        </div>
-                        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                            <Package className="h-6 w-6 text-blue-600" />
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-green-50 to-white">
-                    <CardContent className="p-6 flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.active}</p>
-                        </div>
-                        <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                            <Layers className="h-6 w-6 text-green-600" />
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Tổng biến thể</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <Package className="h-6 w-6 text-blue-600" />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-gray-50 to-white">
-                    <CardContent className="p-6 flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Ngừng hoạt động</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.inactive}</p>
-                        </div>
-                        <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
-                            <Tag className="h-6 w-6 text-red-500" />
+
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.active}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <Layers className="h-6 w-6 text-green-600" />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-amber-50 to-white">
-                    <CardContent className="p-6 flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Chờ lưu giá</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.changed}</p>
+
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-gray-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Ngừng hoạt động</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.inactive}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                                <Tag className="h-6 w-6 text-red-500" />
+                            </div>
                         </div>
-                        <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
-                            <DollarSign className="h-6 w-6 text-amber-600" />
+                    </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-amber-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Chờ lưu giá</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.changed}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                                <DollarSign className="h-6 w-6 text-amber-600" />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* ── Filter ── */}
+            {/* ══ BỘ LỌC TÌM KIẾM ═════════════════════════════════════════════ */}
             <Card className="border-0 shadow-lg bg-white">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
@@ -253,7 +264,7 @@ export default function SkuBuilder() {
                 </CardContent>
             </Card>
 
-            {/* ── Table ── */}
+            {/* ══ TABLE / LOADING / EMPTY ══════════════════════════════════════ */}
             {isLoading ? (
                 <div className="flex items-center justify-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
@@ -273,31 +284,21 @@ export default function SkuBuilder() {
                 </div>
             ) : (
                 <>
-                    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                        {/* Table header bar */}
-                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-white">
-                            <div className="flex items-center gap-2">
-                                <Layers className="h-5 w-5 text-purple-600" />
-                                <span className="text-sm font-semibold text-gray-800">Danh sách Biến thể &amp; Giá</span>
-                            </div>
-                            <span className="text-xs text-gray-500">
-                                Tổng:{" "}
-                                <span className="font-semibold text-purple-600">{processedSkus.length}</span> biến thể
-                            </span>
-                        </div>
-
+                    {/* ── Bảng dữ liệu ── */}
+                    <div className="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
                         <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
                             <table className="w-full text-sm">
                                 <thead className="sticky top-0 z-10">
                                     <tr className="border-b border-slate-200 bg-slate-50">
-                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-12">STT</th>
-                                        <th className="h-11 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">SKU</th>
-                                        <th className="h-11 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Sản phẩm</th>
-                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Màu / Size</th>
-                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Trạng thái</th>
-                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Giá vốn</th>
-                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Giá bán</th>
-                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Thao tác</th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-14">STT</th>
+                                        <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">SKU</th>
+                                        <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Sản phẩm</th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Màu</th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Size</th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Trạng thái</th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Giá vốn</th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Giá bán</th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -305,51 +306,52 @@ export default function SkuBuilder() {
                                         const isPriceChanged = Number(sku.giaBan) !== Number(sku.originalPrice) || Number(sku.giaVon) !== Number(sku.originalCost);
                                         return (
                                             <tr key={`${sku.id}-${index}`} className="transition-colors duration-150 hover:bg-violet-50/50">
-                                                {/* STT */}
-                                                <td className="px-4 py-3 align-middle text-center w-12">
+                                                <td className="px-4 py-3.5 align-middle text-center w-14">
                                                     <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
                                                         {page * pageSize + index + 1}
                                                     </span>
                                                 </td>
 
-                                                {/* SKU */}
-                                                <td className="px-4 py-3 align-middle">
+                                                <td className="px-4 py-3.5 align-middle">
                                                     <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 rounded px-2 py-0.5">
                                                         {sku.maSku || sku.maBienThe || sku.skuCode || "N/A"}
                                                     </span>
                                                 </td>
 
-                                                {/* Tên sản phẩm */}
-                                                <td className="px-4 py-3 align-middle max-w-[220px]">
-                                                    <p className="font-semibold text-slate-800 truncate text-sm" title={sku.productName}>
+                                                <td className="px-4 py-3.5 align-middle max-w-[260px]">
+                                                    <Link
+                                                        to={`/products/${sku.productId}`}
+                                                        title={sku.productName}
+                                                        className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-violet-600 hover:underline cursor-pointer"
+                                                    >
                                                         {sku.productName}
-                                                    </p>
+                                                    </Link>
                                                     {sku.productCode && (
-                                                        <p className="text-xs text-slate-400 font-mono mt-0.5">{sku.productCode}</p>
+                                                        <p className="mt-0.5 text-xs text-slate-500 line-clamp-1">{sku.productCode}</p>
                                                     )}
                                                 </td>
 
-                                                {/* Màu / Size */}
-                                                <td className="px-4 py-3 align-middle text-center">
-                                                    <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                                                        {sku.mauSac?.tenMau && (
-                                                            <span className="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
-                                                                {sku.mauSac.tenMau}
-                                                            </span>
-                                                        )}
-                                                        {sku.size?.tenSize && (
-                                                            <span className="inline-flex items-center rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-                                                                {sku.size.tenSize}
-                                                            </span>
-                                                        )}
-                                                        {!sku.mauSac?.tenMau && !sku.size?.tenSize && (
-                                                            <span className="text-xs text-slate-400">—</span>
-                                                        )}
-                                                    </div>
+                                                <td className="px-4 py-3.5 align-middle text-center">
+                                                    {sku.mauSac?.tenMau ? (
+                                                        <span className="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                                                            {sku.mauSac.tenMau}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-slate-400">—</span>
+                                                    )}
                                                 </td>
 
-                                                {/* Trạng thái */}
-                                                <td className="px-4 py-3 align-middle text-center">
+                                                <td className="px-4 py-3.5 align-middle text-center">
+                                                    {sku.size?.tenSize ? (
+                                                        <span className="inline-flex items-center rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                                                            {sku.size.tenSize}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-slate-400">—</span>
+                                                    )}
+                                                </td>
+
+                                                <td className="px-4 py-3.5 align-middle text-center">
                                                     {sku.trangThai === 1 ? (
                                                         <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                                                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -363,32 +365,25 @@ export default function SkuBuilder() {
                                                     )}
                                                 </td>
 
-                                                {/* Giá vốn */}
-                                                <td className="px-4 py-3 align-middle text-center">
+                                                <td className="px-4 py-3.5 align-middle text-center">
                                                     <Input
                                                         type="number"
-                                                        className={`w-28 h-8 text-right text-xs mx-auto border-gray-200 focus:border-purple-400
-                                                            ${isPriceChanged ? "border-amber-300 bg-amber-50" : ""}
-                                                        `}
+                                                        className={`w-28 h-8 text-right text-xs mx-auto border-gray-200 focus:border-purple-400 ${isPriceChanged ? "border-amber-300 bg-amber-50" : ""}`}
                                                         value={sku.giaVon}
                                                         onChange={(e) => handlePriceChange(sku.id, "giaVon", e.target.value)}
                                                     />
                                                 </td>
 
-                                                {/* Giá bán */}
-                                                <td className="px-4 py-3 align-middle text-center">
+                                                <td className="px-4 py-3.5 align-middle text-center">
                                                     <Input
                                                         type="number"
-                                                        className={`w-28 h-8 text-right text-xs mx-auto border-gray-200 focus:border-purple-400
-                                                            ${isPriceChanged ? "border-amber-300 bg-amber-50" : ""}
-                                                        `}
+                                                        className={`w-28 h-8 text-right text-xs mx-auto border-gray-200 focus:border-purple-400 ${isPriceChanged ? "border-amber-300 bg-amber-50" : ""}`}
                                                         value={sku.giaBan}
                                                         onChange={(e) => handlePriceChange(sku.id, "giaBan", e.target.value)}
                                                     />
                                                 </td>
 
-                                                {/* Thao tác */}
-                                                <td className="px-4 py-3 align-middle">
+                                                <td className="px-4 py-3.5 align-middle">
                                                     <div className="flex items-center justify-center gap-1">
                                                         {isPriceChanged && (
                                                             <button
@@ -418,17 +413,106 @@ export default function SkuBuilder() {
                         </div>
                     </div>
 
-                    {/* Pagination */}
+                    {/* ── Pagination (giống y màn sản phẩm) ── */}
                     <Card className="border-0 shadow-md bg-white">
-                        <CardContent className="p-0">
-                            <PaginationComponent
-                                currentPage={page}
-                                pageSize={pageSize}
-                                totalItems={processedSkus.length}
-                                onPageChange={setPage}
-                                onPageSizeChange={setPageSize}
-                                isLoading={isLoading}
-                            />
+                        <CardContent className="p-4">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                {/* Số dòng hiển thị */}
+                                <div className="flex items-center gap-2">
+                                    <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-[120px] justify-between font-normal bg-white border-gray-200"
+                                            >
+                                                {pageSize} dòng
+                                                <ChevronDown className="h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                                            {[5, 10, 20, 50, 100].map(size => (
+                                                <DropdownMenuItem
+                                                    key={size}
+                                                    onClick={() => { setPageSize(size); setPage(0); }}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {size} dòng
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+
+                                {/* Thông tin trang */}
+                                <div className="text-sm text-gray-600">
+                                    Hiển thị{" "}
+                                    <span className="font-semibold text-gray-900">
+                                        {page * pageSize + 1}
+                                    </span>
+                                    {" "}-{" "}
+                                    <span className="font-semibold text-gray-900">
+                                        {Math.min((page + 1) * pageSize, processedSkus.length)}
+                                    </span>
+                                    {" "}trong tổng số{" "}
+                                    <span className="font-semibold text-purple-600">{processedSkus.length}</span> kết quả
+                                </div>
+
+                                {/* Điều hướng */}
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setPage(page - 1)}
+                                        disabled={page === 0}
+                                        className="gap-1 disabled:opacity-50"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                        Trước
+                                    </Button>
+
+                                    <div className="hidden sm:flex gap-1">
+                                        {[...Array(Math.min(5, totalPages))].map((_, idx) => {
+                                            let pageNum;
+                                            if (totalPages <= 5) {
+                                                pageNum = idx;
+                                            } else if (page < 3) {
+                                                pageNum = idx;
+                                            } else if (page > totalPages - 4) {
+                                                pageNum = totalPages - 5 + idx;
+                                            } else {
+                                                pageNum = page - 2 + idx;
+                                            }
+                                            return (
+                                                <Button
+                                                    key={idx}
+                                                    variant={page === pageNum ? "default" : "outline"}
+                                                    size="sm"
+                                                    onClick={() => setPage(pageNum)}
+                                                    className={
+                                                        page === pageNum
+                                                            ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
+                                                            : "border-gray-200"
+                                                    }
+                                                >
+                                                    {pageNum + 1}
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setPage(page + 1)}
+                                        disabled={page >= totalPages - 1}
+                                        className="gap-1 disabled:opacity-50"
+                                    >
+                                        Sau
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </>

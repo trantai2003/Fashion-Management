@@ -66,6 +66,12 @@ export default function BackofficeLayout() {
             subtitle: "Danh sách sản phẩm",
         },
         {
+            key: "SKU_BUILDER",
+            match: (path) => path === "/sku-builder",
+            title: "Danh sách Biến thể & Giá",
+            subtitle: "Quản lý biến thể SKU và giá sản phẩm",
+        },
+        {
             key: "SUPPLIERS",
             match: (path) => path === "/supplier",
             title: "Quản lý nhà cung cấp",
