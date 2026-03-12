@@ -163,7 +163,10 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     @Transactional
     public void complete(Integer id, Integer nguoiXuatId) {
         PhieuXuatKho phieu = repository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
-        if (!"ban_hang".equals(phieu.getLoaiXuat()) && !"xuat_chuyen_kho".equals(phieu.getLoaiXuat())) {
+
+        boolean isXuatChuyenKho = "chuyen_kho".equals(phieu.getLoaiXuat()) && phieu.getPhieuChuyenKhoGoc() != null;
+
+        if (!"ban_hang".equals(phieu.getLoaiXuat()) && !isXuatChuyenKho) {
             throw new RuntimeException("Loại phiếu không hợp lệ để xuất kho");
         }
         if (phieu.getTrangThai() != 0) throw new RuntimeException("Phiếu không ở trạng thái chờ xuất");
@@ -177,7 +180,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         Set<Integer> sanPhamIdsCanCapNhat = new HashSet<>();
 
         Kho khoTransit = null;
-        if ("xuat_chuyen_kho".equals(phieu.getLoaiXuat())) {
+        if (isXuatChuyenKho) {
             khoTransit = entityManager.createQuery("SELECT k FROM Kho k WHERE k.maKho = 'KHO_TRANSIT'", Kho.class).getSingleResult();
         }
 
@@ -195,8 +198,9 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
 
             tonKho.setSoLuongTon(soLuongTruoc.subtract(soLuongXuat));
 
-            // Xử lý luồng xuất chuyển kho (Giải phóng hàng giữ -> Đẩy vào Transit)
-            if ("xuat_chuyen_kho".equals(phieu.getLoaiXuat())) {
+            if (isXuatChuyenKho) {
+                if (khoTransit == null) throw new RuntimeException("Lỗi: Hệ thống chưa cấu hình KHO_TRANSIT.");
+
                 BigDecimal daDat = tonKho.getSoLuongDaDat() != null ? tonKho.getSoLuongDaDat() : BigDecimal.ZERO;
                 tonKho.setSoLuongDaDat(daDat.subtract(soLuongXuat));
 
@@ -220,7 +224,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
 
             // Ghi Lịch sử giao dịch cho kho A
             saveHistory(phieu, pick, phieu.getKho(), "xuat_kho",
-                    "xuat_chuyen_kho".equals(phieu.getLoaiXuat()) ? "Xuất chuyển kho: " + phieu.getSoPhieuXuat() : "Xuất kho cho phiếu: " + phieu.getSoPhieuXuat(),
+                    isXuatChuyenKho ? "Xuất chuyển kho: " + phieu.getSoPhieuXuat() : "Xuất kho cho phiếu: " + phieu.getSoPhieuXuat(),
                     nguoiXuat, soLuongTruoc, tonKho.getSoLuongTon());
 
             if ("ban_hang".equals(phieu.getLoaiXuat()) && phieu.getDonBanHang() != null) {
@@ -236,7 +240,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         repository.save(phieu);
 
         // NẾU XUẤT THÀNH CÔNG -> Đẩy trạng thái phiếu chuyển kho Gốc lên 3 (Đang vận chuyển)
-        if ("xuat_chuyen_kho".equals(phieu.getLoaiXuat()) && phieu.getPhieuChuyenKhoGoc() != null) {
+        if (isXuatChuyenKho) {
             PhieuXuatKho pck = phieu.getPhieuChuyenKhoGoc();
             pck.setTrangThai(3);
             repository.save(pck);
@@ -294,8 +298,10 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         if (phieu.getTrangThai() == 3) throw new RuntimeException("Phiếu đã xuất kho, không thể hủy");
         if (phieu.getTrangThai() == 4) throw new RuntimeException("Phiếu đã bị hủy trước đó");
 
+        boolean isXuatChuyenKho = "chuyen_kho".equals(phieu.getLoaiXuat()) && phieu.getPhieuChuyenKhoGoc() != null;
+
         // Hủy phiếu xuất con -> Nhả lại hàng đã giữ (da_dat)
-        if ("xuat_chuyen_kho".equals(phieu.getLoaiXuat()) && phieu.getTrangThai() == 0) {
+        if (isXuatChuyenKho && phieu.getTrangThai() == 0) {
             List<ChiTietPhieuXuatKho> oldPicks = chiTietPhieuXuatKhoRepository.findAll().stream()
                     .filter(ct -> ct.getPhieuXuatKho().getId().equals(id) && ct.getLoHang() != null).toList();
             for (ChiTietPhieuXuatKho old : oldPicks) {
@@ -318,12 +324,13 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
 
         // 1. KIỂM TRA TRẠNG THÁI PHÙ HỢP
-        boolean isXuatChuyenKho = "xuat_chuyen_kho".equals(phieu.getLoaiXuat());
+        boolean isXuatChuyenKho = "chuyen_kho".equals(phieu.getLoaiXuat()) && phieu.getPhieuChuyenKhoGoc() != null;
+        boolean isYeuCauChuyenKho = "chuyen_kho".equals(phieu.getLoaiXuat()) && phieu.getPhieuChuyenKhoGoc() == null;
         if (isXuatChuyenKho) {
             if (phieu.getTrangThai() != 0) throw new RuntimeException("Chỉ được pick lô cho phiếu xuất chuyển kho ở trạng thái Nháp (0)");
         } else if ("ban_hang".equals(phieu.getLoaiXuat())) {
             if (phieu.getTrangThai() != 0) throw new RuntimeException("Chỉ được pick lô cho đơn bán hàng ở trạng thái Mới tạo (0)");
-        } else if ("chuyen_kho".equals(phieu.getLoaiXuat())) {
+        } else if (isYeuCauChuyenKho) {
             throw new RuntimeException("Không được pick lô trực tiếp trên phiếu yêu cầu. Vui lòng tạo Phiếu Xuất.");
         }
 
@@ -739,7 +746,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuXuatKho pck = repository.findById(transferId)
                 .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho gốc id: " + transferId));
 
-        if (!"chuyen_kho".equals(pck.getLoaiXuat())) {
+        if (!"chuyen_kho".equals(pck.getLoaiXuat()) || pck.getPhieuChuyenKhoGoc() != null) {
             throw new CommonException("Đây không phải là phiếu yêu cầu chuyển kho");
         }
         if (pck.getTrangThai() != 2) {
@@ -751,7 +758,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                 .phieuChuyenKhoGoc(pck)
                 .kho(pck.getKho())
                 .khoChuyenDen(pck.getKhoChuyenDen())
-                .loaiXuat("xuat_chuyen_kho") // Loại mới để phân biệt phiếu thực xuất của luồng chuyển kho
+                .loaiXuat("chuyen_kho") // Sử dụng lại ENUM hiện có
                 .trangThai(0) // Nháp
                 .ghiChu("Xuất thủ công cho phiếu chuyển: " + pck.getSoPhieuXuat())
                 .ngayTao(Instant.now())
