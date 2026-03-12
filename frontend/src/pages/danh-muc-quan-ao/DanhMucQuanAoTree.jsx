@@ -237,10 +237,10 @@ const DanhMucQuanAoTree = () => {
           />
         </div>
         <div className="flex justify-end gap-2">
-          <Button size="sm" variant="outline" onClick={handleCancelCreate} className="h-8 gap-1.5 border-gray-300 hover:bg-gray-100">
+          <Button size="sm" variant="outline" onClick={handleCancelCreate} className="h-8 gap-1.5 border-gray-300 hover:bg-black hover:text-white transition-all duration-200">
             <X className="h-3.5 w-3.5" /> Hủy
           </Button>
-          <Button size="sm" onClick={handleSaveCreate} className="h-8 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white">
+          <Button size="sm" onClick={handleSaveCreate} className="h-8 gap-1.5 bg-black hover:bg-white hover:text-black border border-black text-white transition-all duration-200">
             <Save className="h-3.5 w-3.5" /> Lưu
           </Button>
         </div>
@@ -411,10 +411,10 @@ const DanhMucQuanAoTree = () => {
               Hành động này sẽ xóa toàn bộ các danh mục con liên quan và không thể hoàn tác.
             </p>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setDeleteModal({ show: false })} className="border-gray-300">
+              <Button variant="outline" size="sm" onClick={() => setDeleteModal({ show: false })} className="border-gray-300 hover:bg-black hover:text-white transition-all duration-200">
                 Hủy
               </Button>
-              <Button size="sm" onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white">
+              <Button size="sm" onClick={handleDelete} className="bg-black hover:bg-white hover:text-black border border-black text-white transition-all duration-200">
                 Xác nhận xóa
               </Button>
             </div>
@@ -476,7 +476,7 @@ const DanhMucQuanAoTree = () => {
                 size="sm"
                 onClick={fetchTreeData}
                 disabled={isLoading}
-                className="gap-1.5 border-gray-300 hover:bg-gray-50"
+                className="gap-1.5 border-gray-300 hover:bg-black hover:text-white transition-all duration-200"
               >
                 <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                 Làm mới
@@ -484,7 +484,7 @@ const DanhMucQuanAoTree = () => {
               <Button
                 size="sm"
                 onClick={handleAddRoot}
-                className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+                className="gap-1.5 bg-black hover:bg-white hover:text-black border border-black text-white shadow-sm transition-all duration-200"
               >
                 <Plus className="h-4 w-4" />
                 Thêm danh mục gốc

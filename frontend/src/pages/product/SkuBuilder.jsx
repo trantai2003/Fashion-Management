@@ -254,7 +254,7 @@ export default function SkuBuilder() {
                                 variant="outline"
                                 onClick={fetchSkus}
                                 disabled={isLoading}
-                                className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
+                                className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-black hover:text-white border-gray-300"
                             >
                                 <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
                                 Tải lại
@@ -491,7 +491,7 @@ export default function SkuBuilder() {
                                                     onClick={() => setPage(pageNum)}
                                                     className={
                                                         page === pageNum
-                                                            ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
+                                                            ? "bg-black text-white hover:bg-gray-800 shadow-sm"
                                                             : "border-gray-200"
                                                     }
                                                 >
