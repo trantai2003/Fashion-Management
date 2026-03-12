@@ -50,7 +50,7 @@ function EmptyState({ onAdd }) {
       </p>
       <Button
         onClick={onAdd}
-        className="mt-6 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+        className="mt-6 bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200"
       >
         <Plus className="mr-2 h-4 w-4" />
         Tạo đợt đầu tiên
@@ -134,7 +134,7 @@ export default function StockTakeList() {
           </div>
           <Button
             onClick={() => navigate("/stock-take/new")}
-            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+            className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200"
           >
             <Plus className="w-4 h-4 mr-2" />
             Tạo đợt kiểm kê
@@ -195,7 +195,7 @@ export default function StockTakeList() {
               <Button
                 variant="outline"
                 onClick={handleReset}
-                className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300"
+                className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300"
               >
                 <RefreshCcw className="h-4 w-4" />
                 Đặt lại
@@ -373,7 +373,7 @@ export default function StockTakeList() {
                         onClick={() => handlePageChange(pageNum)}
                         className={
                           safePage === pageNum
-                            ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
+                            ? "bg-violet-600 text-white hover:bg-violet-700 shadow-sm"
                             : "border-gray-200"
                         }
                       >

@@ -108,7 +108,7 @@ function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPage
                             let p = totalPages <= 5 ? idx : page < 3 ? idx : page > totalPages - 4 ? totalPages - 5 + idx : page - 2 + idx;
                             return (
                                 <Button key={idx} variant={page === p ? "default" : "outline"} size="sm" onClick={() => onPageChange(p)}
-                                    className={page === p ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm" : "border-gray-200"}>
+                                    className={page === p ? "bg-violet-600 text-white hover:bg-violet-700 shadow-sm" : "border-gray-200"}>
                                     {p + 1}
                                 </Button>
                             );
@@ -266,7 +266,7 @@ const ColorSizeManagement = () => {
                         <h2 className="text-3xl font-bold text-gray-900 tracking-tight"></h2>
                         <p className="text-sm text-gray-600 mt-1"></p>
                     </div>
-                    <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                    <Button onClick={() => handleOpenModal('add')} className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200">
                         <Plus className="w-4 h-4 mr-2" />
                         {activeTab === 'color' ? 'Thêm màu mới' : 'Thêm size mới'}
                     </Button>
@@ -275,10 +275,10 @@ const ColorSizeManagement = () => {
                 {/* ── Tabs ── */}
                 <Tabs defaultValue="color" onValueChange={(v) => setActiveTab(v)} className="w-full">
                     <TabsList className="bg-white border border-slate-200 shadow-sm h-12 rounded-xl p-1">
-                        <TabsTrigger value="color" className="flex items-center gap-2 px-6 rounded-lg data-[state=active]:bg-slate-900 data-[state=active]:text-white transition-all">
+                        <TabsTrigger value="color" className="flex items-center gap-2 px-6 rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-all">
                             <Palette className="h-4 w-4" />Màu sắc
                         </TabsTrigger>
-                        <TabsTrigger value="size" className="flex items-center gap-2 px-6 rounded-lg data-[state=active]:bg-slate-900 data-[state=active]:text-white transition-all">
+                        <TabsTrigger value="size" className="flex items-center gap-2 px-6 rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-all">
                             <Ruler className="h-4 w-4" />Kích cỡ
                         </TabsTrigger>
                     </TabsList>
@@ -300,7 +300,7 @@ const ColorSizeManagement = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-end">
-                                    <Button variant="outline" onClick={() => setColorSearch('')} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300">
+                                    <Button variant="outline" onClick={() => setColorSearch('')} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300">
                                         <RefreshCcw className="h-4 w-4" />Đặt lại
                                     </Button>
                                 </div>
@@ -378,7 +378,7 @@ const ColorSizeManagement = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-end">
-                                    <Button variant="outline" onClick={() => setSizeSearch('')} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300">
+                                    <Button variant="outline" onClick={() => setSizeSearch('')} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300">
                                         <RefreshCcw className="h-4 w-4" />Đặt lại
                                     </Button>
                                 </div>
@@ -504,7 +504,7 @@ const ColorSizeManagement = () => {
                         {modalMode !== 'view' ? (
                             <>
                                 <Button variant="outline" className="border-gray-300 text-slate-600" onClick={() => setShowModal(false)}>Hủy bỏ</Button>
-                                <Button onClick={handleSubmit} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                                <Button onClick={handleSubmit} className="bg-violet-600 hover:bg-violet-700 text-white shadow-sm">
                                     {modalMode === 'add' ? 'Thêm mới' : 'Lưu thay đổi'}
                                 </Button>
                             </>

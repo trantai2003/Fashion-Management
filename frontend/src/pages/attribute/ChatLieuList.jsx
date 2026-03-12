@@ -171,7 +171,7 @@ export default function ChatLieuList() {
                             <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Chất liệu</h2>
                             <p className="text-sm text-gray-600 mt-1">Quản lý danh mục chất liệu sản phẩm</p>
                         </div>
-                        <Button onClick={() => navigate("/material/new")} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                        <Button onClick={() => navigate("/material/new")} className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200">
                             <Plus className="w-4 h-4 mr-2" />Thêm chất liệu
                         </Button>
                     </div>
@@ -294,7 +294,7 @@ export default function ChatLieuList() {
                                             let p = totalPages <= 5 ? idx : safePage < 3 ? idx : safePage > totalPages - 4 ? totalPages - 5 + idx : safePage - 2 + idx;
                                             return (
                                                 <Button key={idx} variant={safePage === p ? "default" : "outline"} size="sm" onClick={() => handlePageChange(p)}
-                                                    className={safePage === p ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm" : "border-gray-200"}>
+                                                    className={safePage === p ? "bg-violet-600 text-white hover:bg-violet-700 shadow-sm" : "border-gray-200"}>
                                                     {p + 1}
                                                 </Button>
                                             );

@@ -205,61 +205,61 @@ export default function SkuBuilder() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {/* Tìm kiếm */}
                         <div className="space-y-2 md:col-span-2">
-                             <Label className="text-gray-700 font-medium">Tìm kiếm</Label>
-                             <div className="relative">
-                                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                 <Input
-                                     value={keyword}
-                                     onChange={(e) => setKeyword(e.target.value)}
-                                     placeholder="Tìm theo tên SP, SKU, Barcode..."
-                                     className="h-11 pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
-                                     disabled={isLoading}
-                                 />
-                             </div>
-                         </div>
- 
-                         {/* Trạng thái */}
-                         <div className="space-y-2">
-                             <Label className="text-gray-700 font-medium">Trạng thái</Label>
-                             <DropdownMenu modal={false}>
-                                 <DropdownMenuTrigger asChild>
-                                     <Button
-                                         variant="outline"
-                                         className="w-full h-11 justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal"
-                                     >
-                                         <span className="truncate">
-                                             {STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label}
-                                         </span>
-                                         <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
-                                     </Button>
-                                 </DropdownMenuTrigger>
-                                 <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
-                                     {STATUS_OPTIONS.map((opt) => (
-                                         <DropdownMenuItem
-                                             key={opt.value}
-                                             onClick={() => setStatusFilter(opt.value)}
-                                             className="flex items-center justify-between cursor-pointer hover:bg-purple-50"
-                                         >
-                                             {opt.label}
-                                             {statusFilter === opt.value && <Check className="h-4 w-4" />}
-                                         </DropdownMenuItem>
-                                     ))}
-                                 </DropdownMenuContent>
-                             </DropdownMenu>
-                         </div>
- 
-                         {/* Tải lại */}
-                         <div className="flex items-end">
-                             <Button
-                                 variant="outline"
-                                 onClick={fetchSkus}
-                                 disabled={isLoading}
-                                 className="h-11 flex items-center gap-2 w-full transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
-                             >
-                                 <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-                                 Tải lại
-                             </Button>
-                         </div>
+                            <Label className="text-gray-700 font-medium">Tìm kiếm</Label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Input
+                                    value={keyword}
+                                    onChange={(e) => setKeyword(e.target.value)}
+                                    placeholder="Tìm theo tên SP, SKU, Barcode..."
+                                    className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Trạng thái */}
+                        <div className="space-y-2">
+                            <Label className="text-gray-700 font-medium">Trạng thái</Label>
+                            <DropdownMenu modal={false}>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal"
+                                    >
+                                        <span className="truncate">
+                                            {STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label}
+                                        </span>
+                                        <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
+                                    {STATUS_OPTIONS.map((opt) => (
+                                        <DropdownMenuItem
+                                            key={opt.value}
+                                            onClick={() => setStatusFilter(opt.value)}
+                                            className="flex items-center justify-between cursor-pointer hover:bg-purple-50"
+                                        >
+                                            {opt.label}
+                                            {statusFilter === opt.value && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {/* Tải lại */}
+                        <div className="flex items-end">
+                            <Button
+                                variant="outline"
+                                onClick={fetchSkus}
+                                disabled={isLoading}
+                                className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-black hover:text-white border-gray-300"
+                            >
+                                <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                                Tải lại
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

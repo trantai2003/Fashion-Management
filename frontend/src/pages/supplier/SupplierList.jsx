@@ -248,39 +248,18 @@ export default function SupplierList() {
             <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
                 <div className="space-y-6 w-full">
 
-                    {/* ── Page header ── */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Nhà cung cấp</h2>
-                            <p className="text-sm text-gray-600 mt-1">Quản lý thông tin các nhà cung cấp</p>
-                        </div>
-                        <Button
-                            onClick={() => navigate("/supplier/new")}
-                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Thêm nhà cung cấp
-                        </Button>
-                    </div>
-
-                    {/* ── Filter bar ── */}
-                    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-5">
-                        <div className="flex items-center gap-2 mb-4">
-                            <Filter className="h-4 w-4 text-violet-600" />
-                            <span className="text-sm font-semibold text-slate-700">Bộ lọc tìm kiếm</span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            {/* Search */}
-                            <div className="space-y-1.5 md:col-span-2">
-                                <Label className="text-gray-700 font-medium text-xs">Tìm kiếm</Label>
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                                    <Input
-                                        placeholder="Tìm theo mã, tên, người liên hệ..."
-                                        className="pl-9 border-gray-200 focus:border-violet-500 focus:ring-violet-500"
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                    />
+                    {/* ══ STATS ════════════════════════════════════════════════════════ */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Tổng nhà cung cấp</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                                    </div>
+                                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <Users className="h-6 w-6 text-blue-600" />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -299,18 +278,19 @@ export default function SupplierList() {
                             </CardContent>
                         </Card>
 
-                            {/* Reset */}
-                            <div className="flex items-end">
-                                <Button
-                                    variant="outline"
-                                    onClick={handleReset}
-                                    className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300"
-                                >
-                                    <RefreshCcw className="h-4 w-4" />
-                                    Đặt lại
-                                </Button>
-                            </div>
-                        </div>
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-gray-50 to-white">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Ngừng hoạt động</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-1">{stats.inactive}</p>
+                                    </div>
+                                    <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                                        <XCircle className="h-6 w-6 text-red-500" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
 
                     {/* ══ BỘ LỌC TÌM KIẾM ═════════════════════════════════════════════ */}
@@ -369,43 +349,8 @@ export default function SupplierList() {
                                         onClick={handleReset}
                                         className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-black hover:text-white border-gray-300"
                                     >
-                                        <ChevronLeft className="h-4 w-4" /> Trước
-                                    </Button>
-
-                                    <div className="hidden sm:flex gap-1">
-                                        {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                                            let pageNum;
-                                            if (totalPages <= 5)               pageNum = idx;
-                                            else if (safePage < 3)             pageNum = idx;
-                                            else if (safePage > totalPages - 4) pageNum = totalPages - 5 + idx;
-                                            else                               pageNum = safePage - 2 + idx;
-
-                                            return (
-                                                <Button
-                                                    key={idx}
-                                                    variant={safePage === pageNum ? "default" : "outline"}
-                                                    size="sm"
-                                                    onClick={() => handlePageChange(pageNum)}
-                                                    className={
-                                                        safePage === pageNum
-                                                            ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
-                                                            : "border-gray-200"
-                                                    }
-                                                >
-                                                    {pageNum + 1}
-                                                </Button>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handlePageChange(safePage + 1)}
-                                        disabled={safePage >= totalPages - 1}
-                                        className="gap-1 disabled:opacity-50"
-                                    >
-                                        Sau <ChevronRight className="h-4 w-4" />
+                                        <RefreshCcw className="h-4 w-4" />
+                                        Đặt lại
                                     </Button>
                                 </div>
                             </div>

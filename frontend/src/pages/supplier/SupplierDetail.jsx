@@ -156,7 +156,7 @@ export default function SupplierDetail() {
                 <button
                     type="button"
                     onClick={() => navigate("/supplier")}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-150"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-800 transition-colors duration-150"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Quay lại danh sách
@@ -346,7 +346,7 @@ export default function SupplierDetail() {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 min-w-[130px] shadow-sm transition-all duration-200 px-6"
+                                className="bg-violet-600 hover:bg-violet-700 text-white min-w-[130px] shadow-sm transition-all duration-200 px-6"
                             >
                                 {loading ? (
                                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang lưu...</>

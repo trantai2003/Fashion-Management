@@ -32,7 +32,7 @@ export default function BarcodePrint({ isOpen, onClose, products = [] }) {
                 <div className="flex-1 overflow-y-auto p-4 border border-gray-200 rounded bg-gray-50">
                     <div
                         ref={componentRef}
-                        className="bg-white p-4 flex flex-col items-center gap-8 print:p-0 print-area"
+                        className="bg-white p-4 flex flex-col items-center gap-8 print:p-0"
                     >
                         {products.map((product) => {
                             const itemsToPrint = product.bienTheSanPhams && product.bienTheSanPhams.length > 0

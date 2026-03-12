@@ -63,7 +63,7 @@ export default function PaginationComponent({
                                             value={String(size)}
                                             className={
                                                 active
-                                                    ? "bg-slate-900 text-white focus:bg-slate-900 focus:text-white"
+                                                    ? "bg-purple-600 text-white focus:bg-purple-600 focus:text-white"
                                                     : "focus:bg-gray-100"
                                             }
                                         >
@@ -94,7 +94,7 @@ export default function PaginationComponent({
                                             onClick={() => onPageChange(pageNum - 1)}
                                             isActive={isActive}
                                             className={`cursor-pointer ${isActive
-                                                ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900"
+                                                ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
                                                 : "hover:bg-gray-100"
                                                 } ${isLoading ? "pointer-events-none opacity-50" : ""}`}
                                         >
@@ -116,7 +116,7 @@ export default function PaginationComponent({
                                         onClick={() => onPageChange(totalPages - 1)}
                                         isActive={currentPage + 1 === totalPages}
                                         className={`cursor-pointer ${currentPage + 1 === totalPages
-                                            ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900"
+                                            ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
                                             : "hover:bg-gray-100"
                                             } ${isLoading ? "pointer-events-none opacity-50" : ""}`}
                                     >
