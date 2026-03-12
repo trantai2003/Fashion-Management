@@ -504,60 +504,71 @@ export default function PurchaseOrderList() {
     // Render action buttons based on order status
     const renderActionButtons = (order) => {
         return (
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreVertical className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-white shadow-lg border border-gray-100 z-50">
-                    <DropdownMenuItem onClick={(e) => {
+            <div className="flex items-center justify-center gap-1">
+                {/* Xem chi tiết */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
                         e.stopPropagation();
                         handleViewDetail(order.id);
-                    }} className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50">
-                        <Eye className="h-4 w-4 mr-2 text-purple-600" />
-                        Xem chi tiết
-                    </DropdownMenuItem>
+                    }}
+                >
+                    <Eye className="h-4 w-4 text-purple-600" />
+                </Button>
 
-                    <DropdownMenuItem onClick={(e) => {
+                {/* Thanh toán */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
                         e.stopPropagation();
                         handleViewPayment(order.id);
-                    }} className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700">
-                        <CreditCard className="h-4 w-4 mr-2 text-blue-600" />
-                        Thanh toán
-                    </DropdownMenuItem>
+                    }}
+                >
+                    <CreditCard className="h-4 w-4 text-blue-600" />
+                </Button>
 
-                    {order.trangThai === 0 && (
-                        <>
-                            <DropdownMenuItem onClick={(e) => handleEditOrder(order, e)} className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700">
-                                <Edit className="h-4 w-4 mr-2 text-orange-500" />
-                                Chỉnh sửa
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => handleApproveOrder(order, e)} className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700">
-                                <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                                Phê duyệt
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={(e) => handleDeleteOrder(order, e)}
-                                className="cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50"
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Xóa
-                            </DropdownMenuItem>
-                        </>
-                    )}
-
-                    {(order.trangThai === 1 || order.trangThai === 2) && (
-                        <DropdownMenuItem
-                            onClick={(e) => handleCancelOrder(order, e)}
-                            className="cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50"
+                {/* Trạng thái = Chờ duyệt */}
+                {order.trangThai === 0 && (
+                    <>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleEditOrder(order, e)}
                         >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Hủy đơn
-                        </DropdownMenuItem>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
+                            <Edit className="h-4 w-4 text-orange-500" />
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleApproveOrder(order, e)}
+                        >
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleDeleteOrder(order, e)}
+                        >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                    </>
+                )}
+
+                {/* Trạng thái đang xử lý */}
+                {(order.trangThai === 1 || order.trangThai === 2) && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleCancelOrder(order, e)}
+                    >
+                        <XCircle className="h-4 w-4 text-red-600" />
+                    </Button>
+                )}
+            </div>
         );
     };
 
@@ -913,135 +924,162 @@ export default function PurchaseOrderList() {
             </Card>
 
             {/* Table Section */}
-            <Card className="border-0 shadow-lg bg-white">
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-gradient-to-r from-gray-50 to-slate-50 hover:from-gray-50 hover:to-slate-50 border-b border-gray-200">
-                                    <TableHead className="font-semibold text-gray-700 w-[130px]">
-                                        Số đơn mua
-                                    </TableHead>
-                                    <TableHead className="font-semibold text-gray-700">
-                                        Nhà cung cấp
-                                    </TableHead>
-                                    <TableHead className="font-semibold text-gray-700">
-                                        Kho nhập
-                                    </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 w-[110px]">
-                                        Ngày đặt
-                                    </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 w-[110px]">
-                                        Ngày giao DK
-                                    </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 w-[140px]">
-                                        Trạng thái
-                                    </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 text-right w-[140px]">
-                                        Tổng tiền
-                                    </TableHead>
-                                    <TableHead className="font-semibold text-gray-700 text-center w-[80px]">
-                                        Thao tác
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={8} className="text-center py-12">
-                                            <div className="flex flex-col items-center justify-center gap-3">
-                                                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-                                                <span className="text-gray-500 font-medium">Đang tải dữ liệu...</span>
+            <div className="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+
+                        {/* HEADER */}
+                        <thead>
+                            <tr className="border-b border-slate-200 bg-slate-50">
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">
+                                    Số đơn mua
+                                </th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">
+                                    Nhà cung cấp
+                                </th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">
+                                    Kho nhập
+                                </th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">
+                                    Ngày đặt
+                                </th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">
+                                    Ngày giao DK
+                                </th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide">
+                                    Trạng thái
+                                </th>
+                                <th className="h-12 px-4 text-right font-semibold text-slate-600 text-xs uppercase tracking-wide">
+                                    Tổng tiền
+                                </th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide">
+                                    Thao tác
+                                </th>
+                            </tr>
+                        </thead>
+
+                        {/* BODY */}
+                        <tbody className="divide-y divide-slate-100">
+
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={8} className="py-16 text-center">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+                                            <span className="text-slate-500 font-medium">
+                                                Đang tải dữ liệu...
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : purchaseOrders.length === 0 ? (
+
+                                <tr>
+                                    <td colSpan={8} className="py-16 text-center">
+                                        <div className="flex flex-col items-center gap-4">
+                                            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                                                <Package className="h-10 w-10 text-slate-400" />
                                             </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : purchaseOrders.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={8} className="text-center py-12">
-                                            <div className="flex flex-col items-center gap-3">
-                                                <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center">
-                                                    <Package className="h-8 w-8 text-gray-400" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-gray-900 font-medium">Không tìm thấy đơn hàng</p>
-                                                    <p className="text-sm text-gray-500 mt-1">
-                                                        Thử điều chỉnh bộ lọc hoặc tạo đơn hàng mới
-                                                    </p>
-                                                </div>
+
+                                            <div>
+                                                <p className="font-semibold text-slate-800">
+                                                    Không tìm thấy đơn hàng
+                                                </p>
+                                                <p className="text-sm text-slate-500 mt-1">
+                                                    Thử thay đổi bộ lọc hoặc tạo đơn mua mới
+                                                </p>
                                             </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    purchaseOrders.map((order, index) => (
-                                        <TableRow
-                                            key={order.id}
-                                            className="hover:bg-indigo-50/50 transition-all duration-150 cursor-pointer border-b border-gray-100"
-                                            onClick={() => handleViewDetail(order.id)}
-                                            style={{
-                                                animationDelay: `${index * 50}ms`,
-                                                animation: 'fadeIn 0.3s ease-in-out forwards',
-                                            }}
-                                        >
-                                            <TableCell className="font-semibold text-indigo-600">
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            ) : (
+                                purchaseOrders.map((order) => (
+                                    <tr
+                                        key={order.id}
+                                        onClick={() => handleViewDetail(order.id)}
+                                        className="transition-colors duration-150 hover:bg-violet-50/50 cursor-pointer"
+                                    >
+
+                                        {/* Số đơn */}
+                                        <td className="px-4 py-3.5">
+                                            <span className="font-bold text-purple-600 tracking-wide">
                                                 {order.soDonMua}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-gray-900">
-                                                        {order.nhaCungCap?.tenNhaCungCap}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                        {order.nhaCungCap?.maNhaCungCap}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-gray-900">
-                                                        {order.khoNhap?.tenKho}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                        {order.khoNhap?.maKho}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-gray-600">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                                                    <span className="text-sm">{formatDate(order.ngayDatHang)}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-gray-600">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                                                    <span className="text-sm">{formatDate(order.ngayGiaoDuKien)}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={`${statusConfig[order.trangThai]?.color} border font-medium flex items-center gap-1.5 w-fit`}
-                                                >
-                                                    {getStatusIcon(order.trangThai)}
-                                                    {statusConfig[order.trangThai]?.label}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <span className="font-semibold text-gray-900">
-                                                    {formatCurrency(order.tongTien || 0)}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="text-center">
+                                            </span>
+                                        </td>
+
+                                        {/* Nhà cung cấp */}
+                                        <td className="px-4 py-3.5">
+                                            <p className="font-semibold text-slate-900">
+                                                {order.nhaCungCap?.tenNhaCungCap}
+                                            </p>
+                                            <p className="text-xs text-slate-500">
+                                                {order.nhaCungCap?.maNhaCungCap}
+                                            </p>
+                                        </td>
+
+                                        {/* Kho nhập */}
+                                        <td className="px-4 py-3.5">
+                                            <p className="font-semibold text-slate-900">
+                                                {order.khoNhap?.tenKho}
+                                            </p>
+                                            <p className="text-xs text-slate-500">
+                                                {order.khoNhap?.maKho}
+                                            </p>
+                                        </td>
+
+                                        {/* Ngày đặt */}
+                                        <td className="px-4 py-3.5">
+                                            <div className="flex items-center gap-1.5 text-slate-600 text-sm">
+                                                <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                                                {formatDate(order.ngayDatHang)}
+                                            </div>
+                                        </td>
+
+                                        {/* Ngày giao */}
+                                        <td className="px-4 py-3.5">
+                                            <div className="flex items-center gap-1.5 text-slate-600 text-sm">
+                                                <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                                                {formatDate(order.ngayGiaoDuKien)}
+                                            </div>
+                                        </td>
+
+                                        {/* Trạng thái */}
+                                        <td className="px-4 py-3.5 text-center">
+                                            <span
+                                                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${statusConfig[order.trangThai]?.color
+                                                    }`}
+                                            >
+                                                {getStatusIcon(order.trangThai)}
+                                                {statusConfig[order.trangThai]?.label}
+                                            </span>
+                                        </td>
+
+                                        {/* Tổng tiền */}
+                                        <td className="px-4 py-3.5 text-right">
+                                            <span className="font-semibold text-slate-900">
+                                                {formatCurrency(order.tongTien || 0)}
+                                            </span>
+                                        </td>
+
+                                        {/* Action */}
+                                        <td
+                                            className="px-4 py-3.5"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
                                                 {renderActionButtons(order)}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+                                ))
+                            )}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             {/* Pagination Section */}
             <Card className="border-0 shadow-md bg-white">

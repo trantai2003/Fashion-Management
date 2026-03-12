@@ -164,11 +164,6 @@ export const SIDEBAR_MENU = [
         to: "/warnings/low-stock",
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
       },
-      {
-        label: "Thẻ kho",
-        to: "/transactions",
-        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],
-      },
     ],
   },
 ];
