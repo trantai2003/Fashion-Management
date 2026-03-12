@@ -10,41 +10,91 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Save, Loader2, Users, Building2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Building2, User2, Phone, Mail, MapPin, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getSupplierById, createSupplier, updateSupplier } from "@/services/supplierService";
 
-// ── Schema ────────────────────────────────────────────────────────────────
+// ── Schema — validate SĐT Việt Nam ───────────────────────────────────────
+const PHONE_REGEX = /^(0|\+84)(3[2-9]|5[6-9]|7[06-9]|8[0-9]|9[0-9])[0-9]{7}$/;
+
 const formSchema = z.object({
     maNhaCungCap:  z.string().min(1, "Mã nhà cung cấp không được để trống").max(50, "Mã tối đa 50 ký tự"),
     tenNhaCungCap: z.string().min(1, "Tên nhà cung cấp không được để trống").max(200, "Tên tối đa 200 ký tự"),
-    nguoiLienHe:   z.string().max(100).optional(),
-    soDienThoai:   z.string().max(20).optional(),
-    email:         z.string().email("Email không hợp lệ").max(100).optional().or(z.literal("")),
-    diaChi:        z.string().max(500).optional(),
+    nguoiLienHe:   z.string().max(100, "Tên tối đa 100 ký tự").optional().or(z.literal("")),
+    soDienThoai: z
+        .string()
+        .optional()
+        .or(z.literal(""))
+        .refine(
+            (val) => !val || val.trim() === "" || PHONE_REGEX.test(val.trim()),
+            { message: "Số điện thoại không hợp lệ (VD: 0987654321 hoặc +84987654321)" }
+        ),
+    email: z
+        .string()
+        .optional()
+        .or(z.literal(""))
+        .refine(
+            (val) => !val || val.trim() === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim()),
+            { message: "Email không hợp lệ" }
+        ),
+    diaChi: z.string().max(500, "Địa chỉ tối đa 500 ký tự").optional().or(z.literal("")),
 });
 
-// ── Field group wrapper ───────────────────────────────────────────────────
-function SectionCard({ title, children }) {
+// ── Section card ──────────────────────────────────────────────────────────
+function SectionCard({ icon: Icon, iconBg, iconColor, title, children }) {
     return (
-        <div className="rounded-xl ring-1 ring-slate-200 overflow-hidden">
-            <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-100">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{title}</p>
+        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+            <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
+                <div className={`flex h-9 w-9 items-center justify-center rounded-full ${iconBg}`}>
+                    <Icon className={`h-4 w-4 ${iconColor}`} />
+                </div>
+                <p className="font-semibold text-slate-900 text-sm">{title}</p>
             </div>
-            <div className="p-5 space-y-5">{children}</div>
+            <div className="p-6">{children}</div>
+        </div>
+    );
+}
+
+// ── Status toggle button ──────────────────────────────────────────────────
+function StatusToggle({ value, onChange }) {
+    return (
+        <div className="flex gap-3">
+            <button
+                type="button"
+                onClick={() => onChange(true)}
+                className={`inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
+                    value
+                        ? "border-emerald-400 bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-100"
+                        : "border-slate-200 bg-white text-slate-400 hover:border-emerald-200 hover:bg-emerald-50/50 hover:text-emerald-600"
+                }`}
+            >
+                <CheckCircle2 className={`h-4 w-4 transition-colors ${value ? "text-emerald-500" : "text-slate-300"}`} />
+                Hoạt động
+            </button>
+            <button
+                type="button"
+                onClick={() => onChange(false)}
+                className={`inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
+                    !value
+                        ? "border-slate-400 bg-slate-100 text-slate-700 shadow-sm"
+                        : "border-slate-200 bg-white text-slate-400 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-600"
+                }`}
+            >
+                <XCircle className={`h-4 w-4 transition-colors ${!value ? "text-slate-500" : "text-slate-300"}`} />
+                Ngừng hoạt động
+            </button>
         </div>
     );
 }
 
 // ── Main component ────────────────────────────────────────────────────────
 export default function SupplierDetail() {
-    const { id }    = useParams();
-    const navigate  = useNavigate();
-    const isEdit    = !!id;
+    const { id }   = useParams();
+    const navigate = useNavigate();
+    const isEdit   = !!id;
 
-    const [loading,    setLoading]    = useState(false);
-    const [trangThai,  setTrangThai]  = useState(true);
+    const [loading,   setLoading]   = useState(false);
+    const [trangThai, setTrangThai] = useState(true);
 
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -100,9 +150,9 @@ export default function SupplierDetail() {
 
     return (
         <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-            <div className="max-w-3xl mx-auto space-y-6">
 
-                {/* Back */}
+            {/* ── Top bar ── */}
+            <div className="flex items-center justify-between">
                 <button
                     type="button"
                     onClick={() => navigate("/supplier")}
@@ -111,203 +161,204 @@ export default function SupplierDetail() {
                     <ArrowLeft className="h-4 w-4" />
                     Quay lại danh sách
                 </button>
-
-                {/* Page title */}
-                <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-                        {isEdit ? "Chỉnh sửa nhà cung cấp" : "Thêm nhà cung cấp mới"}
-                    </h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                        {isEdit ? "Cập nhật thông tin nhà cung cấp" : "Nhập thông tin để tạo nhà cung cấp mới"}
-                    </p>
-                </div>
-
-                {/* Form card */}
-                <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                    {/* Card header */}
-                    <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100">
-                            <Building2 className="h-4 w-4 text-violet-600" />
-                        </div>
-                        <div>
-                            <p className="font-semibold text-slate-900 leading-snug">Thông tin nhà cung cấp</p>
-                            <p className="text-xs text-slate-500 mt-0.5">Vui lòng điền đầy đủ các trường bắt buộc</p>
-                        </div>
-                    </div>
-
-                    {loading && isEdit ? (
-                        <div className="flex items-center justify-center py-16 gap-2">
-                            <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
-                            <span className="text-sm text-gray-600">Đang tải...</span>
-                        </div>
-                    ) : (
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)}>
-                                <div className="p-6 space-y-5">
-                                    {/* Section: Định danh */}
-                                    <SectionCard title="Thông tin định danh">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                            <FormField
-                                                control={form.control}
-                                                name="maNhaCungCap"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-sm font-semibold text-slate-700">
-                                                            Mã nhà cung cấp <span className="text-red-500">*</span>
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                placeholder="VD: SUP001"
-                                                                className="border-gray-200 focus:border-violet-500 focus:ring-violet-500 disabled:bg-slate-50 disabled:text-slate-500"
-                                                                {...field}
-                                                                disabled={isEdit}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage className="text-red-500 text-xs" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="tenNhaCungCap"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-sm font-semibold text-slate-700">
-                                                            Tên nhà cung cấp <span className="text-red-500">*</span>
-                                                        </FormLabel>
-                                                        <FormControl>
-                                                            <Input
-                                                                placeholder="VD: Công ty ABC Việt Nam"
-                                                                className="border-gray-200 focus:border-violet-500 focus:ring-violet-500"
-                                                                {...field}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage className="text-red-500 text-xs" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                    </SectionCard>
-
-                                    {/* Section: Liên hệ */}
-                                    <SectionCard title="Thông tin liên hệ">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                            <FormField
-                                                control={form.control}
-                                                name="nguoiLienHe"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-sm font-semibold text-slate-700">Người liên hệ</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="VD: Nguyễn Văn A" className="border-gray-200 focus:border-violet-500" {...field} />
-                                                        </FormControl>
-                                                        <FormMessage className="text-red-500 text-xs" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="soDienThoai"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-sm font-semibold text-slate-700">Số điện thoại</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="VD: 0987654321" className="border-gray-200 focus:border-violet-500" {...field} />
-                                                        </FormControl>
-                                                        <FormMessage className="text-red-500 text-xs" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="email"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel className="text-sm font-semibold text-slate-700">Email</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="VD: abc@company.vn" className="border-gray-200 focus:border-violet-500" {...field} />
-                                                        </FormControl>
-                                                        <FormMessage className="text-red-500 text-xs" />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                        <FormField
-                                            control={form.control}
-                                            name="diaChi"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-sm font-semibold text-slate-700">Địa chỉ</FormLabel>
-                                                    <FormControl>
-                                                        <Textarea
-                                                            placeholder="VD: Số 123 Đường Láng Hạ, Hà Nội"
-                                                            className="border-gray-200 focus:border-violet-500 resize-none"
-                                                            rows={3}
-                                                            {...field}
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage className="text-red-500 text-xs" />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </SectionCard>
-
-                                    {/* Section: Trạng thái */}
-                                    <SectionCard title="Trạng thái hoạt động">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-sm font-semibold text-slate-700">Trạng thái</p>
-                                                <p className="text-xs text-slate-500 mt-0.5">Bật để nhà cung cấp hoạt động, tắt để tạm ngừng</p>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <Switch
-                                                    checked={trangThai}
-                                                    onCheckedChange={setTrangThai}
-                                                    className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-slate-300 transition-colors duration-300"
-                                                />
-                                                {trangThai ? (
-                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                                        Hoạt động
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                                                        Ngừng hoạt động
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </SectionCard>
-                                </div>
-
-                                {/* Footer */}
-                                <div className="flex justify-end gap-3 px-6 py-5 bg-slate-50 border-t border-slate-100">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="border-gray-300 text-slate-600"
-                                        onClick={() => navigate("/supplier")}
-                                    >
-                                        Hủy
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="bg-violet-600 hover:bg-violet-700 text-white min-w-[120px] shadow-sm transition-all duration-200"
-                                    >
-                                        {loading ? (
-                                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang lưu...</>
-                                        ) : (
-                                            <><Save className="mr-2 h-4 w-4" />{isEdit ? "Cập nhật" : "Thêm mới"}</>
-                                        )}
-                                    </Button>
-                                </div>
-                            </form>
-                        </Form>
-                    )}
-                </div>
             </div>
+
+            {/* ── Page title ── */}
+            <div>
+                <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+                    {isEdit ? "Chỉnh sửa nhà cung cấp" : "Thêm nhà cung cấp mới"}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                    {isEdit ? "Cập nhật thông tin nhà cung cấp" : "Nhập thông tin để tạo nhà cung cấp mới"}
+                </p>
+            </div>
+
+            {loading && isEdit ? (
+                <div className="flex items-center justify-center py-24 gap-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                    <span className="text-sm text-gray-600">Đang tải...</span>
+                </div>
+            ) : (
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+
+                        {/* ── Row 1: Định danh ── */}
+                        <SectionCard icon={Building2} iconBg="bg-violet-100" iconColor="text-violet-600" title="Thông tin định danh">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <FormField
+                                    control={form.control}
+                                    name="maNhaCungCap"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-sm font-semibold text-slate-700">
+                                                Mã nhà cung cấp <span className="text-red-500">*</span>
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="VD: SUP001"
+                                                    className="border-gray-200 focus:border-violet-500 focus:ring-violet-500 disabled:bg-slate-50 disabled:text-slate-400 font-mono"
+                                                    {...field}
+                                                    disabled={isEdit}
+                                                />
+                                            </FormControl>
+                                            <FormMessage className="text-red-500 text-xs" />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="tenNhaCungCap"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-sm font-semibold text-slate-700">
+                                                Tên nhà cung cấp <span className="text-red-500">*</span>
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="VD: Công ty ABC Việt Nam"
+                                                    className="border-gray-200 focus:border-violet-500 focus:ring-violet-500"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage className="text-red-500 text-xs" />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </SectionCard>
+
+                        {/* ── Row 2: Liên hệ + Địa chỉ & Trạng thái ── */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+                            {/* Liên hệ */}
+                            <SectionCard icon={User2} iconBg="bg-blue-100" iconColor="text-blue-600" title="Thông tin liên hệ">
+                                <div className="space-y-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="nguoiLienHe"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-sm font-semibold text-slate-700">
+                                                    <span className="inline-flex items-center gap-1.5">
+                                                        <User2 className="h-3.5 w-3.5 text-slate-400" />
+                                                        Người liên hệ
+                                                    </span>
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="VD: Nguyễn Văn A" className="border-gray-200 focus:border-violet-500" {...field} />
+                                                </FormControl>
+                                                <FormMessage className="text-red-500 text-xs" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="soDienThoai"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-sm font-semibold text-slate-700">
+                                                    <span className="inline-flex items-center gap-1.5">
+                                                        <Phone className="h-3.5 w-3.5 text-slate-400" />
+                                                        Số điện thoại
+                                                    </span>
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        placeholder="VD: 0987654321"
+                                                        className="border-gray-200 focus:border-violet-500"
+                                                        maxLength={15}
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage className="text-red-500 text-xs" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="email"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-sm font-semibold text-slate-700">
+                                                    <span className="inline-flex items-center gap-1.5">
+                                                        <Mail className="h-3.5 w-3.5 text-slate-400" />
+                                                        Email
+                                                    </span>
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="VD: abc@company.vn" className="border-gray-200 focus:border-violet-500" {...field} />
+                                                </FormControl>
+                                                <FormMessage className="text-red-500 text-xs" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </SectionCard>
+
+                            {/* Địa chỉ + Trạng thái */}
+                            <div className="space-y-5">
+                                <SectionCard icon={MapPin} iconBg="bg-orange-100" iconColor="text-orange-500" title="Địa chỉ">
+                                    <FormField
+                                        control={form.control}
+                                        name="diaChi"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder="VD: Số 123 Đường Láng Hạ, Quận Đống Đa, Hà Nội"
+                                                        className="border-gray-200 focus:border-violet-500 resize-none"
+                                                        rows={4}
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage className="text-red-500 text-xs" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </SectionCard>
+
+                                {/* Trạng thái */}
+                                <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                                    <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
+                                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
+                                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                                        </div>
+                                        <p className="font-semibold text-slate-900 text-sm">Trạng thái hoạt động</p>
+                                    </div>
+                                    <div className="p-6">
+                                        <p className="text-xs text-slate-500 mb-3">Chọn trạng thái hoạt động của nhà cung cấp</p>
+                                        <StatusToggle value={trangThai} onChange={setTrangThai} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── Footer actions ── */}
+                        <div className="flex justify-end gap-3 pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="border-gray-300 text-slate-600 hover:bg-slate-100 px-6"
+                                onClick={() => navigate("/supplier")}
+                            >
+                                Hủy
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="bg-violet-600 hover:bg-violet-700 text-white min-w-[130px] shadow-sm transition-all duration-200 px-6"
+                            >
+                                {loading ? (
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang lưu...</>
+                                ) : (
+                                    <><Save className="mr-2 h-4 w-4" />{isEdit ? "Cập nhật" : "Thêm mới"}</>
+                                )}
+                            </Button>
+                        </div>
+
+                    </form>
+                </Form>
+            )}
         </div>
     );
 }

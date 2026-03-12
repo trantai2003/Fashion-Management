@@ -71,20 +71,6 @@ export default function ResetUserPasswordByAdmin() {
         <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
 
 
-            {/* HEADER */}
-            <div className="flex items-center justify-between">
-
-                <Link
-                    to="/users"
-                    className="flex items-center gap-2 text-sm font-semibold hover:underline"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Quay lại danh sách
-                </Link>
-
-            </div>
-
-
             {/* CARD */}
             <div className="flex justify-center">
 

@@ -12,11 +12,11 @@ import java.util.Optional;
 @Repository
 public interface SanPhamQuanAoRepository extends JpaRepository<SanPhamQuanAo, Integer>, JpaSpecificationExecutor<SanPhamQuanAo> {
 
-
     Optional<SanPhamQuanAo> findSanPhamQuanAoByMaSanPham(String maSanPham);
     @Query("SELECT s FROM SanPhamQuanAo s " +
             "LEFT JOIN FETCH s.danhMuc d " +
             "LEFT JOIN FETCH d.danhMucCha " +
             "WHERE s.id = :id")
     Optional<SanPhamQuanAo> findDetailById(@Param("id") Integer id);
+
 }

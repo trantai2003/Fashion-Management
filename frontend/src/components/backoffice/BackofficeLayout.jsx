@@ -13,7 +13,7 @@ export default function BackofficeLayout() {
         {
             key: "DASHBOARD",
             match: (path) => path === "/dashboard",
-            title: "Admin Dashboard",
+            title: "Dashboard",
             subtitle: "Tổng quan hoạt động quản trị",
         },
         {
@@ -38,14 +38,13 @@ export default function BackofficeLayout() {
             key: "USER_DETAIL",
             match: (path) =>
                 /^\/admin\/users\/\d+$/.test(path),
-            title: "User Detail",
+            title: "Chi tiết người dùng",
             subtitle: "Thông tin chi tiết",
         },
         {
             key: "USER_LIST",
             match: (path) => path === "/users",
-            title: "User List",
-            subtitle: "Xem danh sách nhân viên / khách hàng",
+            title: "Danh sách người dùng",
         },
         {
             key: "ATTRIBUTES",
@@ -64,6 +63,12 @@ export default function BackofficeLayout() {
             match: (path) => path === "/products",
             title: "Quản lý sản phẩm",
             subtitle: "Danh sách sản phẩm",
+        },
+        {
+            key: "SKU_BUILDER",
+            match: (path) => path === "/sku-builder",
+            title: "Danh sách Biến thể & Giá",
+            subtitle: "Quản lý biến thể SKU và giá sản phẩm",
         },
         {
             key: "SUPPLIERS",
@@ -202,6 +207,13 @@ export default function BackofficeLayout() {
             match: (path) => /^\/goods-issues\/\d+\/print$/.test(path),
             title: "In phiếu xuất kho",
             subtitle: "Xem bản in phiếu xuất kho",
+        },
+        {
+            key: "STOCK_TAKE",
+            match: (path) => path === "/stock-take",
+            title: "Quản lý kiểm kê",
+            subtitle: "Xem và quản lý các lần kiểm kê tồn kho",
+
         }
     ];
 

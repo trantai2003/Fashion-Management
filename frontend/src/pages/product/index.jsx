@@ -4,9 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { productService } from "@/services/productService.js";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Loader2, Search, Eye, Edit, Trash2, RefreshCcw, Package, Layers, TrendingUp, Plus, CheckCircle2, XCircle, ShoppingBag, ChevronDown, ChevronLeft, ChevronRight, Check, Filter } from "lucide-react";
+import { Loader2, Search, Eye, Edit, Trash2, RefreshCcw, Package, Layers, Plus, CheckCircle2, XCircle, ShoppingBag, ChevronDown, ChevronLeft, ChevronRight, Check, Filter } from "lucide-react";
 import { useToggle } from "@/hooks/useToggle";
 import AddProductModal from "@/pages/product/components/product/AddProductModal";
 import EditProductModal from "@/pages/product/components/product/EditProductModal";
@@ -14,7 +14,7 @@ import ProductModal from "@/pages/product/components/product/ProductModal";
 import ConfirmModal from "@/components/ui/confirm-modal";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import InventoryDrawer from "@/pages/product/components/product/InventoryDrawer";
-import TopSellingModal from "@/pages/product/components/product/TopSellingModal";
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -109,8 +109,6 @@ export default function ProductList() {
     const [isInventoryOpen, setIsInventoryOpen] = useState(false);
     const [selectedInventoryProduct, setSelectedInventoryProduct] = useState(null);
 
-    // ── State mới: Top Selling Modal ─────────────────────────────────────────
-    const [isTopSellingOpen, setIsTopSellingOpen] = useState(false);
 
     const [productToDelete, setProductToDelete] = useState(null);
     const [selectedProductId, setSelectedProductId] = useState(null);
@@ -513,14 +511,13 @@ export default function ProductList() {
 
                                                 {/* Tên sản phẩm */}
                                                 <td className="px-4 py-3.5 align-middle max-w-[260px]">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => navigate(`/products/${product.id}`)}
+                                                    <Link
+                                                        to={`/products/${product.id}`}
                                                         title={product.tenSanPham}
                                                         className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-violet-600 hover:underline cursor-pointer"
                                                     >
                                                         {product.tenSanPham}
-                                                    </button>
+                                                    </Link>
                                                     {product.moTa && (
                                                         <p className="mt-0.5 text-xs text-slate-500 line-clamp-1">
                                                             {product.moTa}
@@ -567,14 +564,13 @@ export default function ProductList() {
                                                 {/* Thao tác */}
                                                 <td className="px-4 py-3.5 align-middle">
                                                     <div className="flex items-center justify-center gap-1">
-                                                        <button
-                                                            type="button"
+                                                        <Link
+                                                            to={`/products/${product.id}`}
                                                             title="Xem chi tiết"
-                                                            onClick={() => navigate(`/products/${product.id}`)}
                                                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-violet-600 hover:bg-violet-50 hover:border-violet-200"
                                                         >
                                                             <Eye className="h-4 w-4" />
-                                                        </button>
+                                                        </Link>
                                                         <button
                                                             type="button"
                                                             title="Tồn kho biến thể"
@@ -757,10 +753,6 @@ export default function ProductList() {
                 product={selectedInventoryProduct}
             />
 
-            <TopSellingModal
-                isOpen={isTopSellingOpen}
-                onClose={() => setIsTopSellingOpen(false)}
-            />
         </div>
     );
 }
