@@ -112,21 +112,22 @@ export default function PhieuChuyenKhoList() {
         <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
             <div className="space-y-6 w-full">
 
-                {/* ══ STATS ════════════════════════════════════════════════════════ */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Tổng phiếu chuyển</p>
-                                    <p className="text-2xl font-bold text-gray-900 mt-1">{total}</p>
-                                </div>
-                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <Package className="h-6 w-6 text-blue-600" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                {/* Bảng dữ liệu */}
+                <section className="bg-white border rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-4 flex justify-between items-center bg-gray-50/50">
+                        <span className="font-semibold text-gray-700">Danh sách phiếu chuyển kho</span>
+                        <div className="flex gap-3 items-center">
+                            <span className="text-xs text-gray-500">
+                                Tổng: {total}
+                            </span>
+                            <Link
+                                to="/transfer-tickets/create"
+                                className="px-3 py-2 text-sm text-white rounded-md bg-slate-900 border border-slate-900 hover:bg-white hover:text-slate-900"
+                            >
+                                + Tạo Phiếu Chuyển Kho
+                            </Link>
+                        </div>
+                    </div>
 
                     <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-white">
                         <CardContent className="p-6">
@@ -156,66 +157,15 @@ export default function PhieuChuyenKhoList() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-red-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Đã hủy</p>
-                                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.daHuy}</p>
-                                </div>
-                                <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
-                                    <XCircle className="h-6 w-6 text-red-500" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* ══ BỘ LỌC TÌM KIẾM ═════════════════════════════════════════════ */}
-                <Card className="border-0 shadow-lg bg-white">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                            <Filter className="h-5 w-5 text-purple-600" />
-                            Bộ lọc tìm kiếm
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            {/* Số phiếu */}
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Số phiếu</Label>
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                    <Input
-                                        placeholder="Nhập số phiếu..."
-                                        className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
-                                        value={filters.keyword}
-                                        onChange={(e) => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
-                                        disabled={loading}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Kho nhập (Đích) */}
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Kho nhập (Đích)</Label>
-                                <Input
-                                    placeholder="Tên kho nhận hàng"
-                                    className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
-                                    value={filters.tenKhoNhap}
-                                    onChange={(e) => setFilters(p => ({ ...p, tenKhoNhap: e.target.value, page: 0 }))}
-                                    disabled={loading}
-                                />
-                            </div>
-
-                            {/* Trạng thái */}
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Trạng thái</Label>
-                                <DropdownMenu modal={false}>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal"
+                            {[...Array(totalPages)].map((_, index) => {
+                                // Chỉ hiển thị tối đa 3 trang đầu hoặc xử lý logic rút gọn nếu cần
+                                if (index < 3 || index === totalPages - 1) {
+                                    const active = filters.page === index;
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => setFilters((prev) => ({ ...prev, page: index }))}
+                                            className={`px-3 py-1 text-sm border rounded ${active ? "bg-slate-900 text-white border-slate-900 hover:bg-white hover:text-slate-900" : "bg-white"}`}
                                         >
                                             <span className="truncate">
                                                 {STATUS_OPTIONS.find((s) => s.value === filters.trangThai)?.label || "Tất cả trạng thái"}

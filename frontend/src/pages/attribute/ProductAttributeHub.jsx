@@ -1,9 +1,8 @@
-// src/pages/attributes/ProductAttributeHub.jsx
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight,
     Save, RotateCcw, Palette, Ruler, Layers, Loader2, AlertTriangle,
-    Filter, RefreshCcw, ChevronDown,
+    Filter, RefreshCcw, ChevronDown, Check, Package
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -63,9 +62,9 @@ function ConfirmDeleteModal({ target, label, isDeleting, onConfirm, onCancel }) 
     if (!target) return null;
     const name = target.tenMau || target.tenSize || target.tenChatLieu;
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={!isDeleting ? onCancel : undefined} />
-            <div className="relative z-10 w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200/80 overflow-hidden">
+            <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200/80 overflow-hidden">
                 <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-red-50">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
                         <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -92,7 +91,7 @@ function ConfirmDeleteModal({ target, label, isDeleting, onConfirm, onCancel }) 
 }
 
 function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPageSizeChange }) {
-    const start = page * pageSize + 1;
+    const start = total === 0 ? 0 : page * pageSize + 1;
     const end   = Math.min((page + 1) * pageSize, total);
     return (
         <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-4">
@@ -124,7 +123,7 @@ function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPage
                             let p = totalPages <= 5 ? idx : page < 3 ? idx : page > totalPages - 4 ? totalPages - 5 + idx : page - 2 + idx;
                             return (
                                 <Button key={idx} variant={page === p ? "default" : "outline"} size="sm" onClick={() => onPageChange(p)}
-                                    className={page === p ? "bg-violet-600 text-white hover:bg-violet-700 shadow-sm" : "border-gray-200"}>
+                                    className={page === p ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm" : "border-gray-200"}>
                                     {p + 1}
                                 </Button>
                             );
@@ -246,9 +245,15 @@ const ProductAttributeHub = () => {
     const totalPages = Math.max(1, Math.ceil(total / filters.size));
     const TabIcon = TAB_ICONS[activeTab];
 
+    const getTabIcon = () => {
+        if (activeTab === 'color') return <div className="h-4 w-4 rounded-full border border-gray-200 shadow-sm" style={{ background: 'linear-gradient(to br, #ff0000, #00ff00, #0000ff)' }} />;
+        if (activeTab === 'size') return <Ruler className="h-5 w-5 text-blue-600" />;
+        return <Layers className="h-5 w-5 text-purple-600" />;
+    };
+
     return (
-        <>
-            {deleteConfig.open && (
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+             {deleteConfig.open && (
                 <ConfirmDeleteModal
                     target={deleteConfig.item}
                     label={TAB_LABELS[activeTab]}
@@ -258,18 +263,16 @@ const ProductAttributeHub = () => {
                 />
             )}
 
-            <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-
-                {/* ── Header ── */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight"></h2>
-                        <p className="text-sm text-gray-600 mt-1"></p>
-                    </div>
-                    <Button onClick={() => handleOpenModal('add')} className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200">
-                        <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]}
-                    </Button>
+            {/* ── Header ── */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Quản lý Thuộc tính</h2>
+                    <p className="text-sm text-gray-600 mt-1">Quản lý màu sắc, kích cỡ và chất liệu sản phẩm</p>
                 </div>
+                <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                    <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
+                </Button>
+            </div>
 
                 {/* ── Tabs ── */}
                 <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleReset(); }}>
@@ -278,7 +281,7 @@ const ProductAttributeHub = () => {
                             const Icon = TAB_ICONS[tab];
                             return (
                                 <TabsTrigger key={tab} value={tab}
-                                    className="flex items-center gap-2 px-6 rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-all">
+                                    className="flex items-center gap-2 px-6 rounded-lg data-[state=active]:bg-slate-900 data-[state=active]:text-white transition-all">
                                     <Icon className="h-4 w-4" />{TAB_NAMES[tab]}
                                 </TabsTrigger>
                             );
@@ -287,30 +290,42 @@ const ProductAttributeHub = () => {
                 </Tabs>
 
                 {/* ── Filter bar ── */}
-                <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-5">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Filter className="h-4 w-4 text-violet-600" />
-                        <span className="text-sm font-semibold text-slate-700">Bộ lọc tìm kiếm</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="space-y-1.5 md:col-span-3">
-                            <Label className="text-gray-700 font-medium text-xs">Tìm kiếm mã hoặc tên</Label>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                                <Input value={filters.keyword} onChange={e => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
-                                    placeholder="Nhập từ khóa tìm kiếm..." className="pl-9 border-gray-200 focus:border-violet-500 focus:ring-violet-500" />
+                <Card className="border-0 shadow-lg bg-white">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                            <Filter className="h-5 w-5 text-violet-600" />
+                            Bộ lọc tìm kiếm
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                        <div className="flex flex-wrap items-end gap-4">
+                            <div className="flex-1 min-w-[300px] space-y-2">
+                                <Label className="text-gray-700 font-medium">Tìm kiếm mã hoặc tên</Label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                    <Input value={filters.keyword} onChange={e => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
+                                        placeholder="Nhập từ khóa tìm kiếm..." className="h-11 pl-10 border-gray-200 focus:border-violet-500 focus:ring-violet-500" />
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex items-end">
-                            <Button variant="outline" onClick={handleReset} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300">
-                                <RefreshCcw className="h-4 w-4" />Đặt lại
+                            <Button variant="outline" onClick={handleReset} className="h-11 px-6 flex items-center gap-2 transition-all duration-300 hover:bg-slate-50 border-gray-300">
+                                <RefreshCcw className="h-4 w-4" />Đặt lại bộ lọc
                             </Button>
                         </div>
-                    </div>
+                    </CardContent>
+                </Card>
+
+                {/* ── Action buttons ── */}
+                <div className="flex items-center justify-end">
+                    <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 px-6 h-11">
+                        <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
+                    </Button>
                 </div>
 
                 {/* ── Table ── */}
                 <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                    <div className="p-4 border-b border-slate-200 bg-slate-50/50">
+                        <h3 className="text-sm font-bold text-slate-800">Danh sách {TAB_LABELS[activeTab]}</h3>
+                    </div>
                     {loading ? (
                         <div className="flex items-center justify-center py-16 gap-2">
                             <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
@@ -332,7 +347,7 @@ const ProductAttributeHub = () => {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {data.map((item, index) => (
-                                        <tr key={item.id} className="hover:bg-violet-50/50 transition-colors duration-150">
+                                        <tr key={item.id} className="hover:bg-violet-50/50 transition-colors duration-150 cursor-pointer" onClick={() => handleOpenModal('edit', item)}>
                                             <td className="px-4 py-3.5 align-middle text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
                                             <td className="px-4 py-3.5 align-middle">
                                                 <span className="font-bold text-violet-600 tracking-wide font-mono">
@@ -383,7 +398,6 @@ const ProductAttributeHub = () => {
                         onPageSizeChange={(s) => setFilters(prev => ({ ...prev, size: s, page: 0 }))}
                     />
                 )}
-            </div>
 
             {/* ── Add/Edit Modal ── */}
             <Dialog open={modalConfig.open} onOpenChange={o => setModalConfig({ ...modalConfig, open: o })}>
@@ -461,7 +475,7 @@ const ProductAttributeHub = () => {
 
                         <DialogFooter className="border-t border-slate-100 pt-4 gap-2">
                             <Button type="button" variant="outline" className="border-gray-300 text-slate-600" onClick={() => setModalConfig({ ...modalConfig, open: false })}>Hủy bỏ</Button>
-                            <Button type="submit" className="bg-violet-600 hover:bg-violet-700 text-white shadow-sm">
+                            <Button type="submit" className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
                                 <Save className="mr-2 h-4 w-4" />{modalConfig.mode === 'add' ? 'Thêm mới' : 'Lưu thay đổi'}
                             </Button>
                         </DialogFooter>
@@ -527,13 +541,13 @@ const ProductAttributeHub = () => {
                     )}
                     <DialogFooter className="border-t border-slate-100 pt-4 gap-2">
                         <Button variant="outline" className="border-gray-300 text-slate-600" onClick={() => setViewItem(null)}>Đóng</Button>
-                        <Button className="bg-violet-600 hover:bg-violet-700 text-white" onClick={() => { handleOpenModal('edit', viewItem); setViewItem(null); }}>
+                        <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200" onClick={() => { handleOpenModal('edit', viewItem); setViewItem(null); }}>
                             <Edit className="mr-2 h-4 w-4" />Chỉnh sửa
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </>
+        </div>
     );
 };
 

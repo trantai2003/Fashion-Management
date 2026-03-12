@@ -135,17 +135,185 @@ export default function PhieuNhapKhoList() {
         <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
             <div className="space-y-6 w-full">
 
-                {/* ══ STATS ════════════════════════════════════════════════════════ */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Tổng phiếu nhập</p>
-                                    <p className="text-2xl font-bold text-gray-900 mt-1">{total}</p>
+                {/* FILTERS SECTION */}
+                <section className="bg-white border rounded-xl p-4 shadow-sm">
+                    <div className="grid md:grid-cols-4 gap-3">
+                        <div>
+                            <label className="text-xs text-gray-600">Số phiếu / PO</label>
+                            <input
+                                value={filters.keyword}
+                                onChange={(e) => setFilters((p) => ({ ...p, keyword: e.target.value, page: 0 }))}
+                                placeholder="Nhập số phiếu hoặc PO"
+                                className="mt-1 w-full h-11 px-3 rounded-md border focus:ring-2 focus:ring-purple-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs text-gray-600">Nhà cung cấp</label>
+                            <input
+                                value={filters.nhaCungCap}
+                                onChange={(e) => setFilters((p) => ({ ...p, nhaCungCap: e.target.value, page: 0 }))}
+                                placeholder="Tên nhà cung cấp"
+                                className="mt-1 w-full h-11 px-3 rounded-md border focus:ring-2 focus:ring-purple-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs text-gray-600">Trạng thái</label>
+                            <select
+                                value={filters.trangThai}
+                                onChange={(e) => setFilters((p) => ({ ...p, trangThai: e.target.value, page: 0 }))}
+                                className="mt-1 w-full h-11 px-3 rounded-md border bg-white outline-none"
+                            >
+                                <option value="">Tất cả</option>
+                                <option value="0">Nháp</option>
+                                <option value="3">Đã nhập kho</option>
+                                <option value="4">Đã hủy</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-xs text-gray-600">Ngày nhập</label>
+                            <input
+                                type="date"
+                                value={filters.ngayNhap}
+                                onChange={(e) => setFilters((p) => ({ ...p, ngayNhap: e.target.value, page: 0 }))}
+                                className="mt-1 w-full h-11 px-3 rounded-md border focus:ring-2 focus:ring-purple-500 outline-none"
+                            />
+                        </div>
+                    </div>
+                    <div className="mt-3 flex justify-end">
+                        <button
+                            onClick={handleReset}
+                            className="px-3 py-2 text-sm transition-all duration-300 hover:bg-black hover:text-white border border-gray-300 rounded-md"
+                        >
+                            Reset Bộ Lọc
+                        </button>
+                    </div>
+                </section>
+
+                {/* TABLE SECTION */}
+                <section className="bg-white border rounded-xl shadow-sm overflow-hidden">
+                    <div className="p-4 flex justify-between items-center border-b">
+                        <span className="text-sm font-semibold">Danh sách phiếu nhập</span>
+                        <div className="flex gap-3 items-center">
+                            <span className="text-xs text-gray-500">Tổng: {total}</span>
+                            <Link
+                                to="/goods-receipts/create"
+                                className="px-3 py-2 text-sm text-white rounded-md bg-slate-900 border border-slate-900 hover:bg-white hover:text-slate-900 transition-colors"
+                            >
+                                + Tạo Phiếu Nhập Kho
+                            </Link>
+                        </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-50 text-gray-500 font-medium">
+                                <tr>
+                                    <th className="px-4 py-3">Số phiếu</th>
+                                    <th className="px-4 py-3">Đơn mua (PO)</th>
+                                    <th className="px-4 py-3">Nhà cung cấp</th>
+                                    <th className="px-4 py-3">Kho</th>
+                                    <th className="px-4 py-3">Ngày tạo</th>
+                                    <th className="px-4 py-3">Ngày nhập</th>
+                                    <th className="px-4 py-3">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={6} className="p-10 text-center text-gray-400">Đang tải dữ liệu...</td>
+                                    </tr>
+                                ) : data.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="p-10 text-center text-gray-400">Không tìm thấy dữ liệu</td>
+                                    </tr>
+                                ) : (
+                                    data.map((item) => (
+                                        <tr
+                                            key={item.id}
+                                            onClick={() => navigate(`/goods-receipts/${item.id}`)}
+                                            className="cursor-pointer hover:bg-gray-50 transition-colors"
+                                        >
+                                            <td className="px-4 py-4 font-semibold text-purple-600">{item.soPhieuNhap}</td>
+                                            <td className="px-4 py-4 text-gray-600">{item.soDonMua || "-"}</td>
+                                            <td className="px-4 py-4">{item.tenNhaCungCap}</td>
+                                            <td className="px-4 py-4">{item.tenKho}</td>
+                                            <td className="px-4 py-4">
+                                                {new Date(item.ngayTao).toLocaleDateString("vi-VN")}
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                {item.ngayNhap
+                                                    ? new Date(item.ngayNhap).toLocaleDateString("vi-VN")
+                                                    : "Chưa nhập kho"}
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <span className={`px-2 py-1 text-xs rounded ${STATUS_MAP[item.trangThai]?.className}`}>
+                                                    {STATUS_MAP[item.trangThai]?.label}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* PAGINATION SECTION */}
+                    <div className="p-4 border-t bg-white">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-500">
+                                Đang hiển thị {data.length} / {total}
+                            </span>
+
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500">Rows:</span>
+                                    <select
+                                        value={filters.size}
+                                        onChange={(e) => setFilters((p) => ({ ...p, size: Number(e.target.value), page: 0 }))}
+                                        className="h-8 w-16 px-1 text-xs border rounded-md outline-none"
+                                    >
+                                        {[10, 20, 30, 40, 50].map((s) => (
+                                            <option key={s} value={s}>{s}</option>
+                                        ))}
+                                    </select>
                                 </div>
-                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <Package className="h-6 w-6 text-blue-600" />
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        disabled={filters.page === 0}
+                                        onClick={() => setFilters((p) => ({ ...p, page: p.page - 1 }))}
+                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50 hover:bg-gray-50"
+                                    >
+                                        Trước
+                                    </button>
+
+                                    <div className="flex items-center gap-1">
+                                        {[...Array(totalPages)].map((_, idx) => {
+                                            // Logic hiển thị phân trang có rút gọn (giống PhieuXuat)
+                                            if (totalPages > 5 && idx > 2 && idx < totalPages - 1 && Math.abs(idx - filters.page) > 1) {
+                                                if (idx === 3) return <span key={idx} className="px-1 text-gray-400">...</span>;
+                                                return null;
+                                            }
+                                            return (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => setFilters((p) => ({ ...p, page: idx }))}
+                                                    className={`px-3 py-1 text-sm border rounded transition-colors ${filters.page === idx ? "bg-slate-900 text-white border-slate-900 hover:bg-white hover:text-slate-900" : "bg-white hover:bg-gray-50"
+                                                        }`}
+                                                >
+                                                    {idx + 1}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <button
+                                        disabled={filters.page + 1 >= totalPages}
+                                        onClick={() => setFilters((p) => ({ ...p, page: p.page + 1 }))}
+                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50 hover:bg-gray-50"
+                                    >
+                                        Sau
+                                    </button>
                                 </div>
                             </div>
                         </CardContent>

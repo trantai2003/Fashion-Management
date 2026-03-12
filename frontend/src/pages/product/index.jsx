@@ -422,7 +422,7 @@ export default function ProductList() {
                 <div className="flex items-center justify-end gap-3">
                     <Button
                         onClick={openAddModal}
-                        className="bg-black text-white hover:bg-white hover:text-black border border-black shadow-sm transition-all duration-200"
+                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
                     >
                         <Plus className="w-4 h-4 mr-2" />
                         Thêm sản phẩm
@@ -682,7 +682,7 @@ export default function ProductList() {
                                                         onClick={() => handleFilterChange.page(pageNum)}
                                                         className={
                                                             filters.page === pageNum
-                                                                ? "bg-black text-white hover:bg-gray-800 shadow-sm"
+                                                                ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
                                                                 : "border-gray-200"
                                                         }
                                                     >
