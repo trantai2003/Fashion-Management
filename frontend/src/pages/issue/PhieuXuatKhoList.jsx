@@ -239,7 +239,7 @@ export default function PhieuXuatKhoList() {
                             </span>
                             <Link
                                 to="/goods-issues/create"
-                                className="px-3 py-2 text-sm text-white rounded-md bg-purple-600"
+                                className="px-3 py-2 text-sm text-white rounded-md bg-slate-900 border border-slate-900 hover:bg-white hover:text-slate-900"
                             >
                                 + Tạo Phiếu Xuất Kho
                             </Link>
@@ -366,7 +366,7 @@ export default function PhieuXuatKhoList() {
                                                     setFilters((prev) => ({ ...prev, page: p - 1 }))
                                                 }
                                                 className={`px-3 py-1 text-sm border rounded ${active
-                                                    ? "bg-purple-600 text-white"
+                                                    ? "bg-slate-900 text-white border-slate-900 hover:bg-white hover:text-slate-900"
                                                     : "bg-white"
                                                     }`}
                                             >
@@ -388,7 +388,7 @@ export default function PhieuXuatKhoList() {
                                                 }))
                                             }
                                             className={`px-3 py-1 text-sm border rounded ${filters.page + 1 === totalPages
-                                                ? "bg-purple-600 text-white"
+                                                ? "bg-slate-900 text-white border-slate-900 hover:bg-white hover:text-slate-900"
                                                 : "bg-white"
                                                 }`}
                                         >

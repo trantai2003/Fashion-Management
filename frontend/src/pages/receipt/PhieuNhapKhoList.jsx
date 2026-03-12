@@ -174,7 +174,7 @@ export default function PhieuNhapKhoList() {
                             <span className="text-xs text-gray-500">Tổng: {total}</span>
                             <Link
                                 to="/goods-receipts/create"
-                                className="px-3 py-2 text-sm text-white rounded-md bg-purple-600 hover:bg-purple-700 transition-colors"
+                                className="px-3 py-2 text-sm text-white rounded-md bg-slate-900 border border-slate-900 hover:bg-white hover:text-slate-900 transition-colors"
                             >
                                 + Tạo Phiếu Nhập Kho
                             </Link>
@@ -275,7 +275,7 @@ export default function PhieuNhapKhoList() {
                                                 <button
                                                     key={idx}
                                                     onClick={() => setFilters((p) => ({ ...p, page: idx }))}
-                                                    className={`px-3 py-1 text-sm border rounded transition-colors ${filters.page === idx ? "bg-purple-600 text-white border-purple-600" : "bg-white hover:bg-gray-50"
+                                                    className={`px-3 py-1 text-sm border rounded transition-colors ${filters.page === idx ? "bg-slate-900 text-white border-slate-900 hover:bg-white hover:text-slate-900" : "bg-white hover:bg-gray-50"
                                                         }`}
                                                 >
                                                     {idx + 1}

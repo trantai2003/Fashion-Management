@@ -94,15 +94,37 @@ function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPage
     const start = total === 0 ? 0 : page * pageSize + 1;
     const end   = Math.min((page + 1) * pageSize, total);
     return (
-        <Card className="border-0 shadow-md bg-white">
-            <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                        <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
-                                    {pageSize} dòng <ChevronDown className="h-4 w-4 opacity-50" />
+        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                    <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
+                                {pageSize} dòng <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                            {[5, 10, 20, 50].map(s => (
+                                <DropdownMenuItem key={s} onClick={() => onPageSizeChange(s)} className="cursor-pointer">{s} dòng</DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                <div className="text-sm text-gray-600">
+                    Hiển thị <span className="font-semibold text-gray-900">{start}</span> – <span className="font-semibold text-gray-900">{end}</span> trong tổng số <span className="font-semibold text-violet-600">{total}</span> kết quả
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => onPageChange(page - 1)} disabled={page === 0} className="gap-1 disabled:opacity-50">
+                        <ChevronLeft className="h-4 w-4" /> Trước
+                    </Button>
+                    <div className="hidden sm:flex gap-1">
+                        {[...Array(Math.min(5, totalPages))].map((_, idx) => {
+                            let p = totalPages <= 5 ? idx : page < 3 ? idx : page > totalPages - 4 ? totalPages - 5 + idx : page - 2 + idx;
+                            return (
+                                <Button key={idx} variant={page === p ? "default" : "outline"} size="sm" onClick={() => onPageChange(p)}
+                                    className={page === p ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm" : "border-gray-200"}>
+                                    {p + 1}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
@@ -264,23 +286,18 @@ const ProductAttributeHub = () => {
                     onCancel={() => { if (!isDeleting) setDeleteConfig({ open: false, item: null }); }}
                 />
             )}
-            <div className="space-y-6 w-full">
-                
-                {/* ══ STATS ════════════════════════════════════════════════════════ */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Tổng {TAB_LABELS[activeTab]}</p>
-                                    <p className="text-2xl font-bold text-gray-900 mt-1">{total}</p>
-                                </div>
-                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                    {getTabIcon()}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+
+            <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+
+                {/* ── Header ── */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight"></h2>
+                        <p className="text-sm text-gray-600 mt-1"></p>
+                    </div>
+                    <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                        <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]}
+                    </Button>
                 </div>
 
                 {/* ── Tabs ── */}
@@ -290,7 +307,7 @@ const ProductAttributeHub = () => {
                             const Icon = TAB_ICONS[tab];
                             return (
                                 <TabsTrigger key={tab} value={tab}
-                                    className="flex items-center gap-2 px-6 rounded-lg data-[state=active]:bg-violet-600 data-[state=active]:text-white transition-all">
+                                    className="flex items-center gap-2 px-6 rounded-lg data-[state=active]:bg-slate-900 data-[state=active]:text-white transition-all">
                                     <Icon className="h-4 w-4" />{TAB_NAMES[tab]}
                                 </TabsTrigger>
                             );

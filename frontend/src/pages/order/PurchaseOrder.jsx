@@ -598,7 +598,7 @@ export default function PurchaseOrderList() {
                         Làm mới
                     </Button>
                     <Button
-                        className="bg-purple-600 text-white hover:bg-purple-700 shadow-sm gap-2 transition-all duration-200"
+                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
                         onClick={() => navigate('/purchase-orders/create')}
                     >
                         <Plus className="h-4 w-4" />
@@ -896,7 +896,7 @@ export default function PurchaseOrderList() {
                     <div className="flex gap-2 mt-6">
                         <Button
                             onClick={handleSearch}
-                            className="bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
+                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
                         >
                             <Search className="h-4 w-4 mr-2" />
                             Tìm kiếm
@@ -1120,7 +1120,7 @@ export default function PurchaseOrderList() {
                                             onClick={() => handlePageChange(pageNum)}
                                             className={
                                                 pagination.pageNumber === pageNum
-                                                    ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
+                                                    ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
                                                     : "border-gray-200"
                                             }
                                         >
