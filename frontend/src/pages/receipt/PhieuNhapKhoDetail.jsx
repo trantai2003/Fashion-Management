@@ -7,9 +7,9 @@ import { toast } from "sonner";
 // Cập nhật lại Map trạng thái để phù hợp với luồng không duyệt
 const STATUS_MAP = {
     0: { label: "Đang kiểm đếm", className: "bg-amber-50 text-amber-700" },
-    1: { label: "Đang kiểm đếm", className: "bg-amber-50 text-amber-700" }, 
+    1: { label: "Đang kiểm đếm", className: "bg-amber-50 text-amber-700" },
     2: { label: "Chờ nhận hàng", className: "bg-blue-50 text-blue-700" }, // Dành cho luồng Chuyển kho
-    3: { label: "Hoàn thành", className: "bg-green-50 text-green-700" },
+    3: { label: "Đã nhập kho", className: "bg-green-50 text-green-700" },
     4: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
 };
 
@@ -74,13 +74,27 @@ export default function PhieuNhapKhoDetail() {
                         onClick={() => navigate("/goods-receipts")}
                         className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 font-medium"
                     >
-                        ← Quay lại
+                        ← Quay lại danh sách
                     </button>
 
                     <div className="flex items-center gap-2">
                         <span className={`px-3 py-1 text-xs rounded font-medium ${STATUS_MAP[data.trangThai]?.className}`}>
                             {STATUS_MAP[data.trangThai]?.label}
                         </span>
+
+                        {data.trangThai !== 4 && (
+                            <button
+                                onClick={() => navigate(`/goods-receipts/${id}/print`)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm transition-all active:scale-95"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                In phiếu
+                            </button>
+                        )}
 
                         {/* Nút Hủy: Hiện cho phiếu chưa hoàn thành */}
                         {data.trangThai < 3 && (
@@ -99,8 +113,8 @@ export default function PhieuNhapKhoDetail() {
                                 disabled={!isAllDuLo || isProcessing}
                                 onClick={() => setShowCompleteConfirm(true)}
                                 className={`px-4 py-2 rounded-md text-sm font-bold text-white shadow-sm transition-all
-                                    ${isAllDuLo && !isProcessing 
-                                        ? "bg-green-600 hover:bg-green-700" 
+                                    ${isAllDuLo && !isProcessing
+                                        ? "bg-green-600 hover:bg-green-700"
                                         : "bg-gray-300 cursor-not-allowed"}`}
                             >
                                 {isInternalTransfer ? "Xác nhận nhận hàng →" : "Xác nhận nhập kho thực tế"}
@@ -167,8 +181,8 @@ export default function PhieuNhapKhoDetail() {
                                             <button
                                                 onClick={() => navigate(`/goods-receipts/${data.id}/lot-input/${item.bienTheSanPhamId}`)}
                                                 className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm
-                                                    ${data.trangThai === 0 
-                                                        ? "bg-purple-600 text-white hover:bg-purple-700" 
+                                                    ${data.trangThai === 0
+                                                        ? "bg-purple-600 text-white hover:bg-purple-700"
                                                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                                             >
                                                 {data.trangThai === 0 ? "Khai báo lô →" : "Xem lô"}
@@ -185,12 +199,12 @@ export default function PhieuNhapKhoDetail() {
                 {showCompleteConfirm && (
                     <ConfirmModal
                         title={isInternalTransfer ? "Xác nhận nhận hàng" : "Hoàn tất nhập kho"}
-                        content={isInternalTransfer 
+                        content={isInternalTransfer
                             ? "Xác nhận hàng đã về kho an toàn. Tồn kho sẽ được cộng vào kho của bạn."
                             : `Hệ thống sẽ ghi nhận nhập ${data.items.reduce((acc, i) => acc + i.soLuongDaKhaiBao, 0)} sản phẩm vào kho thực tế.`}
                         onClose={() => setShowCompleteConfirm(false)}
                         onConfirm={() => handleAction(
-                            isInternalTransfer ? phieuChuyenKhoService.completeReceipt : phieuNhapKhoService.complete, 
+                            isInternalTransfer ? phieuChuyenKhoService.completeReceipt : phieuNhapKhoService.complete,
                             "Nhập kho thành công"
                         )}
                         confirmClass="bg-green-600 hover:bg-green-700"

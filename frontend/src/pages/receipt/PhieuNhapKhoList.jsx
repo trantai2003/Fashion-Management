@@ -6,7 +6,7 @@ const STATUS_MAP = {
     0: { label: "Nháp", className: "bg-amber-50 text-amber-700" },
     1: { label: "Chờ duyệt", className: "bg-blue-50 text-blue-700" },
     2: { label: "Đã duyệt", className: "bg-indigo-50 text-indigo-700" },
-    3: { label: "Hoàn thành", className: "bg-green-50 text-green-700" },
+    3: { label: "Đã nhập kho", className: "bg-green-50 text-green-700" },
     4: { label: "Đã hủy", className: "bg-red-50 text-red-700" },
 };
 
@@ -142,9 +142,7 @@ export default function PhieuNhapKhoList() {
                             >
                                 <option value="">Tất cả</option>
                                 <option value="0">Nháp</option>
-                                <option value="1">Chờ duyệt</option>
-                                <option value="2">Đã duyệt</option>
-                                <option value="3">Hoàn thành</option>
+                                <option value="3">Đã nhập kho</option>
                                 <option value="4">Đã hủy</option>
                             </select>
                         </div>

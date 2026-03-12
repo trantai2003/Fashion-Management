@@ -36,9 +36,6 @@ export default function PhieuXuatKhoCreate() {
             // 2. Lấy thông tin quyền từ localStorage
             const role = localStorage.getItem("role");
             const isAdmin = role === "quan_tri_vien";
-
-            // 3. Gọi API lấy danh sách Đơn bán hàng (SO)
-            // Lưu ý: Lúc này Backend đã tự động thêm filter khoId cho nhân viên kho rồi
             const soRes = await donBanHangService.filter({
                 page: 0,
                 size: 1000,
@@ -47,15 +44,8 @@ export default function PhieuXuatKhoCreate() {
                 ],
                 sorts: [{ fieldName: "ngayDatHang", direction: "DESC" }]
             });
-
-            // 4. Bóc tách dữ liệu từ Page object của Spring Data
-            // soRes ở đây thường là object có chứa trường 'content'
             const availableSOs = soRes.content || soRes.data?.content || [];
-
-            console.log(`Tìm thấy ${availableSOs.length} đơn hàng phù hợp.`);
             setSoList(availableSOs);
-
-            // 5. Nếu user chỉ có quyền ở 1 kho duy nhất, tự động chọn kho đó vào form
             if (warehouseList.length === 1) {
                 setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
             }

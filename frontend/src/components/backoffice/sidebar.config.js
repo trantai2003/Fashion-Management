@@ -1,6 +1,6 @@
 import {
   LayoutDashboard,
-  ShieldAlert,
+  User,
   Package,
   ArrowDownToLine,
   Warehouse,
@@ -21,13 +21,10 @@ export const SIDEBAR_MENU = [
 
   // ================= QUẢN TRỊ HỆ THỐNG =================
   {
-    label: "Quản trị hệ thống",
-    icon: ShieldAlert,
+    label: "Quản lý người dùng",
+    icon: User,
+    to: "/users",
     roles: ["quan_tri_vien"],
-    children: [
-      { label: "Người dùng", to: "/users" },
-      { label: "Nhật ký sự cố / lỗi", to: "/issues" },
-    ],
   },
 
   // ================= DANH MỤC & SẢN PHẨM =================
@@ -155,11 +152,6 @@ export const SIDEBAR_MENU = [
       {
         label: "Báo cáo doanh thu",
         to: "/bao-cao/doanh-thu",
-        roles: ["quan_tri_vien", "quan_ly_kho"],
-      },
-      {
-        label: "Báo cáo khách hàng",
-        to: "/bao-cao/khach-hang",
         roles: ["quan_tri_vien", "quan_ly_kho"],
       },
       {
