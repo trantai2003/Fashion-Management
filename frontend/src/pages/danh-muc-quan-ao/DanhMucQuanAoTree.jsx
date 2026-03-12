@@ -10,10 +10,16 @@ import {
   Trash2,
   Save,
   X,
-  AlertTriangle
+  AlertTriangle,
+  Tag,
+  Layers,
+  RefreshCcw,
 } from 'lucide-react';
 import { danhMucQuanAoService } from '@/services/danhMucQuanAoService';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const DanhMucQuanAoTree = () => {
   const [treeData, setTreeData] = useState([]);
@@ -27,336 +33,225 @@ const DanhMucQuanAoTree = () => {
     maDanhMuc: '',
     tenDanhMuc: '',
     moTa: '',
-    trangThai: 1
+    trangThai: 1,
   });
   const [deleteModal, setDeleteModal] = useState({ show: false, nodeId: null, nodeName: '' });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch dữ liệu từ API
-  useEffect(() => {
-    fetchTreeData();
-  }, []);
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  const [stats, setStats] = useState({ total: 0, root: 0, sub: 0 });
+
+  const computeStats = (nodes) => {
+    let total = 0;
+    let root = 0;
+    let sub = 0;
+    const walk = (list, level) => {
+      list.forEach((n) => {
+        if (n.trangThai === 0) return;
+        total++;
+        if (level === 0) root++; else sub++;
+        if (n.danhMucCons?.length) walk(n.danhMucCons, level + 1);
+      });
+    };
+    walk(nodes, 0);
+    return { total, root, sub };
+  };
+
+  useEffect(() => { fetchTreeData(); }, []);
 
   const fetchTreeData = async () => {
     try {
+      setIsLoading(true);
       const response = await danhMucQuanAoService.getCayDanhMuc();
-
       if (response.data.status === 200) {
-        setTreeData(response.data.data);
-        // Tự động expand tất cả nodes
+        const data = response.data.data;
+        setTreeData(data);
+        setStats(computeStats(data));
         const allIds = new Set();
         const collectIds = (nodes) => {
-          nodes.forEach(node => {
+          nodes.forEach((node) => {
             allIds.add(node.id);
-            if (node.danhMucCons && node.danhMucCons.length > 0) {
-              collectIds(node.danhMucCons);
-            }
+            if (node.danhMucCons?.length) collectIds(node.danhMucCons);
           });
         };
-        collectIds(response.data.data);
+        collectIds(data);
         setExpandedNodes(allIds);
       }
-    } catch (error) {
-      console.error('Lỗi khi tải dữ liệu:', error);
+    } catch {
       toast.error('Không thể tải dữ liệu danh mục');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const toggleExpand = (nodeId) => {
     const newExpanded = new Set(expandedNodes);
-    if (newExpanded.has(nodeId)) {
-      newExpanded.delete(nodeId);
-    } else {
-      newExpanded.add(nodeId);
-    }
+    if (newExpanded.has(nodeId)) newExpanded.delete(nodeId);
+    else newExpanded.add(nodeId);
     setExpandedNodes(newExpanded);
   };
 
-  // Xử lý kéo thả
+  // ── Drag & Drop ────────────────────────────────────────────────────────────
   const handleDragStart = (e, node, parentId) => {
     e.stopPropagation();
     setDraggedNode({ ...node, currentParentId: parentId });
     e.dataTransfer.effectAllowed = 'move';
   };
-
   const handleDragOver = (e, node) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Không cho phép kéo vào chính nó hoặc con của nó
-    if (draggedNode && draggedNode.id !== node.id && !isDescendant(draggedNode, node)) {
+    e.preventDefault(); e.stopPropagation();
+    if (draggedNode && draggedNode.id !== node.id && !isDescendant(draggedNode, node))
       setDragOverNode(node.id);
-    }
   };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOverNode(null);
-  };
+  const handleDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setDragOverNode(null); };
 
   const handleDrop = async (e, targetNode) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOverNode(null);
-
-    if (!draggedNode || draggedNode.id === targetNode.id) {
-      setDraggedNode(null);
-      return;
-    }
-
-    // Kiểm tra không cho kéo vào con của chính nó
+    e.preventDefault(); e.stopPropagation(); setDragOverNode(null);
+    if (!draggedNode || draggedNode.id === targetNode.id) { setDraggedNode(null); return; }
     if (isDescendant(draggedNode, targetNode)) {
       toast.warning('Không thể kéo danh mục cha vào con của nó');
-      setDraggedNode(null);
-      return;
+      setDraggedNode(null); return;
     }
-
-    // Cập nhật mối quan hệ cha con
     try {
       const response = await danhMucQuanAoService.update({
-        id: draggedNode.id,
-        tenDanhMuc: draggedNode.tenDanhMuc,
-        danhMucChaId: targetNode.id,
-        moTa: draggedNode.moTa,
-        trangThai: draggedNode.trangThai
+        id: draggedNode.id, tenDanhMuc: draggedNode.tenDanhMuc,
+        danhMucChaId: targetNode.id, moTa: draggedNode.moTa, trangThai: draggedNode.trangThai,
       });
-
-      if (response.data.status === 200) {
-        toast.success('Cập nhật thành công');
-        fetchTreeData(); // Tải lại dữ liệu
-      } else {
-        toast.error('Cập nhật thất bại: ' + response.data.message);
-      }
-    } catch (error) {
-      console.error('Lỗi khi cập nhật:', error);
-      toast.error('Có lỗi xảy ra khi cập nhật');
-    }
-
+      if (response.data.status === 200) { toast.success('Cập nhật thành công'); fetchTreeData(); }
+      else toast.error('Cập nhật thất bại: ' + response.data.message);
+    } catch { toast.error('Có lỗi xảy ra khi cập nhật'); }
     setDraggedNode(null);
   };
 
-  // Cho phép kéo vào root (không có cha)
   const handleDropToRoot = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragOverNode(null);
-
+    e.preventDefault(); e.stopPropagation(); setDragOverNode(null);
     if (!draggedNode) return;
-
     try {
       const response = await danhMucQuanAoService.update({
-        id: draggedNode.id,
-        tenDanhMuc: draggedNode.tenDanhMuc,
-        danhMucChaId: null,
-        moTa: draggedNode.moTa,
-        trangThai: draggedNode.trangThai
+        id: draggedNode.id, tenDanhMuc: draggedNode.tenDanhMuc,
+        danhMucChaId: null, moTa: draggedNode.moTa, trangThai: draggedNode.trangThai,
       });
-
-      if (response.data.status === 200) {
-        toast.success('Đã chuyển thành danh mục gốc!');
-        fetchTreeData();
-      } else {
-        toast.error('Cập nhật thất bại: ' + response.data.message);
-      }
-    } catch (error) {
-      console.error('Lỗi khi cập nhật:', error);
-      toast.error('Có lỗi xảy ra khi cập nhật');
-    }
-
+      if (response.data.status === 200) { toast.success('Đã chuyển thành danh mục gốc!'); fetchTreeData(); }
+      else toast.error('Cập nhật thất bại: ' + response.data.message);
+    } catch { toast.error('Có lỗi xảy ra khi cập nhật'); }
     setDraggedNode(null);
   };
 
-  // Kiểm tra xem targetNode có phải là con của sourceNode không
   const isDescendant = (sourceNode, targetNode) => {
-    if (!sourceNode.danhMucCons || sourceNode.danhMucCons.length === 0) {
-      return false;
-    }
-
+    if (!sourceNode.danhMucCons?.length) return false;
     for (const child of sourceNode.danhMucCons) {
-      if (child.id === targetNode.id) {
-        return true;
-      }
-      if (isDescendant(child, targetNode)) {
-        return true;
-      }
+      if (child.id === targetNode.id) return true;
+      if (isDescendant(child, targetNode)) return true;
     }
     return false;
   };
 
-  // Xử lý chỉnh sửa
+  // ── Edit ──────────────────────────────────────────────────────────────────
   const handleEdit = (node, parentId) => {
     setEditingNode(node.id);
-    setEditForm({
-      id: node.id,
-      tenDanhMuc: node.tenDanhMuc,
-      moTa: node.moTa,
-      trangThai: node.trangThai,
-      danhMucChaId: parentId
-    });
+    setEditForm({ id: node.id, tenDanhMuc: node.tenDanhMuc, moTa: node.moTa, trangThai: node.trangThai, danhMucChaId: parentId });
   };
-
   const handleSaveEdit = async () => {
     try {
       const response = await danhMucQuanAoService.update(editForm);
-
-      if (response.data.status === 200) {
-        toast.success('Cập nhật thành công!');
-        setEditingNode(null);
-        fetchTreeData();
-      } else {
-        toast.error('Cập nhật thất bại: ' + response.data.message);
-      }
-    } catch (error) {
-      console.error('Lỗi khi cập nhật:', error);
-      toast.error('Có lỗi xảy ra khi cập nhật');
-    }
+      if (response.data.status === 200) { toast.success('Cập nhật thành công!'); setEditingNode(null); fetchTreeData(); }
+      else toast.error('Cập nhật thất bại: ' + response.data.message);
+    } catch { toast.error('Có lỗi xảy ra khi cập nhật'); }
   };
 
-  const confirmDelete = (node) => {
-    setDeleteModal({ show: true, nodeId: node.id, nodeName: node.tenDanhMuc });
-  };
-
+  // ── Delete ────────────────────────────────────────────────────────────────
+  const confirmDelete = (node) => setDeleteModal({ show: true, nodeId: node.id, nodeName: node.tenDanhMuc });
   const handleDelete = async () => {
     try {
       const response = await danhMucQuanAoService.delete(deleteModal.nodeId);
-      if (response.data.status === 200) {
-        toast.success(`Đã xóa danh mục "${deleteModal.nodeName}"`);
-        fetchTreeData();
-      }
-    } catch (error) {
-      toast.error('Lỗi khi xóa danh mục');
-    } finally {
-      setDeleteModal({ show: false, nodeId: null, nodeName: '' });
-    }
+      if (response.data.status === 200) { toast.success(`Đã xóa danh mục "${deleteModal.nodeName}"`); fetchTreeData(); }
+    } catch { toast.error('Lỗi khi xóa danh mục'); }
+    finally { setDeleteModal({ show: false, nodeId: null, nodeName: '' }); }
   };
 
-  // Xử lý tạo danh mục con
+  // ── Create ────────────────────────────────────────────────────────────────
   const handleAddChild = (parentNode) => {
     setCreatingNode(parentNode.id);
-    setCreateForm({
-      maDanhMuc: '',
-      tenDanhMuc: '',
-      moTa: '',
-      trangThai: 1,
-      danhMucChaId: parentNode.id
-    });
-    // Tự động expand node cha
+    setCreateForm({ maDanhMuc: '', tenDanhMuc: '', moTa: '', trangThai: 1, danhMucChaId: parentNode.id });
     const newExpanded = new Set(expandedNodes);
     newExpanded.add(parentNode.id);
     setExpandedNodes(newExpanded);
   };
-
   const handleSaveCreate = async () => {
-    if (!createForm.tenDanhMuc.trim()) {
-      toast.warning('Vui lòng nhập tên danh mục!');
-      return;
-    }
-
-    if (!createForm.maDanhMuc.trim()) {
-      toast.warning('Vui lòng nhập mã danh mục!');
-      return;
-    }
-
+    if (!createForm.tenDanhMuc.trim()) { toast.warning('Vui lòng nhập tên danh mục!'); return; }
+    if (!createForm.maDanhMuc.trim()) { toast.warning('Vui lòng nhập mã danh mục!'); return; }
     try {
       const response = await danhMucQuanAoService.create(createForm);
-
       if (response.data.status === 200) {
         toast.success('Tạo danh mục thành công!');
         setCreatingNode(null);
-        setCreateForm({
-          maDanhMuc: '',
-          tenDanhMuc: '',
-          moTa: '',
-          trangThai: 1
-        });
+        setCreateForm({ maDanhMuc: '', tenDanhMuc: '', moTa: '', trangThai: 1 });
         fetchTreeData();
-      } else {
-        toast.error('Tạo danh mục thất bại: ' + response.data.message);
-      }
-    } catch (error) {
-      console.error('Lỗi khi tạo danh mục:', error);
-      toast.error('Có lỗi xảy ra khi tạo danh mục');
-    }
+      } else toast.error('Tạo danh mục thất bại: ' + response.data.message);
+    } catch { toast.error('Có lỗi xảy ra khi tạo danh mục'); }
   };
-
   const handleCancelCreate = () => {
     setCreatingNode(null);
-    setCreateForm({
-      maDanhMuc: '',
-      tenDanhMuc: '',
-      moTa: '',
-      trangThai: 1
-    });
+    setCreateForm({ maDanhMuc: '', tenDanhMuc: '', moTa: '', trangThai: 1 });
   };
-
-  // Thêm danh mục gốc
   const handleAddRoot = () => {
     setCreatingNode('root');
-    setCreateForm({
-      maDanhMuc: '',
-      tenDanhMuc: '',
-      moTa: '',
-      trangThai: 1,
-      danhMucChaId: null
-    });
+    setCreateForm({ maDanhMuc: '', tenDanhMuc: '', moTa: '', trangThai: 1, danhMucChaId: null });
   };
 
-  // Render form tạo mới
-  const renderCreateForm = (parentId) => {
-    return (
-      <div className="create-form-container" style={{ marginLeft: parentId === 'root' ? 0 : 20 }}>
-        <div className="create-form">
-          <div className="form-row">
-            <div className="form-group">
-              <label>Mã danh mục *</label>
-              <input
-                type="text"
-                value={createForm.maDanhMuc}
-                onChange={(e) => setCreateForm({ ...createForm, maDanhMuc: e.target.value })}
-                placeholder="VD: DM001"
-                className="form-input"
-                autoFocus
-              />
-            </div>
-            <div className="form-group">
-              <label>Tên danh mục *</label>
-              <input
-                type="text"
-                value={createForm.tenDanhMuc}
-                onChange={(e) => setCreateForm({ ...createForm, tenDanhMuc: e.target.value })}
-                placeholder="VD: Áo thun"
-                className="form-input"
-              />
-            </div>
-          </div>
-          <div className="form-group">
-            <label>Mô tả</label>
-            <textarea
-              value={createForm.moTa}
-              onChange={(e) => setCreateForm({ ...createForm, moTa: e.target.value })}
-              placeholder="Nhập mô tả..."
-              className="form-textarea"
+  // ── Render create form ────────────────────────────────────────────────────
+  const renderCreateForm = (parentId) => (
+    <div className={`my-2 ${parentId !== 'root' ? 'ml-5' : ''}`}>
+      <div className="rounded-xl border-2 border-purple-300 bg-purple-50/60 p-4 shadow-sm">
+        <p className="text-xs font-semibold text-purple-700 mb-3 uppercase tracking-wide">
+          {parentId === 'root' ? 'Thêm danh mục gốc mới' : 'Thêm danh mục con'}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Mã danh mục *</label>
+            <Input
+              value={createForm.maDanhMuc}
+              onChange={(e) => setCreateForm({ ...createForm, maDanhMuc: e.target.value })}
+              placeholder="VD: DM001"
+              className="h-8 text-sm border-purple-200 focus:border-purple-500"
+              autoFocus
             />
           </div>
-          <div className="form-actions">
-            <button onClick={handleSaveCreate} className="btn-save">
-              <Save size={16} />
-              Lưu
-            </button>
-            <button onClick={handleCancelCreate} className="btn-cancel">
-              <X size={16} />
-              Hủy
-            </button>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Tên danh mục *</label>
+            <Input
+              value={createForm.tenDanhMuc}
+              onChange={(e) => setCreateForm({ ...createForm, tenDanhMuc: e.target.value })}
+              placeholder="VD: Áo thun"
+              className="h-8 text-sm border-purple-200 focus:border-purple-500"
+            />
           </div>
         </div>
+        <div className="space-y-1 mb-3">
+          <label className="text-xs font-medium text-gray-600">Mô tả</label>
+          <textarea
+            value={createForm.moTa}
+            onChange={(e) => setCreateForm({ ...createForm, moTa: e.target.value })}
+            placeholder="Nhập mô tả..."
+            rows={2}
+            className="w-full rounded-md border border-purple-200 bg-white px-3 py-2 text-sm outline-none focus:border-purple-500 resize-none"
+          />
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="outline" onClick={handleCancelCreate} className="h-8 gap-1.5 border-gray-300 hover:bg-gray-100">
+            <X className="h-3.5 w-3.5" /> Hủy
+          </Button>
+          <Button size="sm" onClick={handleSaveCreate} className="h-8 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white">
+            <Save className="h-3.5 w-3.5" /> Lưu
+          </Button>
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
 
-  // Render node
+  // ── Render node ───────────────────────────────────────────────────────────
   const renderNode = (node, level = 0, parentId = null) => {
     if (node.trangThai === 0) return null;
-    const activeChildren = node.danhMucCons ? node.danhMucCons.filter(child => child.trangThai !== 0) : [];
+    const activeChildren = node.danhMucCons ? node.danhMucCons.filter((c) => c.trangThai !== 0) : [];
     const hasChildren = activeChildren.length > 0;
     const isExpanded = expandedNodes.has(node.id);
     const isDragOver = dragOverNode === node.id;
@@ -371,110 +266,125 @@ const DanhMucQuanAoTree = () => {
           onDragOver={(e) => handleDragOver(e, node)}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, node)}
-          className={`tree-node ${isDragOver ? 'drag-over' : ''} ${isEditing ? 'editing' : ''}`}
+          className={`my-1 rounded-xl border transition-all duration-150
+            ${isDragOver ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-transparent'}
+            ${isEditing ? 'border-purple-400 bg-purple-50/50' : ''}
+          `}
         >
-          <div className="node-content">
-            <div className="node-left">
-              <GripVertical size={16} className="drag-handle" />
+          {/* Node row */}
+          <div className={`flex items-center justify-between px-3 py-2.5 rounded-xl bg-white shadow-sm border border-slate-200/80
+            hover:border-purple-200 hover:shadow-md transition-all duration-150 cursor-move group
+            ${isEditing ? 'border-purple-400 cursor-default' : ''}
+          `}>
+            {/* Left */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <GripVertical className="h-4 w-4 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
 
-              {hasChildren || isCreating ? (
+              {(hasChildren || isCreating) ? (
                 <button
                   onClick={() => toggleExpand(node.id)}
-                  className="expand-button"
+                  className="flex items-center justify-center h-5 w-5 rounded hover:bg-purple-100 text-gray-500 hover:text-purple-600 transition-colors flex-shrink-0"
                 >
-                  {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                 </button>
               ) : (
-                <div style={{ width: 20 }} />
+                <div className="w-5 flex-shrink-0" />
               )}
 
-              {isExpanded && (hasChildren || isCreating) ? (
-                <FolderOpen size={18} className="folder-icon" />
-              ) : (
-                <Folder size={18} className="folder-icon" />
-              )}
+              {isExpanded && (hasChildren || isCreating)
+                ? <FolderOpen className="h-4 w-4 text-orange-400 flex-shrink-0" />
+                : <Folder className="h-4 w-4 text-orange-400 flex-shrink-0" />
+              }
 
               {isEditing ? (
-                <input
-                  type="text"
+                <Input
                   value={editForm.tenDanhMuc}
                   onChange={(e) => setEditForm({ ...editForm, tenDanhMuc: e.target.value })}
-                  className="edit-input"
+                  className="h-7 text-sm border-purple-300 focus:border-purple-500 min-w-0 flex-1"
                   autoFocus
                 />
               ) : (
-                <span className="node-name">{node.tenDanhMuc}</span>
+                <span className="font-semibold text-slate-800 text-sm truncate">{node.tenDanhMuc}</span>
               )}
 
-              <span className="node-code">({node.maDanhMuc})</span>
+              <span className="text-xs text-slate-400 font-mono flex-shrink-0">({node.maDanhMuc})</span>
+
+              {level === 0 && (
+                <span className="ml-1 inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-semibold text-indigo-600 flex-shrink-0">
+                  Gốc
+                </span>
+              )}
             </div>
 
-            <div className="node-actions">
+            {/* Actions */}
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
               {isEditing ? (
                 <>
                   <button
-                    onClick={() => handleSaveEdit()}
-                    className="action-button save-button"
+                    onClick={handleSaveEdit}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors"
                     title="Lưu"
                   >
-                    <Save size={16} />
+                    <Save className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => setEditingNode(null)}
-                    className="action-button cancel-button"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
                     title="Hủy"
                   >
-                    <X size={16} />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </>
               ) : (
                 <>
                   <button
                     onClick={() => handleAddChild(node)}
-                    className="action-button add-button"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-purple-600 hover:bg-purple-50 transition-colors"
                     title="Thêm danh mục con"
                   >
-                    <Plus size={16} />
+                    <Plus className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => handleEdit(node, parentId)}
-                    className="action-button edit-button"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
                     title="Sửa"
                   >
-                    <Edit size={16} />
+                    <Edit className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => confirmDelete(node)}
-                    className="action-button delete-button"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-red-500 hover:bg-red-50 transition-colors"
                     title="Xóa"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </>
               )}
             </div>
           </div>
 
+          {/* Mô tả & inline edit */}
           {node.moTa && !isEditing && (
-            <div className="node-description">{node.moTa}</div>
+            <p className="mt-1 ml-[72px] text-xs text-slate-400 italic">{node.moTa}</p>
           )}
-
           {isEditing && (
-            <div className="edit-form">
+            <div className="mt-1 ml-[72px] pr-3">
               <textarea
                 value={editForm.moTa || ''}
                 onChange={(e) => setEditForm({ ...editForm, moTa: e.target.value })}
                 placeholder="Mô tả..."
-                className="edit-textarea"
+                rows={2}
+                className="w-full rounded-md border border-purple-300 bg-white px-3 py-1.5 text-xs outline-none focus:border-purple-500 resize-none"
               />
             </div>
           )}
         </div>
 
+        {/* Children */}
         {isExpanded && (
-          <div className="children-container">
+          <div className="mt-1">
             {isCreating && renderCreateForm(node.id)}
-            {hasChildren && node.danhMucCons.map(child => renderNode(child, level + 1, node.id))}
+            {hasChildren && node.danhMucCons.map((child) => renderNode(child, level + 1, node.id))}
           </div>
         )}
       </div>
@@ -482,468 +392,138 @@ const DanhMucQuanAoTree = () => {
   };
 
   return (
-    <div className="danh-muc-tree-container">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+
+      {/* ── Delete Confirm Modal ── */}
       {deleteModal.show && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <AlertTriangle color="#f44336" size={32} />
-              <h3>Xác nhận xóa danh mục</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-[420px] rounded-2xl bg-white shadow-2xl p-6 animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+              </div>
+              <h3 className="text-base font-semibold text-slate-800">Xác nhận xóa danh mục</h3>
             </div>
-            <p>Bạn có chắc chắn muốn xóa <strong>{deleteModal.nodeName}</strong>?</p>
-            <p className="modal-warning">Hành động này sẽ xóa toàn bộ các danh mục con liên quan.</p>
-            <div className="modal-footer">
-              <button className="btn-modal-cancel" onClick={() => setDeleteModal({ show: false })}>Hủy</button>
-              <button className="btn-modal-confirm" onClick={handleDelete}>Xác nhận xóa</button>
+            <p className="text-sm text-slate-600 mb-1">
+              Bạn có chắc chắn muốn xóa <strong className="text-slate-800">"{deleteModal.nodeName}"</strong>?
+            </p>
+            <p className="text-xs text-red-500 font-medium mb-6">
+              Hành động này sẽ xóa toàn bộ các danh mục con liên quan và không thể hoàn tác.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setDeleteModal({ show: false })} className="border-gray-300">
+                Hủy
+              </Button>
+              <Button size="sm" onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white">
+                Xác nhận xóa
+              </Button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="header">
-        <p className="instruction">
-          Kéo và thả các danh mục để thay đổi mối quan hệ cha-con
-        </p>
-        <button onClick={handleAddRoot} className="btn-add-root">
-          <Plus size={18} />
-          Thêm danh mục gốc
-        </button>
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border-0 shadow-md bg-gradient-to-br from-purple-50 to-white">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Tổng danh mục</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+            </div>
+            <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+              <Tag className="h-6 w-6 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-md bg-gradient-to-br from-indigo-50 to-white">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Danh mục gốc</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.root}</p>
+            </div>
+            <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
+              <Folder className="h-6 w-6 text-indigo-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-white">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Danh mục con</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.sub}</p>
+            </div>
+            <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
+              <Layers className="h-6 w-6 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div
-        className="tree-root"
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOverNode('root');
-        }}
-        onDragLeave={() => setDragOverNode(null)}
-        onDrop={handleDropToRoot}
-      >
-        {creatingNode === 'root' && renderCreateForm('root')}
-
-        {treeData.length === 0 && creatingNode !== 'root' ? (
-          <div className="empty-state">Không có dữ liệu danh mục</div>
-        ) : (
-          treeData.map(node => renderNode(node, 0, null))
-        )}
-      </div>
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        .modal-overlay {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex; align-items: center; justify-content: center;
-          z-index: 1000;
-          animation: fadeIn 0.2s ease-out;
-        }
-        .modal-content {
-          background: white;
-          padding: 24px;
-          border-radius: 12px;
-          width: 400px;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        .modal-header {
-          display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-        }
-        .modal-header h3 { margin: 0; color: #333; }
-        .modal-warning { color: #f44336; font-size: 13px; margin-top: 8px; font-weight: 500; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-        .btn-modal-cancel { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; background: #eee; }
-        .btn-modal-confirm { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; background: #f44336; color: white; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .danh-muc-tree-container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 20px;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        }
-
-        .header {
-          margin-bottom: 30px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 16px;
-        }
-
-        .header > div {
-          flex: 1;
-        }
-
-        .header h2 {
-          font-size: 24px;
-          font-weight: 600;
-          color: #1a1a1a;
-          margin: 0 0 8px 0;
-        }
-
-        .instruction {
-          color: #666;
-          font-size: 14px;
-          margin: 0;
-        }
-
-        .btn-add-root {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 20px;
-          background: #2196F3;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .btn-add-root:hover {
-          background: #1976D2;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-        }
-
-        .tree-root {
-          background: #f8f9fa;
-          border-radius: 8px;
-          padding: 20px;
-          min-height: 400px;
-        }
-
-        .tree-node {
-          margin: 4px 0;
-          transition: all 0.2s ease;
-        }
-
-        .tree-node.drag-over {
-          background: #e3f2fd;
-          border-radius: 4px;
-        }
-
-        .node-content {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 8px 12px;
-          background: white;
-          border-radius: 6px;
-          border: 2px solid transparent;
-          cursor: move;
-          transition: all 0.2s ease;
-        }
-
-        .tree-node:hover .node-content {
-          border-color: #e0e0e0;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .tree-node.editing .node-content {
-          cursor: default;
-          border-color: #2196F3;
-        }
-
-        .node-left {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex: 1;
-        }
-
-        .drag-handle {
-          color: #999;
-          cursor: grab;
-        }
-
-        .drag-handle:active {
-          cursor: grabbing;
-        }
-
-        .expand-button {
-          background: none;
-          border: none;
-          padding: 4px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          color: #666;
-          border-radius: 4px;
-        }
-
-        .expand-button:hover {
-          background: #f0f0f0;
-        }
-
-        .folder-icon {
-          color: #FFA726;
-        }
-
-        .node-name {
-          font-weight: 500;
-          color: #333;
-          font-size: 15px;
-        }
-
-        .node-code {
-          color: #999;
-          font-size: 13px;
-          margin-left: 8px;
-        }
-
-        .node-actions {
-          display: flex;
-          gap: 4px;
-          opacity: 0;
-          transition: opacity 0.2s ease;
-        }
-
-        .tree-node:hover .node-actions {
-          opacity: 1;
-        }
-
-        .action-button {
-          padding: 6px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          transition: all 0.2s ease;
-          background: #f5f5f5;
-        }
-
-        .action-button:hover {
-          transform: scale(1.1);
-        }
-
-        .add-button {
-          color: #4CAF50;
-        }
-
-        .add-button:hover {
-          background: #e8f5e9;
-        }
-
-        .edit-button {
-          color: #2196F3;
-        }
-
-        .edit-button:hover {
-          background: #e3f2fd;
-        }
-
-        .delete-button {
-          color: #f44336;
-        }
-
-        .delete-button:hover {
-          background: #ffebee;
-        }
-
-        .save-button {
-          color: #4CAF50;
-          opacity: 1;
-        }
-
-        .save-button:hover {
-          background: #e8f5e9;
-        }
-
-        .cancel-button {
-          color: #757575;
-          opacity: 1;
-        }
-
-        .cancel-button:hover {
-          background: #f5f5f5;
-        }
-
-        .node-description {
-          margin-top: 4px;
-          padding: 4px 12px 4px 52px;
-          color: #666;
-          font-size: 13px;
-          font-style: italic;
-        }
-
-        .edit-input {
-          border: 1px solid #2196F3;
-          border-radius: 4px;
-          padding: 4px 8px;
-          font-size: 15px;
-          font-weight: 500;
-          outline: none;
-          min-width: 200px;
-        }
-
-        .edit-form {
-          margin-top: 8px;
-          padding: 0 12px 8px 52px;
-        }
-
-        .edit-textarea {
-          width: 100%;
-          border: 1px solid #2196F3;
-          border-radius: 4px;
-          padding: 8px;
-          font-size: 13px;
-          font-family: inherit;
-          outline: none;
-          resize: vertical;
-          min-height: 60px;
-        }
-
-        .children-container {
-          margin-top: 4px;
-        }
-
-        .create-form-container {
-          margin: 8px 0;
-        }
-
-        .create-form {
-          background: white;
-          border: 2px solid #4CAF50;
-          border-radius: 8px;
-          padding: 16px;
-          box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
-        }
-
-        .form-row {
-          display: grid;
-          grid-template-columns: 1fr 2fr;
-          gap: 12px;
-          margin-bottom: 12px;
-        }
-
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .form-group label {
-          font-size: 13px;
-          font-weight: 500;
-          color: #555;
-        }
-
-        .form-input {
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          padding: 8px 12px;
-          font-size: 14px;
-          outline: none;
-          transition: border-color 0.2s;
-        }
-
-        .form-input:focus {
-          border-color: #4CAF50;
-        }
-
-        .form-textarea {
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          padding: 8px 12px;
-          font-size: 14px;
-          font-family: inherit;
-          outline: none;
-          resize: vertical;
-          min-height: 80px;
-          transition: border-color 0.2s;
-        }
-
-        .form-textarea:focus {
-          border-color: #4CAF50;
-        }
-
-        .form-actions {
-          display: flex;
-          gap: 8px;
-          justify-content: flex-end;
-          margin-top: 12px;
-        }
-
-        .btn-save,
-        .btn-cancel {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 16px;
-          border: none;
-          border-radius: 4px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .btn-save {
-          background: #4CAF50;
-          color: white;
-        }
-
-        .btn-save:hover {
-          background: #45a049;
-          transform: translateY(-1px);
-          box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
-        }
-
-        .btn-cancel {
-          background: #f5f5f5;
-          color: #666;
-        }
-
-        .btn-cancel:hover {
-          background: #e0e0e0;
-        }
-
-        .empty-state {
-          text-align: center;
-          padding: 60px 20px;
-          color: #999;
-          font-size: 16px;
-        }
-
-        @media (max-width: 768px) {
-          .danh-muc-tree-container {
-            padding: 10px;
-          }
-
-          .header {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .btn-add-root {
-            width: 100%;
-            justify-content: center;
-          }
-
-          .form-row {
-            grid-template-columns: 1fr;
-          }
-
-          .node-content {
-            padding: 6px 8px;
-          }
-
-          .node-name {
-            font-size: 14px;
-          }
-
-          .node-code {
-            display: none;
-          }
-        }
-      ` }} />
+      {/* ── Main Card ── */}
+      <Card className="border-0 shadow-lg bg-white">
+        <CardHeader className="border-b border-slate-100 pb-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <Tag className="h-5 w-5 text-purple-600" />
+                Danh mục sản phẩm
+              </CardTitle>
+              <p className="mt-1 text-sm text-slate-500">Kéo và thả để thay đổi mối quan hệ cha – con</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchTreeData}
+                disabled={isLoading}
+                className="gap-1.5 border-gray-300 hover:bg-gray-50"
+              >
+                <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Làm mới
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleAddRoot}
+                className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+              >
+                <Plus className="h-4 w-4" />
+                Thêm danh mục gốc
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-5">
+          {/* Drop-to-root zone */}
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOverNode('root'); }}
+            onDragLeave={() => setDragOverNode(null)}
+            onDrop={handleDropToRoot}
+            className={`rounded-xl min-h-[400px] transition-all duration-200
+              ${dragOverNode === 'root' ? 'bg-purple-50 ring-2 ring-purple-300' : 'bg-slate-50/60'}
+              p-3
+            `}
+          >
+            {creatingNode === 'root' && renderCreateForm('root')}
+
+            {treeData.length === 0 && creatingNode !== 'root' ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                  <Tag className="h-8 w-8 text-slate-300" />
+                </div>
+                <p className="text-sm font-medium text-slate-500">Chưa có danh mục nào</p>
+                <p className="mt-1 text-xs text-slate-400">Nhấn "Thêm danh mục gốc" để bắt đầu</p>
+              </div>
+            ) : (
+              treeData.map((node) => renderNode(node, 0, null))
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
 export default DanhMucQuanAoTree;
+
+

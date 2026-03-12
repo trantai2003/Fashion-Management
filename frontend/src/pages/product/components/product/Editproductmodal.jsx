@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, Package } from "lucide-react";
 import { toast } from "sonner";
 import { productService } from "@/services/productService.js";
 import * as yup from "yup";
@@ -345,12 +345,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
     if (isLoadingProduct) {
         return (
             <Dialog open={isOpen} onOpenChange={handleCancel}>
-                <DialogContent className="sm:max-w-[900px]
-    max-h-[90vh]
-    bg-white text-gray-900
-    border border-gray-200
-    rounded-xl shadow-sm
-    dark:bg-white dark:text-gray-900">
+                <DialogContent className="sm:max-w-[900px] max-h-[90vh] bg-white text-gray-900 border border-gray-200 rounded-xl shadow-sm dark:bg-white dark:text-gray-900">
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
                         <span className="ml-3 text-gray-600">Đang tải thông tin sản phẩm...</span>
@@ -362,14 +357,10 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
     return (
         <Dialog open={isOpen} onOpenChange={handleCancel}>
-            <DialogContent className="sm:max-w-[900px]
-    max-h-[90vh]
-    bg-white text-gray-900
-    border border-gray-200
-    rounded-xl shadow-sm
-    dark:bg-white dark:text-gray-900">
+            <DialogContent className="sm:max-w-[900px] max-h-[90vh] bg-white text-gray-900 border border-gray-200 rounded-xl shadow-sm dark:bg-white dark:text-gray-900 flex flex-col">
                 <DialogHeader>
-                    <DialogTitle className="text-xl font-semibold text-purple-700">
+                    <DialogTitle className="flex items-center gap-2">
+                        <Package className="w-5 h-5 text-purple-600" />
                         Chỉnh sửa sản phẩm
                     </DialogTitle>
                     <DialogDescription>
@@ -763,7 +754,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                     <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="bg-purple-600 hover:bg-purple-700"
+                        className="bg-gradient-to-r from-purple-600 to-blue-600 !text-white"
                         onClick={handleSubmit(onSubmit)}
                     >
                         {isSubmitting ? (
