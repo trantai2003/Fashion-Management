@@ -1,58 +1,62 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { productService } from "@/services/productService.js";
 import { toast } from "sonner";
-import { Loader2, Search, Save, Printer, RefreshCcw, Package } from "lucide-react";
-import { formatCurrency } from "@/utils/formatters";
+import {
+    Loader2, Search, Save, Printer, RefreshCcw, Package,
+    Layers, Tag, ChevronDown, Check, Filter, DollarSign,
+} from "lucide-react";
+
 import BarcodePrint from "@/pages/product/components/product/BarcodePrint";
-import { Switch } from "@/components/ui/switch";
 import { useToggle } from "@/hooks/useToggle";
 import PaginationComponent from "./components/product/ProductComponent";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const STATUS_OPTIONS = [
+    { value: "ALL", label: "Tất cả trạng thái" },
+    { value: "1",   label: "Đang hoạt động" },
+    { value: "0",   label: "Ngừng hoạt động" },
+];
 
 export default function SkuBuilder() {
     const [skus, setSkus] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [processedSkus, setProcessedSkus] = useState([]);
 
-    // Filters
     const [keyword, setKeyword] = useState("");
-    const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, 1 (Active), 0 (Inactive)
+    const [statusFilter, setStatusFilter] = useState("ALL");
 
-    // Barcode Printing
     const [isBarcodeModalOpen, openBarcodeModal, closeBarcodeModal] = useToggle(false);
     const [selectedSkusToPrint, setSelectedSkusToPrint] = useState([]);
 
-    // Pagination
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
 
     const fetchSkus = useCallback(async () => {
         try {
             setIsLoading(true);
-            // Since we don't have a direct "getAllVariants" API, we fetch all products and flatten them
-            // In a real app with pagination, this might be heavy. We'll use the existing filter API.
             const payload = {
                 page: 0,
-                size: 1000, // Fetch large number for now, or implement server-side pagination for SKUs later
+                size: 1000,
                 filters: [],
-                sorts: [{ fieldName: "ngayTao", direction: "DESC" }]
+                sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
             };
-
             const res = await productService.filterProducts(payload);
             const serverResponse = res.data;
-
             if (serverResponse?.status === 200) {
                 const products = serverResponse.data.content || [];
-
-                // Flatten products to SKUs
                 const flattenedSkus = [];
-
-                products.forEach(product => {
-                    if (product.bienTheSanPhams && product.bienTheSanPhams.length > 0) {
-                        product.bienTheSanPhams.forEach(variant => {
+                products.forEach((product) => {
+                    if (product.bienTheSanPhams?.length) {
+                        product.bienTheSanPhams.forEach((variant) => {
                             flattenedSkus.push({
                                 ...variant,
                                 productId: product.id,
@@ -60,16 +64,11 @@ export default function SkuBuilder() {
                                 productCode: product.maSanPham,
                                 originalPrice: variant.giaBan,
                                 originalCost: variant.giaVon,
-                                // Combine images if needed, or use variant image
-                                image: variant.anhBienThe || (product.anhQuanAos?.[0]?.tepTin?.duongDan || product.anhQuanAos?.[0]?.urlAnh)
+                                image: variant.anhBienThe || (product.anhQuanAos?.[0]?.tepTin?.duongDan || product.anhQuanAos?.[0]?.urlAnh),
                             });
                         });
-                    } else {
-                        // Handle products without variants if necessary, or skip
-                        // For this requirements "Biến thể SKU", we focus on variants.
                     }
                 });
-
                 setSkus(flattenedSkus);
             }
         } catch (error) {
@@ -80,268 +79,360 @@ export default function SkuBuilder() {
         }
     }, []);
 
-    useEffect(() => {
-        fetchSkus();
-    }, [fetchSkus]);
+    useEffect(() => { fetchSkus(); }, [fetchSkus]);
 
-    // Client-side Filtering
     useEffect(() => {
         let result = [...skus];
-
         if (keyword.trim()) {
-            const lowerKeyword = keyword.toLowerCase();
-            result = result.filter(sku =>
-                sku.productName.toLowerCase().includes(lowerKeyword) ||
-                (sku.maSku && sku.maSku.toLowerCase().includes(lowerKeyword)) ||
-                (sku.maVachSku && sku.maVachSku.toLowerCase().includes(lowerKeyword)) ||
-                (sku.maVach && sku.maVach.toLowerCase().includes(lowerKeyword)) ||
-                (sku.maBienThe && sku.maBienThe.toLowerCase().includes(lowerKeyword))
+            const lk = keyword.toLowerCase();
+            result = result.filter((sku) =>
+                sku.productName?.toLowerCase().includes(lk) ||
+                sku.maSku?.toLowerCase().includes(lk) ||
+                sku.maVachSku?.toLowerCase().includes(lk) ||
+                sku.maVach?.toLowerCase().includes(lk) ||
+                sku.maBienThe?.toLowerCase().includes(lk)
             );
         }
-
         if (statusFilter !== "ALL") {
-            const statusValue = Number(statusFilter);
-            result = result.filter(sku => sku.trangThai === statusValue);
+            result = result.filter((sku) => sku.trangThai === Number(statusFilter));
         }
-
         setProcessedSkus(result);
-        setPage(0); // Reset page on filter change
+        setPage(0);
     }, [skus, keyword, statusFilter]);
 
+    // ── Stats ──────────────────────────────────────────────────────────────
+    const stats = useMemo(() => ({
+        total: skus.length,
+        active: skus.filter((s) => s.trangThai === 1).length,
+        inactive: skus.filter((s) => s.trangThai === 0).length,
+        changed: skus.filter((s) => Number(s.giaBan) !== Number(s.originalPrice) || Number(s.giaVon) !== Number(s.originalCost)).length,
+    }), [skus]);
+
     const handlePriceChange = (id, field, value) => {
-        setSkus(prev => prev.map(sku => {
-            if (sku.id === id) {
-                return { ...sku, [field]: value };
-            }
-            return sku;
-        }));
+        setSkus((prev) => prev.map((sku) => sku.id === id ? { ...sku, [field]: value } : sku));
     };
 
     const savePrice = async (sku) => {
         try {
             await productService.updateSkuPrice(sku.id, sku.giaBan, sku.giaVon);
             toast.success("Cập nhật giá thành công");
-            // Update the original values to match current
-            setSkus(prev => prev.map(s => {
-                if (s.id === sku.id) {
-                    return { ...s, originalPrice: s.giaBan, originalCost: s.giaVon };
-                }
-                return s;
-            }));
-        } catch (error) {
-            console.error("Lỗi cập nhật giá:", error);
+            setSkus((prev) =>
+                prev.map((s) => s.id === sku.id ? { ...s, originalPrice: s.giaBan, originalCost: s.giaVon } : s)
+            );
+        } catch {
             toast.error("Không thể cập nhật giá");
         }
     };
 
-    const handleStatusToggle = async (sku, currentStatus) => {
-        // Optimistic update
-        const newStatus = currentStatus === 1 ? 0 : 1;
-
-        // We typically need an API to update variant status specifically. 
-        // The `productService` has `updateStatus` but that's likely for Product.
-        // Assuming we might need to use `updateProduct` or a specific variant status API.
-        // Looking at `EditProductModal`, it updates via `updateProduct` with the whole object.
-        // If there isn't a specific API for variant status, we might be stuck.
-        // CHECK: `productService.js` has `updateSkuPrice`. Does it have `updateSkuStatus`?
-        // It does NOT. 
-        // However, the user said "Toggle Active Status" is implemented.
-        // In `ProductList`, `toggleProductStatus` calls `/api/v1/products/${id}/toggle-status`.
-        // That is likely for the PARENT product.
-        // If the user wants to toggle VARIANT status, we might need a new API or use the bulk update.
-        // But for now, let's assume we can only toggle PRODUCT status or needed to add API.
-        // Wait, the requirement says "Các phần đã thêm của... Toggle Active Status... đưa sang đây".
-        // The Toggle Active Status I implemented in `ProductList` was for the Product.
-        // So maybe this page lists PRODUCTS and their variants?
-        // Or maybe I should implement a new `updateSkuStatus` API wrapper if the backend supports it, 
-        // OR simply disable this for variants if backend doesn't support easy toggle.
-        // Actually, `EditProductModal` sends the whole payload.
-        // I will stick to what I know works or simulate it, or maybe just list the Product Status?
-        // The user said "Biến thể SKU & Giá". Accessing "Toggle Active Status" implies granular control?
-        // Let's look at `EditProductModal`: it maps `trangThai` for variants.
-        // I'll add a placeholder or try to use `updateProduct` with a minimal payload if possible, 
-        // OR mostly likely I should use the `toggleProductStatus` for the product if looking at product level,
-        // BUT this is a SKU list.
-        // I will omit the status toggle for individual SKU if no API exists, OR I will just use the `updateSkuPrice` API if it happens to support status (unlikely).
-        // Let's re-read the task: "Frontend: Cập nhật UI cho Toggle Active Status -> Thêm Switch/Toggle button vào Product List".
-        // That was for the Product.
-        // So I should include the Product Status Toggle? 
-        // Or maybe fetching SKUs, I should show the Product Status?
-        // Let's implement the Product Status Toggle for the row (which represents a SKU). 
-        // If I toggle it, does it toggle the SKU or the Product?
-        // If I toggle the SKU, I need `updateSkuStatus`.
-        // I'll check `productService` again.
-        // It has `updateStatus: (id, status) => apiClient.patch(...)` for `san-pham-quan-ao`.
-        // Maybe there's one for `chi-tiet-san-pham`?
-        // I'll assume for now I can't easily toggle SKU status without a full update.
-        // I will IMPLEMENT IT for the Product (Parent) or skip it for SKU rows to avoid confusion, 
-        // UNLESS I see `updateSkuStatus` or similar.
-        // Actually, I'll add the button but maybe make it toggle the variant status in local state and call a (yet to be confirmed) API, 
-        // or effectively just don't implement it if unsafe.
-        // User asked to "duplicate" the features. "Toggle Active Status" was for Product. 
-        // So maybe this page should list Variants, but allow toggling the Parent Product Status? 
-        // Or maybe the user THINKS I implemented Variant Toggle?
-        // I'll stick to Price Editing and Barcode for now as primary. 
-        // I'll add Status column but maybe read-only or Product Status.
-        // Wait, `EditProductModal` has variant status content. 
-        // I will implement Price Edit and Barcode Printing first.
-
-        toast.info("Tính năng cập nhật trạng thái nhanh cho biến thể đang phát triển");
-    };
-
     const handlePrintBarcode = (sku) => {
-        // Need to wrap sku in a structure compatible with BarcodePrint
-        // BarcodePrint expects a list of products, each with `bienTheSanPhams` or just the product.
-        // We can mock a product object that contains just this variant.
-        const mockProduct = {
-            id: sku.productId,
-            tenSanPham: sku.productName,
-            bienTheSanPhams: [sku]
-        };
-        setSelectedSkusToPrint([mockProduct]);
+        setSelectedSkusToPrint([{ id: sku.productId, tenSanPham: sku.productName, bienTheSanPhams: [sku] }]);
         openBarcodeModal();
     };
 
-    const handleOpenPrintModal = () => {
-        // This could be for bulk printing all selected SKUs
-        // For now, single print
-    };
+    const currentPageSkus = processedSkus.slice(page * pageSize, (page + 1) * pageSize);
 
     return (
-        <div className="h-screen w-full bg-gray-50 flex flex-col min-h-0">
-            <div className="px-6 py-4 flex-none">
-                <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
-                    <CardContent className="p-4 space-y-3">
-                        <div className="flex items-center gap-4">
-                            <div className="flex-1 relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+
+            {/* ── Stats ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-blue-50 to-white">
+                    <CardContent className="p-6 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Tổng biến thể</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Package className="h-6 w-6 text-blue-600" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-green-50 to-white">
+                    <CardContent className="p-6 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.active}</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                            <Layers className="h-6 w-6 text-green-600" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-gray-50 to-white">
+                    <CardContent className="p-6 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Ngừng hoạt động</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.inactive}</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                            <Tag className="h-6 w-6 text-red-500" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br from-amber-50 to-white">
+                    <CardContent className="p-6 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-gray-600">Chờ lưu giá</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.changed}</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                            <DollarSign className="h-6 w-6 text-amber-600" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* ── Filter ── */}
+            <Card className="border-0 shadow-lg bg-white">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                        <Filter className="h-5 w-5 text-purple-600" />
+                        Bộ lọc tìm kiếm
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {/* Tìm kiếm */}
+                        <div className="space-y-2 md:col-span-2">
+                            <Label className="text-gray-700 font-medium">Tìm kiếm</Label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                 <Input
                                     value={keyword}
                                     onChange={(e) => setKeyword(e.target.value)}
                                     placeholder="Tìm theo tên SP, SKU, Barcode..."
-                                    className="pl-10"
+                                    className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                                    disabled={isLoading}
                                 />
                             </div>
-                            <Button variant="outline" onClick={fetchSkus} disabled={isLoading}>
-                                <RefreshCcw className="h-4 w-4 mr-2" />
+                        </div>
+
+                        {/* Trạng thái */}
+                        <div className="space-y-2">
+                            <Label className="text-gray-700 font-medium">Trạng thái</Label>
+                            <DropdownMenu modal={false}>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal"
+                                    >
+                                        <span className="truncate">
+                                            {STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label}
+                                        </span>
+                                        <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
+                                    {STATUS_OPTIONS.map((opt) => (
+                                        <DropdownMenuItem
+                                            key={opt.value}
+                                            onClick={() => setStatusFilter(opt.value)}
+                                            className="flex items-center justify-between cursor-pointer hover:bg-purple-50"
+                                        >
+                                            {opt.label}
+                                            {statusFilter === opt.value && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {/* Tải lại */}
+                        <div className="flex items-end">
+                            <Button
+                                variant="outline"
+                                onClick={fetchSkus}
+                                disabled={isLoading}
+                                className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
+                            >
+                                <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
                                 Tải lại
                             </Button>
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    </div>
+                </CardContent>
+            </Card>
 
-            <div className="px-6 pb-4 flex-1 min-h-0">
-                <Card className="bg-white border border-gray-200 rounded-xl shadow-sm h-full min-h-0">
-                    <CardContent className="p-0 flex flex-col h-full min-h-0">
-                        <div className="p-4 border-b flex-none flex items-center justify-between bg-gradient-to-r from-purple-50 to-white">
+            {/* ── Table ── */}
+            {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                    <span className="ml-3 text-gray-600">Đang tải danh sách biến thể...</span>
+                </div>
+            ) : processedSkus.length === 0 ? (
+                <div className="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80">
+                    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                        <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                            <Layers className="h-10 w-10 text-slate-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-800">Không tìm thấy biến thể nào</h3>
+                        <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                            Hãy thử thay đổi bộ lọc hoặc từ khoá tìm kiếm để xem kết quả khác.
+                        </p>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                        {/* Table header bar */}
+                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-white">
                             <div className="flex items-center gap-2">
-                                <Package className="h-5 w-5 text-purple-600" />
-                                <div className="text-sm font-semibold text-gray-800">Danh sách Biến thể & Giá</div>
+                                <Layers className="h-5 w-5 text-purple-600" />
+                                <span className="text-sm font-semibold text-gray-800">Danh sách Biến thể &amp; Giá</span>
                             </div>
-                            <div className="text-xs text-gray-500">
-                                Tổng: <span className="font-semibold text-purple-600">{processedSkus.length}</span> biến thể
-                            </div>
+                            <span className="text-xs text-gray-500">
+                                Tổng:{" "}
+                                <span className="font-semibold text-purple-600">{processedSkus.length}</span> biến thể
+                            </span>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto min-h-0">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50 text-xs text-gray-500">
-                                        <TableHead>SKU</TableHead>
-                                        <TableHead>Sản phẩm</TableHead>
-                                        <TableHead>Màu / Size</TableHead>
-                                        <TableHead>Giá vốn</TableHead>
-                                        <TableHead>Giá bán</TableHead>
-                                        <TableHead>Thao tác</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody className="text-sm">
-                                    {isLoading ? (
-                                        <TableRow>
-                                            <TableCell colSpan={6} className="text-center py-8">
-                                                <div className="flex justify-center items-center gap-2">
-                                                    <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
-                                                    <span>Đang tải dữ liệu...</span>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : processedSkus.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                                                Không tìm thấy biến thể nào
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        processedSkus
-                                            .slice(page * pageSize, (page + 1) * pageSize)
-                                            .map((sku, index) => (
-                                                <TableRow key={`${sku.id}-${index}`} className="hover:bg-gray-50">
-                                                    <TableCell className="font-mono text-xs font-bold text-purple-700">
-                                                        {sku.maSku || sku.maBienThe || sku.skuCode || 'N/A'}
-                                                    </TableCell>
-                                                    <TableCell className="max-w-[200px] truncate" title={sku.productName}>
+                        <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
+                            <table className="w-full text-sm">
+                                <thead className="sticky top-0 z-10">
+                                    <tr className="border-b border-slate-200 bg-slate-50">
+                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-12">STT</th>
+                                        <th className="h-11 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">SKU</th>
+                                        <th className="h-11 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Sản phẩm</th>
+                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Màu / Size</th>
+                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Trạng thái</th>
+                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Giá vốn</th>
+                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Giá bán</th>
+                                        <th className="h-11 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {currentPageSkus.map((sku, index) => {
+                                        const isPriceChanged = Number(sku.giaBan) !== Number(sku.originalPrice) || Number(sku.giaVon) !== Number(sku.originalCost);
+                                        return (
+                                            <tr key={`${sku.id}-${index}`} className="transition-colors duration-150 hover:bg-violet-50/50">
+                                                {/* STT */}
+                                                <td className="px-4 py-3 align-middle text-center w-12">
+                                                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                                                        {page * pageSize + index + 1}
+                                                    </span>
+                                                </td>
+
+                                                {/* SKU */}
+                                                <td className="px-4 py-3 align-middle">
+                                                    <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 rounded px-2 py-0.5">
+                                                        {sku.maSku || sku.maBienThe || sku.skuCode || "N/A"}
+                                                    </span>
+                                                </td>
+
+                                                {/* Tên sản phẩm */}
+                                                <td className="px-4 py-3 align-middle max-w-[220px]">
+                                                    <p className="font-semibold text-slate-800 truncate text-sm" title={sku.productName}>
                                                         {sku.productName}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span className="px-2 py-1 rounded bg-gray-100 text-xs mr-1">
-                                                            {sku.mauSac?.tenMau || '-'}
-                                                        </span>
-                                                        <span className="px-2 py-1 rounded bg-gray-100 text-xs">
-                                                            {sku.size?.tenSize || '-'}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex items-center gap-2">
-                                                            <Input
-                                                                type="number"
-                                                                className="w-24 h-8 text-right"
-                                                                value={sku.giaVon}
-                                                                onChange={(e) => handlePriceChange(sku.id, 'giaVon', e.target.value)}
-                                                            />
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex items-center gap-2">
-                                                            <Input
-                                                                type="number"
-                                                                className="w-24 h-8 text-right"
-                                                                value={sku.giaBan}
-                                                                onChange={(e) => handlePriceChange(sku.id, 'giaBan', e.target.value)}
-                                                            />
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex items-center gap-2">
-                                                            {/* Show Save button only if changed */}
-                                                            {(sku.giaBan != sku.originalPrice || sku.giaVon != sku.originalCost) && (
-                                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={() => savePrice(sku)} title="Lưu giá">
-                                                                    <Save className="h-4 w-4" />
-                                                                </Button>
-                                                            )}
-                                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-purple-600" onClick={() => handlePrintBarcode(sku)} title="In Barcode">
-                                                                <Printer className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                                    </p>
+                                                    {sku.productCode && (
+                                                        <p className="text-xs text-slate-400 font-mono mt-0.5">{sku.productCode}</p>
+                                                    )}
+                                                </td>
 
-                        <PaginationComponent
-                            currentPage={page}
-                            pageSize={pageSize}
-                            totalItems={processedSkus.length}
-                            onPageChange={setPage}
-                            onPageSizeChange={setPageSize}
-                            isLoading={isLoading}
-                        />
-                    </CardContent>
-                </Card>
-            </div>
+                                                {/* Màu / Size */}
+                                                <td className="px-4 py-3 align-middle text-center">
+                                                    <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                                                        {sku.mauSac?.tenMau && (
+                                                            <span className="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                                                                {sku.mauSac.tenMau}
+                                                            </span>
+                                                        )}
+                                                        {sku.size?.tenSize && (
+                                                            <span className="inline-flex items-center rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                                                                {sku.size.tenSize}
+                                                            </span>
+                                                        )}
+                                                        {!sku.mauSac?.tenMau && !sku.size?.tenSize && (
+                                                            <span className="text-xs text-slate-400">—</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+
+                                                {/* Trạng thái */}
+                                                <td className="px-4 py-3 align-middle text-center">
+                                                    {sku.trangThai === 1 ? (
+                                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                                            Hoạt động
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                                                            Ngừng HĐ
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                {/* Giá vốn */}
+                                                <td className="px-4 py-3 align-middle text-center">
+                                                    <Input
+                                                        type="number"
+                                                        className={`w-28 h-8 text-right text-xs mx-auto border-gray-200 focus:border-purple-400
+                                                            ${isPriceChanged ? "border-amber-300 bg-amber-50" : ""}
+                                                        `}
+                                                        value={sku.giaVon}
+                                                        onChange={(e) => handlePriceChange(sku.id, "giaVon", e.target.value)}
+                                                    />
+                                                </td>
+
+                                                {/* Giá bán */}
+                                                <td className="px-4 py-3 align-middle text-center">
+                                                    <Input
+                                                        type="number"
+                                                        className={`w-28 h-8 text-right text-xs mx-auto border-gray-200 focus:border-purple-400
+                                                            ${isPriceChanged ? "border-amber-300 bg-amber-50" : ""}
+                                                        `}
+                                                        value={sku.giaBan}
+                                                        onChange={(e) => handlePriceChange(sku.id, "giaBan", e.target.value)}
+                                                    />
+                                                </td>
+
+                                                {/* Thao tác */}
+                                                <td className="px-4 py-3 align-middle">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        {isPriceChanged && (
+                                                            <button
+                                                                type="button"
+                                                                title="Lưu giá"
+                                                                onClick={() => savePrice(sku)}
+                                                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200"
+                                                            >
+                                                                <Save className="h-4 w-4" />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            title="In Barcode"
+                                                            onClick={() => handlePrintBarcode(sku)}
+                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-violet-600 hover:bg-violet-50 hover:border-violet-200"
+                                                        >
+                                                            <Printer className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Pagination */}
+                    <Card className="border-0 shadow-md bg-white">
+                        <CardContent className="p-0">
+                            <PaginationComponent
+                                currentPage={page}
+                                pageSize={pageSize}
+                                totalItems={processedSkus.length}
+                                onPageChange={setPage}
+                                onPageSizeChange={setPageSize}
+                                isLoading={isLoading}
+                            />
+                        </CardContent>
+                    </Card>
+                </>
+            )}
 
             <BarcodePrint
                 isOpen={isBarcodeModalOpen}
