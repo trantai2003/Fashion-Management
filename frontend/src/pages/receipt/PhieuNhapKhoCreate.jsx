@@ -253,14 +253,14 @@ export default function PhieuNhapKhoCreate() {
                         <button
                             onClick={() => handleSaveDraft(false)}
                             disabled={loading || !selectedPO}
-                            className="px-6 py-2.5 rounded-lg border border-black bg-white hover:bg-black hover:text-white text-sm font-medium text-gray-700 disabled:opacity-50 transition-all duration-200"
+                            className="px-6 py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 disabled:opacity-50"
                         >
                             Lưu nháp
                         </button>
                         <button
                             onClick={() => handleSaveDraft(true)}
                             disabled={loading || !selectedPO}
-                            className="px-8 py-2.5 rounded-lg bg-black text-white text-sm font-semibold hover:bg-white hover:text-black border border-black shadow-md transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:bg-gray-400 disabled:border-gray-400"
+                            className="px-8 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700 shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:bg-gray-400"
                         >
                             {loading ? "Đang xử lý..." : "Tiếp tục"}
                         </button>

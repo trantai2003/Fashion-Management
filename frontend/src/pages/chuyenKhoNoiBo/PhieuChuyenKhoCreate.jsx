@@ -177,7 +177,7 @@ export default function PhieuChuyenKhoCreate() {
                                 <Button
                                     size="sm"
                                     onClick={() => setShowProductDialog(true)}
-                                    className="bg-black hover:bg-white hover:text-black border border-black text-white transition-all duration-200"
+                                    className="bg-purple-600 hover:bg-purple-700 text-white"
                                 >
                                     <Plus className="h-4 w-4 mr-1" /> Thêm sản phẩm
                                 </Button>
@@ -267,7 +267,7 @@ export default function PhieuChuyenKhoCreate() {
                         <Button
                             onClick={handleCreate}
                             disabled={loading}
-                            className="px-8 bg-black hover:bg-white hover:text-black border border-black text-white font-bold shadow-md transition-all duration-200 active:scale-95"
+                            className="px-8 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md shadow-purple-100 transition-all active:scale-95"
                         >
                             {loading ? "Đang xử lý..." : <>Tạo phiếu điều chuyển</>}
                         </Button>
@@ -324,7 +324,7 @@ export default function PhieuChuyenKhoCreate() {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-right px-6">
-                                                <Button size="sm" variant="outline" className="h-8 border-gray-300 group-hover:bg-black group-hover:text-white group-hover:border-black transition-all font-bold">
+                                                <Button size="sm" variant="outline" className="h-8 border-gray-300 group-hover:bg-purple-600 group-hover:text-white group-hover:border-purple-600 transition-all font-bold">
                                                     Chọn
                                                 </Button>
                                             </TableCell>
