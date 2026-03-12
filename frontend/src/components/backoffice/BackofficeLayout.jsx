@@ -38,14 +38,13 @@ export default function BackofficeLayout() {
             key: "USER_DETAIL",
             match: (path) =>
                 /^\/admin\/users\/\d+$/.test(path),
-            title: "User Detail",
+            title: "Chi tiết người dùng",
             subtitle: "Thông tin chi tiết",
         },
         {
             key: "USER_LIST",
             match: (path) => path === "/users",
-            title: "User List",
-            subtitle: "Xem danh sách nhân viên / khách hàng",
+            title: "Danh sách người dùng",
         },
         {
             key: "ATTRIBUTES",
@@ -208,6 +207,13 @@ export default function BackofficeLayout() {
             match: (path) => /^\/goods-issues\/\d+\/print$/.test(path),
             title: "In phiếu xuất kho",
             subtitle: "Xem bản in phiếu xuất kho",
+        },
+        {
+            key: "STOCK_TAKE",
+            match: (path) => path === "/stock-take",
+            title: "Quản lý kiểm kê",
+            subtitle: "Xem và quản lý các lần kiểm kê tồn kho",
+
         }
     ];
 

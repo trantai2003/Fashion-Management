@@ -73,6 +73,7 @@ export default function StockTakeCreate() {
   const [selectedKhoId, setSelectedKhoId] = useState(null);
   const [chiTiets, setChiTiets]           = useState([]);
   const [updates, setUpdates]             = useState({});
+  const [isCompleted, setIsCompleted]     = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -93,6 +94,7 @@ export default function StockTakeCreate() {
             getStockTakeDetails(dotKiemKeId),
           ]);
           setSelectedKhoId(dot.kho?.id);
+          setIsCompleted(dot.trangThai === 1);
           setChiTiets(details);
 
           const initialUpdates = {};
@@ -179,12 +181,14 @@ export default function StockTakeCreate() {
         {/* Page title */}
         <div>
           <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-            {dotKiemKeId ? "Nhập số lượng thực tế" : "Tạo đợt kiểm kê"}
+            {!dotKiemKeId ? "Tạo đợt kiểm kê" : isCompleted ? "Chi tiết đợt kiểm kê" : "Nhập số lượng thực tế"}
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            {dotKiemKeId
-              ? "Đối chiếu và nhập số lượng đếm được cho từng lô hàng"
-              : "Chọn kho và điền thông tin để bắt đầu kiểm kê"
+            {!dotKiemKeId
+              ? "Chọn kho và điền thông tin để bắt đầu kiểm kê"
+              : isCompleted
+              ? "Thông tin chi tiết đợt kiểm kê đã hoàn thành"
+              : "Đối chiếu và nhập số lượng đếm được cho từng lô hàng"
             }
           </p>
         </div>
@@ -371,22 +375,30 @@ export default function StockTakeCreate() {
 
                           {/* Nhập thực tế */}
                           <td className="px-4 py-3.5 align-middle text-right">
-                            <Input
-                              type="number"
-                              min="0"
-                              defaultValue={
-                                updates[ct.id] !== undefined
-                                  ? updates[ct.id]
-                                  : Math.round(parseFloat(ct.soLuongThucTe ?? tonHeThong))
-                              }
-                              onChange={(e) => handleSoLuongChange(ct.id, e.target.value)}
-                              className="w-28 text-right border-gray-200 focus:border-violet-500 focus:ring-violet-500 ml-auto"
-                            />
+                            {isCompleted ? (
+                              <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1">
+                                <span className="font-semibold text-slate-800 text-xs">
+                                  {thucTe.toLocaleString("vi-VN")}
+                                </span>
+                              </span>
+                            ) : (
+                              <Input
+                                type="number"
+                                min="0"
+                                defaultValue={
+                                  updates[ct.id] !== undefined
+                                    ? updates[ct.id]
+                                    : Math.round(parseFloat(ct.soLuongThucTe ?? tonHeThong))
+                                }
+                                onChange={(e) => handleSoLuongChange(ct.id, e.target.value)}
+                                className="w-28 text-right border-gray-200 focus:border-violet-500 focus:ring-violet-500 ml-auto"
+                              />
+                            )}
                           </td>
 
                           {/* Chênh lệch */}
                           <td className="px-4 py-3.5 align-middle text-right">
-                            {hasInput ? (
+                            {(isCompleted || hasInput) ? (
                               <span className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold ${
                                 chenhLech > 0
                                   ? "bg-emerald-50 text-emerald-700"
@@ -417,23 +429,35 @@ export default function StockTakeCreate() {
                   lô hàng
                 </p>
                 <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    className="border-gray-300 text-slate-600 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
-                    onClick={() => navigate("/stock-take")}
-                  >
-                    Hủy
-                  </Button>
-                  <Button
-                    onClick={onComplete}
-                    disabled={loading}
-                    className="bg-violet-600 hover:bg-violet-700 text-white min-w-[180px] shadow-sm transition-all duration-200"
-                  >
-                    {loading
-                      ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
-                      : <><CheckCircle2 className="mr-2 h-4 w-4" />Hoàn thành kiểm kê</>
-                    }
-                  </Button>
+                  {isCompleted ? (
+                    <Button
+                      onClick={() => navigate("/stock-take")}
+                      className="bg-violet-600 hover:bg-violet-700 text-white min-w-[180px] shadow-sm transition-all duration-200"
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Quay lại danh sách
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="border-gray-300 text-slate-600 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
+                        onClick={() => navigate("/stock-take")}
+                      >
+                        Hủy
+                      </Button>
+                      <Button
+                        onClick={onComplete}
+                        disabled={loading}
+                        className="bg-violet-600 hover:bg-violet-700 text-white min-w-[180px] shadow-sm transition-all duration-200"
+                      >
+                        {loading
+                          ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
+                          : <><CheckCircle2 className="mr-2 h-4 w-4" />Hoàn thành kiểm kê</>
+                        }
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             )}

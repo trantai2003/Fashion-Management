@@ -1,295 +1,314 @@
 // src/pages/material/ChatLieuList.jsx
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight, Eye } from "lucide-react";
-// Thay đổi: import toast từ sonner thay vì react-hot-toast
+    Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight,
+    Eye, Loader2, Layers, ChevronDown, Filter, RefreshCcw, Check, AlertTriangle,
+} from "lucide-react";
 import { toast } from "sonner";
-import {
-    getAllChatLieu,
-    deleteChatLieu,
-} from "@/services/chatLieuService";
+import { getAllChatLieu, deleteChatLieu } from "@/services/chatLieuService";
 
+// ── Status badge ──────────────────────────────────────────────────────────
+function StatusBadge({ status }) {
+    const active = status === 1 || status === true;
+    return active ? (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Hoạt động
+        </span>
+    ) : (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+            Ngừng hoạt động
+        </span>
+    );
+}
+
+// ── Action button ─────────────────────────────────────────────────────────
+function ActionBtn({ title, onClick, color, children }) {
+    const colors = {
+        violet: "text-violet-600 hover:bg-violet-50 hover:border-violet-200",
+        blue:   "text-blue-600 hover:bg-blue-50 hover:border-blue-200",
+        red:    "text-red-500 hover:bg-red-50 hover:border-red-200",
+    };
+    return (
+        <button type="button" title={title} onClick={onClick}
+            className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 ${colors[color]}`}
+        >{children}</button>
+    );
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────
+function EmptyState() {
+    return (
+        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                <Layers className="h-10 w-10 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800">Không tìm thấy chất liệu</h3>
+            <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                Chưa có chất liệu nào phù hợp. Hãy thêm mới hoặc thay đổi bộ lọc.
+            </p>
+        </div>
+    );
+}
+
+// ── Confirm Delete Modal ──────────────────────────────────────────────────
+function ConfirmDeleteModal({ target, isDeleting, onConfirm, onCancel }) {
+    if (!target) return null;
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={!isDeleting ? onCancel : undefined} />
+            <div className="relative z-10 w-full max-w-md mx-4 rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200/80 overflow-hidden">
+                <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-red-50">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
+                        <AlertTriangle className="h-5 w-5 text-red-600" />
+                    </div>
+                    <div>
+                        <p className="font-bold text-red-700 text-base">Xác nhận xóa chất liệu</p>
+                        <p className="text-xs text-red-500 mt-0.5">Hành động này không thể hoàn tác</p>
+                    </div>
+                </div>
+                <div className="px-6 py-5">
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                        Bạn có chắc chắn muốn xóa chất liệu{" "}
+                        <span className="font-semibold text-slate-900">"{target.tenChatLieu}"</span>{" "}
+                        (mã: <span className="font-mono font-semibold text-violet-600">{target.maChatLieu}</span>)?
+                    </p>
+                </div>
+                <div className="flex justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-100">
+                    <Button variant="outline" className="border-gray-300 text-slate-600" onClick={onCancel} disabled={isDeleting}>Hủy bỏ</Button>
+                    <Button className="bg-red-600 hover:bg-red-700 text-white min-w-[100px]" onClick={onConfirm} disabled={isDeleting}>
+                        {isDeleting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xóa...</> : <><Trash2 className="mr-2 h-4 w-4" />Xóa</>}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+const STATUS_OPTIONS = [
+    { value: "all",      label: "Tất cả trạng thái" },
+    { value: "active",   label: "Hoạt động" },
+    { value: "inactive", label: "Ngừng hoạt động" },
+];
+
+// ── Main component ────────────────────────────────────────────────────────
 export default function ChatLieuList() {
-    // State management
-    const [chatLieus, setChatLieus] = useState([]);
-    const [search, setSearch] = useState("");
-    const [loading, setLoading] = useState(true);
-    const [deleteId, setDeleteId] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [chatLieus,    setChatLieus]    = useState([]);
+    const [search,       setSearch]       = useState("");
+    const [filterStatus, setFilterStatus] = useState("all");
+    const [loading,      setLoading]      = useState(true);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [isDeleting,   setIsDeleting]   = useState(false);
+    const [pageNumber,   setPageNumber]   = useState(0);
+    const [pageSize,     setPageSize]     = useState(5);
     const navigate = useNavigate();
 
-    // Fetch danh sách chất liệu từ API
-    // Pattern: GIỐNG HỆT fetchSuppliers
     const fetchChatLieus = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getAllChatLieu(search);
-            // Set data trực tiếp - getAllChatLieu đã trả về array từ response.data.data || []
             setChatLieus(data);
-        } catch (err) {
-            console.error("Fetch error:", err);
-            // Thông báo lỗi đơn giản - GIỐNG supplierService
+            setPageNumber(0);
+        } catch {
             toast.error("Không thể tải danh sách chất liệu");
         } finally {
             setLoading(false);
         }
     }, [search]);
 
-    // Load dữ liệu khi component mount hoặc search thay đổi
-    useEffect(() => {
-        fetchChatLieus();
-    }, [fetchChatLieus]);
+    useEffect(() => { fetchChatLieus(); }, [fetchChatLieus]);
+    useEffect(() => { setPageNumber(0); }, [filterStatus]);
 
-    // Xử lý xóa chất liệu
-    const handleDelete = async () => {
-        if (!deleteId) return;
+    const handleConfirmDelete = async () => {
+        if (!deleteTarget) return;
+        setIsDeleting(true);
         try {
-            await deleteChatLieu(deleteId);
-            // Thay đổi: toast.success từ sonner
-            toast.success("Xóa chất liệu thành công");
-            fetchChatLieus(); // Reload danh sách
+            await deleteChatLieu(deleteTarget.id);
+            toast.success(`Đã xóa chất liệu "${deleteTarget.tenChatLieu}" thành công`);
+            setChatLieus(prev => prev.filter(s => s.id !== deleteTarget.id));
+            setDeleteTarget(null);
         } catch (err) {
-            // Thay đổi: toast.error từ sonner
             toast.error(err.response?.data?.message || "Xóa thất bại");
         } finally {
-            setDeleteId(null); // Reset deleteId
+            setIsDeleting(false);
         }
     };
 
-    // Logic phân trang
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = chatLieus.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(chatLieus.length / itemsPerPage);
+    const filtered = useMemo(() => chatLieus.filter(item => {
+        const matchSearch = !search.trim() ||
+            item.maChatLieu?.toLowerCase().includes(search.toLowerCase()) ||
+            item.tenChatLieu?.toLowerCase().includes(search.toLowerCase());
+        const active = item.trangThai === 1 || item.trangThai === true;
+        const matchStatus = filterStatus === "all" || (filterStatus === "active" && active) || (filterStatus === "inactive" && !active);
+        return matchSearch && matchStatus;
+    }), [chatLieus, search, filterStatus]);
+
+    const totalElements = filtered.length;
+    const totalPages    = Math.max(1, Math.ceil(totalElements / pageSize));
+    const safePage      = Math.min(pageNumber, totalPages - 1);
+    const pageItems     = filtered.slice(safePage * pageSize, (safePage + 1) * pageSize);
+    const handlePageChange = (p) => { if (p >= 0 && p < totalPages) setPageNumber(p); };
+    const currentFilterLabel = STATUS_OPTIONS.find(o => o.value === filterStatus)?.label ?? "Tất cả trạng thái";
 
     return (
-        
-        <div className="container mx-auto py-10">
-            <Card className="border-0 shadow-lg rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-white">
-                {/* Header với tiêu đề và nút thêm mới */}
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-purple-100 p-6 rounded-t-2xl">
-                    <CardTitle className="text-2xl font-bold text-purple-800">
-                        Danh sách Chất liệu
-                    </CardTitle>
-                    <Button
-                        onClick={() => navigate("/material/new")}
-                        className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
-                    >
-                        <Plus className="mr-2 h-4 w-4" /> Thêm chất liệu
-                    </Button>
-                </CardHeader>
+        <>
+            <ConfirmDeleteModal target={deleteTarget} isDeleting={isDeleting} onConfirm={handleConfirmDelete} onCancel={() => { if (!isDeleting) setDeleteTarget(null); }} />
 
-                <CardContent className="p-6">
-                    {/* Search bar */}
-                    <div className="flex items-center py-4">
-                        <div className="relative w-full max-w-sm">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="search"
-                                placeholder="Tìm theo mã hoặc tên..."
-                                className="w-full rounded-lg pl-8 border-purple-300 focus:border-purple-500"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
+            <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+                <div className="space-y-6 w-full">
+
+                    {/* ── Header ── */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Chất liệu</h2>
+                            <p className="text-sm text-gray-600 mt-1">Quản lý danh mục chất liệu sản phẩm</p>
+                        </div>
+                        <Button onClick={() => navigate("/material/new")} className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200">
+                            <Plus className="w-4 h-4 mr-2" />Thêm chất liệu
+                        </Button>
+                    </div>
+
+                    {/* ── Filter bar ── */}
+                    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-5">
+                        <div className="flex items-center gap-2 mb-4">
+                            <Filter className="h-4 w-4 text-violet-600" />
+                            <span className="text-sm font-semibold text-slate-700">Bộ lọc tìm kiếm</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="space-y-1.5 md:col-span-2">
+                                <Label className="text-gray-700 font-medium text-xs">Tìm kiếm</Label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                    <Input placeholder="Tìm theo mã hoặc tên chất liệu..." className="pl-9 border-gray-200 focus:border-violet-500 focus:ring-violet-500" value={search} onChange={(e) => setSearch(e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-gray-700 font-medium text-xs">Trạng thái</Label>
+                                <DropdownMenu modal={false}>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal">
+                                            <span className="truncate text-sm">{currentFilterLabel}</span>
+                                            <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
+                                        {STATUS_OPTIONS.map(opt => (
+                                            <DropdownMenuItem key={opt.value} onClick={() => setFilterStatus(opt.value)} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
+                                                {opt.label}
+                                                {filterStatus === opt.value && <Check className="h-4 w-4 text-violet-600" />}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            <div className="flex items-end">
+                                <Button variant="outline" onClick={() => { setSearch(""); setFilterStatus("all"); }} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300">
+                                    <RefreshCcw className="h-4 w-4" />Đặt lại
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Table hiển thị danh sách */}
-                    {loading ? (
-                        <div className="text-center py-8 text-purple-600">Đang tải...</div>
-                    ) : currentItems.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            Không có chất liệu nào
-                        </div>
-                    ) : (
-                        <div className="rounded-md border border-purple-200 overflow-hidden">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-purple-50">
-                                        <TableHead className="w-12">STT</TableHead>
-                                        <TableHead>Mã</TableHead>
-                                        <TableHead>Tên chất liệu</TableHead>
-                                        <TableHead>Mô tả</TableHead>
-                                        <TableHead>Trạng thái</TableHead>
-                                        <TableHead className="text-right">Thao tác</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {currentItems.map((item, index) => (
-                                        <TableRow key={item.id} className="hover:bg-purple-50">
-                                            {/* Số thứ tự */}
-                                            <TableCell className="font-medium">
-                                                {(currentPage - 1) * itemsPerPage + index + 1}
-                                            </TableCell>
-                                            <TableCell className="font-medium">{item.maChatLieu || '-'}</TableCell>
-                                            <TableCell>{item.tenChatLieu}</TableCell>
-                                            <TableCell className="text-muted-foreground">
-                                                {item.moTa || "-"}
-                                            </TableCell>
-                                            {/* Badge trạng thái */}
-                                            <TableCell>
-                                                <div
-                                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                                                        item.trangThai ?? true ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                                                    }`}
-                                                >
-                                                    {item.trangThai ?? true ? "Hoạt động" : "Ngừng hoạt động"}
-                                                </div>
-                                            </TableCell>
-                                            {/* Các nút thao tác (View, Edit & Delete) */}
-                                            <TableCell className="text-right space-x-2">
-                                                {/* Nút Xem chi tiết */}
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => navigate(`/material/view/${item.id}`)}
-                                                    title="Xem chi tiết"
-                                                >
-                                                    <Eye className="h-4 w-4 text-blue-600" />
-                                                </Button>
-
-                                                {/* Nút Edit */}
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => navigate(`/material/${item.id}`)}
-                                                    title="Chỉnh sửa"
-                                                >
-                                                    <Edit className="h-4 w-4 text-purple-600" />
-                                                </Button>
-                                                {/* Dialog xác nhận xóa */}
-                                                <Dialog>
-                                                    <DialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(item.id)}>
-                                                            <Trash2 className="h-4 w-4 text-red-600" />
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent className="sm:max-w-md bg-white border border-purple-300 rounded-xl shadow-xl">
-                                                        <DialogHeader>
-                                                            <DialogTitle className="text-red-600 text-xl font-bold">
-                                                                Xác nhận xóa chất liệu
-                                                            </DialogTitle>
-                                                            <DialogDescription className="text-gray-700 mt-2">
-                                                                Bạn chắc chắn muốn xóa chất liệu{" "}
-                                                                <span className="font-semibold text-gray-900">"{item.tenChatLieu}"</span>?
-                                                                <br />
-                                                                <span className="text-red-500 font-medium mt-1 block">
-                                                                    Hành động này không thể hoàn tác.
-                                                                </span>
-                                                            </DialogDescription>
-                                                        </DialogHeader>
-                                                        <DialogFooter className="sm:justify-start gap-3 mt-6">
-                                                            <Button
-                                                                variant="outline"
-                                                                className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                                                                onClick={() => setDeleteId(null)}
-                                                            >
-                                                                Hủy
-                                                            </Button>
-                                                            <Button
-                                                                variant="destructive"
-                                                                className="bg-red-600 hover:bg-red-700 text-white"
-                                                                onClick={handleDelete}
-                                                                disabled={loading}
-                                                            >
-                                                                {loading ? "Đang xóa..." : "Xóa"}
-                                                            </Button>
-                                                        </DialogFooter>
-                                                    </DialogContent>
-                                                </Dialog>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
-
-                    {/* Phân trang - bên phải */}
-                    {chatLieus.length > 0 && (
-                        <div className="flex items-center justify-end mt-6 gap-4">
-                            {/* Dropdown chọn số dòng hiển thị */}
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-600">Rows</span>
-                                <Select
-                                    value={String(itemsPerPage)}
-                                    onValueChange={(value) => {
-                                        setItemsPerPage(Number(value));
-                                        setCurrentPage(1); // Reset về trang 1 khi thay đổi
-                                    }}
-                                >
-                                    <SelectTrigger className="w-[100px] bg-white border border-purple-300 shadow-sm">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-white border border-purple-300 shadow-lg">
-                                        <SelectItem value="10">10</SelectItem>
-                                        <SelectItem value="20">20</SelectItem>
-                                        <SelectItem value="30">30</SelectItem>
-                                        <SelectItem value="40">40</SelectItem>
-                                        <SelectItem value="50">50</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                    {/* ── Table ── */}
+                    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                        {loading ? (
+                            <div className="flex items-center justify-center py-16 gap-2">
+                                <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                                <span className="text-sm text-gray-600">Đang tải danh sách...</span>
                             </div>
+                        ) : pageItems.length === 0 ? <EmptyState /> : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-slate-200 bg-slate-50">
+                                            {["STT", "Mã chất liệu", "Tên chất liệu", "Mô tả", "Trạng thái", "Thao tác"].map((h, i) => (
+                                                <th key={h} className={`h-12 px-4 font-semibold text-slate-600 tracking-wide text-xs uppercase ${i === 5 ? "text-center" : "text-left"}`}>{h}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {pageItems.map((item, index) => (
+                                            <tr key={item.id} className="transition-colors duration-150 hover:bg-violet-50/50">
+                                                <td className="px-4 py-3.5 align-middle text-slate-500 text-xs">{safePage * pageSize + index + 1}</td>
+                                                <td className="px-4 py-3.5 align-middle">
+                                                    <span className="font-bold text-violet-600 tracking-wide font-mono">{item.maChatLieu || "—"}</span>
+                                                </td>
+                                                <td className="px-4 py-3.5 align-middle">
+                                                    <span className="font-semibold text-slate-900">{item.tenChatLieu}</span>
+                                                </td>
+                                                <td className="px-4 py-3.5 align-middle max-w-[240px]">
+                                                    <span className="text-slate-500 text-xs line-clamp-2">{item.moTa || "—"}</span>
+                                                </td>
+                                                <td className="px-4 py-3.5 align-middle"><StatusBadge status={item.trangThai} /></td>
+                                                <td className="px-4 py-3.5 align-middle">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <ActionBtn title="Xem chi tiết" onClick={() => navigate(`/material/view/${item.id}`)} color="violet"><Eye className="h-4 w-4" /></ActionBtn>
+                                                        <ActionBtn title="Chỉnh sửa" onClick={() => navigate(`/material/${item.id}`)} color="blue"><Edit className="h-4 w-4" /></ActionBtn>
+                                                        <ActionBtn title="Xóa" onClick={() => setDeleteTarget(item)} color="red"><Trash2 className="h-4 w-4" /></ActionBtn>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
 
-                            {/* Nút Prev - Current Page - Next */}
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    disabled={currentPage === 1}
-                                    onClick={() => setCurrentPage(currentPage - 1)}
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                </Button>
-                                <Button className="bg-purple-600 text-white cursor-default shadow-md">
-                                    {currentPage}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    disabled={currentPage === totalPages}
-                                    onClick={() => setCurrentPage(currentPage + 1)}
-                                >
-                                    <ChevronRight className="h-4 w-4" />
-                                </Button>
+                    {/* ── Pagination ── */}
+                    {totalElements > 0 && (
+                        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-4">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-2">
+                                    <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
+                                                {pageSize} dòng <ChevronDown className="h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                                            {[5, 10, 20, 50].map(size => (
+                                                <DropdownMenuItem key={size} onClick={() => { setPageSize(size); setPageNumber(0); }} className="cursor-pointer">{size} dòng</DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                    Hiển thị <span className="font-semibold text-gray-900">{safePage * pageSize + 1}</span> - <span className="font-semibold text-gray-900">{Math.min((safePage + 1) * pageSize, totalElements)}</span> trong tổng số <span className="font-semibold text-violet-600">{totalElements}</span> kết quả
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => handlePageChange(safePage - 1)} disabled={safePage === 0} className="gap-1 disabled:opacity-50">
+                                        <ChevronLeft className="h-4 w-4" /> Trước
+                                    </Button>
+                                    <div className="hidden sm:flex gap-1">
+                                        {[...Array(Math.min(5, totalPages))].map((_, idx) => {
+                                            let p = totalPages <= 5 ? idx : safePage < 3 ? idx : safePage > totalPages - 4 ? totalPages - 5 + idx : safePage - 2 + idx;
+                                            return (
+                                                <Button key={idx} variant={safePage === p ? "default" : "outline"} size="sm" onClick={() => handlePageChange(p)}
+                                                    className={safePage === p ? "bg-violet-600 text-white hover:bg-violet-700 shadow-sm" : "border-gray-200"}>
+                                                    {p + 1}
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => handlePageChange(safePage + 1)} disabled={safePage >= totalPages - 1} className="gap-1 disabled:opacity-50">
+                                        Sau <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     )}
-                </CardContent>
-            </Card>
-        </div>
+                </div>
+            </div>
+        </>
     );
 }

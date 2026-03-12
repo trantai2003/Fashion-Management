@@ -1,36 +1,41 @@
 // src/pages/stock-take/StockTakeList.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Eye, ClipboardList, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Plus, Eye, ClipboardList, Loader2, ChevronDown, ChevronLeft,
+  ChevronRight, Check, Filter, RefreshCcw, Search,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
 import { getStockTakes } from "@/services/stockTakeService";
 
-// ── Trạng thái đợt kiểm kê ────────────────────────────────────────────────
+// ── Trạng thái ────────────────────────────────────────────────────────────
 const TRANG_THAI = {
   0: {
     label: "Đang kiểm kê",
     badge: "inline-flex items-center gap-1.5 rounded-full border border-yellow-200 bg-yellow-50 px-2.5 py-1 text-xs font-semibold text-yellow-700",
-    dot: "h-1.5 w-1.5 rounded-full bg-yellow-500",
+    dot:   "h-1.5 w-1.5 rounded-full bg-yellow-500",
   },
   1: {
     label: "Hoàn thành",
     badge: "inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700",
-    dot: "h-1.5 w-1.5 rounded-full bg-emerald-500",
+    dot:   "h-1.5 w-1.5 rounded-full bg-emerald-500",
   },
 };
 
-// ── Loại kiểm kê ──────────────────────────────────────────────────────────
-const LOAI_KIEM_KE = {
-  toan_bo:       "Toàn bộ",
-  theo_danh_muc: "Theo danh mục",
-  theo_khu_vuc:  "Theo khu vực",
-  dot_xuat:      "Đột xuất",
-};
+const FILTER_OPTIONS = [
+  { value: "all",     label: "Tất cả trạng thái" },
+  { value: "ongoing", label: "Đang kiểm kê" },
+  { value: "done",    label: "Hoàn thành" },
+];
 
 // ── Empty state ───────────────────────────────────────────────────────────
 function EmptyState({ onAdd }) {
@@ -57,12 +62,18 @@ function EmptyState({ onAdd }) {
 // ── Main component ────────────────────────────────────────────────────────
 export default function StockTakeList() {
   const navigate = useNavigate();
-  const [stockTakes, setStockTakes] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const [stockTakes,   setStockTakes]   = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [searchTerm,   setSearchTerm]   = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [pageNumber,   setPageNumber]   = useState(0);
+  const [pageSize,     setPageSize]     = useState(10);
+
+  useEffect(() => { fetchData(); }, []);
+
+  // Reset về trang 0 khi filter/search thay đổi
+  useEffect(() => { setPageNumber(0); }, [searchTerm, filterStatus]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -76,19 +87,50 @@ export default function StockTakeList() {
     }
   };
 
+  const handleReset = () => {
+    setSearchTerm("");
+    setFilterStatus("all");
+  };
+
+  // ── Client-side filter ────────────────────────────────────────────────
+  const filtered = useMemo(() => {
+    return stockTakes.filter((item) => {
+      const matchSearch =
+        !searchTerm.trim() ||
+        item.maDotKiemKe?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.tenDotKiemKe?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.kho?.tenKho?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchStatus =
+        filterStatus === "all" ||
+        (filterStatus === "ongoing" && item.trangThai === 0) ||
+        (filterStatus === "done"    && item.trangThai === 1);
+
+      return matchSearch && matchStatus;
+    });
+  }, [stockTakes, searchTerm, filterStatus]);
+
+  // ── Pagination ────────────────────────────────────────────────────────
+  const totalElements = filtered.length;
+  const totalPages    = Math.max(1, Math.ceil(totalElements / pageSize));
+  const safePage      = Math.min(pageNumber, totalPages - 1);
+  const pageItems     = filtered.slice(safePage * pageSize, (safePage + 1) * pageSize);
+
+  const handlePageChange = (p) => {
+    if (p >= 0 && p < totalPages) setPageNumber(p);
+  };
+
+  const currentFilterLabel = FILTER_OPTIONS.find(o => o.value === filterStatus)?.label ?? "Tất cả trạng thái";
+
   return (
     <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
       <div className="space-y-6 w-full">
 
-        {/* ── Header ── */}
+        {/* ── Page header ── */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-              Kiểm kê kho hàng
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Theo dõi và quản lý các đợt kiểm kê tồn kho
-            </p>
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight"></h2>
+            <p className="text-sm text-gray-600 mt-1"></p>
           </div>
           <Button
             onClick={() => navigate("/stock-take/new")}
@@ -99,21 +141,84 @@ export default function StockTakeList() {
           </Button>
         </div>
 
-        {/* ── Table card ── */}
+        {/* ── Filter bar ── */}
+        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="h-4 w-4 text-violet-600" />
+            <span className="text-sm font-semibold text-slate-700">Bộ lọc tìm kiếm</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="space-y-1.5 md:col-span-2">
+              <Label className="text-gray-700 font-medium text-xs">Tìm kiếm</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Tìm theo mã đợt, tên đợt, kho..."
+                  className="pl-9 border-gray-200 focus:border-violet-500 focus:ring-violet-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Status filter */}
+            <div className="space-y-1.5">
+              <Label className="text-gray-700 font-medium text-xs">Trạng thái</Label>
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal"
+                  >
+                    <span className="truncate text-sm">{currentFilterLabel}</span>
+                    <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
+                  {FILTER_OPTIONS.map((opt) => (
+                    <DropdownMenuItem
+                      key={opt.value}
+                      onClick={() => setFilterStatus(opt.value)}
+                      className="flex items-center justify-between cursor-pointer hover:bg-violet-50"
+                    >
+                      {opt.label}
+                      {filterStatus === opt.value && <Check className="h-4 w-4 text-violet-600" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Reset */}
+            <div className="flex items-end">
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300"
+              >
+                <RefreshCcw className="h-4 w-4" />
+                Đặt lại
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Table ── */}
         <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
           {loading ? (
-            <div className="flex items-center justify-center py-16 gap-2 text-violet-500">
-              <Loader2 className="h-6 w-6 animate-spin" />
+            <div className="flex items-center justify-center py-16 gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
               <span className="text-sm text-gray-600">Đang tải dữ liệu...</span>
             </div>
-          ) : stockTakes.length === 0 ? (
+          ) : pageItems.length === 0 ? (
             <EmptyState onAdd={() => navigate("/stock-take/new")} />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50">
-                    {["Mã đợt", "Tên đợt", "Kho", "Loại", "Người chủ trì", "Ngày bắt đầu", "Trạng thái", "Thao tác"].map((h) => (
+                    {["Mã đợt", "Tên đợt", "Kho", "Người chủ trì", "Ngày bắt đầu", "Trạng thái", "Thao tác"].map((h) => (
                       <th
                         key={h}
                         className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap"
@@ -124,14 +229,12 @@ export default function StockTakeList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {stockTakes.map((item) => {
-                    const tt = TRANG_THAI[item.trangThai] ?? TRANG_THAI[0];
+                  {pageItems.map((item) => {
+                    const tt        = TRANG_THAI[item.trangThai] ?? TRANG_THAI[0];
                     const isOngoing = item.trangThai === 0;
                     return (
-                      <tr
-                        key={item.id}
-                        className="transition-colors duration-150 hover:bg-violet-50/50"
-                      >
+                      <tr key={item.id} className="transition-colors duration-150 hover:bg-violet-50/50">
+
                         {/* Mã đợt */}
                         <td className="px-4 py-3.5 align-middle">
                           <span className="font-bold text-violet-600 tracking-wide font-mono">
@@ -140,7 +243,7 @@ export default function StockTakeList() {
                         </td>
 
                         {/* Tên đợt */}
-                        <td className="px-4 py-3.5 align-middle max-w-[180px]">
+                        <td className="px-4 py-3.5 align-middle max-w-[200px]">
                           <span className="font-semibold text-slate-900 leading-snug">
                             {item.tenDotKiemKe || "—"}
                           </span>
@@ -150,13 +253,6 @@ export default function StockTakeList() {
                         <td className="px-4 py-3.5 align-middle">
                           <span className="font-medium text-slate-700">
                             {item.kho?.tenKho || "—"}
-                          </span>
-                        </td>
-
-                        {/* Loại */}
-                        <td className="px-4 py-3.5 align-middle">
-                          <span className="text-xs text-slate-500">
-                            {LOAI_KIEM_KE[item.loaiKiemKe] || item.loaiKiemKe || "—"}
                           </span>
                         </td>
 
@@ -185,7 +281,7 @@ export default function StockTakeList() {
                         </td>
 
                         {/* Thao tác */}
-                        <td className="px-4 py-3.5 align-middle text-center">
+                        <td className="px-4 py-3.5 align-middle">
                           <button
                             type="button"
                             onClick={() => navigate(`/stock-take/${item.id}`)}
@@ -196,7 +292,7 @@ export default function StockTakeList() {
                             }`}
                           >
                             <Eye className="h-3.5 w-3.5" />
-                            {isOngoing ? "Tiếp tục" : ""}
+                            {isOngoing ? "Tiếp tục" : "Xem"}
                           </button>
                         </td>
                       </tr>
@@ -207,6 +303,100 @@ export default function StockTakeList() {
             </div>
           )}
         </div>
+
+        {/* ── Pagination ── */}
+        {totalElements > 0 && (
+          <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+
+              {/* Page size */}
+              <div className="flex items-center gap-2">
+                <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
+                      {pageSize} dòng
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                    {[5, 10, 20, 50].map((size) => (
+                      <DropdownMenuItem
+                        key={size}
+                        onClick={() => { setPageSize(size); setPageNumber(0); }}
+                        className="cursor-pointer"
+                      >
+                        {size} dòng
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Page info */}
+              <div className="text-sm text-gray-600">
+                Hiển thị{" "}
+                <span className="font-semibold text-gray-900">{safePage * pageSize + 1}</span>
+                {" "}-{" "}
+                <span className="font-semibold text-gray-900">
+                  {Math.min((safePage + 1) * pageSize, totalElements)}
+                </span>
+                {" "}trong tổng số{" "}
+                <span className="font-semibold text-violet-600">{totalElements}</span> kết quả
+              </div>
+
+              {/* Nav */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(safePage - 1)}
+                  disabled={safePage === 0}
+                  className="gap-1 disabled:opacity-50"
+                >
+                  <ChevronLeft className="h-4 w-4" /> Trước
+                </Button>
+
+                <div className="hidden sm:flex gap-1">
+                  {[...Array(Math.min(5, totalPages))].map((_, idx) => {
+                    let pageNum;
+                    if (totalPages <= 5)               pageNum = idx;
+                    else if (safePage < 3)             pageNum = idx;
+                    else if (safePage > totalPages - 4) pageNum = totalPages - 5 + idx;
+                    else                               pageNum = safePage - 2 + idx;
+
+                    return (
+                      <Button
+                        key={idx}
+                        variant={safePage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNum)}
+                        className={
+                          safePage === pageNum
+                            ? "bg-violet-600 text-white hover:bg-violet-700 shadow-sm"
+                            : "border-gray-200"
+                        }
+                      >
+                        {pageNum + 1}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(safePage + 1)}
+                  disabled={safePage >= totalPages - 1}
+                  className="gap-1 disabled:opacity-50"
+                >
+                  Sau <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
