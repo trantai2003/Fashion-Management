@@ -13,13 +13,7 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
-} from "@/components/ui/card";
-import { ArrowLeft, Loader2, PackageSearch, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, PackageSearch, CheckCircle2, Warehouse } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { getKhoList } from "@/services/khoService";
 import {
@@ -29,33 +23,56 @@ import {
   completeStockTake,
 } from "@/services/stockTakeService";
 
-// ──────────────────────────────────────────────
-// Schema validation
-// ──────────────────────────────────────────────
+// ── Schema validation ─────────────────────────────────────────────────────
 const formSchema = z.object({
   khoId: z.number({ invalid_type_error: "Vui lòng chọn kho" }).min(1, "Vui lòng chọn kho"),
   ghiChu: z.string().optional(),
 });
 
-// ──────────────────────────────────────────────
-// Component
-// ──────────────────────────────────────────────
+// ── Step indicator ────────────────────────────────────────────────────────
+function StepIndicator({ step }) {
+  const steps = [
+    { label: "Chọn kho", icon: Warehouse },
+    { label: "Nhập số lượng", icon: CheckCircle2 },
+  ];
+  return (
+    <div className="flex items-center gap-2 mb-6">
+      {steps.map((s, idx) => {
+        const active = idx + 1 === step;
+        const done = idx + 1 < step;
+        return (
+          <div key={idx} className="flex items-center gap-2">
+            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
+              done ? "bg-emerald-500 text-white" :
+              active ? "bg-violet-600 text-white shadow-md shadow-violet-200" :
+              "bg-slate-100 text-slate-400"
+            }`}>
+              {done ? "✓" : idx + 1}
+            </div>
+            <span className={`text-sm font-medium ${active ? "text-violet-700" : done ? "text-emerald-600" : "text-slate-400"}`}>
+              {s.label}
+            </span>
+            {idx < steps.length - 1 && (
+              <div className={`mx-1 h-px w-12 ${done ? "bg-emerald-300" : "bg-slate-200"}`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────
 export default function StockTakeCreate() {
-  const { id } = useParams();                                   // có id = đang xem đợt đã tạo
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [khos, setKhos] = useState([]);
-
-  // Sau khi tạo xong, lưu dotKiemKeId và khoId để dùng khi complete
-  const [dotKiemKeId, setDotKiemKeId]   = useState(id ? parseInt(id) : null);
+  const [dotKiemKeId, setDotKiemKeId]     = useState(id ? parseInt(id) : null);
   const [selectedKhoId, setSelectedKhoId] = useState(null);
-
-  // Danh sách chi tiết lô hàng
-  const [chiTiets, setChiTiets] = useState([]);
-
-  // Map chiTietId → soLuongThucTe người dùng nhập
-  const [updates, setUpdates] = useState({});
+  const [chiTiets, setChiTiets]           = useState([]);
+  const [updates, setUpdates]             = useState({});
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -70,7 +87,6 @@ export default function StockTakeCreate() {
         const khoData = await getKhoList();
         setKhos(khoData);
 
-        // Nếu có id trên URL (vào từ nút "Tiếp tục") → fetch đợt để lấy khoId, rồi load chi tiết
         if (dotKiemKeId) {
           const [dot, details] = await Promise.all([
             getStockTake(dotKiemKeId),
@@ -79,8 +95,6 @@ export default function StockTakeCreate() {
           setSelectedKhoId(dot.kho?.id);
           setChiTiets(details);
 
-          // FIX: Khởi tạo updates từ soLuongThucTe đã lưu trong DB
-          // Nếu không, submit sẽ fallback về soLuongHeThong → sai
           const initialUpdates = {};
           details.forEach((ct) => {
             initialUpdates[ct.id] = parseFloat(ct.soLuongThucTe ?? ct.soLuongHeThong ?? 0);
@@ -106,7 +120,6 @@ export default function StockTakeCreate() {
 
       const details = await getStockTakeDetails(newId);
       setChiTiets(details);
-
       toast.success("Tạo đợt kiểm kê thành công! Hãy nhập số lượng thực tế.");
     } catch (err) {
       toast.error(err.response?.data?.message || "Tạo đợt kiểm kê thất bại");
@@ -115,7 +128,7 @@ export default function StockTakeCreate() {
     }
   };
 
-  // ── Cập nhật số lượng thực tế khi người dùng nhập ──
+  // ── Cập nhật số lượng ──
   const handleSoLuongChange = (chiTietId, value) => {
     setUpdates((prev) => ({
       ...prev,
@@ -129,14 +142,10 @@ export default function StockTakeCreate() {
       toast.error("Thiếu thông tin đợt kiểm kê");
       return;
     }
-
     setLoading(true);
     try {
       const updateList = chiTiets.map((ct) => ({
         chiTietId: ct.id,
-        // Ưu tiên giá trị người dùng đã nhập (updates),
-        // fallback về soLuongThucTe từ DB (đã khởi tạo vào updates khi load),
-        // cuối cùng mới fallback về 0
         soLuongThucTe: updates[ct.id] !== undefined
           ? updates[ct.id]
           : parseFloat(ct.soLuongThucTe ?? 0),
@@ -152,238 +161,285 @@ export default function StockTakeCreate() {
     }
   };
 
-  // ──────────────────────────────────────────────
-  // Render
-  // ──────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────
   return (
-    <div className="container mx-auto py-10 max-w-5xl">
-      {/* Nút quay lại */}
-      <Button
-        variant="ghost"
-        className="mb-6 text-purple-600 hover:text-purple-800 hover:bg-purple-50"
-        onClick={() => navigate("/stock-take")}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại danh sách
-      </Button>
+    <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+      <div className="max-w-5xl mx-auto space-y-6">
 
-      {/* ── BƯỚC 1: Form tạo đợt ── */}
-      {!dotKiemKeId && (
-        <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-400 p-6">
-            <div className="flex items-center gap-3">
-              <PackageSearch className="h-6 w-6 text-white" />
+        {/* Back button */}
+        <button
+          type="button"
+          onClick={() => navigate("/stock-take")}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-800 transition-colors duration-150"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Quay lại danh sách
+        </button>
+
+        {/* Page title */}
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+            {dotKiemKeId ? "Nhập số lượng thực tế" : "Tạo đợt kiểm kê"}
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            {dotKiemKeId
+              ? "Đối chiếu và nhập số lượng đếm được cho từng lô hàng"
+              : "Chọn kho và điền thông tin để bắt đầu kiểm kê"
+            }
+          </p>
+        </div>
+
+        <StepIndicator step={dotKiemKeId ? 2 : 1} />
+
+        {/* ── BƯỚC 1: Form tạo đợt ── */}
+        {!dotKiemKeId && (
+          <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+            {/* Card header */}
+            <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100">
+                <PackageSearch className="h-4.5 w-4.5 text-violet-600" />
+              </div>
               <div>
-                <CardTitle className="text-2xl font-bold text-white">
-                  Tạo đợt kiểm kê kho hàng
-                </CardTitle>
-                <CardDescription className="text-purple-100 mt-1">
-                  Chọn kho và điền thông tin để bắt đầu
-                </CardDescription>
+                <p className="font-semibold text-slate-900 leading-snug">Thông tin đợt kiểm kê</p>
+                <p className="text-xs text-slate-500 mt-0.5">Vui lòng điền đầy đủ thông tin bên dưới</p>
               </div>
             </div>
-          </CardHeader>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onCreate)}>
-              <CardContent className="space-y-6 p-8">
-                {/* Chọn kho */}
-                <FormField
-                  control={form.control}
-                  name="khoId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-purple-800 font-semibold">
-                        Kho kiểm kê <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={(value) => field.onChange(parseInt(value))}
-                        defaultValue={field.value ? field.value.toString() : ""}
-                      >
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onCreate)}>
+                <div className="p-8 space-y-6">
+                  {/* Chọn kho */}
+                  <FormField
+                    control={form.control}
+                    name="khoId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Kho kiểm kê <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <Select
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          defaultValue={field.value ? field.value.toString() : ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="border-gray-200 focus:border-violet-500 focus:ring-violet-500">
+                              <SelectValue placeholder="Chọn kho..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-white">
+                            {khos.map((kho) => (
+                              <SelectItem key={kho.id} value={kho.id.toString()}>
+                                {kho.tenKho}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className="text-red-500 text-xs" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Ghi chú */}
+                  <FormField
+                    control={form.control}
+                    name="ghiChu"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">Ghi chú</FormLabel>
                         <FormControl>
-                          <SelectTrigger className="border-purple-200 focus:border-purple-400">
-                            <SelectValue placeholder="Chọn kho..." />
-                          </SelectTrigger>
+                          <Textarea
+                            placeholder="Ghi chú thêm (nếu có)..."
+                            className="border-gray-200 focus:border-violet-500 focus:ring-violet-500 resize-none"
+                            rows={3}
+                            {...field}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          {khos.map((kho) => (
-                            <SelectItem key={kho.id} value={kho.id.toString()}>
-                              {kho.tenKho}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className="text-red-500" />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-                {/* Ghi chú */}
-                <FormField
-                  control={form.control}
-                  name="ghiChu"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-purple-800 font-semibold">Ghi chú</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Ghi chú thêm (nếu có)..."
-                          className="border-purple-200 focus:border-purple-400 resize-none"
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
+                {/* Footer */}
+                <div className="flex justify-end gap-3 px-8 py-5 bg-slate-50 border-t border-slate-100">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-gray-300 text-slate-600 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
+                    onClick={() => navigate("/stock-take")}
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-violet-600 hover:bg-violet-700 text-white min-w-[160px] shadow-sm transition-all duration-200"
+                  >
+                    {loading
+                      ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang tạo...</>
+                      : <><PackageSearch className="mr-2 h-4 w-4" />Tạo đợt kiểm kê</>
+                    }
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        )}
 
-              <CardFooter className="flex justify-end gap-3 px-8 py-5 bg-purple-50 rounded-b-2xl">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-purple-300 text-purple-600"
-                  onClick={() => navigate("/stock-take")}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-purple-600 hover:bg-purple-700 text-white min-w-[160px]"
-                >
-                  {loading
-                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang tạo...</>
-                    : <><PackageSearch className="mr-2 h-4 w-4" />Tạo đợt kiểm kê</>
-                  }
-                </Button>
-              </CardFooter>
-            </form>
-          </Form>
-        </Card>
-      )}
-
-      {/* ── BƯỚC 2: Nhập số lượng thực tế ── */}
-      {dotKiemKeId && (
-        <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-400 p-6">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-6 w-6 text-white" />
+        {/* ── BƯỚC 2: Nhập số lượng thực tế ── */}
+        {dotKiemKeId && (
+          <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+            {/* Card header */}
+            <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
+                <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600" />
+              </div>
               <div>
-                <CardTitle className="text-2xl font-bold text-white">
-                  Nhập số lượng thực tế
-                </CardTitle>
-                <CardDescription className="text-purple-100 mt-1">
-                  Đối chiếu và nhập số lượng đếm được cho từng lô hàng
-                </CardDescription>
+                <p className="font-semibold text-slate-900 leading-snug">Danh sách lô hàng</p>
+                <p className="text-xs text-slate-500 mt-0.5">Nhập số lượng thực tế đếm được cho từng lô</p>
               </div>
             </div>
-          </CardHeader>
 
-          <CardContent className="p-0">
             {loading ? (
-              <div className="flex items-center justify-center py-16 gap-2 text-purple-500">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Đang tải danh sách lô hàng...</span>
+              <div className="flex items-center justify-center py-16 gap-2">
+                <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                <span className="text-sm text-gray-600">Đang tải danh sách lô hàng...</span>
               </div>
             ) : chiTiets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground">
-                <PackageSearch className="h-10 w-10 text-purple-200" />
-                <p>Kho này không có hàng tồn kho để kiểm kê</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                  <PackageSearch className="h-8 w-8 text-slate-400" />
+                </div>
+                <h3 className="text-base font-semibold text-slate-700">Kho không có hàng tồn kho</h3>
+                <p className="mt-1 text-sm text-slate-500">Kho này hiện không có lô hàng nào để kiểm kê.</p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-purple-50 hover:bg-purple-50">
-                    <TableHead className="font-semibold text-purple-700">Sản phẩm / Biến thể</TableHead>
-                    <TableHead className="font-semibold text-purple-700">Mã SKU</TableHead>
-                    <TableHead className="font-semibold text-purple-700">Mã lô</TableHead>
-                    <TableHead className="font-semibold text-purple-700 text-right">Tồn hệ thống</TableHead>
-                    <TableHead className="font-semibold text-purple-700 text-right">Số lượng thực tế</TableHead>
-                    <TableHead className="font-semibold text-purple-700 text-right">Chênh lệch</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {chiTiets.map((ct) => {
-                    // FIX: dùng đúng field name từ ChiTietKiemKeDto
-                    const tonHeThong = parseFloat(ct.soLuongHeThong ?? 0);
-                    const thucTe = updates[ct.id] !== undefined
-                      ? updates[ct.id]
-                      : parseFloat(ct.soLuongThucTe ?? 0);
-                    const chenhLech = thucTe - tonHeThong;
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50">
+                      {["Sản phẩm / Biến thể", "Mã SKU", "Mã lô", "Tồn hệ thống", "Số lượng thực tế", "Chênh lệch"].map((h, i) => (
+                        <th
+                          key={h}
+                          className={`h-12 px-4 font-semibold text-slate-600 tracking-wide text-xs uppercase ${i >= 3 ? "text-right" : "text-left"}`}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {chiTiets.map((ct) => {
+                      const tonHeThong = parseFloat(ct.soLuongHeThong ?? 0);
+                      const thucTe = updates[ct.id] !== undefined
+                        ? updates[ct.id]
+                        : parseFloat(ct.soLuongThucTe ?? 0);
+                      const chenhLech = thucTe - tonHeThong;
+                      const hasInput = updates[ct.id] !== undefined;
 
-                    return (
-                      <TableRow key={ct.id} className="hover:bg-purple-50/40 transition-colors">
-                        <TableCell className="font-medium">
-                          {ct.bienTheSanPham?.tenBienThe || "—"}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm text-muted-foreground">
-                          {ct.bienTheSanPham?.maSku || "—"}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm text-muted-foreground">
-                          {ct.loHang?.maLo || "—"}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {tonHeThong.toLocaleString("vi-VN")}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Input
-                            type="number"
-                            min="0"
-                            defaultValue={updates[ct.id] !== undefined ? updates[ct.id] : Math.round(parseFloat(ct.soLuongThucTe ?? tonHeThong))}
-                            onChange={(e) => handleSoLuongChange(ct.id, e.target.value)}
-                            className="w-28 text-right border-purple-200 focus:border-purple-400 ml-auto"
-                          />
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          {updates[ct.id] !== undefined ? (
-                            <span className={
-                              chenhLech > 0 ? "text-green-600" :
-                              chenhLech < 0 ? "text-red-600" :
-                              "text-muted-foreground"
-                            }>
-                              {chenhLech > 0 ? "+" : ""}{chenhLech.toLocaleString("vi-VN")}
+                      return (
+                        <tr key={ct.id} className="transition-colors duration-150 hover:bg-violet-50/50">
+                          {/* Sản phẩm */}
+                          <td className="px-4 py-3.5 align-middle">
+                            <span className="font-semibold text-slate-900">
+                              {ct.bienTheSanPham?.tenBienThe || "—"}
                             </span>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">—</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
+                          </td>
 
-          {chiTiets.length > 0 && (
-            <CardFooter className="flex justify-between items-center px-6 py-5 bg-purple-50 rounded-b-2xl">
-              <p className="text-sm text-muted-foreground">
-                Tổng <span className="font-semibold text-purple-700">{chiTiets.length}</span> lô hàng
-              </p>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="border-purple-300 text-purple-600"
-                  onClick={() => navigate("/stock-take")}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  onClick={onComplete}
-                  disabled={loading}
-                  className="bg-purple-600 hover:bg-purple-700 text-white min-w-[180px]"
-                >
-                  {loading
-                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
-                    : <><CheckCircle2 className="mr-2 h-4 w-4" />Hoàn thành kiểm kê</>
-                  }
-                </Button>
+                          {/* SKU */}
+                          <td className="px-4 py-3.5 align-middle">
+                            <span className="font-mono text-xs text-slate-500">
+                              {ct.bienTheSanPham?.maSku || "—"}
+                            </span>
+                          </td>
+
+                          {/* Mã lô */}
+                          <td className="px-4 py-3.5 align-middle">
+                            <span className="font-mono text-xs text-slate-500">
+                              {ct.loHang?.maLo || "—"}
+                            </span>
+                          </td>
+
+                          {/* Tồn hệ thống */}
+                          <td className="px-4 py-3.5 align-middle text-right">
+                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1">
+                              <span className="font-semibold text-slate-800 text-xs">
+                                {tonHeThong.toLocaleString("vi-VN")}
+                              </span>
+                            </span>
+                          </td>
+
+                          {/* Nhập thực tế */}
+                          <td className="px-4 py-3.5 align-middle text-right">
+                            <Input
+                              type="number"
+                              min="0"
+                              defaultValue={
+                                updates[ct.id] !== undefined
+                                  ? updates[ct.id]
+                                  : Math.round(parseFloat(ct.soLuongThucTe ?? tonHeThong))
+                              }
+                              onChange={(e) => handleSoLuongChange(ct.id, e.target.value)}
+                              className="w-28 text-right border-gray-200 focus:border-violet-500 focus:ring-violet-500 ml-auto"
+                            />
+                          </td>
+
+                          {/* Chênh lệch */}
+                          <td className="px-4 py-3.5 align-middle text-right">
+                            {hasInput ? (
+                              <span className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold ${
+                                chenhLech > 0
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : chenhLech < 0
+                                  ? "bg-red-50 text-red-600"
+                                  : "bg-slate-100 text-slate-500"
+                              }`}>
+                                {chenhLech > 0 ? "+" : ""}{chenhLech.toLocaleString("vi-VN")}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-slate-400">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-            </CardFooter>
-          )}
-        </Card>
-      )}
+            )}
+
+            {/* Footer */}
+            {chiTiets.length > 0 && (
+              <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-t border-slate-100">
+                <p className="text-sm text-slate-500">
+                  Tổng{" "}
+                  <span className="font-semibold text-violet-700">{chiTiets.length}</span>{" "}
+                  lô hàng
+                </p>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    className="border-gray-300 text-slate-600 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
+                    onClick={() => navigate("/stock-take")}
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    onClick={onComplete}
+                    disabled={loading}
+                    className="bg-violet-600 hover:bg-violet-700 text-white min-w-[180px] shadow-sm transition-all duration-200"
+                  >
+                    {loading
+                      ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
+                      : <><CheckCircle2 className="mr-2 h-4 w-4" />Hoàn thành kiểm kê</>
+                    }
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

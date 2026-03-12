@@ -116,10 +116,10 @@ export default function App() {
           <Route path="/warehouse" element={<Warehouse />} />
 
           {/* Material */}
-          <Route path="/material" element={<ChatLieuList />} />
-          <Route path="/material/new" element={<ChatLieuDetail />} />
+          {/* <Route path="/material" element={<ChatLieuList />} /> */}
+          {/* <Route path="/material/new" element={<ChatLieuDetail />} />
           <Route path="/material/view/:id" element={<ChatLieuDetailView />} />
-          <Route path="/material/:id" element={<ChatLieuDetail />} />
+          <Route path="/material/:id" element={<ChatLieuDetail />} /> */}
 
           {/* Purchase Order */}
           <Route path="/purchase-orders" element={<PurchaseOrder />} />
