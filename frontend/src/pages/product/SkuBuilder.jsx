@@ -243,7 +243,7 @@ export default function SkuBuilder() {
                                 variant="outline"
                                 onClick={fetchSkus}
                                 disabled={isLoading}
-                                className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-black hover:text-white border-gray-300"
+                                className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
                             >
                                 <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
                                 Tải lại
@@ -429,104 +429,6 @@ export default function SkuBuilder() {
                                 onPageSizeChange={setPageSize}
                                 isLoading={isLoading}
                             />
-                        <CardContent className="p-4">
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                {/* Số dòng hiển thị */}
-                                <div className="flex items-center gap-2">
-                                    <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="w-[120px] justify-between font-normal bg-white border-gray-200"
-                                            >
-                                                {pageSize} dòng
-                                                <ChevronDown className="h-4 w-4 opacity-50" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
-                                            {[5, 10, 20, 50, 100].map(size => (
-                                                <DropdownMenuItem
-                                                    key={size}
-                                                    onClick={() => { setPageSize(size); setPage(0); }}
-                                                    className="cursor-pointer"
-                                                >
-                                                    {size} dòng
-                                                </DropdownMenuItem>
-                                            ))}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-
-                                {/* Thông tin trang */}
-                                <div className="text-sm text-gray-600">
-                                    Hiển thị{" "}
-                                    <span className="font-semibold text-gray-900">
-                                        {page * pageSize + 1}
-                                    </span>
-                                    {" "}-{" "}
-                                    <span className="font-semibold text-gray-900">
-                                        {Math.min((page + 1) * pageSize, processedSkus.length)}
-                                    </span>
-                                    {" "}trong tổng số{" "}
-                                    <span className="font-semibold text-purple-600">{processedSkus.length}</span> kết quả
-                                </div>
-
-                                {/* Điều hướng */}
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setPage(page - 1)}
-                                        disabled={page === 0}
-                                        className="gap-1 disabled:opacity-50"
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                        Trước
-                                    </Button>
-
-                                    <div className="hidden sm:flex gap-1">
-                                        {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                                            let pageNum;
-                                            if (totalPages <= 5) {
-                                                pageNum = idx;
-                                            } else if (page < 3) {
-                                                pageNum = idx;
-                                            } else if (page > totalPages - 4) {
-                                                pageNum = totalPages - 5 + idx;
-                                            } else {
-                                                pageNum = page - 2 + idx;
-                                            }
-                                            return (
-                                                <Button
-                                                    key={idx}
-                                                    variant={page === pageNum ? "default" : "outline"}
-                                                    size="sm"
-                                                    onClick={() => setPage(pageNum)}
-                                                    className={
-                                                        page === pageNum
-                                                            ? "bg-black text-white hover:bg-gray-800 shadow-sm"
-                                                            : "border-gray-200"
-                                                    }
-                                                >
-                                                    {pageNum + 1}
-                                                </Button>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setPage(page + 1)}
-                                        disabled={page >= totalPages - 1}
-                                        className="gap-1 disabled:opacity-50"
-                                    >
-                                        Sau
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
                         </CardContent>
                     </Card>
                 </>

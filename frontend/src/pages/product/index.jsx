@@ -410,7 +410,7 @@ export default function ProductList() {
                                     variant="outline"
                                     onClick={handleReset}
                                     disabled={isLoading}
-                                    className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-black hover:text-white border-gray-300"
+                                    className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
                                 >
                                     <RefreshCcw className="h-4 w-4" />
                                     Đặt lại
@@ -432,7 +432,7 @@ export default function ProductList() {
                     </Button>
                     <Button
                         onClick={openAddModal}
-                        className="bg-black text-white hover:bg-white hover:text-black border border-black shadow-sm transition-all duration-200"
+                        className="bg-purple-600 text-white hover:bg-purple-700 shadow-sm transition-all duration-200"
                     >
                         <Plus className="w-4 h-4 mr-2" />
                         Thêm sản phẩm
@@ -694,7 +694,7 @@ export default function ProductList() {
                                                         onClick={() => handleFilterChange.page(pageNum)}
                                                         className={
                                                             filters.page === pageNum
-                                                                ? "bg-black text-white hover:bg-gray-800 shadow-sm"
+                                                                ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
                                                                 : "border-gray-200"
                                                         }
                                                     >
