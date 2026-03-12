@@ -195,7 +195,7 @@ export default function StockTakeList() {
               <Button
                 variant="outline"
                 onClick={handleReset}
-                className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300"
+                className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300"
               >
                 <RefreshCcw className="h-4 w-4" />
                 Đặt lại

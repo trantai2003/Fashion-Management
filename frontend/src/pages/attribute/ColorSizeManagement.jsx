@@ -300,7 +300,7 @@ const ColorSizeManagement = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-end">
-                                    <Button variant="outline" onClick={() => setColorSearch('')} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300">
+                                    <Button variant="outline" onClick={() => setColorSearch('')} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300">
                                         <RefreshCcw className="h-4 w-4" />Đặt lại
                                     </Button>
                                 </div>
@@ -378,7 +378,7 @@ const ColorSizeManagement = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-end">
-                                    <Button variant="outline" onClick={() => setSizeSearch('')} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300">
+                                    <Button variant="outline" onClick={() => setSizeSearch('')} className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300">
                                         <RefreshCcw className="h-4 w-4" />Đặt lại
                                     </Button>
                                 </div>
@@ -504,7 +504,7 @@ const ColorSizeManagement = () => {
                         {modalMode !== 'view' ? (
                             <>
                                 <Button variant="outline" className="border-gray-300 text-slate-600" onClick={() => setShowModal(false)}>Hủy bỏ</Button>
-                                <Button onClick={handleSubmit} className="bg-violet-600 hover:bg-violet-700 text-white shadow-sm">
+                                <Button onClick={handleSubmit} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
                                     {modalMode === 'add' ? 'Thêm mới' : 'Lưu thay đổi'}
                                 </Button>
                             </>

@@ -126,39 +126,15 @@ function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPage
                                     className={page === p ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm" : "border-gray-200"}>
                                     {p + 1}
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
-                                {[5, 10, 20, 50].map(s => (
-                                    <DropdownMenuItem key={s} onClick={() => onPageSizeChange(s)} className="cursor-pointer">{s} dòng</DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                            );
+                        })}
                     </div>
-                    <div className="text-sm text-gray-600">
-                        Hiển thị <span className="font-semibold text-gray-900">{start}</span> – <span className="font-semibold text-gray-900">{end}</span> trong tổng số <span className="font-semibold text-violet-600">{total}</span> kết quả
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => onPageChange(page - 1)} disabled={page === 0} className="gap-1 disabled:opacity-50">
-                            <ChevronLeft className="h-4 w-4" /> Trước
-                        </Button>
-                        <div className="hidden sm:flex gap-1">
-                            {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                                let p = totalPages <= 5 ? idx : page < 3 ? idx : page > totalPages - 4 ? totalPages - 5 + idx : page - 2 + idx;
-                                return (
-                                    <Button key={idx} variant={page === p ? "default" : "outline"} size="sm" onClick={() => onPageChange(p)}
-                                        className={page === p ? "bg-violet-600 text-white hover:bg-violet-700 shadow-sm" : "border-gray-200"}>
-                                        {p + 1}
-                                    </Button>
-                                );
-                            })}
-                        </div>
-                        <Button variant="outline" size="sm" onClick={() => onPageChange(page + 1)} disabled={page >= totalPages - 1} className="gap-1 disabled:opacity-50">
-                            Sau <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div>
+                    <Button variant="outline" size="sm" onClick={() => onPageChange(page + 1)} disabled={page >= totalPages - 1} className="gap-1 disabled:opacity-50">
+                        Sau <ChevronRight className="h-4 w-4" />
+                    </Button>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
@@ -287,18 +263,16 @@ const ProductAttributeHub = () => {
                 />
             )}
 
-            <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-
-                {/* ── Header ── */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight"></h2>
-                        <p className="text-sm text-gray-600 mt-1"></p>
-                    </div>
-                    <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
-                        <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]}
-                    </Button>
+            {/* ── Header ── */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Quản lý Thuộc tính</h2>
+                    <p className="text-sm text-gray-600 mt-1">Quản lý màu sắc, kích cỡ và chất liệu sản phẩm</p>
                 </div>
+                <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                    <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
+                </Button>
+            </div>
 
                 {/* ── Tabs ── */}
                 <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleReset(); }}>
@@ -333,7 +307,7 @@ const ProductAttributeHub = () => {
                                         placeholder="Nhập từ khóa tìm kiếm..." className="h-11 pl-10 border-gray-200 focus:border-violet-500 focus:ring-violet-500" />
                                 </div>
                             </div>
-                            <Button variant="outline" onClick={handleReset} className="h-11 px-6 flex items-center gap-2 transition-all duration-300 hover:bg-violet-600 hover:text-white border-gray-300">
+                            <Button variant="outline" onClick={handleReset} className="h-11 px-6 flex items-center gap-2 transition-all duration-300 hover:bg-slate-50 border-gray-300">
                                 <RefreshCcw className="h-4 w-4" />Đặt lại bộ lọc
                             </Button>
                         </div>
@@ -342,7 +316,7 @@ const ProductAttributeHub = () => {
 
                 {/* ── Action buttons ── */}
                 <div className="flex items-center justify-end">
-                    <Button onClick={() => handleOpenModal('add')} className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200 px-6 h-11">
+                    <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 px-6 h-11">
                         <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
                     </Button>
                 </div>
@@ -424,7 +398,6 @@ const ProductAttributeHub = () => {
                         onPageSizeChange={(s) => setFilters(prev => ({ ...prev, size: s, page: 0 }))}
                     />
                 )}
-            </div>
 
             {/* ── Add/Edit Modal ── */}
             <Dialog open={modalConfig.open} onOpenChange={o => setModalConfig({ ...modalConfig, open: o })}>
@@ -502,7 +475,7 @@ const ProductAttributeHub = () => {
 
                         <DialogFooter className="border-t border-slate-100 pt-4 gap-2">
                             <Button type="button" variant="outline" className="border-gray-300 text-slate-600" onClick={() => setModalConfig({ ...modalConfig, open: false })}>Hủy bỏ</Button>
-                            <Button type="submit" className="bg-violet-600 hover:bg-violet-700 text-white shadow-sm">
+                            <Button type="submit" className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
                                 <Save className="mr-2 h-4 w-4" />{modalConfig.mode === 'add' ? 'Thêm mới' : 'Lưu thay đổi'}
                             </Button>
                         </DialogFooter>
@@ -568,7 +541,7 @@ const ProductAttributeHub = () => {
                     )}
                     <DialogFooter className="border-t border-slate-100 pt-4 gap-2">
                         <Button variant="outline" className="border-gray-300 text-slate-600" onClick={() => setViewItem(null)}>Đóng</Button>
-                        <Button className="bg-violet-600 hover:bg-violet-700 text-white" onClick={() => { handleOpenModal('edit', viewItem); setViewItem(null); }}>
+                        <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200" onClick={() => { handleOpenModal('edit', viewItem); setViewItem(null); }}>
                             <Edit className="mr-2 h-4 w-4" />Chỉnh sửa
                         </Button>
                     </DialogFooter>
