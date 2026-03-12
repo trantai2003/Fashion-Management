@@ -413,7 +413,7 @@ export default function WarehouseManagement() {
                                                         onClick={() => handlePageChange(pageNum)}
                                                         className={
                                                             pagination.pageNumber === pageNum
-                                                                ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
+                                                                ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
                                                                 : "border-gray-200"
                                                         }
                                                     >

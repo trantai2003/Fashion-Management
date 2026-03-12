@@ -369,7 +369,7 @@ export default function KhachHangPage() {
                         <CardTitle className="text-2xl font-bold">Quản lý khách hàng</CardTitle>
                         <Button
                             onClick={handleOpenCreateDialog}
-                            className="bg-purple-600 hover:bg-purple-700"
+                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900"
                         >
                             <Plus className="w-4 h-4 mr-2" />
                             Thêm khách hàng
@@ -394,7 +394,7 @@ export default function KhachHangPage() {
                                     className="pl-10"
                                 />
                             </div>
-                            <Button onClick={handleSearch} className="bg-purple-600 hover:bg-purple-700">
+                            <Button onClick={handleSearch} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900">
                                 Tìm kiếm
                             </Button>
                             <Button
@@ -444,7 +444,7 @@ export default function KhachHangPage() {
                                         <X className="w-4 h-4 mr-2" />
                                         Xóa bộ lọc
                                     </Button>
-                                    <Button onClick={handleSearch} className="flex-1 bg-purple-600 hover:bg-purple-700">
+                                    <Button onClick={handleSearch} className="flex-1 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900">
                                         Áp dụng
                                     </Button>
                                 </div>
@@ -711,7 +711,7 @@ export default function KhachHangPage() {
                         <Button
                             onClick={handleCreateSubmit}
                             disabled={isSubmitting}
-                            className="flex-1 bg-purple-600 hover:bg-purple-700"
+                            className="flex-1 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900"
                         >
                             {isSubmitting ? "Đang xử lý..." : "Thêm khách hàng"}
                         </Button>

@@ -139,7 +139,7 @@ export default function PhieuChuyenKhoList() {
                             </span>
                             <Link
                                 to="/transfer-tickets/create"
-                                className="px-3 py-2 text-sm text-white rounded-md bg-purple-600"
+                                className="px-3 py-2 text-sm text-white rounded-md bg-slate-900 border border-slate-900 hover:bg-white hover:text-slate-900"
                             >
                                 + Tạo Phiếu Chuyển Kho
                             </Link>
@@ -211,7 +211,7 @@ export default function PhieuChuyenKhoList() {
                                         <button
                                             key={index}
                                             onClick={() => setFilters((prev) => ({ ...prev, page: index }))}
-                                            className={`px-3 py-1 text-sm border rounded ${active ? "bg-purple-600 text-white" : "bg-white"}`}
+                                            className={`px-3 py-1 text-sm border rounded ${active ? "bg-slate-900 text-white border-slate-900 hover:bg-white hover:text-slate-900" : "bg-white"}`}
                                         >
                                             {index + 1}
                                         </button>
