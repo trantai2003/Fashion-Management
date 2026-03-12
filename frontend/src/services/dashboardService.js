@@ -1,6 +1,6 @@
 import apiClient from "./apiClient";
 
-export const adminDashboardService = {
-  getDashboardByAdmin: () =>
+export const dashboardService = {
+  getDashboard: () =>
     apiClient.get("/api/v1/admin/dashboard"),
 };

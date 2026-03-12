@@ -66,7 +66,7 @@ export default function DashboardByAdmin() {
 
     useEffect(() => {
 
-        dashboardService.getDashboardByAdmin().then((res) => {
+        dashboardService.getDashboard().then((res) => {
             setData(res.data.data);
         });
 

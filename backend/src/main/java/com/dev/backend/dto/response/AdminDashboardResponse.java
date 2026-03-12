@@ -14,24 +14,46 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AdminDashboardResponse implements Serializable {
 
-    // ===== USER =====
+    /* ================= USER ================= */
+
     Long totalUsers;
     Long newUsersToday;
     Long bannedUsers;
 
-    // ===== ORDER / REVENUE =====
+    /* ================= SALES ================= */
+
     Long totalOrdersToday;
     Long revenueToday;
 
-    // ===== CHART =====
+    /* ================= PURCHASE ================= */
+
+    Integer pendingPurchaseOrders;
+
+    /* ================= WAREHOUSE ================= */
+
+    Integer lowStockCount;
+    Integer pendingExports;
+    Integer pendingImports;
+    Integer importToday;
+    Integer exportToday;
+
+    /* ================= SALES ORDER ================= */
+
+    Integer pendingSaleOrders;
+
+    /* ================= PRODUCT ================= */
+
+    Long totalProducts;
+
+    /* ================= SUPPLIER ================= */
+
+    Long totalSuppliers;
+
+    /* ================= CHART ================= */
+
     List<RevenueChartItem> revenueLast7Days;
 
-    // ===== QUICK ALERTS =====
-    Integer lowStockCount;           // Tồn kho thấp
-    Integer pendingPurchaseOrders;   // Đơn mua chờ duyệt
-    Integer pendingSaleOrders;       // Đơn bán chờ duyệt
-
-    /* ================== SUB DTO ================== */
+    /* ================= SUB DTO ================= */
 
     @AllArgsConstructor
     @NoArgsConstructor
@@ -40,7 +62,9 @@ public class AdminDashboardResponse implements Serializable {
     @Builder
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class RevenueChartItem implements Serializable {
+
         String date;   // yyyy-MM-dd
         Long value;    // doanh thu
+
     }
 }

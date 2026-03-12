@@ -40,7 +40,7 @@ public interface DonBanHangRepository
     @Query("""
     select count(d)
     from DonBanHang d
-    where d.trangThai = 0
+    where d.trangThai = 1
 """)
     Long countPendingSaleOrders();
     long countBySoDonHangStartingWith(String prefix);

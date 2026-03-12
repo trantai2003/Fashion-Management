@@ -16,4 +16,5 @@ public interface NhaCungCapRepository extends JpaRepository<NhaCungCap, Integer>
 
     // Kiểm tra trùng mã khi tạo mới
     boolean existsByMaNhaCungCap(String maNhaCungCap);
+    long count();
 }

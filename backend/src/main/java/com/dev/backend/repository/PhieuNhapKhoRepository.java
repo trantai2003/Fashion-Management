@@ -14,4 +14,16 @@ public interface PhieuNhapKhoRepository extends JpaRepository<PhieuNhapKho, Inte
     @Query("SELECT COUNT(p) FROM PhieuNhapKho p WHERE p.soPhieuNhap LIKE :prefix%")
     long countBySoPhieuPrefix(@Param("prefix") String prefix);
     Optional<PhieuNhapKho> findByGhiChuContaining(String ghiChu);
+    @Query("""
+SELECT COUNT(p)
+FROM PhieuNhapKho p
+WHERE p.trangThai = 0
+""")
+    Long countPendingImports();
+    @Query("""
+SELECT COUNT(p)
+FROM PhieuNhapKho p
+WHERE DATE(p.ngayNhap) = CURRENT_DATE
+""")
+    Long countImportToday();
 }

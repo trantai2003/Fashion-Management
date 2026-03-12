@@ -13,7 +13,7 @@ export default function BackofficeLayout() {
         {
             key: "DASHBOARD",
             match: (path) => path === "/dashboard",
-            title: "Admin Dashboard",
+            title: "Dashboard",
             subtitle: "Tổng quan hoạt động quản trị",
         },
         {

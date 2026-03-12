@@ -18,23 +18,36 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private final DonBanHangRepository donBanHangRepository;
     private final DonMuaHangRepository donMuaHangRepository;
     private final TonKhoTheoLoRepository tonKhoTheoLoRepository;
+    private final SanPhamQuanAoRepository sanPhamQuanAoRepository;
+    private final NhaCungCapRepository nhaCungCapRepository;
+    private final PhieuNhapKhoRepository phieuNhapKhoRepository;
+    private final PhieuXuatKhoRepository phieuXuatKhoRepository;
 
     public AdminDashboardServiceImpl(
             NguoiDungRepository nguoiDungRepository,
             DonBanHangRepository donBanHangRepository,
             DonMuaHangRepository donMuaHangRepository,
-            TonKhoTheoLoRepository tonKhoTheoLoRepository
+            TonKhoTheoLoRepository tonKhoTheoLoRepository,
+            SanPhamQuanAoRepository sanPhamRepository, SanPhamQuanAoRepository sanPhamQuanAoRepository,
+            NhaCungCapRepository nhaCungCapRepository,
+            PhieuNhapKhoRepository phieuNhapKhoRepository,
+            PhieuXuatKhoRepository phieuXuatKhoRepository
     ) {
         this.nguoiDungRepository = nguoiDungRepository;
         this.donBanHangRepository = donBanHangRepository;
         this.donMuaHangRepository = donMuaHangRepository;
         this.tonKhoTheoLoRepository = tonKhoTheoLoRepository;
+        this.sanPhamQuanAoRepository = sanPhamQuanAoRepository;
+        this.nhaCungCapRepository = nhaCungCapRepository;
+        this.phieuNhapKhoRepository = phieuNhapKhoRepository;
+        this.phieuXuatKhoRepository = phieuXuatKhoRepository;
     }
 
     @Override
     public AdminDashboardResponse getDashboard() {
 
-        // ===== CHART =====
+        /* ================= REVENUE CHART ================= */
+
         Instant fromDate = LocalDate.now()
                 .minusDays(6)
                 .atStartOfDay(ZoneId.systemDefault())
@@ -49,7 +62,9 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                         ));
 
         List<AdminDashboardResponse.RevenueChartItem> chart = new ArrayList<>();
+
         for (int i = 6; i >= 0; i--) {
+
             LocalDate date = LocalDate.now().minusDays(i);
             String key = date.toString();
 
@@ -61,28 +76,71 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             );
         }
 
-        // ===== BUILD RESPONSE =====
+        /* ================= BUILD RESPONSE ================= */
+
         return AdminDashboardResponse.builder()
-                // user
+
+                /* USER */
+
                 .totalUsers(nguoiDungRepository.count())
                 .newUsersToday(nguoiDungRepository.countNewUsersToday())
                 .bannedUsers(nguoiDungRepository.countBannedUsers())
 
-                // order / revenue
+                /* SALES */
+
                 .totalOrdersToday(donBanHangRepository.countOrdersToday())
                 .revenueToday(donBanHangRepository.sumRevenueToday())
-                .revenueLast7Days(chart)
 
-                // quick alerts
-                .lowStockCount(
-                        tonKhoTheoLoRepository.countLowStockWarnings().intValue()
-                )
+                /* PURCHASE */
+
                 .pendingPurchaseOrders(
                         donMuaHangRepository.countPendingPurchaseOrders().intValue()
                 )
+
+                /* WAREHOUSE */
+
+                .lowStockCount(
+                        tonKhoTheoLoRepository.countLowStockWarnings().intValue()
+                )
+
+                .pendingImports(
+                        phieuNhapKhoRepository.countPendingImports().intValue()
+                )
+
+                .pendingExports(
+                        phieuXuatKhoRepository.countPendingExports().intValue()
+                )
+
+                .importToday(
+                        phieuNhapKhoRepository.countImportToday().intValue()
+                )
+
+                .exportToday(
+                        phieuXuatKhoRepository.countExportToday().intValue()
+                )
+
+                /* SALES ORDER */
+
                 .pendingSaleOrders(
                         donBanHangRepository.countPendingSaleOrders().intValue()
                 )
+
+                /* PRODUCT */
+
+                .totalProducts(
+                        sanPhamQuanAoRepository.count()
+                )
+
+                /* SUPPLIER */
+
+                .totalSuppliers(
+                        nhaCungCapRepository.count()
+                )
+
+                /* CHART */
+
+                .revenueLast7Days(chart)
+
                 .build();
     }
 }

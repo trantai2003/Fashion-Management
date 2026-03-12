@@ -128,13 +128,13 @@ export default function AuthPage() {
 
                         if (role === 'quan_tri_vien') {
                             console.log("Redirecting to /admin/dashboard");
-                            navigate('/dashboard'); // Redirect to dashboard
+                            navigate('/dashboard');
                         } else if (role === 'quan_ly_kho' || role === 'nhan_vien_kho') {
                             console.log("Redirecting to /warehouse");
-                            navigate('/warehouse');
+                            navigate('/dashboard');
                         } else {
                             console.log("Redirecting to /");
-                            navigate('/');
+                            navigate('/dashboard');
                         }
                     } catch (decodeError) {
                         console.error('Token decode error:', decodeError);

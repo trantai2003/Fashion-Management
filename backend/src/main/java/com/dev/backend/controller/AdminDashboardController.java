@@ -29,7 +29,13 @@ public class AdminDashboardController {
     }
 
     @GetMapping
-    @RequireAuth(roles = {IRoleType.quan_tri_vien})
+    @RequireAuth(roles = {
+            IRoleType.quan_tri_vien,
+            IRoleType.quan_ly_kho,
+            IRoleType.nhan_vien_kho,
+            IRoleType.nhan_vien_ban_hang,
+            IRoleType.nhan_vien_mua_hang
+    })
     public ResponseEntity<ResponseData<AdminDashboardResponse>> getDashboardByAdmin(
             @RequestHeader("Authorization") String authHeader
     ) {

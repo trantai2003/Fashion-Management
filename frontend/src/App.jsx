@@ -62,7 +62,7 @@ import KhachHangReport from "./pages/bao-cao/KhachHangReport";
 import NhatKyNhapXuat from "./pages/bao-cao/NhatKyNhapXuat";
 import PhieuNhapKhoPrint from "./pages/receipt/PhieuNhapKhoPrint";
 import PhieuXuatKhoPrint from "./pages/issue/PhieuXuatKhoPrint";
-
+import Dashboard from "@/pages/dashboard/Dashboard";
 export default function App() {
   return (
     <BrowserRouter>
@@ -88,7 +88,7 @@ export default function App() {
         {/* ========== BACKOFFICE ROUTES (CÓ SIDEBAR + HEADER) ========== */}
         <Route element={<BackofficeLayout />}>
           {/* Dashboard */}
-          <Route path="/dashboard" element={<DashboardByAdmin />} />
+          <Route path="/dashboard" element={<Dashboard />} />
 
           {/* User management */}
           <Route path="/users" element={<ViewUserListByAdmin />} />

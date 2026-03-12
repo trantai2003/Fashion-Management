@@ -3,6 +3,7 @@ package com.dev.backend.repository;
 import com.dev.backend.entities.PhieuXuatKho;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,4 +15,16 @@ public interface PhieuXuatKhoRepository extends JpaRepository<PhieuXuatKho, Inte
     List<PhieuXuatKho> findByDonBanHangId(Integer donBanHangId);
     boolean existsByDonBanHangIdAndTrangThai(Integer donBanHangId, Integer trangThai);
     Optional<PhieuXuatKho> findBySoPhieuXuat(String soPhieuXuat);
+    @Query("""
+SELECT COUNT(p)
+FROM PhieuXuatKho p
+WHERE p.trangThai = 0
+""")
+    Long countPendingExports();
+    @Query("""
+SELECT COUNT(p)
+FROM PhieuXuatKho p
+WHERE DATE(p.ngayXuat) = CURRENT_DATE
+""")
+    Long countExportToday();
 }
