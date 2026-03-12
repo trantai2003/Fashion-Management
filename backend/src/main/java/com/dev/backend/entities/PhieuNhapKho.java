@@ -81,5 +81,7 @@ public class PhieuNhapKho {
     @OneToMany(mappedBy = "phieuNhapKho", fetch = FetchType.LAZY)
     List<ChiTietPhieuNhapKho> chiTietPhieuNhapKhos;
 
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "phieu_chuyen_id")
+    private PhieuXuatKho phieuChuyenKhoGoc;
 }

@@ -75,5 +75,7 @@ public class PhieuXuatKho {
     @Column(name = "ngay_cap_nhat")
     Instant ngayCapNhat;
 
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private PhieuXuatKho phieuChuyenKhoGoc;
 }
