@@ -9,13 +9,15 @@
     visibility: hidden;
   }
 
-  /* Chỉ in khu vực hóa đơn */
+  /* Chỉ in khu vực hóa đơn hoặc khu vực được đánh dấu */
   #invoice-area,
-  #invoice-area * {
+  #invoice-area *,
+  .print-area,
+  .print-area * {
     visibility: visible;
   }
 
-  #invoice-area {
+  #invoice-area, .print-area {
     position: absolute;
     left: 0;
     top: 0;
