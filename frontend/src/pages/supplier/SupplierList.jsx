@@ -257,11 +257,7 @@ export default function SupplierList() {
                 <div className="space-y-6 w-full">
 
                     {/* ── Page header ── */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Nhà cung cấp</h2>
-                            <p className="text-sm text-gray-600 mt-1">Quản lý thông tin các nhà cung cấp</p>
-                        </div>
+                    <div className="flex items-center justify-end">
                         <Button
                             onClick={() => navigate("/supplier/new")}
                             className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200"
@@ -365,7 +361,7 @@ export default function SupplierList() {
 
                                                 {/* Mã NCC */}
                                                 <td className="px-4 py-3.5 align-middle">
-                                                    <span className="font-bold text-violet-600 tracking-wide font-mono">
+                                                    <span className="font-bold text-purple-600 tracking-wide">
                                                         {item.maNhaCungCap || "—"}
                                                     </span>
                                                 </td>

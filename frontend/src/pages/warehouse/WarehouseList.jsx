@@ -35,7 +35,7 @@ function StatusBadge({ status }) {
 
 function ActionBtn({ title, onClick, color, children }) {
     const colors = {
-        violet: "text-violet-600 hover:bg-violet-50 hover:border-violet-200",
+        purple: "text-purple-600 hover:bg-purple-50 hover:border-purple-200",
         blue: "text-blue-600 hover:bg-blue-50 hover:border-blue-200",
         red: "text-red-500 hover:bg-red-50 hover:border-red-200",
     };
@@ -114,11 +114,11 @@ export default function WarehouseList({
                         {warehouses.map((wh) => (
                             <tr
                                 key={wh.id}
-                                className="transition-colors duration-150 hover:bg-violet-50/50"
+                                className="transition-colors duration-150 hover:bg-purple-50/50"
                             >
                                 {/* Mã kho */}
                                 <td className="px-4 py-3.5 align-middle">
-                                    <span className="font-bold text-violet-600 tracking-wide">
+                                    <span className="font-bold text-purple-600 tracking-wide">
                                         {wh.maKho}
                                     </span>
                                 </td>
@@ -174,7 +174,7 @@ export default function WarehouseList({
                                 {/* Thao tác */}
                                 <td className="px-4 py-3.5 align-middle">
                                     <div className="flex items-center justify-center gap-1">
-                                        <ActionBtn title="Xem chi tiết" onClick={() => onView?.(wh)} color="violet">
+                                        <ActionBtn title="Xem chi tiết" onClick={() => onView?.(wh)} color="purple">
                                             <Eye className="h-4 w-4" />
                                         </ActionBtn>
                                         <ActionBtn title="Chỉnh sửa" onClick={() => onEdit?.(wh)} color="blue">
