@@ -12,7 +12,7 @@ import { Warehouse } from "lucide-react";
 import { khoService } from "@/services/khoService";
 import { quyenHanService } from "@/services/quyenHan";
 import PermissionMatrix from "./PermissionMatrix";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 import { parseDateTimeToIsoString } from "@/utils/formatters";
 
 export default function AssignWarehousePermissionModal({
@@ -224,7 +224,7 @@ export default function AssignWarehousePermissionModal({
 
     return (
         <Dialog open={open} onOpenChange={(next) => !next && handleClose()}>
-            <DialogContent className="w-[95vw] max-w-3xl bg-white rounded-2xl border border-gray-200 shadow-2xl">
+            <DialogContent className="w-[95vw] max-w-3xl bg-white text-gray-900 border border-gray-200 rounded-xl shadow-sm dark:bg-white dark:text-gray-900 shadow-2xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Warehouse className="w-5 h-5 text-purple-600" />

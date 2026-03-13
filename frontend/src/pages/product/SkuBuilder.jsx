@@ -29,7 +29,6 @@ const STATUS_OPTIONS = [
 export default function SkuBuilder() {
     const [skus, setSkus] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [processedSkus, setProcessedSkus] = useState([]);
 
     const [keyword, setKeyword] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
@@ -79,9 +78,12 @@ export default function SkuBuilder() {
         }
     }, []);
 
-    useEffect(() => { fetchSkus(); }, [fetchSkus]);
-
     useEffect(() => {
+        fetchSkus();
+    }, [fetchSkus]);
+
+    // Derived state using useMemo to ensure consistency
+    const processedSkus = useMemo(() => {
         let result = [...skus];
         if (keyword.trim()) {
             const lk = keyword.toLowerCase();
@@ -96,9 +98,13 @@ export default function SkuBuilder() {
         if (statusFilter !== "ALL") {
             result = result.filter((sku) => sku.trangThai === Number(statusFilter));
         }
-        setProcessedSkus(result);
-        setPage(0);
+        return result;
     }, [skus, keyword, statusFilter]);
+
+    // Reset to page 0 when filters change (detected via processedSkus length/content change)
+    useEffect(() => {
+        setPage(0);
+    }, [keyword, statusFilter]);
 
     const stats = useMemo(() => ({
         total: skus.length,

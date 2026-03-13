@@ -11,6 +11,10 @@ import { Checkbox } from "../components/ui/checkbox";
 import { ShoppingBag, User, Lock, Mail, Phone, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 export default function AuthPage() {
+    const navigate = useNavigate();
+    if (localStorage.getItem("access_token")) {
+        navigate("/products");
+    }
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
@@ -73,7 +77,7 @@ export default function AuthPage() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const navigate = useNavigate();
+
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = async (e) => {
