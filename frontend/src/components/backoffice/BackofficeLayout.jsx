@@ -243,6 +243,24 @@ export default function BackofficeLayout() {
             match: (path) => path === "/purchase-orders/create",
             title: "Tạo đơn mua hàng",
             subtitle: "Tạo đơn đặt hàng mới và gửi yêu cầu báo giá đến nhà cung cấp",
+        },
+        {
+            key: "CUSTOMERS",
+            match: (path) => path === "/customers",
+            title: "Quản lý khách hàng",
+            subtitle: "Danh sách và thông tin khách hàng",
+        },
+        {
+            key: "CUSTOMER_DETAIL",
+            match: (path) => /^\/customers\/\d+$/.test(path),
+            title: "Chi tiết khách hàng",
+            subtitle: "Xem và quản lý thông tin chi tiết của khách hàng trong hệ thống",
+        },
+        {
+            key: "CUSTOMER_EDIT",
+            match: (path) => /^\/customers\/\d+\/edit$/.test(path),
+            title: "Chỉnh sửa khách hàng",
+            subtitle: "Cập nhật thông tin khách hàng",
         }
     ];
 

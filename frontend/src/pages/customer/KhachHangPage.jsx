@@ -45,8 +45,23 @@ import {
     Phone,
     MapPin,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    RefreshCcw,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    Check,
+    Users,
+    UserPlus,
+    Building2,
+    Store
 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Service xử lý API calls
 const khachHangService = {
@@ -335,219 +350,390 @@ export default function KhachHangPage() {
         );
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "-";
-        return new Date(dateString).toLocaleDateString("vi-VN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
-        });
+    const stats = {
+        total: totalItems,
+        le: khachHangs.filter(k => k.loaiKhachHang === "le").length,
+        si: khachHangs.filter(k => k.loaiKhachHang === "si").length,
+        doanh_nghiep: khachHangs.filter(k => k.loaiKhachHang === "doanh_nghiep").length
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 0 && newPage < Math.ceil(totalItems / pageSize)) {
+            setCurrentPage(newPage);
+        }
+    };
+
+    const handlePageSizeChange = (newSize) => {
+        setPageSize(newSize);
+        setCurrentPage(0);
     };
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
-            {/* Alert */}
-            {alert.show && (
-                <Alert className={alert.type === "error" ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}>
-                    <div className="flex items-center gap-2">
-                        {alert.type === "error" ? (
-                            <AlertCircle className="w-4 h-4 text-red-600" />
-                        ) : (
-                            <CheckCircle2 className="w-4 h-4 text-green-600" />
-                        )}
-                        <AlertDescription className={alert.type === "error" ? "text-red-800" : "text-green-800"}>
-                            {alert.message}
-                        </AlertDescription>
-                    </div>
-                </Alert>
-            )}
-
-            {/* Header */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="text-2xl font-bold">Quản lý khách hàng</CardTitle>
-                        <Button
-                            onClick={handleOpenCreateDialog}
-                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900"
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Thêm khách hàng
-                        </Button>
-                    </div>
-                </CardHeader>
-            </Card>
-
-            {/* Filters */}
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="space-y-4">
-                        {/* Search bar */}
-                        <div className="flex gap-2">
-                            <div className="flex-1 relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                <Input
-                                    placeholder="Tìm kiếm theo tên, mã, SĐT, email..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                                    className="pl-10"
-                                />
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+            <div className="space-y-6 w-full">
+                {/* Stats Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Tổng khách hàng</p>
+                                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                                </div>
+                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <Users className="h-6 w-6 text-blue-600" />
+                                </div>
                             </div>
-                            <Button onClick={handleSearch} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900">
-                                Tìm kiếm
-                            </Button>
-                            <Button
-                                variant="outline"
-                                onClick={() => setShowFilterPanel(!showFilterPanel)}
-                                className={showFilterPanel ? "bg-purple-50 border-purple-300" : ""}
-                            >
-                                <Filter className="w-4 h-4 mr-2" />
-                                Bộ lọc
-                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Khách lẻ</p>
+                                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.le}</p>
+                                </div>
+                                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                    <User className="h-6 w-6 text-green-600" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-orange-50 to-white">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Khách sỉ</p>
+                                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.si}</p>
+                                </div>
+                                <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
+                                    <Store className="h-6 w-6 text-orange-600" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-white">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600">Doanh nghiệp</p>
+                                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.doanh_nghiep}</p>
+                                </div>
+                                <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                    <Building2 className="h-6 w-6 text-purple-600" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Filters Section */}
+                <Card className="border-0 shadow-lg bg-white">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                            <Filter className="h-5 w-5 text-purple-600" />
+                            Bộ lọc tìm kiếm
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {/* Search bar */}
+                            <div className="space-y-2 md:col-span-2">
+                                <Label className="text-gray-700 font-medium">Tìm kiếm</Label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                    <Input
+                                        placeholder="Tìm theo tên, mã, SĐT, email..."
+                                        className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Loại khách hàng */}
+                            <div className="space-y-2">
+                                <Label className="text-gray-700 font-medium">Loại khách hàng</Label>
+                                <DropdownMenu modal={false}>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal">
+                                            <span className="truncate">
+                                                {loaiKhachHang === "all" && "Tất cả loại"}
+                                                {loaiKhachHang === "le" && "Khách lẻ"}
+                                                {loaiKhachHang === "si" && "Khách sỉ"}
+                                                {loaiKhachHang === "doanh_nghiep" && "Doanh nghiệp"}
+                                            </span>
+                                            <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("all")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                            Tất cả loại {loaiKhachHang === "all" && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("le")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                            Khách lẻ {loaiKhachHang === "le" && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("si")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                            Khách sỉ {loaiKhachHang === "si" && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("doanh_nghiep")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                            Doanh nghiệp {loaiKhachHang === "doanh_nghiep" && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+
+                            {/* Trạng thái */}
+                            <div className="space-y-2">
+                                <Label className="text-gray-700 font-medium">Trạng thái</Label>
+                                <DropdownMenu modal={false}>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal">
+                                            <span className="truncate">
+                                                {trangThai === "all" && "Tất cả trạng thái"}
+                                                {trangThai === "1" && "Hoạt động"}
+                                                {trangThai === "0" && "Ngưng hoạt động"}
+                                            </span>
+                                            <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
+                                        <DropdownMenuItem onClick={() => setTrangThai("all")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                            Tất cả trạng thái {trangThai === "all" && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setTrangThai("1")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                            Hoạt động {trangThai === "1" && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setTrangThai("0")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                            Ngưng hoạt động {trangThai === "0" && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+
+                            {/* Reset Button */}
+                            <div className="flex items-end">
+                                <Button
+                                    variant="outline"
+                                    onClick={handleResetFilters}
+                                    className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-10 px-4 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 w-full justify-center"
+                                >
+                                    <RefreshCcw className="h-4 w-4" />
+                                    Đặt lại
+                                </Button>
+                            </div>
                         </div>
+                    </CardContent>
+                </Card>
 
-                        {/* Advanced filters */}
-                        {showFilterPanel && (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border">
-                                <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Loại khách hàng</Label>
-                                    <Select value={loaiKhachHang} onValueChange={setLoaiKhachHang}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Tất cả</SelectItem>
-                                            <SelectItem value="le">Khách lẻ</SelectItem>
-                                            <SelectItem value="doanh_nghiep">Doanh nghiệp</SelectItem>
-                                            <SelectItem value="si">Khách sỉ</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                {/* Add Button */}
+                <div className="flex justify-end">
+                    <Button
+                        onClick={handleOpenCreateDialog}
+                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Thêm khách hàng
+                    </Button>
+                </div>
 
-                                <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Trạng thái</Label>
-                                    <Select value={trangThai} onValueChange={setTrangThai}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Tất cả</SelectItem>
-                                            <SelectItem value="1">Hoạt động</SelectItem>
-                                            <SelectItem value="0">Ngưng hoạt động</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                {/* Alert */}
+                {alert.show && (
+                    <Alert className={alert.type === "error" ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}>
+                        <div className="flex items-center gap-2">
+                            {alert.type === "error" ? (
+                                <AlertCircle className="w-4 h-4 text-red-600" />
+                            ) : (
+                                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                            )}
+                            <AlertDescription className={alert.type === "error" ? "text-red-800" : "text-green-800"}>
+                                {alert.message}
+                            </AlertDescription>
+                        </div>
+                    </Alert>
+                )}
 
-                                <div className="flex items-end gap-2">
-                                    <Button variant="outline" onClick={handleResetFilters} className="flex-1">
-                                        <X className="w-4 h-4 mr-2" />
-                                        Xóa bộ lọc
-                                    </Button>
-                                    <Button onClick={handleSearch} className="flex-1 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900">
-                                        Áp dụng
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Table */}
-            <Card>
-                <CardContent className="p-0">
+                {/* Table Section */}
+                <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
                     <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-gray-50">
-                                    <TableHead className="font-semibold">Mã KH</TableHead>
-                                    <TableHead className="font-semibold">Tên khách hàng</TableHead>
-                                    <TableHead className="font-semibold">Loại KH</TableHead>
-                                    <TableHead className="font-semibold">Số điện thoại</TableHead>
-                                    <TableHead className="font-semibold">Email</TableHead>
-                                    <TableHead className="font-semibold">Trạng thái</TableHead>
-                                    <TableHead className="font-semibold text-right">Thao tác</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-slate-200 bg-slate-50">
+                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mã KH</th>
+                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Khách hàng</th>
+                                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Loại KH</th>
+                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Liên hệ</th>
+                                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Trạng thái</th>
+                                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
                                 {loading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                                            Đang tải dữ liệu...
-                                        </TableCell>
-                                    </TableRow>
+                                    <tr>
+                                        <td colSpan={6} className="text-center py-12 text-gray-500">
+                                            <div className="flex items-center justify-center">
+                                                <RefreshCcw className="h-6 w-6 animate-spin text-purple-600 mr-2" />
+                                                Đang tải dữ liệu...
+                                            </div>
+                                        </td>
+                                    </tr>
                                 ) : khachHangs.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                                    <tr>
+                                        <td colSpan={6} className="text-center py-12 text-gray-500">
                                             Không có dữ liệu
-                                        </TableCell>
-                                    </TableRow>
+                                        </td>
+                                    </tr>
                                 ) : (
                                     khachHangs.map((khachHang) => (
-                                        <TableRow key={khachHang.id} className="hover:bg-gray-50">
-                                            <TableCell className="font-medium">{khachHang.maKhachHang}</TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <p className="font-medium">{khachHang.tenKhachHang}</p>
-                                                    {khachHang.nguoiLienHe && (
-                                                        <p className="text-xs text-gray-500">NLH: {khachHang.nguoiLienHe}</p>
-                                                    )}
+                                        <tr key={khachHang.id} className="transition-colors duration-150 hover:bg-purple-50/50">
+                                            <td className="px-4 py-3.5 align-middle">
+                                                <span className="font-bold text-purple-600 tracking-wide">{khachHang.maKhachHang}</span>
+                                            </td>
+                                            <td className="px-4 py-3.5 align-middle">
+                                                <div className="font-semibold text-slate-900">{khachHang.tenKhachHang}</div>
+                                                {khachHang.nguoiLienHe && (
+                                                    <div className="text-xs text-slate-500 flex items-center gap-1">
+                                                        <User className="w-3 h-3" /> {khachHang.nguoiLienHe}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3.5 align-middle text-center">
+                                                {getLoaiKhachHangBadge(khachHang.loaiKhachHang)}
+                                            </td>
+                                            <td className="px-4 py-3.5 align-middle">
+                                                <div className="flex flex-col gap-1 text-xs text-slate-600">
+                                                    <div className="flex items-center gap-1"><Phone className="w-3 h-3" /> {khachHang.soDienThoai || "-"}</div>
+                                                    <div className="flex items-center gap-1"><Mail className="w-3 h-3" /> {khachHang.email || "-"}</div>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>{getLoaiKhachHangBadge(khachHang.loaiKhachHang)}</TableCell>
-                                            <TableCell>{khachHang.soDienThoai || "-"}</TableCell>
-                                            <TableCell>{khachHang.email || "-"}</TableCell>
-                                            <TableCell>{getTrangThaiBadge(khachHang.trangThai)}</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
+                                            </td>
+                                            <td className="px-4 py-3.5 align-middle text-center">
+                                                {khachHang.trangThai === 1 ? (
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                                        Hoạt động
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                                                        Ngừng
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3.5 align-middle">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <button
                                                         onClick={() => navigate(`/customers/${khachHang.id}`)}
-                                                        className="hover:bg-blue-50 hover:text-blue-600"
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-purple-600 hover:bg-purple-50 hover:border-purple-200"
+                                                        title="Xem chi tiết"
                                                     >
                                                         <Eye className="w-4 h-4" />
-                                                    </Button>
-
-                                                    {/* <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="hover:bg-yellow-50 hover:text-yellow-600"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </Button> */}
-
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
+                                                    </button>
+                                                    <button
                                                         onClick={() => handleDeleteClick(khachHang)}
-                                                        className="hover:bg-red-50 hover:text-red-600"
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-red-500 hover:bg-red-50 hover:border-red-200"
+                                                        title="Xóa"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
-                                                    </Button>
+                                                    </button>
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
+                                            </td>
+                                        </tr>
                                     ))
                                 )}
-                            </TableBody>
-                        </Table>
+                            </tbody>
+                        </table>
                     </div>
+                </div>
 
-                    <PaginationComponent
-                        currentPage={currentPage}
-                        pageSize={pageSize}
-                        totalItems={totalItems}
-                        onPageChange={setCurrentPage}
-                        onPageSizeChange={(newSize) => {
-                            setPageSize(newSize);
-                            setCurrentPage(0);
-                        }}
-                        isLoading={loading}
-                    />
-                </CardContent>
-            </Card>
+                {/* Pagination Section */}
+                <Card className="border-0 shadow-md bg-white">
+                    <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-2">
+                                <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
+                                            {pageSize} dòng
+                                            <ChevronDown className="h-4 w-4 opacity-50" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                                        {[20, 50, 100].map(size => (
+                                            <DropdownMenuItem
+                                                key={size}
+                                                onClick={() => handlePageSizeChange(size)}
+                                                className="cursor-pointer"
+                                            >
+                                                {size} dòng
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+
+                            <div className="text-sm text-gray-600">
+                                Hiển thị{' '}
+                                <span className="font-semibold text-gray-900">
+                                    {currentPage * pageSize + 1}
+                                </span>
+                                {' '}-{' '}
+                                <span className="font-semibold text-gray-900">
+                                    {Math.min((currentPage + 1) * pageSize, totalItems)}
+                                </span>
+                                {' '}trong tổng số{' '}
+                                <span className="font-semibold text-purple-600">{totalItems}</span> kết quả
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 0}
+                                    className="gap-1 disabled:opacity-50"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                    Trước
+                                </Button>
+
+                                <div className="hidden sm:flex gap-1">
+                                    {[...Array(Math.min(5, Math.ceil(totalItems / pageSize)))].map((_, idx) => (
+                                        <Button
+                                            key={idx}
+                                            variant={currentPage === idx ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handlePageChange(idx)}
+                                            className={
+                                                currentPage === idx
+                                                    ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
+                                                    : "border-gray-200"
+                                            }
+                                        >
+                                            {idx + 1}
+                                        </Button>
+                                    ))}
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage >= Math.ceil(totalItems / pageSize) - 1}
+                                    className="gap-1 disabled:opacity-50"
+                                >
+                                    Sau
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
 
             {/* Create Dialog */}
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
