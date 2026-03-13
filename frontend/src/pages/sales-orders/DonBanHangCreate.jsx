@@ -191,7 +191,7 @@ export default function SalesOrderCreate() {
                     <div className="space-y-6">
                         <Card className="shadow-sm border-gray-200">
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-sm font-bold text-purple-600 flex items-center gap-2">
+                                <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2 uppercase tracking-wide">
                                     <User className="h-4 w-4" /> Khách hàng & Giao nhận
                                 </CardTitle>
                             </CardHeader>
@@ -200,7 +200,7 @@ export default function SalesOrderCreate() {
                                 {/* 1. CHỌN KHO XUẤT HÀNG */}
                                 <div className="relative">
                                     <Label className="text-xs font-bold text-gray-500 uppercase block mb-2 flex items-center gap-1">
-                                        <Warehouse className="h-3 w-3 text-purple-600" /> Kho xuất hàng *
+                                        <Warehouse className="h-3 w-3 text-slate-900" /> Kho xuất hàng *
                                     </Label>
                                     <div className="relative">
                                         <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -212,7 +212,7 @@ export default function SalesOrderCreate() {
                                                 setShowWarehouseDropdown(true);
                                             }}
                                             onFocus={() => setShowWarehouseDropdown(true)}
-                                            className="pl-9 h-10 border-gray-200 focus-visible:ring-purple-500"
+                                            className="pl-9 h-10 border-gray-200 focus-visible:ring-slate-900"
                                         />
                                     </div>
                                     {showWarehouseDropdown && filteredWarehouses.length > 0 && (
@@ -245,18 +245,18 @@ export default function SalesOrderCreate() {
                                                 setShowCustomerDropdown(true);
                                             }}
                                             onFocus={() => setShowCustomerDropdown(true)}
-                                            className="pl-9 h-10 border-gray-200 focus-visible:ring-purple-500"
+                                            className="pl-9 h-10 border-gray-200 focus-visible:ring-slate-900"
                                         />
                                     </div>
                                     {showCustomerDropdown && filteredCustomers.length > 0 && (
                                         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
                                             {filteredCustomers.map(c => (
-                                                <div key={c.id} onClick={() => handleSelectCustomer(c)} className="px-4 py-3 hover:bg-purple-50 cursor-pointer border-b last:border-0 flex justify-between items-center transition-colors">
+                                                <div key={c.id} onClick={() => handleSelectCustomer(c)} className="px-4 py-3 hover:bg-slate-50 cursor-pointer border-b last:border-0 flex justify-between items-center transition-colors">
                                                     <div>
                                                         <div className="text-sm font-semibold text-gray-900">{c.tenKhachHang}</div>
                                                         <div className="text-xs text-gray-500">{c.soDienThoai}</div>
                                                     </div>
-                                                    {formData.khachHangId === c.id && <Check className="h-4 w-4 text-purple-600" />}
+                                                    {formData.khachHangId === c.id && <Check className="h-4 w-4 text-slate-900" />}
                                                 </div>
                                             ))}
                                         </div>
@@ -264,24 +264,24 @@ export default function SalesOrderCreate() {
                                 </div>
 
                                 {selectedCustomer && (
-                                    <div className="p-3 bg-purple-50/50 border border-purple-100 rounded-lg text-xs space-y-2 text-purple-900">
+                                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-2 text-slate-700">
                                         <div className="flex justify-between"><span>SĐT:</span> <b>{selectedCustomer.soDienThoai}</b></div>
                                         <div className="flex justify-between items-start">
                                             <span>Địa chỉ gốc:</span>
-                                            <b className="text-right ml-4 break-words max-w-[180px]">{selectedCustomer.diaChi}</b>
+                                            <b className="text-right ml-4 break-words max-w-[180px] text-slate-900">{selectedCustomer.diaChi}</b>
                                         </div>
                                     </div>
                                 )}
 
                                 <div>
                                     <Label className="text-xs font-bold text-gray-500 flex items-center gap-1 uppercase">
-                                        <Truck className="h-3 w-3 text-purple-600" /> Phí vận chuyển
+                                        <Truck className="h-3 w-3 text-slate-900" /> Phí vận chuyển
                                     </Label>
                                     <Input
                                         type="number"
                                         value={formData.phiVanChuyen}
                                         onChange={(e) => setFormData({ ...formData, phiVanChuyen: e.target.value })}
-                                        className="mt-2 bg-gray-50 focus-visible:ring-purple-500"
+                                        className="mt-2 bg-gray-50 focus-visible:ring-slate-900"
                                     />
                                 </div>
 
@@ -312,14 +312,14 @@ export default function SalesOrderCreate() {
                     <div className="lg:col-span-2 space-y-6">
                         <Card className="shadow-sm border-gray-200 overflow-hidden flex flex-col min-h-[438px]">
                             <CardHeader className="flex flex-row items-center justify-between px-6 py-4 space-y-0 bg-white border-b">
-                                <CardTitle className="text-sm font-bold  text-gray-700 flex items-center gap-2">
-                                    <ShoppingCart className="h-4 w-4 text-purple-600" />
+                                <CardTitle className="text-sm font-bold  text-slate-900 flex items-center gap-2 uppercase tracking-wide">
+                                    <ShoppingCart className="h-4 w-4 text-slate-900" />
                                     Chi tiết đơn hàng
                                 </CardTitle>
                                 <Button
                                     size="sm"
                                     onClick={() => setShowProductDialog(true)}
-                                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 transition-all duration-200"
                                 >
                                     <Plus className="h-4 w-4 mr-1" /> Thêm sản phẩm
                                 </Button>
@@ -372,7 +372,7 @@ export default function SalesOrderCreate() {
                                                                 min="1"
                                                                 value={item.soLuongDat}
                                                                 onChange={(e) => handleUpdateQty(index, e.target.value)}
-                                                                className="w-16 h-9 text-center border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 outline-none"
+                                                                className="w-16 h-9 text-center border border-gray-300 rounded focus:ring-2 focus:ring-slate-900 outline-none"
                                                             />
                                                         </TableCell>
                                                         <TableCell className="text-right">
@@ -380,10 +380,10 @@ export default function SalesOrderCreate() {
                                                                 type="number"
                                                                 value={item.donGia}
                                                                 onChange={(e) => handleUpdatePrice(index, e.target.value)}
-                                                                className="w-24 h-9 text-right border border-gray-300 rounded px-2 focus:ring-2 focus:ring-purple-500 outline-none font-medium"
+                                                                className="w-24 h-9 text-right border border-gray-300 rounded px-2 focus:ring-2 focus:ring-slate-900 outline-none font-medium"
                                                             />
                                                         </TableCell>
-                                                        <TableCell className="text-right font-bold text-purple-600 pr-6 text-base">
+                                                        <TableCell className="text-right font-bold text-slate-900 pr-6 text-base">
                                                             {item.thanhTien?.toLocaleString()}đ
                                                         </TableCell>
                                                         <TableCell className="pr-4">
@@ -414,8 +414,8 @@ export default function SalesOrderCreate() {
                                             <span className="font-bold text-gray-900 w-32 text-right">{(Number(formData.phiVanChuyen) || 0).toLocaleString()} đ</span>
                                         </div>
                                         <div className="flex justify-end gap-10 text-xl pt-3 border-t border-gray-200">
-                                            <span className="font-extrabold text-gray-900  text-sm self-center">Tổng thanh toán</span>
-                                            <span className="font-black text-purple-600 w-32 text-right">
+                                            <span className="font-extrabold text-slate-900 text-sm self-center">Tổng thanh toán</span>
+                                            <span className="font-black text-slate-900 w-32 text-right">
                                                 {totalOrderMoney.toLocaleString()} đ
                                             </span>
                                         </div>
@@ -427,13 +427,13 @@ export default function SalesOrderCreate() {
                 </div>
 
                 <div className="pt-6 border-t border-gray-200 flex justify-between items-center">
-                    <Button onClick={() => navigate("/sales-orders")} className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1" variant="ghost">
-                        <ArrowLeft className="h-4 w-4" /> Quay lại danh sách
+                    <Button onClick={() => navigate("/sales-orders")} className="text-sm font-medium text-gray-600 hover:text-slate-900 flex items-center gap-1 group" variant="ghost">
+                        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" /> Quay lại danh sách
                     </Button>
                     <Button
                         onClick={handleCreate}
                         disabled={loading}
-                        className="px-12 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md shadow-purple-100 transition-all active:scale-95 h-11"
+                        className="px-12 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 font-bold shadow-md transition-all active:scale-95 h-11"
                     >
                         {loading ? "Đang tạo..." : "Xác nhận tạo đơn hàng"}
                     </Button>
@@ -444,12 +444,12 @@ export default function SalesOrderCreate() {
             <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
                 <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
                     <DialogHeader className="p-6 pb-4 bg-white border-b border-gray-100">
-                        <DialogTitle className="text-xl font-bold text-gray-800">Tìm kiếm sản phẩm</DialogTitle>
+                        <DialogTitle className="text-xl font-bold text-slate-900">Tìm kiếm sản phẩm</DialogTitle>
                         <div className="relative mt-4">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                                 placeholder="Nhập tên sản phẩm hoặc mã SKU..."
-                                className="pl-10 h-11 border-gray-300 focus-visible:ring-purple-500"
+                                className="pl-10 h-11 border-gray-300 focus-visible:ring-slate-900"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -480,7 +480,7 @@ export default function SalesOrderCreate() {
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => handleAddProduct(product)}
-                                                className="border-purple-200 text-purple-600 hover:bg-purple-600 hover:text-white font-medium"
+                                                className="border-slate-200 text-slate-900 hover:bg-slate-900 hover:text-white font-medium"
                                             >
                                                 Chọn
                                             </Button>

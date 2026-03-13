@@ -42,11 +42,10 @@ function StepIndicator({ step }) {
         const done = idx + 1 < step;
         return (
           <div key={idx} className="flex items-center gap-2">
-            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
-              done ? "bg-emerald-500 text-white" :
-              active ? "bg-violet-600 text-white shadow-md shadow-violet-200" :
-              "bg-slate-100 text-slate-400"
-            }`}>
+            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${done ? "bg-emerald-500 text-white" :
+                active ? "bg-violet-600 text-white shadow-md shadow-violet-200" :
+                  "bg-slate-100 text-slate-400"
+              }`}>
               {done ? "✓" : idx + 1}
             </div>
             <span className={`text-sm font-medium ${active ? "text-violet-700" : done ? "text-emerald-600" : "text-slate-400"}`}>
@@ -69,11 +68,11 @@ export default function StockTakeCreate() {
 
   const [loading, setLoading] = useState(false);
   const [khos, setKhos] = useState([]);
-  const [dotKiemKeId, setDotKiemKeId]     = useState(id ? parseInt(id) : null);
+  const [dotKiemKeId, setDotKiemKeId] = useState(id ? parseInt(id) : null);
   const [selectedKhoId, setSelectedKhoId] = useState(null);
-  const [chiTiets, setChiTiets]           = useState([]);
-  const [updates, setUpdates]             = useState({});
-  const [isCompleted, setIsCompleted]     = useState(false);
+  const [chiTiets, setChiTiets] = useState([]);
+  const [updates, setUpdates] = useState({});
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -172,26 +171,12 @@ export default function StockTakeCreate() {
         <button
           type="button"
           onClick={() => navigate("/stock-take")}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-800 transition-colors duration-150"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
         >
           <ArrowLeft className="h-4 w-4" />
           Quay lại danh sách
         </button>
 
-        {/* Page title */}
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-            {!dotKiemKeId ? "Tạo đợt kiểm kê" : isCompleted ? "Chi tiết đợt kiểm kê" : "Nhập số lượng thực tế"}
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            {!dotKiemKeId
-              ? "Chọn kho và điền thông tin để bắt đầu kiểm kê"
-              : isCompleted
-              ? "Thông tin chi tiết đợt kiểm kê đã hoàn thành"
-              : "Đối chiếu và nhập số lượng đếm được cho từng lô hàng"
-            }
-          </p>
-        </div>
 
         <StepIndicator step={dotKiemKeId ? 2 : 1} />
 
@@ -226,7 +211,7 @@ export default function StockTakeCreate() {
                           defaultValue={field.value ? field.value.toString() : ""}
                         >
                           <FormControl>
-                            <SelectTrigger className="border-gray-200 focus:border-violet-500 focus:ring-violet-500">
+                            <SelectTrigger className="bg-white border-gray-200 focus:border-violet-500 focus:ring-violet-500 h-10">
                               <SelectValue placeholder="Chọn kho..." />
                             </SelectTrigger>
                           </FormControl>
@@ -269,7 +254,7 @@ export default function StockTakeCreate() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-gray-300 text-slate-600 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
+                    className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium"
                     onClick={() => navigate("/stock-take")}
                   >
                     Hủy
@@ -277,7 +262,7 @@ export default function StockTakeCreate() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="bg-violet-600 hover:bg-violet-700 text-white min-w-[160px] shadow-sm transition-all duration-200"
+                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 min-w-[160px] font-bold"
                   >
                     {loading
                       ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang tạo...</>
@@ -399,13 +384,12 @@ export default function StockTakeCreate() {
                           {/* Chênh lệch */}
                           <td className="px-4 py-3.5 align-middle text-right">
                             {(isCompleted || hasInput) ? (
-                              <span className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                                chenhLech > 0
+                              <span className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold ${chenhLech > 0
                                   ? "bg-emerald-50 text-emerald-700"
                                   : chenhLech < 0
-                                  ? "bg-red-50 text-red-600"
-                                  : "bg-slate-100 text-slate-500"
-                              }`}>
+                                    ? "bg-red-50 text-red-600"
+                                    : "bg-slate-100 text-slate-500"
+                                }`}>
                                 {chenhLech > 0 ? "+" : ""}{chenhLech.toLocaleString("vi-VN")}
                               </span>
                             ) : (
@@ -429,19 +413,11 @@ export default function StockTakeCreate() {
                   lô hàng
                 </p>
                 <div className="flex gap-3">
-                  {isCompleted ? (
-                    <Button
-                      onClick={() => navigate("/stock-take")}
-                      className="bg-violet-600 hover:bg-violet-700 text-white min-w-[180px] shadow-sm transition-all duration-200"
-                    >
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      Quay lại danh sách
-                    </Button>
-                  ) : (
+                  {isCompleted ? null : (
                     <>
                       <Button
                         variant="outline"
-                        className="border-gray-300 text-slate-600 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
+                        className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium"
                         onClick={() => navigate("/stock-take")}
                       >
                         Hủy
@@ -449,7 +425,7 @@ export default function StockTakeCreate() {
                       <Button
                         onClick={onComplete}
                         disabled={loading}
-                        className="bg-violet-600 hover:bg-violet-700 text-white min-w-[180px] shadow-sm transition-all duration-200"
+                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 min-w-[180px] font-bold"
                       >
                         {loading
                           ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
