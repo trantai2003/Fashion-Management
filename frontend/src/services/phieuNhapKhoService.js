@@ -30,5 +30,8 @@ export const phieuNhapKhoService = {
     async complete(id) {
         const res = await apiClient.put(`/api/v1/phieu-nhap-kho/${id}/complete`);
         return res.data;
-    }
+    },
+    createFromTransfer: (transferId) => {
+        return axiosClient.post(`/api/v1/phieu-nhap-kho/from-transfer/${transferId}`);
+    },
 };

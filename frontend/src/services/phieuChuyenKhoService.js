@@ -26,5 +26,8 @@ export const phieuChuyenKhoService = {
     async create(payload) {
         const res = await apiClient.post("/api/v1/phieu-chuyen-kho/create", payload);
         return res.data?.data || res.data;
-    }
+    },
+    createExport: (id) => {
+        return apiClient.post(`/api/v1/phieu-chuyen-kho/${id}/create-export`);
+    },
 }
