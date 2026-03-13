@@ -7,7 +7,7 @@ import { toast } from "sonner";
 const STATUS_MAP = {
     0: { label: "Đang xử lý", className: "bg-amber-50 text-amber-700" },
     1: { label: "Đang xử lý", className: "bg-amber-50 text-amber-700" },
-    2: { label: "Chờ nhận hàng", className: "bg-blue-50 text-blue-700" }, 
+    2: { label: "Chờ nhận hàng", className: "bg-blue-50 text-blue-700" },
     3: { label: "Đã nhập kho", className: "bg-green-50 text-green-700" },
     4: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
 };
@@ -61,7 +61,7 @@ export default function PhieuNhapKhoDetail() {
         setIsProcessing(true);
         try {
             if (isInternalTransfer) {
-                await phieuNhapKhoService.completeTransferReceipt(id); 
+                await phieuNhapKhoService.completeTransferReceipt(id);
                 toast.success("Nhận hàng luân chuyển thành công!");
             } else {
                 await phieuNhapKhoService.complete(id);
@@ -174,11 +174,10 @@ export default function PhieuNhapKhoDetail() {
                         </div>
                         <div className="grid md:grid-cols-3 gap-6 text-sm">
                             <Info label="Số phiếu nhập" value={data.soPhieuNhap} />
-                            
+
                             {/* Hiển thị thông tin kho nguồn/đích linh hoạt */}
                             {isInternalTransfer ? (
                                 <>
-                                    <Info label="Kho xuất hàng đi (Nguồn)" value={data.tenKhoChuyenTu || "Không xác định"} />
                                     <Info label="Kho tiếp nhận (Đích)" value={data.tenKho} />
                                 </>
                             ) : (
@@ -189,11 +188,17 @@ export default function PhieuNhapKhoDetail() {
                             )}
 
                             <Info label="Loại nghiệp vụ" value={data.loaiNhap || "Phiếu nhập kho"} />
-                            
+
                             {!isInternalTransfer && <Info label="Đơn mua hàng (PO)" value={data.soDonMua} />}
-                            {isInternalTransfer && <Info label="Mã Phiếu Xuất Gốc" value={data.soPhieuChuyenKhoGoc || data.phieuXuatGocId || "Kế thừa tự động"} />}
-                            
-                            <Info label="Ngày tạo" value={data.ngayNhap ? new Date(data.ngayNhap).toLocaleDateString("vi-VN") : "---"} />
+                            {isInternalTransfer && (
+                                <Info
+                                    label="Mã Phiếu Xuất Gốc"
+                                    value={data.soPhieuXuatGoc || (data.phieuXuatGocId ? `#${data.phieuXuatGocId}` : "Kế thừa tự động")}
+                                    bold
+                                />
+                            )}
+
+                            <Info label="Ngày nhập" value={data.ngayNhap ? new Date(data.ngayNhap).toLocaleDateString("vi-VN") : "---"} />
                             <Info label="Người thao tác" value={data.tenNguoiNhap || "---"} />
                         </div>
                     </section>
@@ -245,8 +250,8 @@ export default function PhieuNhapKhoDetail() {
                                             <button
                                                 onClick={() => navigate(`/goods-receipts/${data.id}/lot-input/${item.bienTheSanPhamId}`)}
                                                 className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm
-                                                    ${isInternalTransfer 
-                                                        ? "bg-white border text-gray-700 hover:bg-gray-50" 
+                                                    ${isInternalTransfer
+                                                        ? "bg-white border text-gray-700 hover:bg-gray-50"
                                                         : data.trangThai === 0
                                                             ? "bg-purple-600 text-white hover:bg-purple-700"
                                                             : "bg-white border text-gray-700 hover:bg-gray-50"}`}

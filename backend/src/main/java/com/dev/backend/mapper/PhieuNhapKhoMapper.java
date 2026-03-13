@@ -11,6 +11,8 @@ public interface PhieuNhapKhoMapper {
     @Mapping(source = "donMuaHang.soDonMua", target = "soDonMua")
     @Mapping(source = "nhaCungCap.tenNhaCungCap", target = "tenNhaCungCap")
     @Mapping(source = "kho.tenKho", target = "tenKho")
+    @Mapping(source = "phieuChuyenKhoGoc.id", target = "phieuXuatGocId")
+    @Mapping(source = "phieuChuyenKhoGoc.soPhieuXuat", target = "soPhieuXuatGoc")
     PhieuNhapKhoDto toDto(PhieuNhapKho entity);
 
     List<PhieuNhapKhoDto> toDtoList(List<PhieuNhapKho> entities);
