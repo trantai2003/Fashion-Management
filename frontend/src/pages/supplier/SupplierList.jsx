@@ -108,7 +108,7 @@ function ConfirmDeleteModal({ target, isDeleting, onConfirm, onCancel }) {
                     <Button
                         type="button"
                         variant="outline"
-                        className="border-gray-300 text-slate-600 hover:bg-slate-100"
+                        className="border-slate-900 text-slate-600 hover:bg-slate-900 hover:text-white transition-all duration-200"
                         onClick={onCancel}
                         disabled={isDeleting}
                     >
@@ -116,7 +116,7 @@ function ConfirmDeleteModal({ target, isDeleting, onConfirm, onCancel }) {
                     </Button>
                     <Button
                         type="button"
-                        className="bg-red-600 hover:bg-red-700 text-white min-w-[100px] shadow-sm"
+                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 min-w-[100px] shadow-sm transition-all duration-200"
                         onClick={onConfirm}
                         disabled={isDeleting}
                     >
