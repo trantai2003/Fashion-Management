@@ -43,4 +43,17 @@ WHERE DATE(p.ngayXuat) = CURRENT_DATE
             @Param("tenKho") String tenKho,
             Pageable pageable
     );
+    @Query("SELECT p FROM PhieuXuatKho p " +
+            "WHERE (:khoId IS NULL OR p.kho.id = :khoId) " +
+            "AND p.loaiXuat = 'chuyen_kho' AND p.phieuChuyenKhoGoc IS NULL " +
+            "AND (:keyword IS NULL OR LOWER(p.soPhieuXuat) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:trangThai IS NULL OR p.trangThai = :trangThai) " +
+            "AND (:khoNhapTen IS NULL OR LOWER(p.khoChuyenDen.tenKho) LIKE LOWER(CONCAT('%', :khoNhapTen, '%')))")
+    Page<PhieuXuatKho> findDanhSachYeuCauChuyenKho(
+            @Param("khoId") Integer khoId,
+            @Param("keyword") String keyword,
+            @Param("trangThai") Integer trangThai,
+            @Param("khoNhapTen") String khoNhapTen,
+            Pageable pageable
+    );
 }

@@ -16,6 +16,9 @@ import com.dev.backend.mapper.PhieuXuatKhoMapper;
 import com.dev.backend.services.impl.entities.PhieuXuatKhoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,29 +47,47 @@ public class PhieuChuyenKhoController {
             rolesLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<Page<PhieuXuatKhoDto>>> filter(@RequestBody BaseFilterRequest request) {
-        List<FilterCriteria> filters = request.getFilters();
-        if (filters == null) filters = new ArrayList<>();
-        else filters = new ArrayList<>(filters);
-        filters.add(0, FilterCriteria.builder()
-                .fieldName("kho.id")
-                .operation(FilterOperation.EQUALS)
-                .value(SecurityContextHolder.getKhoId())
-                .logicType(FilterLogicType.AND)
-                .build());
-        filters.add(FilterCriteria.builder()
-                .fieldName("loaiXuat")
-                .operation(FilterOperation.EQUALS)
-                .value("chuyen_kho")
-                .logicType(FilterLogicType.AND)
-                .build());
-        request.setFilters(filters);
-        Page<PhieuXuatKho> pageEntity = phieuXuatKhoService.filter(request);
+        Integer khoId = SecurityContextHolder.getKhoId();
+        String keyword = null;
+        Integer trangThai = null;
+        String khoNhapTen = null;
+
+        // Bóc tách filter từ JSON Frontend gửi lên
+        if (request.getFilters() != null) {
+            for (FilterCriteria f : request.getFilters()) {
+                if ("soPhieuXuat".equals(f.getFieldName())) {
+                    keyword = f.getValue() != null ? f.getValue().toString().trim() : null;
+                    if (keyword != null && keyword.isEmpty()) keyword = null;
+                } else if ("trangThai".equals(f.getFieldName())) {
+                    String ttVal = f.getValue() != null ? f.getValue().toString() : "";
+                    trangThai = !ttVal.isEmpty() ? Integer.valueOf(ttVal) : null;
+                } else if ("khoChuyenDen.tenKho".equals(f.getFieldName())) {
+                    khoNhapTen = f.getValue() != null ? f.getValue().toString().trim() : null;
+                    if (khoNhapTen != null && khoNhapTen.isEmpty()) khoNhapTen = null;
+                }
+            }
+        }
+
+        // Tự động nhận diện cấu hình Sort từ Frontend (Mặc định: ngayTao DESC)
+        Sort sort = Sort.by(Sort.Direction.DESC, "ngayTao");
+        if (request.getSorts() != null && !request.getSorts().isEmpty()) {
+            String sortField = request.getSorts().get(0).getFieldName();
+            Sort.Direction sortDir = "ASC".equalsIgnoreCase(String.valueOf(request.getSorts().get(0).getDirection()))
+                    ? Sort.Direction.ASC : Sort.Direction.DESC;
+            sort = Sort.by(sortDir, sortField);
+        }
+
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
+
+        // Gọi Custom Query
+        Page<PhieuXuatKho> pageEntity = phieuXuatKhoService.getDanhSachYeuCauChuyenKhoCustom(khoId, keyword, trangThai, khoNhapTen, pageable);
         Page<PhieuXuatKhoDto> pageDto = pageEntity.map(phieuXuatKhoMapper::toDto);
+
         return ResponseEntity.ok(
                 ResponseData.<Page<PhieuXuatKhoDto>>builder()
                         .status(HttpStatus.OK.value())
                         .data(pageDto)
-                        .message("Lấy danh sách phiếu chuyển kho thành công")
+                        .message("Lấy danh sách yêu cầu chuyển kho thành công")
                         .build()
         );
     }

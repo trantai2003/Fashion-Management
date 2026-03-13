@@ -71,6 +71,10 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         return ((PhieuXuatKhoRepository) repository).findDanhSachThucXuat(khoId, keyword, trangThai, tenKho, pageable);
     }
 
+    public Page<PhieuXuatKho> getDanhSachYeuCauChuyenKhoCustom(Integer khoId, String keyword, Integer trangThai, String khoNhapTen, org.springframework.data.domain.Pageable pageable) {
+        return ((PhieuXuatKhoRepository) repository).findDanhSachYeuCauChuyenKho(khoId, keyword, trangThai, khoNhapTen, pageable);
+    }
+
     @Transactional
     public PhieuXuatKho createFromSO(PhieuXuatKhoCreating request) {
         if (request.getChiTietXuat() == null || request.getChiTietXuat().isEmpty()) {
@@ -249,6 +253,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         if (isXuatChuyenKho) {
             PhieuXuatKho pck = phieu.getPhieuChuyenKhoGoc();
             pck.setTrangThai(3);
+            pck.setNgayXuat(Instant.now());
             repository.save(pck);
         }
 
