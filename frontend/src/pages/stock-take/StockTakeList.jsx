@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Plus, Eye, ClipboardList, Loader2, ChevronDown, ChevronLeft,
-  ChevronRight, Check, Filter, RefreshCcw, Search,
+  ChevronRight, Check, Filter, RefreshCcw, Search, Play,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { getStockTakes } from "@/services/stockTakeService";
@@ -132,13 +132,6 @@ export default function StockTakeList() {
             <h2 className="text-3xl font-bold text-gray-900 tracking-tight"></h2>
             <p className="text-sm text-gray-600 mt-1"></p>
           </div>
-          <Button
-            onClick={() => navigate("/stock-take/new")}
-            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Tạo đợt kiểm kê
-          </Button>
         </div>
 
         {/* ── Filter bar ── */}
@@ -195,13 +188,23 @@ export default function StockTakeList() {
               <Button
                 variant="outline"
                 onClick={handleReset}
-                className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300"
+                className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-10 px-4 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 w-full justify-center"
               >
                 <RefreshCcw className="h-4 w-4" />
                 Đặt lại
               </Button>
             </div>
           </div>
+        </div>
+        
+        <div className="flex justify-end">
+          <Button
+            onClick={() => navigate("/stock-take/new")}
+            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Tạo đợt kiểm kê
+          </Button>
         </div>
 
         {/* ── Table ── */}
@@ -284,15 +287,19 @@ export default function StockTakeList() {
                         <td className="px-4 py-3.5 align-middle">
                           <button
                             type="button"
+                            title={isOngoing ? "Tiếp tục" : "Xem chi tiết"}
                             onClick={() => navigate(`/stock-take/${item.id}`)}
-                            className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-all duration-150 hover:scale-105 active:scale-95 ${
+                            className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-150 hover:scale-105 active:scale-95 ${
                               isOngoing
-                                ? "border-violet-200 text-violet-600 hover:bg-violet-50"
+                                ? "border-slate-200 text-slate-600 hover:bg-slate-50"
                                 : "border-transparent text-slate-500 hover:bg-slate-50 hover:border-slate-200"
                             }`}
                           >
-                            <Eye className="h-3.5 w-3.5" />
-                            {isOngoing ? "Tiếp tục" : "Xem"}
+                            {isOngoing ? (
+                              <Play className="h-3.5 w-3.5 fill-current" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
                           </button>
                         </td>
                       </tr>

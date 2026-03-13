@@ -589,34 +589,6 @@ export default function PurchaseOrderList() {
                 </Alert>
             )}
 
-            {/* Header Section */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-                        Quản lý đơn mua hàng
-                    </h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                        Theo dõi và quản lý các đơn đặt hàng từ nhà cung cấp
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    <Button
-                        variant="outline"
-                        className="flex items-center gap-2 transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
-                        onClick={() => fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize)}
-                    >
-                        <RefreshCw className="h-4 w-4" />
-                        Làm mới
-                    </Button>
-                    <Button
-                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
-                        onClick={() => navigate('/purchase-orders/create')}
-                    >
-                        <Plus className="h-4 w-4" />
-                        Tạo đơn mua
-                    </Button>
-                </div>
-            </div>
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -915,13 +887,32 @@ export default function PurchaseOrderList() {
                         <Button
                             variant="outline"
                             onClick={handleResetFilters}
-                            className="flex items-center gap-2 transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
+                            className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-10 px-4 rounded-xl font-medium transition-all duration-200"
                         >
                             Đặt lại
                         </Button>
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2">
+                <Button
+                    variant="outline"
+                    className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-10 px-4 rounded-xl font-medium transition-all duration-200 gap-2"
+                    onClick={() => fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize)}
+                >
+                    <RefreshCw className="h-4 w-4" />
+                    Làm mới
+                </Button>
+                <Button
+                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
+                    onClick={() => navigate('/purchase-orders/create')}
+                >
+                    <Plus className="h-4 w-4" />
+                    Tạo đơn mua
+                </Button>
+            </div>
 
             {/* Table Section */}
             <div className="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">

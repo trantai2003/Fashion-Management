@@ -92,7 +92,7 @@ export default function BackofficeLayout() {
             key: "GOODS_RECEIPTS_CREATE",
             match: (path) => path === "/goods-receipts/create",
             title: "Tạo phiếu nhập kho",
-            subtitle: "Tạo mới phiếu nhập kho từ đơn mua hàng (PO)",
+            subtitle: "Tạo mới phiếu nhập kho từ đơn mua hàng",
         },
         {
             key: "GOODS_RECEIPTS_DETAIL",
@@ -116,13 +116,19 @@ export default function BackofficeLayout() {
             key: "GOODS_ISSUES_CREATE",
             match: (path) => path === "/goods-issues/create",
             title: "Tạo phiếu xuất kho",
-            subtitle: "Tạo mới phiếu xuất kho từ đơn bán hàng (SO)",
+            subtitle: "Tạo mới phiếu xuất kho từ đơn bán hàng",
         },
         {
             key: "GOODS_ISSUES_DETAIL",
             match: (path) => /^\/goods-issues\/\d+$/.test(path),
             title: "Chi tiết phiếu xuất kho",
             subtitle: "Xem chi tiết phiếu xuất kho",
+        },
+        {
+            key: "PURCHASE_ORDERS",
+            match: (path) => path === "/purchase-orders",
+            title: "Quản lý đơn mua hàng",
+            subtitle: "Theo dõi và quản lý các đơn đặt hàng từ nhà cung cấp",
         },
         {
             key: "TRANSFER_TICKETS",
@@ -135,6 +141,24 @@ export default function BackofficeLayout() {
             match: (path) => /^\/goods-issues\/\d+\/pick-lot\/\d+$/.test(path),
             title: "Chọn lô hàng",
             subtitle: "Chọn lô hàng để xuất kho",
+        },
+        {
+            key: "STOCK_TAKE_LIST",
+            match: (path) => path === "/stock-take",
+            title: "Kiểm kê kho hàng",
+            subtitle: "Quản lý và theo dõi các đợt kiểm kê kho",
+        },
+        {
+            key: "STOCK_TAKE_CREATE",
+            match: (path) => path === "/stock-take/new",
+            title: "Tạo đợt kiểm kê",
+            subtitle: "Chọn kho và điền thông tin để bắt đầu kiểm kê",
+        },
+        {
+            key: "STOCK_TAKE_DETAIL",
+            match: (path) => /^\/stock-take\/\d+$/.test(path),
+            title: "Chi tiết đợt kiểm kê",
+            subtitle: "Thông tin chi tiết đợt kiểm kê đã hoàn thành",
         },
         {
             key: "DANH_MUC_QUAN_AO",
@@ -213,7 +237,12 @@ export default function BackofficeLayout() {
             match: (path) => path === "/stock-take",
             title: "Quản lý kiểm kê",
             subtitle: "Xem và quản lý các lần kiểm kê tồn kho",
-
+        },
+        {
+            key: "PURCHASE_ORDER_CREATE",
+            match: (path) => path === "/purchase-orders/create",
+            title: "Tạo đơn mua hàng",
+            subtitle: "Tạo đơn đặt hàng mới và gửi yêu cầu báo giá đến nhà cung cấp",
         }
     ];
 
@@ -223,25 +252,25 @@ export default function BackofficeLayout() {
 
 
     return (
-    <SidebarProvider defaultOpen>
-      <div className="flex h-screen w-full overflow-hidden">
-        {/* SIDEBAR */}
-        <BackofficeSidebar />
+        <SidebarProvider defaultOpen>
+            <div className="flex h-screen w-full overflow-hidden">
+                {/* SIDEBAR */}
+                <BackofficeSidebar />
 
-        {/* MAIN CONTENT */}
-        <SidebarInset className="flex flex-col min-w-0 w-full">
-          <Toaster position="top-center" richColors />
+                {/* MAIN CONTENT */}
+                <SidebarInset className="flex flex-col min-w-0 w-full">
+                    <Toaster position="top-center" richColors />
 
-          <BackofficeHeader
-            title={pageMeta?.title}
-            subtitle={pageMeta?.subtitle}
-          />
+                    <BackofficeHeader
+                        title={pageMeta?.title}
+                        subtitle={pageMeta?.subtitle}
+                    />
 
-          <main className="flex-1 min-w-0 overflow-y-auto bg-gray-50">
-            <Outlet />
-          </main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
-  );
+                    <main className="flex-1 min-w-0 overflow-y-auto bg-gray-50">
+                        <Outlet />
+                    </main>
+                </SidebarInset>
+            </div>
+        </SidebarProvider>
+    );
 }

@@ -319,14 +319,18 @@ export default function WarehouseDialog({
                     </div>
                 )}
 
-                <DialogFooter className="!text-white">
-                    <Button variant="outline" onClick={onClose}>
+                <DialogFooter>
+                    <Button 
+                        variant="outline" 
+                        onClick={onClose}
+                        className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 shadow-sm transition-all duration-200"
+                    >
                         {dialogMode === 'view' ? 'Đóng' : 'Hủy'}
                     </Button>
                     {dialogMode !== 'view' && (
                         <Button
                             onClick={onSubmit}
-                            className="bg-gradient-to-r from-purple-600 to-blue-600"
+                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
                         >
                             {dialogMode === 'create' ? 'Thêm kho' : 'Cập nhật'}
                         </Button>

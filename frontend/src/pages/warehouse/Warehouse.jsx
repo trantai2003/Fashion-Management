@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -313,7 +313,6 @@ export default function WarehouseManagement() {
     return (
         <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
             <div className="space-y-6 w-full">
-                <WarehouseHeader onAddWarehouse={() => handleOpenDialog('create')} />
                 <WarehouseStats stats={stats} />
                 <WarehouseSearchFilter
                     searchTerm={searchTerm}
@@ -321,6 +320,16 @@ export default function WarehouseManagement() {
                     filterStatus={filterStatus}
                     setFilterStatus={setFilterStatus}
                 />
+                
+                <div className="flex justify-end">
+                    <Button
+                        onClick={() => handleOpenDialog('create')}
+                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Thêm kho mới
+                    </Button>
+                </div>
 
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">

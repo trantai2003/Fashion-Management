@@ -87,7 +87,7 @@ export default function WarehouseSearchFilter({ searchTerm, setSearchTerm, filte
                         <Button
                             variant="outline"
                             onClick={handleResetFilters}
-                            className="flex items-center gap-2 transition-all w-full duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
+                            className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-10 px-4 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 w-full justify-center"
                         >
                             <RefreshCcw className="h-4 w-4" />
                             Đặt lại

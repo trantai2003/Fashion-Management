@@ -206,7 +206,7 @@ export default function PhieuNhapKhoList() {
                                         <tr className="border-b border-slate-200 bg-slate-50">
                                             <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-14">STT</th>
                                             <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Số phiếu</th>
-                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Đơn mua (PO)</th>
+                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Đơn mua</th>
                                             <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Nhà cung cấp</th>
                                             <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Kho</th>
                                             <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Ngày tạo</th>
