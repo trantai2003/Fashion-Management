@@ -1,9 +1,12 @@
 package com.dev.backend.repository;
 
 import com.dev.backend.entities.PhieuXuatKho;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,4 +30,17 @@ FROM PhieuXuatKho p
 WHERE DATE(p.ngayXuat) = CURRENT_DATE
 """)
     Long countExportToday();
+    @Query("SELECT p FROM PhieuXuatKho p LEFT JOIN p.donBanHang d " +
+            "WHERE (:khoId IS NULL OR p.kho.id = :khoId) " +
+            "AND NOT (LOWER(p.loaiXuat) = 'chuyen_kho' AND p.phieuChuyenKhoGoc IS NULL) " +
+            "AND (:keyword IS NULL OR LOWER(p.soPhieuXuat) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(d.soDonHang) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:trangThai IS NULL OR p.trangThai = :trangThai) " +
+            "AND (:tenKho IS NULL OR LOWER(p.kho.tenKho) LIKE LOWER(CONCAT('%', :tenKho, '%')))")
+    Page<PhieuXuatKho> findDanhSachThucXuat(
+            @Param("khoId") Integer khoId,
+            @Param("keyword") String keyword,
+            @Param("trangThai") Integer trangThai,
+            @Param("tenKho") String tenKho,
+            Pageable pageable
+    );
 }

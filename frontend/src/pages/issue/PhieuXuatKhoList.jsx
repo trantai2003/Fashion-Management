@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { Button } from "@/components/ui/button";
@@ -67,20 +67,15 @@ export default function PhieuXuatKhoList() {
         return { page: filters.page, size: filters.size, filters: filterList, sorts: [{ fieldName: "ngayTao", direction: "DESC" }] };
     }
 
-    async function fetchData() {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const res = await phieuXuatKhoService.filter(buildFilterPayload());
-            let list = res.content || [];
-            const filteredList = list.filter((item) => {
-                if (item.loaiXuat === "chuyen_kho" || item.loaiXuat === "CHUYEN_KHO") {
-                    return item.trangThai >= 2;
-                }
-                return true;
-            });
-            let finalData = filteredList;
+            let finalData = res.content || [];
+            
+            // XÓA BỎ LỌC LOẠI PHIẾU, CHỈ CÒN GIỮ LẠI LỌC NGÀY XUẤT
             if (filters.ngayXuat) {
-                finalData = filteredList.filter((item) => {
+                finalData = finalData.filter((item) => {
                     const dateValue = item.ngayXuat || item.ngayTao;
                     if (!dateValue) return false;
                     const date = new Date(dateValue);
@@ -90,16 +85,19 @@ export default function PhieuXuatKhoList() {
                     return `${y}-${m}-${d}` === filters.ngayXuat;
                 });
             }
+
             setData(finalData);
-            setTotal(res.totalElements || 0);
+            setTotal(res.totalElements || 0); // Phân trang sẽ nhận chuẩn 10/10 dòng
         } catch (e) {
             console.error("Fetch list error:", e);
         } finally {
             setLoading(false);
         }
-    }
+    }, [filters]);
 
-    useEffect(() => { fetchData(); }, [filters.keyword, filters.tenKho, filters.trangThai, filters.ngayXuat, filters.page, filters.size]);
+    useEffect(() => { 
+        fetchData(); 
+    }, [fetchData]);
 
     const totalPages = Math.max(1, Math.ceil(total / filters.size));
 
@@ -159,8 +157,8 @@ export default function PhieuXuatKhoList() {
                     <CardContent className="pt-0">
                         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Số phiếu / SO</Label>
-                                <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" /><Input placeholder="Nhập số phiếu hoặc SO" className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.keyword} onChange={(e) => setFilters((p) => ({ ...p, keyword: e.target.value, page: 0 }))} disabled={loading} /></div>
+                                <Label className="text-gray-700 font-medium">Số phiếu / Mã tham chiếu</Label>
+                                <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" /><Input placeholder="Nhập số phiếu..." className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.keyword} onChange={(e) => setFilters((p) => ({ ...p, keyword: e.target.value, page: 0 }))} disabled={loading} /></div>
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-gray-700 font-medium">Kho xuất</Label>
@@ -217,8 +215,9 @@ export default function PhieuXuatKhoList() {
                                     <thead className="sticky top-0 z-10">
                                         <tr className="border-b border-slate-200 bg-slate-50">
                                             <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-14">STT</th>
-                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Số phiếu</th>
-                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Đơn bán hàng</th>
+                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Số phiếu xuất</th>
+                                            {/* SỬA TIÊU ĐỀ CỘT */}
+                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Tham chiếu gốc</th>
                                             <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Kho xuất</th>
                                             <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Ngày tạo</th>
                                             <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Ngày xuất</th>
@@ -226,22 +225,49 @@ export default function PhieuXuatKhoList() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
-                                        {data.map((item, index) => (
-                                            <tr key={item.id} onClick={() => navigate(`/goods-issues/${item.id}`)} className="cursor-pointer transition-colors duration-150 hover:bg-violet-50/50">
-                                                <td className="px-4 py-3.5 align-middle text-center w-14"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">{filters.page * filters.size + index + 1}</span></td>
-                                                <td className="px-4 py-3.5 align-middle font-semibold text-violet-600">{item.soPhieuXuat}</td>
-                                                <td className="px-4 py-3.5 align-middle text-slate-600">{item.donBanHang?.soDonHang || "-"}</td>
-                                                <td className="px-4 py-3.5 align-middle">{item.kho?.tenKho || "-"}</td>
-                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</span></td>
-                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{item.ngayXuat ? new Date(item.ngayXuat).toLocaleDateString("vi-VN") : "Chưa xuất kho"}</span></td>
-                                                <td className="px-4 py-3.5 align-middle text-center">
-                                                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${STATUS_MAP[item.trangThai]?.className}`}>
-                                                        <span className={`h-1.5 w-1.5 rounded-full ${STATUS_MAP[item.trangThai]?.dot}`} />
-                                                        {STATUS_MAP[item.trangThai]?.label}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {data.map((item, index) => {
+                                            // XÁC ĐỊNH MÃ THAM CHIẾU ĐỂ HIỂN THỊ
+                                            const isChuyenKho = item.loaiXuat === "chuyen_kho" || item.loaiXuat === "CHUYEN_KHO";
+                                            
+                                            // Fallback lấy mã phiếu gốc (Tùy backend trả về là gì: phieuChuyenKhoGoc.soPhieuXuat hoặc soPhieuChuyenGoc,...)
+                                            const maThamChieu = isChuyenKho 
+                                                ? (item.phieuChuyenKhoGoc?.soPhieuXuat || item.soPhieuChuyenKhoGoc || `PCK ID: ${item.phieuChuyenKhoGocId || item.parentId}`)
+                                                : (item.donBanHang?.soDonHang || "-");
+
+                                            return (
+                                                <tr key={item.id} onClick={() => navigate(`/goods-issues/${item.id}`)} className="cursor-pointer transition-colors duration-150 hover:bg-violet-50/50">
+                                                    <td className="px-4 py-3.5 align-middle text-center w-14">
+                                                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                                                            {filters.page * filters.size + index + 1}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3.5 align-middle font-semibold text-violet-600">
+                                                        {item.soPhieuXuat}
+                                                    </td>
+                                                    {/* CỘT THAM CHIẾU */}
+                                                    <td className="px-4 py-3.5 align-middle text-slate-600">
+                                                        {isChuyenKho ? (
+                                                            <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-semibold border border-purple-200">
+                                                                {maThamChieu}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-semibold border border-blue-200">
+                                                                {maThamChieu}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3.5 align-middle">{item.kho?.tenKho || "-"}</td>
+                                                    <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</span></td>
+                                                    <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{item.ngayXuat ? new Date(item.ngayXuat).toLocaleDateString("vi-VN") : "Chưa xuất kho"}</span></td>
+                                                    <td className="px-4 py-3.5 align-middle text-center">
+                                                        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${STATUS_MAP[item.trangThai]?.className}`}>
+                                                            <span className={`h-1.5 w-1.5 rounded-full ${STATUS_MAP[item.trangThai]?.dot}`} />
+                                                            {STATUS_MAP[item.trangThai]?.label}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
@@ -261,7 +287,7 @@ export default function PhieuXuatKhoList() {
                                         </DropdownMenu>
                                     </div>
                                     <div className="text-sm text-gray-600">
-                                        Hiển thị <span className="font-semibold text-gray-900">{filters.page * filters.size + 1}</span> - <span className="font-semibold text-gray-900">{Math.min((filters.page + 1) * filters.size, total)}</span> trong tổng số <span className="font-semibold text-purple-600">{total}</span> kết quả
+                                        Hiển thị <span className="font-semibold text-gray-900">{data.length > 0 ? filters.page * filters.size + 1 : 0}</span> - <span className="font-semibold text-gray-900">{Math.min((filters.page + 1) * filters.size, total)}</span> trong tổng số <span className="font-semibold text-purple-600">{total}</span> kết quả
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Button variant="outline" size="sm" onClick={() => setFilters((p) => ({ ...p, page: p.page - 1 }))} disabled={filters.page === 0} className="gap-1 disabled:opacity-50"><ChevronLeft className="h-4 w-4" /> Trước</Button>
@@ -275,7 +301,7 @@ export default function PhieuXuatKhoList() {
                                                 return (<Button key={idx} variant={filters.page === pageNum ? "default" : "outline"} size="sm" onClick={() => setFilters((p) => ({ ...p, page: pageNum }))} className={filters.page === pageNum ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm" : "border-gray-200"}>{pageNum + 1}</Button>);
                                             })}
                                         </div>
-                                        <Button variant="outline" size="sm" onClick={() => setFilters((p) => ({ ...p, page: p.page + 1 }))} disabled={filters.page + 1 >= totalPages} className="gap-1 disabled:opacity-50">Sau <ChevronRight className="h-4 w-4" /></Button>
+                                        <Button variant="outline" size="sm" onClick={() => setFilters((p) => ({ ...p, page: p.page + 1 }))} disabled={filters.page + 1 >= totalPages || data.length === 0} className="gap-1 disabled:opacity-50">Sau <ChevronRight className="h-4 w-4" /></Button>
                                     </div>
                                 </div>
                             </CardContent>
@@ -286,4 +312,3 @@ export default function PhieuXuatKhoList() {
         </div>
     );
 }
-

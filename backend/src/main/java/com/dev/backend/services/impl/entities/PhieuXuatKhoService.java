@@ -16,6 +16,8 @@ import com.dev.backend.repository.*;
 import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +65,10 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
 
     public PhieuXuatKhoService(PhieuXuatKhoRepository repository) {
         super(repository);
+    }
+
+    public Page<PhieuXuatKho> getDanhSachThucXuatCustom(Integer khoId, String keyword, Integer trangThai, String tenKho, org.springframework.data.domain.Pageable pageable) {
+        return ((PhieuXuatKhoRepository) repository).findDanhSachThucXuat(khoId, keyword, trangThai, tenKho, pageable);
     }
 
     @Transactional

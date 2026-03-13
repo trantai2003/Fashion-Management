@@ -33,4 +33,6 @@ public class PhieuXuatKhoDto implements Serializable {
     NguoiDungDto nguoiDuyet;
     Instant ngayTao;
     Instant ngayCapNhat;
+    private Integer phieuChuyenKhoGocId;
+    private String soPhieuChuyenKhoGoc;
 }

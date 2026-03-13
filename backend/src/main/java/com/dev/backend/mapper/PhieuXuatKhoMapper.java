@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 
 @Mapper(componentModel = "spring")
 public interface PhieuXuatKhoMapper {
+    @Mapping(source = "phieuChuyenKhoGoc.id", target = "phieuChuyenKhoGocId")
+    @Mapping(source = "phieuChuyenKhoGoc.soPhieuXuat", target = "soPhieuChuyenKhoGoc")
     PhieuXuatKhoDto toDto(PhieuXuatKho entity);
 
     default Page<PhieuXuatKhoDto> toDtoPage(Page<PhieuXuatKho> page){
