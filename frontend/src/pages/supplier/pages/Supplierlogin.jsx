@@ -20,7 +20,7 @@ function SplashScreen({ onDone }) {
 
     useEffect(() => {
         const t1 = setTimeout(() => setPhase('hold'), 400);
-        const t2 = setTimeout(() => setPhase('exit'), 6000);
+        const t2 = setTimeout(() => setPhase('exit'), 8800);
         const t3 = setTimeout(onDone, 7200);
         return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
     }, []);

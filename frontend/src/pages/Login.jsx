@@ -1,512 +1,644 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from 'react-router-dom';
 import { nguoiDungService } from '../services/nguoiDungService';
-import { Card, CardContent } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { Label } from "../components/ui/label";
-import { Alert, AlertDescription } from "../components/ui/alert";
-import { Checkbox } from "../components/ui/checkbox";
-import { ShoppingBag, User, Lock, Mail, Phone, AlertCircle, Eye, EyeOff } from "lucide-react";
+import {
+    User, Lock, Mail, Phone, AlertCircle, Eye, EyeOff,
+    Boxes, ShieldCheck, TrendingUp, Package, CheckCircle,
+    ChevronRight, Loader2, ArrowRight,
+} from "lucide-react";
 
+/* ══════════════════════════════════════════
+   STYLES
+══════════════════════════════════════════ */
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold: #d4af37;
+  --gold-light: #f0d060;
+  --gold-dim: rgba(212,175,55,0.15);
+  --dark: #0a0b0f;
+  --dark-2: #111218;
+  --dark-3: #16171f;
+  --dark-border: rgba(255,255,255,0.07);
+  --text: rgba(255,255,255,0.85);
+  --text-dim: rgba(255,255,255,0.4);
+  --text-muted: rgba(255,255,255,0.2);
+}
+
+.auth-root {
+  display: flex; min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--dark);
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.auth-root.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── LEFT PANEL ─────────────────────────── */
+.auth-left {
+  width: 460px; flex-shrink: 0;
+  background: var(--dark);
+  border-right: 1px solid rgba(212,175,55,0.12);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  padding: 56px 48px;
+}
+@media (max-width: 960px) { .auth-left { display: none; } }
+
+.auth-left-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(var(--gold-dim) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gold-dim) 1px, transparent 1px);
+  background-size: 56px 56px;
+  animation: gridDrift 25s linear infinite; opacity: 0.45;
+}
+@keyframes gridDrift { to { background-position: 56px 56px; } }
+
+.auth-left-orb-1 {
+  position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: rgba(212,175,55,0.07); filter: blur(80px);
+  top: -150px; right: -150px; pointer-events: none;
+}
+.auth-left-orb-2 {
+  position: absolute; width: 280px; height: 280px; border-radius: 50%;
+  background: rgba(99,102,241,0.08); filter: blur(70px);
+  bottom: -80px; left: -60px; pointer-events: none;
+}
+
+.auth-left-content {
+  position: relative; z-index: 1;
+  width: 100%; display: flex; flex-direction: column; gap: 40px;
+}
+
+.al-logo {
+  width: 52px; height: 52px; border-radius: 15px;
+  background: linear-gradient(135deg, #1c1d2e, #252640);
+  border: 1px solid rgba(212,175,55,0.4);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  box-shadow: 0 0 28px rgba(212,175,55,0.18);
+}
+
+.al-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; color: rgba(212,175,55,0.65);
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.al-title {
+  font-size: 42px; font-weight: 800;
+  color: #fff; line-height: 1.05; letter-spacing: -1.5px;
+  margin-bottom: 14px;
+}
+.al-title span { color: var(--gold); }
+.al-desc { font-size: 14px; color: var(--text-dim); line-height: 1.75; max-width: 320px; }
+
+.al-features { display: flex; flex-direction: column; gap: 10px; }
+.al-feat {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px;
+  border-radius: 14px; background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s, border-color 0.2s;
+}
+.al-feat:hover { background: rgba(255,255,255,0.055); border-color: rgba(212,175,55,0.2); }
+.al-feat-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+}
+.al-feat-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 2px; }
+.al-feat-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+.al-badge {
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text-muted); letter-spacing: 0.05em;
+}
+
+/* ─── RIGHT PANEL ────────────────────────── */
+.auth-right {
+  flex: 1; background: var(--dark-2);
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 32px;
+  background-image:
+    radial-gradient(circle at 80% 15%, rgba(212,175,55,0.04) 0%, transparent 55%),
+    radial-gradient(circle at 20% 85%, rgba(99,102,241,0.05) 0%, transparent 55%);
+}
+
+.auth-form-wrap {
+  width: 100%; max-width: 440px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+/* Tab switcher */
+.auth-tabs {
+  display: flex; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--dark-border); border-radius: 14px; padding: 4px;
+}
+.auth-tab {
+  flex: 1; padding: 10px 0; border-radius: 11px; border: none;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.25s;
+  background: transparent; color: var(--text-dim); letter-spacing: 0.02em;
+}
+.auth-tab.active {
+  background: linear-gradient(135deg, var(--dark-3), #1e1f28);
+  color: var(--gold); border: 1px solid rgba(212,175,55,0.3);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+/* Card */
+.auth-card {
+  background: linear-gradient(135deg, var(--dark-3), rgba(22,23,31,0.9));
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.auth-card-header {
+  padding: 28px 32px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.auth-card-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.auth-card-sub { font-size: 13px; color: var(--text-dim); margin-top: 5px; line-height: 1.5; }
+
+.auth-form { padding: 26px 32px 30px; display: flex; flex-direction: column; gap: 18px; }
+
+/* Field */
+.af-field { display: flex; flex-direction: column; gap: 7px; }
+.af-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  color: rgba(212,175,55,0.7); text-transform: uppercase; letter-spacing: 0.18em;
+}
+.af-input-wrap { position: relative; }
+.af-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: rgba(255,255,255,0.25); pointer-events: none;
+  display: flex; align-items: center;
+}
+.af-input {
+  width: 100%; height: 48px; padding: 0 16px 0 42px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 13px; outline: none;
+  font-family: 'Inter', sans-serif; font-size: 14px; color: #fff;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  -webkit-autofill: none;
+}
+.af-input::placeholder { color: rgba(255,255,255,0.2); }
+.af-input:focus {
+  border-color: rgba(212,175,55,0.5); background: rgba(255,255,255,0.08);
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.08);
+}
+.af-input:disabled { opacity: 0.4; cursor: not-allowed; }
+.af-input.error { border-color: rgba(239,68,68,0.6); }
+.af-input-no-icon { padding-left: 16px; }
+.af-eye {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3);
+  padding: 0; display: flex; align-items: center;
+  transition: color 0.2s;
+}
+.af-eye:hover { color: var(--gold); }
+
+.af-readonly {
+  background: rgba(255,255,255,0.02); color: var(--text-dim);
+  cursor: default; border-style: dashed;
+}
+
+.af-error-msg {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #f87171; padding: 8px 12px;
+  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 9px;
+}
+
+/* Row: remember + forgot */
+.af-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.af-checkbox-wrap { display: flex; align-items: center; gap: 8px; }
+.af-checkbox {
+  width: 16px; height: 16px; border-radius: 5px; accent-color: var(--gold);
+  cursor: pointer; border: 1px solid rgba(255,255,255,0.2);
+}
+.af-checkbox-label { font-size: 13px; color: var(--text-dim); cursor: pointer; }
+.af-link {
+  background: none; border: none; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  color: var(--gold); transition: color 0.2s;
+}
+.af-link:hover { color: var(--gold-light); text-decoration: underline; }
+
+/* Submit button */
+.af-btn {
+  height: 50px; width: 100%; border-radius: 13px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #0a0b0f; font-family: 'Inter', sans-serif;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.03em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.25s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 28px rgba(212,175,55,0.3);
+  position: relative; overflow: hidden;
+}
+.af-btn::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0; transition: opacity 0.25s;
+}
+.af-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(212,175,55,0.45); }
+.af-btn:hover::after { opacity: 1; }
+.af-btn:active { transform: translateY(0); }
+.af-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.af-btn-outline {
+  background: transparent; border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text-dim); box-shadow: none;
+}
+.af-btn-outline:hover {
+  border-color: rgba(212,175,55,0.4); color: var(--gold);
+  box-shadow: none; transform: translateY(-1px);
+}
+
+/* Divider */
+.af-divider {
+  display: flex; align-items: center; gap: 12px; font-size: 12px;
+  color: var(--text-muted);
+}
+.af-divider::before, .af-divider::after {
+  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07);
+}
+
+/* Footer text */
+.auth-footer { text-align: center; font-size: 13px; color: var(--text-dim); }
+.auth-footer-copy {
+  text-align: center;
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--text-muted); letter-spacing: 0.08em;
+}
+
+/* Spinner */
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Alert general */
+.af-alert-general {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px; font-size: 13px; color: #f87171;
+  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 11px; line-height: 1.5;
+}
+
+/* Gold accent line at top of card */
+.auth-card::before {
+  content: ''; display: block; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+`;
+
+/* ══════════════════════════════════════════
+   COMPONENT
+══════════════════════════════════════════ */
 export default function AuthPage() {
     const navigate = useNavigate();
-    if (localStorage.getItem("access_token")) {
-        navigate("/products");
-    }
+
+    useEffect(() => {
+        if (localStorage.getItem("access_token")) navigate("/products");
+    }, []);
+
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+    const [visible, setVisible] = useState(false);
 
-    const [loginData, setLoginData] = useState({
-        username: '',
-        matKhau: ''
-    });
+    useEffect(() => { setTimeout(() => setVisible(true), 60); }, []);
 
+    const [loginData, setLoginData] = useState({ username: '', matKhau: '' });
     const [registerData, setRegisterData] = useState({
-        tenDangNhap: '',
-        matKhau: '',
-        xacNhanMatKhau: '',
-        hoTen: '',
-        email: '',
-        soDienThoai: ''
+        tenDangNhap: '', matKhau: '', xacNhanMatKhau: '', hoTen: '', email: '', soDienThoai: ''
     });
-
     const [errors, setErrors] = useState({});
-
-    const validateRegister = () => {
-        const newErrors = {};
-
-        // Username is auto-generated from email, so no validation needed here.
-
-        if (!registerData.matKhau) {
-            newErrors.matKhau = 'Vui lòng nhập mật khẩu';
-        } else if (registerData.matKhau.length < 6) {
-            newErrors.matKhau = 'Mật khẩu phải có ít nhất 6 ký tự';
-        }
-
-        if (!registerData.xacNhanMatKhau) {
-            newErrors.xacNhanMatKhau = 'Vui lòng xác nhận mật khẩu';
-        } else if (registerData.matKhau !== registerData.xacNhanMatKhau) {
-            newErrors.xacNhanMatKhau = 'Mật khẩu xác nhận không khớp';
-        }
-
-        if (!registerData.hoTen) {
-            newErrors.hoTen = 'Vui lòng nhập họ và tên';
-        } else if (registerData.hoTen.length < 6 || registerData.hoTen.length > 100) {
-            newErrors.hoTen = 'Họ tên phải từ 6-100 ký tự';
-        }
-
-        if (!registerData.email) {
-            newErrors.email = 'Vui lòng nhập email';
-        } else {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(registerData.email)) {
-                newErrors.email = 'Email không hợp lệ';
-            }
-        }
-
-        if (!registerData.soDienThoai) {
-            newErrors.soDienThoai = 'Vui lòng nhập số điện thoại';
-        } else if (registerData.soDienThoai.length < 10 || registerData.soDienThoai.length > 11) {
-            newErrors.soDienThoai = 'Số điện thoại phải từ 10-11 ký tự';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-
     const [isLoading, setIsLoading] = useState(false);
 
+    const validateRegister = () => {
+        const e = {};
+        if (!registerData.matKhau) e.matKhau = 'Vui lòng nhập mật khẩu';
+        else if (registerData.matKhau.length < 6) e.matKhau = 'Mật khẩu phải có ít nhất 6 ký tự';
+        if (!registerData.xacNhanMatKhau) e.xacNhanMatKhau = 'Vui lòng xác nhận mật khẩu';
+        else if (registerData.matKhau !== registerData.xacNhanMatKhau) e.xacNhanMatKhau = 'Mật khẩu xác nhận không khớp';
+        if (!registerData.hoTen) e.hoTen = 'Vui lòng nhập họ và tên';
+        else if (registerData.hoTen.length < 6 || registerData.hoTen.length > 100) e.hoTen = 'Họ tên phải từ 6–100 ký tự';
+        if (!registerData.email) e.email = 'Vui lòng nhập email';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerData.email)) e.email = 'Email không hợp lệ';
+        if (!registerData.soDienThoai) e.soDienThoai = 'Vui lòng nhập số điện thoại';
+        else if (registerData.soDienThoai.length < 10 || registerData.soDienThoai.length > 11) e.soDienThoai = 'Số điện thoại phải từ 10–11 ký tự';
+        setErrors(e);
+        return Object.keys(e).length === 0;
+    };
+
     const handleLogin = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setErrors({});
+        e.preventDefault(); setIsLoading(true); setErrors({});
         try {
             if (!loginData.username || !loginData.matKhau) {
                 setErrors({ general: 'Vui lòng điền đầy đủ thông tin đăng nhập' });
-                setIsLoading(false);
                 return;
             }
-
-            // Map username to username as per service requirement
-            const payload = {
-                username: loginData.username,
-                password: loginData.matKhau
-            };
-            const response = await nguoiDungService.login(payload);
-
-            if (response && response.status === 200) {
-                // Login success - Token is already saved in nguoiDungService.login
-
-                // Get token and decode to check role
+            const response = await nguoiDungService.login({ username: loginData.username, password: loginData.matKhau });
+            if (response?.status === 200) {
                 const token = localStorage.getItem('access_token');
                 if (token) {
-                    try {
-                        // Decode JWT to get user info
-                        const decoded = jwtDecode(token);
-                        console.log("LOGIN SUCCESS - Decoded Token:", decoded);
-                        const role = decoded.scope || decoded.vaiTro || decoded.role || decoded.authorities;
-                        localStorage.setItem('role', role);
-
-                        const warehouseId = decoded.khoId || decoded.warehouseId;
-                        if (warehouseId) {
-                            localStorage.setItem('selected_kho_id', warehouseId);
-                            console.log("Saved Warehouse ID:", warehouseId);
-                        } else {
-                            try {
-                                if (decoded.warehousePermissions) {
-                                    const permissions = JSON.parse(decoded.warehousePermissions);
-                                    if (permissions && permissions.length > 0) {
-                                        const defaultKhoId = permissions[0].kho.id;
-                                        localStorage.setItem('selected_kho_id', defaultKhoId);
-                                        console.log("Đã lấy kho đầu tiên làm mặc định:", defaultKhoId);
-                                    }
-                                }
-                            } catch (err) {
-                                console.error("Không thể bóc tách warehousePermissions:", err);
-                            }
-                        }
-
-                        if (role === 'quan_tri_vien') {
-                            console.log("Redirecting to /admin/dashboard");
-                            navigate('/dashboard');
-                        } else if (role === 'quan_ly_kho' || role === 'nhan_vien_kho') {
-                            console.log("Redirecting to /warehouse");
-                            navigate('/dashboard');
-                        } else {
-                            console.log("Redirecting to /");
-                            navigate('/dashboard');
-                        }
-                    } catch (decodeError) {
-                        console.error('Token decode error:', decodeError);
-                        navigate('/'); // Default to home if decode fails
-                    }
-                } else {
-                    navigate('/'); // Default to home if no token
-                }
-            } else {
-                setErrors({ general: response.message || 'Đăng nhập thất bại' });
-            }
+                    const decoded = jwtDecode(token);
+                    const role = decoded.scope || decoded.vaiTro || decoded.role || decoded.authorities;
+                    localStorage.setItem('role', role);
+                    const warehouseId = decoded.khoId || decoded.warehouseId;
+                    if (warehouseId) localStorage.setItem('selected_kho_id', warehouseId);
+                    navigate('/dashboard');
+                } else navigate('/');
+            } else setErrors({ general: response.message || 'Đăng nhập thất bại' });
         } catch (error) {
-            console.error("Login error:", error);
-            const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi đăng nhập';
-            setErrors({ general: errorMessage });
-        } finally {
-            setIsLoading(false);
-        }
+            setErrors({ general: error.response?.data?.message || 'Có lỗi xảy ra khi đăng nhập' });
+        } finally { setIsLoading(false); }
     };
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        if (validateRegister()) {
-            setIsLoading(true);
-            try {
-                // Prepare payload
-                const payload = {
-                    tenDangNhap: registerData.tenDangNhap,
-                    matKhau: registerData.matKhau,
-                    hoTen: registerData.hoTen,
-                    email: registerData.email,
-                    soDienThoai: registerData.soDienThoai
-                    // Add other fields if necessary
-                };
-
-                const response = await nguoiDungService.register(payload);
-
-                if (response && response.status === 200) {
-                    // Register success, redirect to verify email page
-                    navigate(`/verify-email?email=${encodeURIComponent(registerData.email)}`);
-                } else {
-                    setErrors({ general: response.message || 'Đăng ký thất bại' });
-                }
-            } catch (error) {
-                console.error("Register error:", error);
-                const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký';
-                setErrors({ general: errorMessage });
-            } finally {
-                setIsLoading(false);
-            }
-        }
+        if (!validateRegister()) return;
+        setIsLoading(true);
+        try {
+            const response = await nguoiDungService.register({
+                tenDangNhap: registerData.tenDangNhap,
+                matKhau: registerData.matKhau,
+                hoTen: registerData.hoTen,
+                email: registerData.email,
+                soDienThoai: registerData.soDienThoai,
+            });
+            if (response?.status === 200) {
+                navigate(`/verify-email?email=${encodeURIComponent(registerData.email)}`);
+            } else setErrors({ general: response.message || 'Đăng ký thất bại' });
+        } catch (error) {
+            setErrors({ general: error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký' });
+        } finally { setIsLoading(false); }
     };
 
-
+    const switchTab = (login) => { setIsLogin(login); setErrors({}); };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-center">
-                {/* Left Side - Illustration */}
-                <div className="hidden md:flex flex-col items-center justify-center p-8">
-                    <div className="relative w-full max-w-md">
-                        <svg viewBox="0 0 400 500" className="w-full h-auto">
-                            {/* Background shapes */}
-                            <circle cx="100" cy="100" r="60" fill="#F472B6" opacity="0.2" />
-                            <circle cx="320" cy="150" r="40" fill="#A78BFA" opacity="0.2" />
+        <>
+            <style>{STYLES}</style>
+            <div className={`auth-root ${visible ? 'visible' : ''}`}>
 
-                            {/* Person illustration */}
-                            <ellipse cx="80" cy="420" rx="25" ry="8" fill="#1F2937" opacity="0.2" />
-                            <rect x="60" y="350" width="40" height="70" rx="20" fill="#7C3AED" />
-                            <circle cx="80" cy="320" r="25" fill="#FCD34D" />
-                            <path d="M 70 315 Q 80 310 90 315" stroke="#1F2937" strokeWidth="2" fill="none" />
-                            <circle cx="75" cy="315" r="2" fill="#1F2937" />
-                            <circle cx="85" cy="315" r="2" fill="#1F2937" />
+                {/* ── LEFT PANEL ── */}
+                <div className="auth-left">
+                    <div className="auth-left-grid" />
+                    <div className="auth-left-orb-1" />
+                    <div className="auth-left-orb-2" />
 
-                            {/* Lock icon */}
-                            <circle cx="120" cy="130" r="45" fill="#F472B6" opacity="0.9" />
-                            <rect x="108" y="138" width="24" height="20" rx="2" fill="white" />
-                            <path d="M 112 138 V 130 A 8 8 0 0 1 128 130 V 138" stroke="white" strokeWidth="3" fill="none" />
+                    <div className="auth-left-content">
+                        <div className="al-logo">
+                            <Boxes size={26} strokeWidth={1.5} />
+                        </div>
 
-                            {/* Phone/Device */}
-                            <rect x="200" y="150" width="150" height="280" rx="20" fill="#1F2937" />
-                            <rect x="210" y="165" width="130" height="250" rx="10" fill="white" />
-                            <rect x="215" y="175" width="120" height="8" rx="4" fill="#6366F1" />
+                        <div>
+                            <div className="al-eyebrow">Fashion Warehouse System</div>
+                            <h1 className="al-title">
+                                <span>FS</span>
+                            </h1>
+                            <p className="al-desc">
+                                Nền tảng quản lý kho thời trang thông minh — kiểm soát toàn bộ chuỗi cung ứng với AI real-time dashboard.
+                            </p>
+                        </div>
 
-                            {/* Profile icon on phone */}
-                            <circle cx="275" cy="220" r="25" fill="#FBBF24" />
-                            <circle cx="275" cy="215" r="10" fill="white" />
-                            <path d="M 260 235 Q 275 225 290 235" stroke="white" strokeWidth="3" fill="white" />
+                        <div className="al-features">
+                            {[
+                                { icon: <TrendingUp size={16} style={{ color: '#d4af37' }} />, title: 'Dashboard real-time', desc: 'Theo dõi tồn kho và doanh thu theo từng giây' },
+                                { icon: <Package size={16} style={{ color: '#60a5fa' }} />, title: 'Quản lý đơn hàng', desc: 'Từ nhập kho đến xuất hàng, không bỏ sót gì' },
+                                { icon: <CheckCircle size={16} style={{ color: '#4ade80' }} />, title: 'AI dự báo tồn kho', desc: 'Cảnh báo thông minh trước khi hết hàng' },
+                            ].map(({ icon, title, desc }) => (
+                                <div key={title} className="al-feat">
+                                    <div className="al-feat-icon">{icon}</div>
+                                    <div>
+                                        <p className="al-feat-title">{title}</p>
+                                        <p className="al-feat-desc">{desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
 
-                            {/* Input fields on phone */}
-                            <rect x="225" y="265" width="100" height="12" rx="6" fill="#E5E7EB" />
-                            <rect x="225" y="285" width="100" height="12" rx="6" fill="#E5E7EB" />
-
-                            {/* Button on phone */}
-                            <rect x="235" y="315" width="80" height="20" rx="10" fill="#F472B6" />
-
-                            {/* Gear decorations */}
-                            <g transform="translate(180, 80)">
-                                <circle cx="0" cy="0" r="20" fill="#D1D5DB" />
-                                <circle cx="0" cy="0" r="12" fill="white" />
-                            </g>
-                            <g transform="translate(240, 60)">
-                                <circle cx="0" cy="0" r="15" fill="#D1D5DB" />
-                                <circle cx="0" cy="0" r="9" fill="white" />
-                            </g>
-                        </svg>
+                        <div className="al-badge">
+                            <ShieldCheck size={13} style={{ color: '#4ade80' }} />
+                            Bảo mật 256-bit TLS · ISO 27001
+                        </div>
                     </div>
                 </div>
 
-                {/* Right Side - Login/Register Form */}
-                <div className="w-full max-w-md mx-auto">
-                    <Card className="border-0 shadow-xl">
-                        <CardContent className="p-8">
-                            {/* Header */}
-                            <div className="text-center mb-8">
-                                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                                    Welcome to
-                                </h1>
-                                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                    {isLogin ? 'FashionFlow' : 'Đăng ký'}
+                {/* ── RIGHT PANEL ── */}
+                <div className="auth-right">
+                    <div className="auth-form-wrap">
+
+                        {/* Tab switcher */}
+                        <div className="auth-tabs">
+                            <button className={`auth-tab ${isLogin ? 'active' : ''}`} onClick={() => switchTab(true)}>
+                                Đăng nhập
+                            </button>
+                            <button className={`auth-tab ${!isLogin ? 'active' : ''}`} onClick={() => switchTab(false)}>
+                                Đăng ký
+                            </button>
+                        </div>
+
+                        {/* Card */}
+                        <div className="auth-card">
+                            <div className="auth-card-header">
+                                <h2 className="auth-card-title">
+                                    {isLogin ? 'Chào mừng trở lại' : 'Tạo tài khoản mới'}
                                 </h2>
+                                <p className="auth-card-sub">
+                                    {isLogin
+                                        ? 'Đăng nhập vào hệ thống FS WMS'
+                                        : 'Điền đầy đủ thông tin để bắt đầu'}
+                                </p>
                             </div>
 
                             {isLogin ? (
-                                /* Login Form */
-                                <div className="space-y-6">
-                                    {/* Social Login Buttons */}
-                                    {/* Email Input */}
-
-                                    {/* Error Message */}
+                                /* ─ LOGIN FORM ─ */
+                                <form className="auth-form" onSubmit={handleLogin}>
                                     {errors.general && (
-                                        <Alert variant="destructive" className="mb-4">
-                                            <AlertCircle className="h-4 w-4" />
-                                            <AlertDescription className="text-sm">{errors.general}</AlertDescription>
-                                        </Alert>
+                                        <div className="af-alert-general">
+                                            <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                                            <span>{errors.general}</span>
+                                        </div>
                                     )}
 
-                                    {/* Username/Email/Phone Input */}
-                                    <div className="space-y-2">
-                                        <Label htmlFor="username" className="text-gray-700 font-medium">Tên đăng nhập / Email / SĐT</Label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                                            <Input
-                                                id="username"
+                                    <div className="af-field">
+                                        <label className="af-label">Tên đăng nhập / Email / SĐT</label>
+                                        <div className="af-input-wrap">
+                                            <span className="af-icon"><User size={15} /></span>
+                                            <input
+                                                className={`af-input ${errors.username ? 'error' : ''}`}
                                                 type="text"
                                                 placeholder="Nhập tên đăng nhập, email hoặc SĐT"
-                                                className="pl-10 h-12 border-gray-300"
                                                 value={loginData.username}
-                                                onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
+                                                onChange={e => setLoginData({ ...loginData, username: e.target.value })}
                                             />
                                         </div>
                                     </div>
 
-                                    {/* Password Input */}
-                                    <div className="space-y-2">
-                                        <Label htmlFor="password" className="text-gray-700 font-medium">Password</Label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                                            <Input
-                                                id="password"
-                                                type={showPassword ? "text" : "password"}
+                                    <div className="af-field">
+                                        <label className="af-label">Mật khẩu</label>
+                                        <div className="af-input-wrap">
+                                            <span className="af-icon"><Lock size={15} /></span>
+                                            <input
+                                                className="af-input"
+                                                type={showPassword ? 'text' : 'password'}
                                                 placeholder="••••••••"
-                                                className="pl-10 pr-10 h-12 border-gray-300"
                                                 value={loginData.matKhau}
-                                                onChange={(e) => setLoginData({ ...loginData, matKhau: e.target.value })}
+                                                onChange={e => setLoginData({ ...loginData, matKhau: e.target.value })}
+                                                style={{ paddingRight: 44 }}
                                             />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                                            >
-                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            <button type="button" className="af-eye" onClick={() => setShowPassword(!showPassword)}>
+                                                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                                             </button>
                                         </div>
                                     </div>
 
-                                    {/* Remember Me & Forgot Password */}
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-2">
-                                            <Checkbox
-                                                id="remember"
-                                                checked={rememberMe}
-                                                onCheckedChange={setRememberMe}
+                                    <div className="af-row">
+                                        <div className="af-checkbox-wrap">
+                                            <input
+                                                type="checkbox" id="remember" className="af-checkbox"
+                                                checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
                                             />
-                                            <label
-                                                htmlFor="remember"
-                                                className="text-sm text-gray-600 cursor-pointer"
-                                            >
-                                                Remember me
-                                            </label>
+                                            <label htmlFor="remember" className="af-checkbox-label">Ghi nhớ đăng nhập</label>
                                         </div>
-                                        <button
-                                            onClick={() => navigate('/forgot-password')}
-                                            className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-                                        >
-                                            Forgot Password?
+                                        <button type="button" className="af-link" onClick={() => navigate('/forgot-password')}>
+                                            Quên mật khẩu?
                                         </button>
                                     </div>
 
-                                    {/* Login Button */}
-                                    <Button
-                                        onClick={handleLogin}
-                                        disabled={isLoading}
-                                        className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold"
-                                    >
-                                        {isLoading ? 'Processing...' : 'Login'}
-                                    </Button>
-
-                                    {/* Register Link */}
-                                    <p className="text-center text-sm text-gray-600">
-                                        Don't have an account?{' '}
-                                        <button
-                                            onClick={() => setIsLogin(false)}
-                                            className="text-purple-600 hover:text-purple-700 font-semibold"
-                                        >
-                                            Register
-                                        </button>
-                                    </p>
-                                </div>
+                                    <button type="submit" className="af-btn" disabled={isLoading}>
+                                        {isLoading
+                                            ? <><Loader2 size={16} className="spin" /> Đang xử lý...</>
+                                            : <>Đăng nhập <ArrowRight size={15} /></>}
+                                    </button>
+                                </form>
                             ) : (
-                                /* Register Form */
-                                <div className="space-y-4">
+                                /* ─ REGISTER FORM ─ */
+                                <form className="auth-form" onSubmit={handleRegister}>
+                                    {errors.general && (
+                                        <div className="af-alert-general">
+                                            <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                                            <span>{errors.general}</span>
+                                        </div>
+                                    )}
 
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="reg-username">Tên đăng nhập</Label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                            <Input
-                                                id="reg-username"
+                                    <div className="af-field">
+                                        <label className="af-label">Tên đăng nhập</label>
+                                        <div className="af-input-wrap">
+                                            <span className="af-icon"><User size={15} /></span>
+                                            <input
+                                                className="af-input af-readonly"
+                                                type="text"
                                                 placeholder="Tự động tạo từ email"
-                                                className="pl-10 bg-gray-50"
                                                 value={registerData.tenDangNhap}
                                                 readOnly
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="reg-fullname">Họ và tên *</Label>
-                                        <Input
-                                            id="reg-fullname"
-                                            placeholder="6-100 ký tự"
-                                            value={registerData.hoTen}
-                                            onChange={(e) => setRegisterData({ ...registerData, hoTen: e.target.value })}
-                                        />
-                                        {errors.hoTen && (
-                                            <Alert variant="destructive" className="py-2 bg-red-50 border-red-200 text-red-600">
-                                                <AlertCircle className="h-4 w-4" />
-                                                <AlertDescription className="text-sm ml-2">{errors.hoTen}</AlertDescription>
-                                            </Alert>
-                                        )}
+                                    <div className="af-field">
+                                        <label className="af-label">Họ và tên *</label>
+                                        <div className="af-input-wrap">
+                                            <input
+                                                className={`af-input af-input-no-icon ${errors.hoTen ? 'error' : ''}`}
+                                                type="text" placeholder="Nguyễn Văn A (6–100 ký tự)"
+                                                value={registerData.hoTen}
+                                                onChange={e => setRegisterData({ ...registerData, hoTen: e.target.value })}
+                                            />
+                                        </div>
+                                        {errors.hoTen && <div className="af-error-msg"><AlertCircle size={13} />{errors.hoTen}</div>}
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="reg-email">Email *</Label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                            <Input
-                                                id="reg-email"
-                                                type="email"
-                                                placeholder="example@email.com"
-                                                className="pl-10"
+                                    <div className="af-field">
+                                        <label className="af-label">Email *</label>
+                                        <div className="af-input-wrap">
+                                            <span className="af-icon"><Mail size={15} /></span>
+                                            <input
+                                                className={`af-input ${errors.email ? 'error' : ''}`}
+                                                type="email" placeholder="example@email.com"
                                                 value={registerData.email}
-                                                onChange={(e) => {
+                                                onChange={e => {
                                                     const val = e.target.value;
-                                                    setRegisterData({
-                                                        ...registerData,
-                                                        email: val,
-                                                        tenDangNhap: val.split('@')[0]
-                                                    });
+                                                    setRegisterData({ ...registerData, email: val, tenDangNhap: val.split('@')[0] });
                                                 }}
                                             />
                                         </div>
-
-                                        {errors.email && (
-                                            <Alert variant="destructive" className="py-2 bg-red-50 border-red-200 text-red-600">
-                                                <AlertCircle className="h-4 w-4" />
-                                                <AlertDescription className="text-sm ml-2">{errors.email}</AlertDescription>
-                                            </Alert>
-                                        )}
+                                        {errors.email && <div className="af-error-msg"><AlertCircle size={13} />{errors.email}</div>}
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="reg-phone">Số điện thoại *</Label>
-                                        <div className="relative">
-                                            <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                            <Input
-                                                id="reg-phone"
-                                                placeholder="10-11 ký tự"
-                                                className="pl-10"
+                                    <div className="af-field">
+                                        <label className="af-label">Số điện thoại *</label>
+                                        <div className="af-input-wrap">
+                                            <span className="af-icon"><Phone size={15} /></span>
+                                            <input
+                                                className={`af-input ${errors.soDienThoai ? 'error' : ''}`}
+                                                type="text" placeholder="10–11 ký tự"
                                                 value={registerData.soDienThoai}
-                                                onChange={(e) => setRegisterData({ ...registerData, soDienThoai: e.target.value })}
+                                                onChange={e => setRegisterData({ ...registerData, soDienThoai: e.target.value })}
                                             />
                                         </div>
-                                        {errors.soDienThoai && (
-                                            <Alert variant="destructive" className="py-2 bg-red-50 border-red-200 text-red-600">
-                                                <AlertCircle className="h-4 w-4" />
-                                                <AlertDescription className="text-sm ml-2">{errors.soDienThoai}</AlertDescription>
-                                            </Alert>
-                                        )}
+                                        {errors.soDienThoai && <div className="af-error-msg"><AlertCircle size={13} />{errors.soDienThoai}</div>}
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="reg-password">Mật khẩu *</Label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                            <Input
-                                                id="reg-password"
-                                                type="password"
-                                                placeholder="Tối thiểu 6 ký tự"
-                                                className="pl-10"
+                                    <div className="af-divider">Bảo mật tài khoản</div>
+
+                                    <div className="af-field">
+                                        <label className="af-label">Mật khẩu *</label>
+                                        <div className="af-input-wrap">
+                                            <span className="af-icon"><Lock size={15} /></span>
+                                            <input
+                                                className={`af-input ${errors.matKhau ? 'error' : ''}`}
+                                                type="password" placeholder="Tối thiểu 6 ký tự"
                                                 value={registerData.matKhau}
-                                                onChange={(e) => setRegisterData({ ...registerData, matKhau: e.target.value })}
+                                                onChange={e => setRegisterData({ ...registerData, matKhau: e.target.value })}
                                             />
                                         </div>
-                                        {errors.matKhau && (
-                                            <Alert variant="destructive" className="py-2 bg-red-50 border-red-200 text-red-600">
-                                                <AlertCircle className="h-4 w-4" />
-                                                <AlertDescription className="text-sm ml-2">{errors.matKhau}</AlertDescription>
-                                            </Alert>
-                                        )}
+                                        {errors.matKhau && <div className="af-error-msg"><AlertCircle size={13} />{errors.matKhau}</div>}
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="reg-confirm-password">Xác nhận mật khẩu *</Label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                            <Input
-                                                id="reg-confirm-password"
-                                                type="password"
-                                                placeholder="Nhập lại mật khẩu"
-                                                className="pl-10"
+                                    <div className="af-field">
+                                        <label className="af-label">Xác nhận mật khẩu *</label>
+                                        <div className="af-input-wrap">
+                                            <span className="af-icon"><Lock size={15} /></span>
+                                            <input
+                                                className={`af-input ${errors.xacNhanMatKhau ? 'error' : ''}`}
+                                                type="password" placeholder="Nhập lại mật khẩu"
                                                 value={registerData.xacNhanMatKhau}
-                                                onChange={(e) => setRegisterData({ ...registerData, xacNhanMatKhau: e.target.value })}
+                                                onChange={e => setRegisterData({ ...registerData, xacNhanMatKhau: e.target.value })}
                                             />
                                         </div>
-                                        {errors.xacNhanMatKhau && (
-                                            <Alert variant="destructive" className="py-2 bg-red-50 border-red-200 text-red-600">
-                                                <AlertCircle className="h-4 w-4" />
-                                                <AlertDescription className="text-sm ml-2">{errors.xacNhanMatKhau}</AlertDescription>
-                                            </Alert>
-                                        )}
+                                        {errors.xacNhanMatKhau && <div className="af-error-msg"><AlertCircle size={13} />{errors.xacNhanMatKhau}</div>}
                                     </div>
 
-                                    <Button
-                                        onClick={handleRegister}
-                                        disabled={isLoading}
-                                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                                    >
-                                        {isLoading ? 'Đang xử lý...' : 'Đăng ký'}
-                                    </Button>
-
-                                    <p className="text-center text-sm text-gray-600">
-                                        Đã có tài khoản?{' '}
-                                        <button
-                                            onClick={() => setIsLogin(true)}
-                                            className="text-purple-600 hover:text-purple-700 font-semibold"
-                                        >
-                                            Đăng nhập
-                                        </button>
-                                    </p>
-                                </div>
+                                    <button type="submit" className="af-btn" disabled={isLoading}>
+                                        {isLoading
+                                            ? <><Loader2 size={16} className="spin" /> Đang xử lý...</>
+                                            : <>Tạo tài khoản <ChevronRight size={15} /></>}
+                                    </button>
+                                </form>
                             )}
-                        </CardContent>
-                    </Card>
+                        </div>
+
+                        <p className="auth-footer">
+                            {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}{' '}
+                            <button className="af-link" onClick={() => switchTab(!isLogin)}>
+                                {isLogin ? 'Đăng ký ngay' : 'Đăng nhập'}
+                            </button>
+                        </p>
+                        <p className="auth-footer-copy">© 2026 FS FASHION GROUP · ALL RIGHTS RESERVED</p>
+                    </div>
                 </div>
+
             </div>
-        </div>
+        </>
     );
 }
