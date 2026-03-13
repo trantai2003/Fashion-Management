@@ -65,16 +65,15 @@ export default function PhieuXuatKhoDetail() {
     }
 
     // Hàm xử lý khi xác nhận Hoàn thành/Vận chuyển
+    // Hàm xử lý khi xác nhận Hoàn thành/Vận chuyển
     const handleConfirmComplete = async () => {
         setIsProcessing(true);
         try {
-            if (phieu.loaiXuat === "chuyen_kho") {
-                // Nếu là phiếu chuyển kho -> Gọi API bắt đầu vận chuyển
-                await phieuChuyenKhoService.startShipping(phieu.id);
+            await phieuXuatKhoService.complete(phieu.id);
+            
+            if (isChuyenKho) {
                 toast.success("Xác nhận xuất kho và bắt đầu vận chuyển thành công");
             } else {
-                // Nếu là phiếu bán hàng -> Gọi API hoàn thành xuất kho cũ
-                await phieuXuatKhoService.complete(phieu.id);
                 toast.success("Hoàn thành phiếu xuất bán hàng thành công");
             }
             navigate("/goods-issues");
@@ -151,8 +150,8 @@ export default function PhieuXuatKhoDetail() {
                             </button>
                         )}
 
-                        {/*Nút Hoàn thành/Vận chuyển: Trạng thái 2 */}
-                        {((!isChuyenKho && phieu.trangThai === 0) || (isChuyenKho && phieu.trangThai === 2)) && (
+                        {/* Nút Hoàn thành/Vận chuyển: Luôn hiển thị ở trạng thái 0 (Nháp) */}
+                        {phieu.trangThai === 0 && (
                             <button
                                 disabled={isProcessing || !isAllPicked}
                                 onClick={() => setShowConfirm(true)}
@@ -217,9 +216,9 @@ export default function PhieuXuatKhoDetail() {
                     <section className="bg-white border rounded-xl shadow-sm overflow-hidden">
                         <div className="p-4 border-b bg-gray-50/50 flex justify-between items-center">
                             <h2 className="text-sm font-bold text-gray-800">Danh sách sản phẩm</h2>
-                            {isChuyenKho && phieu.trangThai === 2 && (
+                            {isChuyenKho && phieu.trangThai === 0 && !isAllPicked && (
                                 <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded font-bold">
-                                    CẦN BỐC LÔ TRƯỚC KHI VẬN CHUYỂN
+                                    CẦN BỐC LÔ TRƯỚC KHI XUẤT HÀNG
                                 </span>
                             )}
                         </div>
@@ -237,9 +236,7 @@ export default function PhieuXuatKhoDetail() {
 
                             <tbody className="divide-y divide-gray-100">
                                 {chiTiet.map((ct) => {
-                                    // LOGIC QUAN TRỌNG: Rẽ nhánh hiển thị nút Pick Lô
-                                    // Chuyển kho: Pick ở status 2. Bán hàng: Pick ở status 0.
-                                    const canEditLot = isChuyenKho ? phieu.trangThai === 2 : phieu.trangThai === 0;
+                                    const canEditLot = phieu.trangThai === 0;
 
                                     return (
                                         <tr key={ct.id} className="hover:bg-gray-50 transition-colors">

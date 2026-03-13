@@ -14,12 +14,10 @@ export default function PickLot() {
     const tenBienThe = state?.tenBienThe || "-";
     const soLuongCanXuat = Number(state?.soLuongXuat ?? 0);
     const phieuTrangThai = state?.phieuTrangThai;
-    const loaiXuat = state?.loaiXuat; // Nhận thông tin loại phiếu từ Detail truyền sang
 
-    // LOGIC RẼ NHÁNH: Cập nhật điều kiện ReadOnly để hỗ trợ Chuyển kho
-    const isReadOnly = loaiXuat === "chuyen_kho" 
-        ? phieuTrangThai !== 2 
-        : phieuTrangThai !== 0;
+    // LOGIC MỚI: Vì đây là Phiếu Xuất thực tế (Phiếu con), 
+    // nên DÙ LÀ LUỒNG NÀO thì trạng thái được phép Pick Lô luôn là 0 (Nháp)
+    const isReadOnly = phieuTrangThai !== 0;
 
     /* ===== LOCAL STATE ===== */
     const [loading, setLoading] = useState(false);
@@ -137,7 +135,7 @@ export default function PickLot() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
                 <Link to={`/goods-issues/${phieuXuatKhoId}`} className="text-sm text-gray-500 hover:text-gray-900">
-                    ← Back to Issue Detail
+                    ← Quay lại chi tiết phiếu
                 </Link>
                 {isReadOnly && (
                     <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full border border-gray-200">
@@ -189,23 +187,23 @@ export default function PickLot() {
                                 // Logic xác định trạng thái
                                 let statusBadge = null;
                                 if (numValue <= 0) {
-                                    statusBadge = <span className="text-xs text-gray-400">Not used</span>;
+                                    statusBadge = <span className="text-xs text-gray-400">Không dùng</span>;
                                 } else if (numValue === tonKhaDung) {
                                     statusBadge = (
                                         <span className="px-2 py-1 text-xs rounded bg-green-50 text-green-700">
-                                            Full
+                                            Hết lô
                                         </span>
                                     );
                                 } else if (numValue > tonKhaDung) {
                                     statusBadge = (
                                         <span className="px-2 py-1 text-xs rounded bg-red-50 text-red-700">
-                                            Exceeded
+                                            Vượt mức
                                         </span>
                                     );
                                 } else {
                                     statusBadge = (
                                         <span className="px-2 py-1 text-xs rounded bg-amber-50 text-amber-700">
-                                            Partial
+                                            Một phần
                                         </span>
                                     );
                                 }
@@ -271,7 +269,7 @@ export default function PickLot() {
                             onClick={handleSave}
                             className="px-4 py-2 rounded-md bg-purple-600 text-white disabled:opacity-50"
                         >
-                            {loading ? "Saving..." : "Save Pick"}
+                            {loading ? "Đang lưu..." : "Xác nhận Lô"}
                         </button>
                     )}
                 </div>
