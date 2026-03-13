@@ -108,7 +108,7 @@ function ConfirmDeleteModal({ target, isDeleting, onConfirm, onCancel }) {
                     <Button
                         type="button"
                         variant="outline"
-                        className="border-slate-900 text-slate-600 hover:bg-slate-900 hover:text-white transition-all duration-200"
+                        className="border-gray-300 text-slate-600 hover:bg-slate-100"
                         onClick={onCancel}
                         disabled={isDeleting}
                     >
@@ -116,7 +116,7 @@ function ConfirmDeleteModal({ target, isDeleting, onConfirm, onCancel }) {
                     </Button>
                     <Button
                         type="button"
-                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 min-w-[100px] shadow-sm transition-all duration-200"
+                        className="bg-red-600 hover:bg-red-700 text-white min-w-[100px] shadow-sm"
                         onClick={onConfirm}
                         disabled={isDeleting}
                     >
@@ -257,6 +257,15 @@ export default function SupplierList() {
                 <div className="space-y-6 w-full">
 
                     {/* ── Page header ── */}
+                    <div className="flex items-center justify-end">
+                        <Button
+                            onClick={() => navigate("/supplier/new")}
+                            className="bg-violet-600 text-white hover:bg-violet-700 shadow-sm transition-all duration-200"
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Thêm nhà cung cấp
+                        </Button>
+                    </div>
 
                     {/* ── Filter bar ── */}
                     <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-5">
@@ -316,17 +325,6 @@ export default function SupplierList() {
                                 </Button>
                             </div>
                         </div>
-                    </div>
-  
-                    {/* ── Action buttons ── */}
-                    <div className="flex items-center justify-end">
-                        <Button
-                            onClick={() => navigate("/supplier/new")}
-                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Thêm nhà cung cấp
-                        </Button>
                     </div>
 
                     {/* ── Table ── */}

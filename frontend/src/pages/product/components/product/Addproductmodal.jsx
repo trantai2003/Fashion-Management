@@ -842,14 +842,13 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                 variant="outline"
                                 onClick={handleCancel}
                                 disabled={isSubmitting}
-                                className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-11 px-8 rounded-xl font-medium"
                             >
                                 Hủy
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+                                className="bg-gradient-to-r from-purple-600 to-blue-600 !text-white"
                                 onClick={handleSubmit(onSubmit)}
                             >
                                 {isSubmitting ? (

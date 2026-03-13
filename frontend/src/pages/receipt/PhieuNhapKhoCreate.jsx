@@ -3,14 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import purchaseOrderService from "@/services/purchaseOrderService";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown, FileText } from "lucide-react";
 
 export default function PhieuNhapKhoCreate() {
     const navigate = useNavigate();
@@ -138,47 +130,17 @@ export default function PhieuNhapKhoCreate() {
                             <h3 className="text-xs font-bold uppercase text-purple-600 tracking-wider">Thông tin đơn hàng</h3>
 
                             <div>
-                                <label className="text-xs font-semibold text-gray-500 uppercase">Chọn đơn mua hàng</label>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className="mt-2 w-full justify-between font-normal bg-white border-gray-300 h-10"
-                                        >
-                                            <div className="flex items-center overflow-hidden">
-                                                <FileText className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                                <span className="truncate">
-                                                    {poId
-                                                        ? poList.find(po => po.id === parseInt(poId))?.soDonMua + " - " + poList.find(po => po.id === parseInt(poId))?.nhaCungCap?.tenNhaCungCap
-                                                        : "Chọn PO"}
-                                                </span>
-                                            </div>
-                                            <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-[400px] max-h-[400px] overflow-y-auto bg-white" align="start">
-                                        {poList.length === 0 ? (
-                                            <DropdownMenuItem disabled className="text-gray-500 italic">
-                                                Không có đơn mua nào khả dụng
-                                            </DropdownMenuItem>
-                                        ) : (
-                                            poList.map((po) => (
-                                                <DropdownMenuItem
-                                                    key={po.id}
-                                                    onClick={() => handleSelectPO(po.id)}
-                                                    className="cursor-pointer hover:bg-gray-100 py-2 flex flex-col items-start"
-                                                >
-                                                    <span className="font-medium text-gray-900">
-                                                        {po.soDonMua}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                        {po.nhaCungCap?.tenNhaCungCap}
-                                                    </span>
-                                                </DropdownMenuItem>
-                                            ))
-                                        )}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <label className="text-xs font-semibold text-gray-500 uppercase">Chọn đơn mua hàng (PO)</label>
+                                <select
+                                    value={poId}
+                                    onChange={(e) => handleSelectPO(e.target.value)}
+                                    className="mt-2 w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm"
+                                >
+                                    <option value="">-- Chọn PO --</option>
+                                    {poList.map((po) => (
+                                        <option key={po.id} value={po.id}>{po.soDonMua} - {po.nhaCungCap?.tenNhaCungCap}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>
@@ -291,14 +253,14 @@ export default function PhieuNhapKhoCreate() {
                         <button
                             onClick={() => handleSaveDraft(false)}
                             disabled={loading || !selectedPO}
-                            className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 h-11 px-8 rounded-xl font-medium transition-all duration-200 shadow-sm disabled:opacity-50"
+                            className="px-6 py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 disabled:opacity-50"
                         >
                             Lưu nháp
                         </button>
                         <button
                             onClick={() => handleSaveDraft(true)}
                             disabled={loading || !selectedPO}
-                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm h-11 px-8 rounded-xl font-bold transition-all duration-200 active:scale-95 disabled:opacity-50"
+                            className="px-8 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700 shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:bg-gray-400"
                         >
                             {loading ? "Đang xử lý..." : "Tiếp tục"}
                         </button>

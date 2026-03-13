@@ -59,7 +59,7 @@ export default function BarcodePrint({ isOpen, onClose, products = [] }) {
                                         />
                                     </div>
                                     <div className="flex flex-col items-center gap-1">
-                                        <div className="text-2xl font-black text-purple-600 tracking-tighter">
+                                         <div className="text-2xl font-black text-purple-600 tracking-tighter">
                                             {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.giaBan || item.giaBanMacDinh || 0)}
                                         </div>
                                         <div className="text-[9px] text-gray-400 font-mono uppercase">
@@ -73,19 +73,12 @@ export default function BarcodePrint({ isOpen, onClose, products = [] }) {
                 </div>
 
                 <div className="flex justify-end gap-3 mt-4 px-6 pb-6">
-                    <Button
-                        variant="outline"
-                        onClick={onClose}
-                        className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-11 px-8 rounded-xl font-medium"
-                    >
+                    <Button variant="ghost" onClick={onClose} className="text-gray-500 hover:text-gray-700 hover:bg-gray-100">
                         Đóng
                     </Button>
-                    <Button
-                        onClick={handlePrint}
-                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 flex gap-2 h-11 px-8 rounded-xl font-bold uppercase text-xs tracking-widest active:scale-95"
-                    >
+                    <Button onClick={handlePrint} className="bg-purple-600 hover:bg-purple-700 text-white flex gap-2 h-11 px-8 rounded-xl shadow-lg shadow-purple-100 font-bold uppercase text-xs tracking-widest transition-all active:scale-95">
                         <Printer size={16} />
-                        In mã vạch
+                        In mã vạch / Xuất PDF
                     </Button>
                 </div>
             </DialogContent>

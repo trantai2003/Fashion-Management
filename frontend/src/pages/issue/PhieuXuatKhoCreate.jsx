@@ -4,14 +4,6 @@ import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { donBanHangService } from "@/services/donBanHangService";
 import { getMineKhoList } from "@/services/khoService";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown, FileText, Warehouse } from "lucide-react";
 
 export default function PhieuXuatKhoCreate() {
     const navigate = useNavigate();
@@ -150,65 +142,33 @@ export default function PhieuXuatKhoCreate() {
                         <section className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-5">
                             <div>
                                 <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Đơn bán hàng (SO)</label>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className="mt-2 w-full justify-between font-normal bg-white border-gray-300 h-10"
-                                        >
-                                            <div className="flex items-center overflow-hidden">
-                                                <FileText className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                                <span className="truncate">
-                                                    {form.donBanHangId
-                                                        ? soList.find(so => so.id === parseInt(form.donBanHangId))?.soDonHang + (soList.find(so => so.id === parseInt(form.donBanHangId))?.trangThai === 2 ? " (Đang xuất)" : " (Mới)")
-                                                        : "Chọn đơn bán hàng"}
-                                                </span>
-                                            </div>
-                                            <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-[300px] max-h-[400px] overflow-y-auto bg-white" align="start">
-                                        {soList.length === 0 ? (
-                                            <DropdownMenuItem disabled className="text-gray-500 italic">
-                                                Không có đơn bán nào khả dụng
-                                            </DropdownMenuItem>
-                                        ) : (
-                                            soList.map((so) => (
-                                                <DropdownMenuItem
-                                                    key={so.id}
-                                                    onClick={() => handleSelectSO(so.id)}
-                                                    className="cursor-pointer hover:bg-gray-100 py-2 flex flex-col items-start"
-                                                >
-                                                    <span className="font-medium text-gray-900">
-                                                        {so.soDonHang}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                        {so.trangThai === 2 ? "Đang xuất dở" : "Chờ xuất kho"}
-                                                    </span>
-                                                </DropdownMenuItem>
-                                            ))
-                                        )}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <select
+                                    value={form.donBanHangId}
+                                    onChange={(e) => handleSelectSO(e.target.value)}
+                                    className="mt-2 w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition-all outline-none text-sm"
+                                >
+                                    <option value="">-- Chọn đơn bán hàng --</option>
+                                    {soList.map((so) => (
+                                        <option key={so.id} value={so.id}>
+                                            {so.soDonHang} {so.trangThai === 2 ? "(Đang xuất)" : "(Mới)"}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>
                                 <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Kho xuất hàng</label>
-                                <Button
-                                    variant="outline"
-                                    disabled={true}
-                                    className="mt-2 w-full justify-between font-bold bg-white border-gray-300 h-10 text-gray-700 disabled:opacity-80"
+                                <select
+                                    value={form.khoId}
+                                    onChange={(e) => setForm({ ...form, khoId: e.target.value })}
+                                    disabled={true} // Khóa luôn kho vì đơn hàng đã chỉ định kho rồi
+                                    className="mt-2 w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition-all outline-none text-sm disabled:opacity-80 font-bold text-gray-700"
                                 >
-                                    <div className="flex items-center overflow-hidden">
-                                        <Warehouse className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                        <span className="truncate">
-                                            {form.khoId
-                                                ? warehouses.find(k => k.id === parseInt(form.khoId))?.tenKho
-                                                : "Kho xuất từ đơn hàng"}
-                                        </span>
-                                    </div>
-                                    <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                </Button>
+                                    <option value="">-- Kho xuất từ đơn hàng --</option>
+                                    {warehouses.map((k) => (
+                                        <option key={k.id} value={k.id}>{k.tenKho}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>
@@ -298,14 +258,14 @@ export default function PhieuXuatKhoCreate() {
                         <button
                             onClick={handleSaveDraft}
                             disabled={loading}
-                            className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 h-11 px-8 rounded-xl font-medium transition-all duration-200 shadow-sm disabled:opacity-50"
+                            className="px-6 py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-all disabled:opacity-50"
                         >
                             {loading ? "Đang lưu..." : "Lưu nháp"}
                         </button>
                         <button
                             onClick={handleContinue}
                             disabled={loading || !form.donBanHangId}
-                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm h-11 px-8 rounded-xl font-bold transition-all duration-200 active:scale-95 disabled:opacity-50"
+                            className="px-8 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700 shadow-md transition-all active:scale-95 disabled:opacity-50"
                         >
                             Tiếp tục
                         </button>

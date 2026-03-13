@@ -5,13 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Search, Package, ArrowDown, ChevronDown, Building2 } from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Plus, Trash2, Search, Package, ArrowDown } from "lucide-react";
 
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { donBanHangService } from "@/services/donBanHangService";
@@ -129,47 +123,16 @@ export default function PhieuChuyenKhoCreate() {
                             <div className="space-y-4">
                                 <div>
                                     <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Kho xuất (Nguồn)</label>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="mt-2 w-full justify-between font-normal bg-white border-gray-300 h-10"
-                                            >
-                                                <div className="flex items-center overflow-hidden">
-                                                    <Building2 className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                                    <span className="truncate">
-                                                        {formData.khoXuatId
-                                                            ? warehouses.find(k => k.id === parseInt(formData.khoXuatId))?.tenKho
-                                                            : "Chọn kho gửi"}
-                                                    </span>
-                                                </div>
-                                                <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-[300px] max-h-[400px] overflow-y-auto bg-white" align="start">
-                                            {warehouses.length === 0 ? (
-                                                <DropdownMenuItem disabled className="text-gray-500 italic">
-                                                    Không có kho nào khả dụng
-                                                </DropdownMenuItem>
-                                            ) : (
-                                                warehouses.map((k) => (
-                                                    <DropdownMenuItem
-                                                        key={k.id}
-                                                        disabled={Number(formData.khoNhapId) === k.id}
-                                                        onClick={() => setFormData({ ...formData, khoXuatId: k.id.toString() })}
-                                                        className="cursor-pointer hover:bg-gray-100 py-2 flex flex-col items-start"
-                                                    >
-                                                        <span className="font-medium text-gray-900">
-                                                            {k.tenKho}
-                                                        </span>
-                                                        <span className="text-xs text-gray-500">
-                                                            Mã: {k.maKho}
-                                                        </span>
-                                                    </DropdownMenuItem>
-                                                ))
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <select
+                                        value={formData.khoXuatId}
+                                        onChange={(e) => setFormData({ ...formData, khoXuatId: e.target.value })}
+                                        className="mt-2 w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition-all outline-none text-sm"
+                                    >
+                                        <option value="">-- Chọn kho gửi --</option>
+                                        {warehouses.map(k => (
+                                            <option key={k.id} value={k.id} disabled={Number(formData.khoNhapId) === k.id}>{k.tenKho}</option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div className="flex justify-center py-1">
@@ -178,47 +141,16 @@ export default function PhieuChuyenKhoCreate() {
 
                                 <div>
                                     <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Kho nhập (Đích)</label>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="mt-2 w-full justify-between font-normal bg-white border-gray-300 h-10"
-                                            >
-                                                <div className="flex items-center overflow-hidden">
-                                                    <Building2 className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                                    <span className="truncate">
-                                                        {formData.khoNhapId
-                                                            ? warehouses.find(k => k.id === parseInt(formData.khoNhapId))?.tenKho
-                                                            : "Chọn kho nhận"}
-                                                    </span>
-                                                </div>
-                                                <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-[300px] max-h-[400px] overflow-y-auto bg-white" align="start">
-                                            {warehouses.length === 0 ? (
-                                                <DropdownMenuItem disabled className="text-gray-500 italic">
-                                                    Không có kho nào khả dụng
-                                                </DropdownMenuItem>
-                                            ) : (
-                                                warehouses.map((k) => (
-                                                    <DropdownMenuItem
-                                                        key={k.id}
-                                                        disabled={Number(formData.khoXuatId) === k.id}
-                                                        onClick={() => setFormData({ ...formData, khoNhapId: k.id.toString() })}
-                                                        className="cursor-pointer hover:bg-gray-100 py-2 flex flex-col items-start"
-                                                    >
-                                                        <span className="font-medium text-gray-900">
-                                                            {k.tenKho}
-                                                        </span>
-                                                        <span className="text-xs text-gray-500">
-                                                            Mã: {k.maKho}
-                                                        </span>
-                                                    </DropdownMenuItem>
-                                                ))
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <select
+                                        value={formData.khoNhapId}
+                                        onChange={(e) => setFormData({ ...formData, khoNhapId: e.target.value })}
+                                        className="mt-2 w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition-all outline-none text-sm"
+                                    >
+                                        <option value="">-- Chọn kho nhận --</option>
+                                        {warehouses.map(k => (
+                                            <option key={k.id} value={k.id} disabled={Number(formData.khoXuatId) === k.id}>{k.tenKho}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 
@@ -229,7 +161,7 @@ export default function PhieuChuyenKhoCreate() {
                                     onChange={(e) => setFormData({ ...formData, ghiChu: e.target.value })}
                                     rows={3}
                                     placeholder="Lý do điều phối hàng..."
-                                    className="mt-2 w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400 transition-all outline-none resize-none text-sm"
+                                    className="mt-2 w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 transition-all outline-none resize-none text-sm"
                                 />
                             </div>
                         </section>
@@ -245,7 +177,7 @@ export default function PhieuChuyenKhoCreate() {
                                 <Button
                                     size="sm"
                                     onClick={() => setShowProductDialog(true)}
-                                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 h-9 transition-all duration-200"
+                                    className="bg-purple-600 hover:bg-purple-700 text-white"
                                 >
                                     <Plus className="h-4 w-4 mr-1" /> Thêm sản phẩm
                                 </Button>
@@ -302,7 +234,7 @@ export default function PhieuChuyenKhoCreate() {
                                                     <TableCell className="px-5 py-4 text-right">
                                                         <Button
                                                             variant="ghost" size="icon"
-                                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                                                            className="text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full"
                                                             onClick={() => setTransferItems(prev => prev.filter((_, i) => i !== index))}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
@@ -335,7 +267,7 @@ export default function PhieuChuyenKhoCreate() {
                         <Button
                             onClick={handleCreate}
                             disabled={loading}
-                            className="px-8 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 font-bold shadow-md transition-all duration-200 active:scale-95"
+                            className="px-8 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md shadow-purple-100 transition-all active:scale-95"
                         >
                             {loading ? "Đang xử lý..." : <>Tạo phiếu điều chuyển</>}
                         </Button>
@@ -353,7 +285,7 @@ export default function PhieuChuyenKhoCreate() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
                                 placeholder="Nhập tên sản phẩm hoặc mã SKU..."
-                                className="pl-10 h-11 bg-gray-50 border-gray-200 focus-visible:ring-slate-400"
+                                className="pl-10 h-11 bg-gray-50 border-gray-200 focus-visible:ring-purple-500"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 autoFocus
@@ -374,12 +306,12 @@ export default function PhieuChuyenKhoCreate() {
                                     filteredProducts.map(product => (
                                         <TableRow
                                             key={product.id}
-                                            className="hover:bg-gray-50 cursor-pointer group transition-all"
+                                            className="hover:bg-purple-50/50 cursor-pointer group transition-all"
                                             onClick={() => handleAddProduct(product)}
                                         >
                                             <TableCell className="py-4 px-6">
                                                 {/* Dòng 1: Tên sản phẩm */}
-                                                <div className="font-bold text-gray-900 group-hover:text-slate-900 transition-colors">
+                                                <div className="font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
                                                     {product.tenSanPham}
                                                 </div>
                                                 {/* Dòng 2: Mã SKU */}
@@ -387,15 +319,12 @@ export default function PhieuChuyenKhoCreate() {
                                                     {product.maBienThe}
                                                 </div>
                                                 {/* Dòng 3: Chi tiết phân loại */}
-                                                <div className="text-[11px] text-gray-500 font-medium mt-1 uppercase tracking-tighter">
-                                                    {product.tenMau || "N/A"} / {product.tenSize || "N/A"} / {product.material || product.tenChatLieu || "N/A"}
+                                                <div className="text-[11px] text-purple-600/70 font-medium mt-1 uppercase tracking-tighter">
+                                                    {product.tenMau || "N/A"} / {product.tenSize || "N/A"} / {product.tenChatLieu || "N/A"}
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-right px-6">
-                                                <Button 
-                                                    size="sm" 
-                                                    className="h-8 bg-white text-slate-900 border border-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-200 font-bold"
-                                                >
+                                                <Button size="sm" variant="outline" className="h-8 border-gray-300 group-hover:bg-purple-600 group-hover:text-white group-hover:border-purple-600 transition-all font-bold">
                                                     Chọn
                                                 </Button>
                                             </TableCell>

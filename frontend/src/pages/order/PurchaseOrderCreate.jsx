@@ -274,6 +274,49 @@ export default function PurchaseOrderCreate() {
         return true;
     };
 
+    const handleSaveDraft = async () => {
+        if (!validateForm()) return;
+
+        setLoading(true);
+        try {
+            const payload = {
+                soDonMua: formData.soDonMua,
+                nhaCungCapId: Number(formData.nhaCungCapId),
+                ngayDatHang: new Date(formData.ngayDatHang).toISOString(),  // ✅ ISO string
+                ngayGiaoDuKien: new Date(formData.ngayGiaoDuKien).toISOString(),  // ✅ ISO string
+                ghiChu: formData.ghiChu || '',
+                tongTien: calculateTotal(),
+                trangThai: 1,
+                chiTietDonMuaHangs: orderItems.map(item => ({
+                    bienTheSanPhamId: item.bienTheSanPhamId,
+                    soLuongDat: Number(item.soLuongDat),
+                    soLuongDaNhan: 0,
+                    donGia: Number(item.donGia),
+                    thanhTien: Number(item.soLuongDat) * Number(item.donGia),
+                    ghiChu: item.ghiChu || '',
+                })),
+            };
+
+            await purchaseOrderCreateService.create(payload, formData.khoId);
+
+            showNotification('success', 'Lưu đơn mua hàng thành công!');
+
+            setTimeout(() => {
+                navigate('/purchase-orders');
+            }, 2000);
+        } catch (error) {
+            console.error('Error saving order:', error);
+            console.error('Response data:', error.response?.data);
+
+            if (error.response?.status === 409) {
+                showNotification('error', 'Mã đơn mua hàng đã tồn tại. Vui lòng tạo lại mã mới.');
+            } else {
+                showNotification('error', error.response?.data?.message || 'Không thể lưu đơn hàng. Vui lòng thử lại!');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSendToSupplier = () => {
         if (!validateForm()) return;
@@ -379,6 +422,14 @@ export default function PurchaseOrderCreate() {
                         <ArrowLeft className="h-4 w-4" />
                         Quay lại
                     </Button>
+                    <div>
+                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+                            Tạo đơn mua hàng
+                        </h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Tạo đơn đặt hàng mới và gửi yêu cầu báo giá đến nhà cung cấp
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -597,7 +648,7 @@ export default function PurchaseOrderCreate() {
                         </CardTitle>
                         <Button
                             onClick={() => setShowProductDialog(true)}
-                            className="gap-2 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+                            className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
                         >
                             <Plus className="h-4 w-4" />
                             Thêm sản phẩm
@@ -697,12 +748,30 @@ export default function PurchaseOrderCreate() {
                     onClick={() => navigate('/purchase-orders')}
                     className="gap-2"
                 >
+                    <X className="h-4 w-4" />
                     Hủy
+                </Button>
+                <Button
+                    onClick={handleSaveDraft}
+                    disabled={loading}
+                    className="gap-2 bg-gray-600 hover:bg-gray-700"
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Đang lưu...
+                        </>
+                    ) : (
+                        <>
+                            <Save className="h-4 w-4" />
+                            Lưu nháp
+                        </>
+                    )}
                 </Button>
                 <Button
                     onClick={handleSendToSupplier}
                     disabled={loading}
-                    className="gap-2 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+                    className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg shadow-indigo-200"
                 >
                     <Send className="h-4 w-4" />
                     Gửi yêu cầu báo giá

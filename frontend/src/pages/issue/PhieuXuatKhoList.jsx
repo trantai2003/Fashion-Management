@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { Button } from "@/components/ui/button";
@@ -55,14 +55,27 @@ export default function PhieuXuatKhoList() {
         if (filters.keyword?.trim()) {
             const searchKeyword = filters.keyword.trim();
             ["soPhieuXuat", "donBanHang.soDonHang"].forEach((field) => {
-                filterList.push({ fieldName: field, operation: "LIKE", value: searchKeyword, logicType: "OR" });
+                filterList.push({
+                    fieldName: field,
+                    operation: "LIKE",
+                    value: searchKeyword,
+                    logicType: "OR",
+                });
             });
         }
         if (filters.trangThai !== "") {
-            filterList.push({ fieldName: "trangThai", operation: "EQUALS", value: Number(filters.trangThai) });
+            filterList.push({
+                fieldName: "trangThai",
+                operation: "EQUALS",
+                value: Number(filters.trangThai),
+            });
         }
         if (filters.tenKho !== "") {
-            filterList.push({ fieldName: "kho.tenKho", operation: "LIKE", value: filters.tenKho.trim() });
+            filterList.push({
+                fieldName: "kho.tenKho",
+                operation: "LIKE",
+                value: filters.tenKho.trim(),
+            });
         }
         return {
             page: filters.page,
@@ -70,7 +83,6 @@ export default function PhieuXuatKhoList() {
             filters: filterList,
             sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
         };
-        return { page: filters.page, size: filters.size, filters: filterList, sorts: [{ fieldName: "ngayTao", direction: "DESC" }] };
     }
 
     const fetchData = useCallback(async () => {
@@ -105,12 +117,21 @@ export default function PhieuXuatKhoList() {
         }
     }, [filters]);
 
-    useEffect(() => { fetchData(); }, [filters.keyword, filters.tenKho, filters.trangThai, filters.ngayXuat, filters.page, filters.size]);
+    useEffect(() => {
+        fetchData();
+    }, [filters.keyword, filters.tenKho, filters.trangThai, filters.ngayXuat, filters.page, filters.size]);
 
     const totalPages = Math.max(1, Math.ceil(total / filters.size));
 
     const handleReset = () => {
-        setFilters({ keyword: "", tenKho: "", trangThai: "", ngayXuat: "", page: 0, size: 10 });
+        setFilters({
+            keyword: "",
+            tenKho: "",
+            trangThai: "",
+            ngayXuat: "",
+            page: 0,
+            size: 10,
+        });
     };
 
     const stats = useMemo(() => {
@@ -120,18 +141,12 @@ export default function PhieuXuatKhoList() {
             daHuy: data.filter((d) => d.trangThai === 4).length,
         };
     }, [data]);
-    const stats = useMemo(() => ({
-        nhap: data.filter((d) => d.trangThai === 0).length,
-        daXuat: data.filter((d) => d.trangThai === 3 || d.trangThai === 5).length,
-        daHuy: data.filter((d) => d.trangThai === 4).length,
-    }), [data]);
 
     return (
         <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
             <div className="space-y-6 w-full">
 
                 {/* ══ STATS ════════════════════════════════════════════════════════ */}
-                {/* ══ STATS ═══════════════════════════════════════════════════════ */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
                         <CardContent className="p-6">
@@ -143,70 +158,6 @@ export default function PhieuXuatKhoList() {
                                 <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                                     <Package className="h-6 w-6 text-blue-600" />
                                 </div>
-                                <div><p className="text-sm font-medium text-gray-600">Tổng phiếu xuất</p><p className="text-2xl font-bold text-gray-900 mt-1">{total}</p></div>
-                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center"><Package className="h-6 w-6 text-blue-600" /></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-amber-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div><p className="text-sm font-medium text-gray-600">Nháp</p><p className="text-2xl font-bold text-gray-900 mt-1">{stats.nhap}</p></div>
-                                <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center"><FileText className="h-6 w-6 text-amber-600" /></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div><p className="text-sm font-medium text-gray-600">Đã xuất</p><p className="text-2xl font-bold text-gray-900 mt-1">{stats.daXuat}</p></div>
-                                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center"><CheckCircle2 className="h-6 w-6 text-green-600" /></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-red-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div><p className="text-sm font-medium text-gray-600">Đã hủy</p><p className="text-2xl font-bold text-gray-900 mt-1">{stats.daHuy}</p></div>
-                                <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center"><XCircle className="h-6 w-6 text-red-500" /></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* ══ BỘ LỌC TÌM KIẾM ════════════════════════════════════════════ */}
-                <Card className="border-0 shadow-lg bg-white">
-                    <CardHeader><CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900"><Filter className="h-5 w-5 text-purple-600" />Bộ lọc tìm kiếm</CardTitle></CardHeader>
-                    <CardContent className="pt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Số phiếu / SO</Label>
-                                <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" /><Input placeholder="Nhập số phiếu hoặc SO" className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.keyword} onChange={(e) => setFilters((p) => ({ ...p, keyword: e.target.value, page: 0 }))} disabled={loading} /></div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Kho xuất</Label>
-                                <Input placeholder="Nhập tên kho" className="border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.tenKho} onChange={(e) => setFilters((p) => ({ ...p, tenKho: e.target.value, page: 0 }))} disabled={loading} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Trạng thái</Label>
-                                <DropdownMenu modal={false}>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal">
-                                            <span className="truncate">{STATUS_OPTIONS.find((s) => s.value === filters.trangThai)?.label || "Tất cả trạng thái"}</span>
-                                            <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
-                                        {STATUS_OPTIONS.map((s) => (<DropdownMenuItem key={s.value} onClick={() => setFilters((p) => ({ ...p, trangThai: s.value, page: 0 }))} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">{s.label}{filters.trangThai === s.value && <Check className="h-4 w-4" />}</DropdownMenuItem>))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Ngày xuất</Label>
-                                <Input type="date" value={filters.ngayXuat} onChange={(e) => setFilters((p) => ({ ...p, ngayXuat: e.target.value, page: 0 }))} className="border-gray-200 focus:border-purple-500 focus:ring-purple-500" disabled={loading} />
-                            </div>
-                            <div className="flex items-end">
-                                <Button variant="outline" onClick={handleReset} disabled={loading} className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300"><RefreshCcw className="h-4 w-4" />Đặt lại</Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -376,26 +327,6 @@ export default function PhieuXuatKhoList() {
                                 Hiện tại chưa có dữ liệu phù hợp. Hãy thử thay đổi bộ lọc hoặc từ khoá tìm kiếm.
                             </p>
                         </div>
-                    </CardContent>
-                </Card>
-
-                {/* ══ ACTION BUTTONS ══════════════════════════════════════════════ */}
-                <div className="flex items-center justify-end gap-3">
-                    <Link to="/goods-issues/create">
-                        <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"><Plus className="w-4 h-4 mr-2" />Tạo Phiếu Xuất Kho</Button>
-                    </Link>
-                </div>
-
-                {/* ══ TABLE / LOADING / EMPTY ═════════════════════════════════════ */}
-                {loading ? (
-                    <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-purple-600" /><span className="ml-3 text-gray-600">Đang tải danh sách phiếu xuất kho...</span></div>
-                ) : data.length === 0 ? (
-                    <div className="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80">
-                        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100"><ClipboardList className="h-10 w-10 text-slate-400" /></div>
-                            <h3 className="text-lg font-semibold text-slate-800">Không tìm thấy phiếu xuất kho</h3>
-                            <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">Hiện tại chưa có dữ liệu phù hợp. Hãy thử thay đổi bộ lọc hoặc từ khoá tìm kiếm.</p>
-                        </div>
                     </div>
                 ) : (
                     <>
@@ -441,13 +372,6 @@ export default function PhieuXuatKhoList() {
                                                             : "Chưa xuất kho"}
                                                     </span>
                                                 </td>
-                                            <tr key={item.id} onClick={() => navigate(`/goods-issues/${item.id}`)} className="cursor-pointer transition-colors duration-150 hover:bg-violet-50/50">
-                                                <td className="px-4 py-3.5 align-middle text-center w-14"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">{filters.page * filters.size + index + 1}</span></td>
-                                                <td className="px-4 py-3.5 align-middle font-semibold text-violet-600">{item.soPhieuXuat}</td>
-                                                <td className="px-4 py-3.5 align-middle text-slate-600">{item.donBanHang?.soDonHang || "-"}</td>
-                                                <td className="px-4 py-3.5 align-middle">{item.kho?.tenKho || "-"}</td>
-                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</span></td>
-                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{item.ngayXuat ? new Date(item.ngayXuat).toLocaleDateString("vi-VN") : "Chưa xuất kho"}</span></td>
                                                 <td className="px-4 py-3.5 align-middle text-center">
                                                     <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${STATUS_MAP[item.trangThai]?.className}`}>
                                                         <span className={`h-1.5 w-1.5 rounded-full ${STATUS_MAP[item.trangThai]?.dot}`} />
@@ -507,17 +431,6 @@ export default function PhieuXuatKhoList() {
                                             <ChevronLeft className="h-4 w-4" /> Trước
                                         </Button>
 
-                                            <DropdownMenuTrigger asChild><Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">{filters.size} dòng<ChevronDown className="h-4 w-4 opacity-50" /></Button></DropdownMenuTrigger>
-                                            <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
-                                                {[5, 10, 20, 50, 100].map(size => (<DropdownMenuItem key={size} onClick={() => setFilters((p) => ({ ...p, size, page: 0 }))} className="cursor-pointer">{size} dòng</DropdownMenuItem>))}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                        Hiển thị <span className="font-semibold text-gray-900">{filters.page * filters.size + 1}</span> - <span className="font-semibold text-gray-900">{Math.min((filters.page + 1) * filters.size, total)}</span> trong tổng số <span className="font-semibold text-purple-600">{total}</span> kết quả
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm" onClick={() => setFilters((p) => ({ ...p, page: p.page - 1 }))} disabled={filters.page === 0} className="gap-1 disabled:opacity-50"><ChevronLeft className="h-4 w-4" /> Trước</Button>
                                         <div className="hidden sm:flex gap-1">
                                             {[...Array(Math.min(5, totalPages))].map((_, idx) => {
                                                 let pageNum;
@@ -551,10 +464,6 @@ export default function PhieuXuatKhoList() {
                                         >
                                             Sau <ChevronRight className="h-4 w-4" />
                                         </Button>
-                                                return (<Button key={idx} variant={filters.page === pageNum ? "default" : "outline"} size="sm" onClick={() => setFilters((p) => ({ ...p, page: pageNum }))} className={filters.page === pageNum ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm" : "border-gray-200"}>{pageNum + 1}</Button>);
-                                            })}
-                                        </div>
-                                        <Button variant="outline" size="sm" onClick={() => setFilters((p) => ({ ...p, page: p.page + 1 }))} disabled={filters.page + 1 >= totalPages} className="gap-1 disabled:opacity-50">Sau <ChevronRight className="h-4 w-4" /></Button>
                                     </div>
                                 </div>
                             </CardContent>

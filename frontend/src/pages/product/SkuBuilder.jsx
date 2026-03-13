@@ -491,8 +491,8 @@ export default function SkuBuilder() {
                                                     onClick={() => setPage(pageNum)}
                                                     className={
                                                         page === pageNum
-                                                            ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
-                                                            : "border-gray-200 hover:bg-slate-50"
+                                                            ? "bg-black text-white hover:bg-gray-800 shadow-sm"
+                                                            : "border-gray-200"
                                                     }
                                                 >
                                                     {pageNum + 1}
