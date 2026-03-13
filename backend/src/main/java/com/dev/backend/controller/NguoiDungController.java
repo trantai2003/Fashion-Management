@@ -32,17 +32,11 @@ public class NguoiDungController {
 
     @GetMapping("/get-by-id/{id}")
     public ResponseEntity<ResponseData<NguoiDungDto>> getById(@PathVariable Integer id) {
-        Optional<NguoiDung> findingNguoiDung = nguoiDungService.getOne(id);
-
-        if (findingNguoiDung.isEmpty()) {
-            throw new CommonException("Không tìm thấy người dùng id: " + id);
-        }
-
         return ResponseEntity.ok(
                 ResponseData.<NguoiDungDto>builder()
                         .status(HttpStatus.OK.value())
                         .data(
-                                nguoiDungMapper.toDto(findingNguoiDung.get())
+                                nguoiDungMapper.toDto(nguoiDungService.getDetailByAdmin(id))
                         )
                         .message("Success")
                         .error(null)

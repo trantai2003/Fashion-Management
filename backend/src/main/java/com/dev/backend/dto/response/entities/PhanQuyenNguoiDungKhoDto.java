@@ -35,7 +35,6 @@ public class PhanQuyenNguoiDungKhoDto implements Serializable {
     Instant ngayTao;
     Instant ngayCapNhat;
     Set<ChiTietQuyenKhoDto> chiTietQuyenKhos;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public List<String> getStringListPermission() {
         return chiTietQuyenKhos.stream().map(
                 ChiTietQuyenKhoDto::getMaQuyenHan

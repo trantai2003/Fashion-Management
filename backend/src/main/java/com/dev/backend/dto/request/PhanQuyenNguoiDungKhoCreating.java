@@ -14,7 +14,6 @@ import java.util.Set;
 @Builder
 public class PhanQuyenNguoiDungKhoCreating {
     Integer nguoiDungId;
-    String vaiTro;
     Integer khoId;
     Integer laQuanLyKho;
     Instant ngayBatDau;

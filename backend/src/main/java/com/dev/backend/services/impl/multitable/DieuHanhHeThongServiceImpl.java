@@ -9,6 +9,9 @@ import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
 import com.dev.backend.entities.*;
 import com.dev.backend.exception.customize.CommonException;
+import com.dev.backend.mapper.ChiTietQuyenKhoMapper;
+import com.dev.backend.mapper.NguoiDungMapper;
+import com.dev.backend.mapper.PhanQuyenNguoiDungKhoMapper;
 import com.dev.backend.services.impl.entities.*;
 import com.dev.backend.services.multitable.DieuHanhHeThongService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,7 +43,13 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
     @Autowired
     private LichSuThayDoiService lichSuThayDoiService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private NguoiDungMapper nguoiDungMapper;
+    @Autowired
+    private ChiTietQuyenKhoMapper chiTietQuyenKhoMapper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -64,8 +73,9 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
         String giaTriCuJson;
 
         try {
-            giaTriCuJson = objectMapper.writeValueAsString(nguoiDung);
+            giaTriCuJson = objectMapper.writeValueAsString(nguoiDungMapper.toDto(nguoiDung));
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
             giaTriCuJson = "error when parse";
         }
 
@@ -137,8 +147,9 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
                     chiTietQuyenKho = chiTietQuyenKhoService.create(chiTietQuyenKho);
                 } else {
                     try {
-                        gtCuJson = objectMapper.writeValueAsString(chiTietQuyenKho);
+                        gtCuJson = objectMapper.writeValueAsString(chiTietQuyenKhoMapper.toDto(chiTietQuyenKho));
                     } catch (JsonProcessingException e) {
+                        e.printStackTrace();
                         gtCuJson = "error when parse";
                     }
                     chiTietQuyenKho.setTrangThai(chiTietQuyenKhoCreating.getTrangThai());
@@ -147,8 +158,9 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
 
                 }
                 try {
-                    gtMoiJson = objectMapper.writeValueAsString(chiTietQuyenKho);
+                    gtMoiJson = objectMapper.writeValueAsString(chiTietQuyenKhoMapper.toDto(chiTietQuyenKho));
                 } catch (JsonProcessingException e) {
+                    e.printStackTrace();
                     gtMoiJson = "error when parse";
                 }
                 String hanhDong = firstTimeHasPermissionInWorkSpace ? IHanhDong.cap_quyen : IHanhDong.cap_nhat_quyen;
@@ -172,12 +184,12 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
 
         String giaTriMoiJson;
 
-        nguoiDung.setVaiTro(pqndkCreating.getVaiTro());
         nguoiDung = nguoiDungService.update(nguoiDung.getId(), nguoiDung);
 
         try {
-            giaTriMoiJson = objectMapper.writeValueAsString(nguoiDung);
+            giaTriMoiJson = objectMapper.writeValueAsString(nguoiDungMapper.toDto(nguoiDung));
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
             giaTriMoiJson = "error when parse";
         }
 
