@@ -360,26 +360,13 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     public ChiTietPhieuNhapKhoDto getDetail(Integer id) {
         PhieuNhapKho phieu = repository.findById(id)
                 .orElseThrow(() -> new CommonException("Không tìm thấy phiếu nhập id: " + id));
+
+        // Lấy ID phiếu gốc qua Khóa ngoại mới cấu hình
         Integer phieuXuatGocId = null;
-        String ghiChu = phieu.getGhiChu();
-
-        if (ghiChu != null) {
-            String maPX = "";
-            // Trường hợp 1: Nhập chuyển kho bình thường cho kho B
-            if (ghiChu.contains("Nhập kho tự động từ phiếu chuyển ")) {
-                maPX = ghiChu.replace("Nhập kho tự động từ phiếu chuyển ", "").trim();
-            }
-            // Trường hợp 2: Nhập hoàn trả lại cho kho A do hủy phiếu
-            else if (ghiChu.contains("Nhập hoàn trả tự động do hủy phiếu chuyển: ")) {
-                maPX = ghiChu.replace("Nhập hoàn trả tự động do hủy phiếu chuyển: ", "").trim();
-            }
-
-            if (!maPX.isEmpty()) {
-                phieuXuatGocId = phieuXuatKhoRepository.findBySoPhieuXuat(maPX)
-                        .map(PhieuXuatKho::getId)
-                        .orElse(null);
-            }
+        if (phieu.getPhieuChuyenKhoGoc() != null) {
+            phieuXuatGocId = phieu.getPhieuChuyenKhoGoc().getId();
         }
+
         Map<Integer, PhieuNhapKhoItemDto> itemsMap = new LinkedHashMap<>();
 
         for (ChiTietPhieuNhapKho ct : phieu.getChiTietPhieuNhapKhos()) {
@@ -402,7 +389,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
 
                 // Nếu là chuyển kho nội bộ (không có dòng null), số lượng cần nhập chính bằng số lượng đã chuyển đi
                 if (phieu.getDonMuaHang() == null) {
-                    dto.setSoLuongCanNhap(dto.getSoLuongDaKhaiBao());
+                    dto.setSoLuongCanNhap(dto.getSoLuongDaKhaiBao()); // Chuyển kho đã có lô sẵn
                 }
             }
         }
@@ -415,7 +402,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         List<PhieuNhapKhoItemDto> items = new ArrayList<>(itemsMap.values());
         ChiTietPhieuNhapKhoDto.ChiTietPhieuNhapKhoDtoBuilder builder = ChiTietPhieuNhapKhoDto.builder()
                 .id(phieu.getId())
-                .phieuXuatGocId(phieuXuatGocId) // TRẢ VỀ ID 36 CHO FRONTEND TẠI ĐÂY
+                .phieuXuatGocId(phieuXuatGocId)
                 .soPhieuNhap(phieu.getSoPhieuNhap())
                 .trangThai(phieu.getTrangThai())
                 .ngayNhap(phieu.getNgayNhap())
@@ -426,7 +413,9 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                 .tenNguoiDuyet(phieu.getNguoiDuyet() != null ? phieu.getNguoiDuyet().getHoTen() : null);
 
         if (phieu.getDonMuaHang() == null) {
-            builder.loaiNhap(ghiChu != null && ghiChu.contains("hoàn trả") ? "Nhập hoàn trả (Hủy chuyển kho)" : "Chuyển kho nội bộ");
+            boolean isReturn = phieu.getPhieuChuyenKhoGoc() != null && phieu.getKho().getId().equals(phieu.getPhieuChuyenKhoGoc().getKho().getId());
+            builder.loaiNhap(isReturn ? "Nhập hoàn trả (Hủy chuyển kho)" : "Chuyển kho nội bộ");
+
             List<String> tenKhoNguonList = lichSuGiaoDichKhoRepository.findTenKhoNguonByPhieuNhap(id);
             if (!tenKhoNguonList.isEmpty()) builder.tenKhoChuyenTu(tenKhoNguonList.get(0));
         } else {
@@ -460,36 +449,25 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         PhieuNhapKho phieu = repository.findById(phieuNhapId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
 
-        if (phieu.getTrangThai() != 2) {
-            throw new RuntimeException("Chỉ phiếu đang chờ nhận hàng mới có thể hoàn tất");
+        if (phieu.getTrangThai() != TrangThaiPhieuNhap.DRAFT.getValue()) {
+            throw new RuntimeException("Chỉ phiếu Nháp mới có thể hoàn tất nhập kho");
         }
 
-        //FIX LOGIC TRÍCH XUẤT MÃ PHIẾU
-        String ghiChu = phieu.getGhiChu();
-        String soPhieuXuat = "";
-
-        if (ghiChu.contains("Nhập hoàn trả tự động do hủy phiếu chuyển: ")) {
-            // Nếu là luồng Hủy - Nhập trả kho A
-            soPhieuXuat = ghiChu.replace("Nhập hoàn trả tự động do hủy phiếu chuyển: ", "").trim();
-        } else if (ghiChu.contains("Nhập kho tự động từ phiếu chuyển ")) {
-            // Nếu là luồng Chuyển kho bình thường - Nhập kho B
-            soPhieuXuat = ghiChu.replace("Nhập kho tự động từ phiếu chuyển ", "").trim();
-        } else {
-            throw new RuntimeException("Ghi chú không đúng định dạng để tìm phiếu xuất gốc");
+        PhieuXuatKho pck = phieu.getPhieuChuyenKhoGoc();
+        if (pck == null) {
+            throw new RuntimeException("Phiếu nhập này không thuộc luồng luân chuyển kho");
         }
-
-        //Tìm phiếu xuất gốc dựa trên mã đã trích xuất
-        PhieuXuatKho phieuXuatGoc = phieuXuatKhoRepository.findBySoPhieuXuat(soPhieuXuat)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu xuất gốc tham chiếu"));
 
         NguoiDung nguoiNhap = nguoiDungRepository.findById(nguoiNhapId).orElseThrow();
-        Kho khoDich = phieu.getKho(); // Kho A nếu là trả hàng, Kho B nếu là nhập mới
+        Kho khoDich = phieu.getKho();
 
         //Lấy kho trung chuyển
         Kho khoTransit = entityManager.createQuery("SELECT k FROM Kho k WHERE k.maKho = 'KHO_TRANSIT'", Kho.class)
                 .getSingleResult();
+        if (khoTransit == null) throw new RuntimeException("Lỗi: Hệ thống chưa cấu hình KHO_TRANSIT");
 
-        //Xử lý dịch chuyển tồn kho: KHO_TRANSIT -> KHO_DICH
+        boolean isReturn = khoDich.getId().equals(pck.getKho().getId());
+
         List<ChiTietPhieuNhapKho> details = chiTietPhieuNhapKhoRepository.findAllByPhieuNhapKhoIdAndCoLo(phieuNhapId);
         Set<Integer> sanPhamIdsCanCapNhat = new HashSet<>();
         for (ChiTietPhieuNhapKho ct : details) {
@@ -505,7 +483,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
             tonTransit.setSoLuongTon(tonTruocTransit.subtract(qty));
             tonKhoTheoLoRepository.save(tonTransit);
 
-            // CỘNG TỒN VÀO KHO ĐÍCH (KHO A hoặc B)
+            // CỘNG TỒN VÀO KHO ĐÍCH
             TonKhoTheoLo tonDich = tonKhoTheoLoRepository
                     .findByKho_IdAndLoHang_Id(khoDich.getId(), lo.getId())
                     .orElse(TonKhoTheoLo.builder()
@@ -519,7 +497,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
             tonKhoTheoLoRepository.save(tonDich);
 
             // GHI LỊCH SỬ GIAO DỊCH
-            String loaiGiaoDichNote = ghiChu.contains("hoàn trả") ? "Hoàn trả nhập kho: " : "Nhập chuyển kho từ: ";
+            String loaiGiaoDichNote = isReturn ? "Hoàn trả nhập kho (Hủy yêu cầu): " : "Nhập chuyển kho từ yêu cầu: ";
             LichSuGiaoDichKho history = LichSuGiaoDichKho.builder()
                     .ngayGiaoDich(Instant.now())
                     .loaiGiaoDich("nhap_kho")
@@ -533,27 +511,103 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                     .soLuongSau(tonDich.getSoLuongTon())
                     .giaVon(ct.getDonGia())
                     .nguoiDung(nguoiNhap)
-                    .ghiChu(loaiGiaoDichNote + phieuXuatGoc.getSoPhieuXuat())
+                    .ghiChu(loaiGiaoDichNote + pck.getSoPhieuXuat())
                     .build();
             lichSuGiaoDichKhoRepository.save(history);
             sanPhamIdsCanCapNhat.add(ct.getBienTheSanPham().getSanPham().getId());
         }
 
-        //Cập nhật trạng thái kết thúc
-        phieu.setTrangThai(3); // Hoàn thành Nhập kho
+        // Cập nhật trạng thái phiếu nhập
+        phieu.setTrangThai(TrangThaiPhieuNhap.COMPLETED.getValue());
         phieu.setNgayNhap(Instant.now());
         phieu.setNguoiNhap(nguoiNhap);
         repository.save(phieu);
 
-        // CHỈ cập nhật trạng thái phiếu xuất sang 5 (Hoàn tất) nếu là luồng nhập thành công cho B
-        // Nếu là luồng hoàn trả (ghiChu chứa "hoàn trả"), giữ nguyên trạng thái 4 (Đã hủy) cho PXG
-        if (!ghiChu.contains("hoàn trả")) {
-            phieuXuatGoc.setTrangThai(5); // Hoàn tất quy trình chuyển kho
-            phieuXuatKhoRepository.save(phieuXuatGoc);
+        // Chốt trạng thái Phiếu Chuyển Kho gốc = 5 (Hoàn tất) NẾU là nhập thành công cho kho B
+        if (!isReturn) {
+            pck.setTrangThai(5);
+            phieuXuatKhoRepository.save(pck);
         }
         entityManager.flush();
         for (Integer spId : sanPhamIdsCanCapNhat) {
             sanPhamQuanAoService.recalculatePriceAndStatus(spId);
         }
+    }
+    @Transactional
+    public PhieuNhapKho createImportFromTransfer(Integer pckId) {
+        // Tìm phiếu yêu cầu chuyển kho gốc
+        PhieuXuatKho pck = phieuXuatKhoRepository.findById(pckId)
+                .orElseThrow(() -> new CommonException("Không tìm thấy yêu cầu chuyển kho"));
+
+        if (!"chuyen_kho".equals(pck.getLoaiXuat()) || pck.getPhieuChuyenKhoGoc() != null) {
+            throw new CommonException("Đây không phải là phiếu yêu cầu chuyển kho gốc");
+        }
+
+        Kho khoDich;
+        String prefix;
+        String ghiChu;
+
+        // Xác định luồng: Nhập bình thường (Kho B) hay Nhập Hoàn trả (Kho A)
+        if (pck.getTrangThai() == 3) {
+            khoDich = pck.getKhoChuyenDen();
+            prefix = "PN-TRF-";
+            ghiChu = "Nhập kho thủ công từ phiếu chuyển: " + pck.getSoPhieuXuat();
+        } else if (pck.getTrangThai() == 4) {
+            khoDich = pck.getKho(); // Nhập trả về lại kho nguồn
+            prefix = "PN-RET-";
+            ghiChu = "Nhập hoàn trả (RET) từ phiếu chuyển bị hủy: " + pck.getSoPhieuXuat();
+        } else {
+            throw new CommonException("Trạng thái phiếu chuyển không hợp lệ để tạo phiếu nhập");
+        }
+
+        // Tìm Phiếu Xuất Con đã thực xuất (Trạng thái = 3) để lấy thông tin hàng trong Transit
+        List<PhieuXuatKho> dsPhieuXuatCon = entityManager.createQuery(
+                        "SELECT p FROM PhieuXuatKho p WHERE p.phieuChuyenKhoGoc.id = :pckId AND p.trangThai = 3", PhieuXuatKho.class)
+                .setParameter("pckId", pckId)
+                .getResultList();
+
+        if (dsPhieuXuatCon.isEmpty()) {
+            throw new CommonException("Hàng hóa chưa được xuất khỏi kho, không thể tạo phiếu nhập.");
+        }
+        PhieuXuatKho phieuXuatThucTe = dsPhieuXuatCon.get(0);
+
+        // Tạo phiếu nhập Nháp
+        String dateStr = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+        long countToday = ((PhieuNhapKhoRepository) repository).countBySoPhieuPrefix(prefix + dateStr);
+        String soPhieuNhap = prefix + dateStr + (countToday + 1);
+
+        PhieuNhapKho pn = PhieuNhapKho.builder()
+                .soPhieuNhap(soPhieuNhap)
+                .kho(khoDich)
+                .phieuChuyenKhoGoc(pck) // Liên kết khóa ngoại
+                .trangThai(TrangThaiPhieuNhap.DRAFT.getValue()) // Nháp (0)
+                .ngayTao(Instant.now())
+                .ghiChu(ghiChu)
+                .tongTien(BigDecimal.ZERO)
+                .build();
+        pn = repository.save(pn);
+
+        // Kế thừa chi tiết (bao gồm cả Lô hàng) từ phiếu xuất thực tế
+        List<ChiTietPhieuXuatKho> xuatDetails = entityManager.createQuery(
+                        "SELECT ct FROM ChiTietPhieuXuatKho ct WHERE ct.phieuXuatKho.id = :pxId AND ct.loHang IS NOT NULL", ChiTietPhieuXuatKho.class)
+                .setParameter("pxId", phieuXuatThucTe.getId())
+                .getResultList();
+
+        BigDecimal tongTien = BigDecimal.ZERO;
+        for (ChiTietPhieuXuatKho xuat : xuatDetails) {
+            ChiTietPhieuNhapKho ctNhap = ChiTietPhieuNhapKho.builder()
+                    .phieuNhapKho(pn)
+                    .bienTheSanPham(xuat.getBienTheSanPham())
+                    .loHang(xuat.getLoHang()) // KẾ THỪA LÔ HÀNG ĐÃ PICK
+                    .soLuongNhap(xuat.getSoLuongXuat())
+                    .donGia(xuat.getGiaVon() != null ? xuat.getGiaVon() : BigDecimal.ZERO)
+                    .ghiChu("Kế thừa từ hàng đi đường")
+                    .build();
+            chiTietPhieuNhapKhoRepository.save(ctNhap);
+            tongTien = tongTien.add(ctNhap.getDonGia().multiply(ctNhap.getSoLuongNhap()));
+        }
+
+        pn.setTongTien(tongTien);
+        return repository.save(pn);
     }
 }
