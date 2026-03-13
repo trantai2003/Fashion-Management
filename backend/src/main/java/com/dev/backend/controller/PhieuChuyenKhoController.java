@@ -118,19 +118,20 @@ public class PhieuChuyenKhoController {
                         .build()
         );
     }
-    @PutMapping("/{id}/start-shipping")
+    @PostMapping("/{id}/create-export")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
-            inWarehouse = true
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
     )
-    public ResponseEntity<ResponseData<String>> startShipping(@PathVariable Integer id) {
-        Integer staffId = SecurityContextHolder.getUser().getId();
-        phieuXuatKhoService.startShipping(id, staffId);
+    public ResponseEntity<ResponseData<PhieuXuatKhoDto>> createExportFromTransfer(@PathVariable Integer id) {
+        PhieuXuatKho entity = phieuXuatKhoService.createExportFromTransfer(id);
+        PhieuXuatKhoDto dto = phieuXuatKhoMapper.toDto(entity);
         return ResponseEntity.ok(
-                ResponseData.<String>builder()
+                ResponseData.<PhieuXuatKhoDto>builder()
                         .status(HttpStatus.OK.value())
-                        .message("Xác nhận xuất kho và bắt đầu vận chuyển thành công")
-                        .data("SUCCESS")
+                        .data(dto)
+                        .message("Tạo phiếu xuất kho thủ công thành công")
                         .build()
         );
     }
