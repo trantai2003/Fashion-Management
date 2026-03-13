@@ -154,7 +154,6 @@ export default function PhieuChuyenKhoDetail() {
                             <Info label="Số phiếu xuất gốc" value={data.soPhieuXuat} />
                             <Info label="Kho nguồn (Xuất)" value={data.khoXuatTen} />
                             <Info label="Kho đích (Nhập)" value={data.khoNhapTen} />
-                            <Info label="Người Xuất phiếu" value={data.nguoiXuatTen} />
                             <Info label="Người Phê duyệt" value={data.nguoiDuyetTen || "Chưa duyệt"} />
                             <Info label="Ngày tạo" value={new Date(data.ngayTao).toLocaleDateString("vi-VN")} />
                             
@@ -177,8 +176,6 @@ export default function PhieuChuyenKhoDetail() {
                                 <tr>
                                     <th className="px-6 py-4 font-medium text-left">Sản phẩm / SKU</th>
                                     <th className="px-6 py-4 font-medium text-center">Số lượng yêu cầu</th>
-                                    <th className="px-6 py-4 font-medium text-center">Tiến độ chuẩn bị (Lô)</th>
-                                    <th className="px-6 py-4 font-medium text-right">Trạng thái</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
@@ -192,18 +189,6 @@ export default function PhieuChuyenKhoDetail() {
                                             </td>
                                             <td className="px-6 py-4 text-center text-gray-700 text-base font-bold">
                                                 {item.soLuongYeuCau}
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className={`text-xs font-bold px-2 py-1 rounded ${isDone ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
-                                                    {item.soLuongDaPick || 0} / {item.soLuongYeuCau}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                {isDone ? (
-                                                    <span className="font-bold text-green-500 tracking-tighter">Sẵn sàng</span>
-                                                ) : (
-                                                    <span className="font-bold text-gray-300 tracking-tighter">Đang chuẩn bị</span>
-                                                )}
                                             </td>
                                         </tr>
                                     );
