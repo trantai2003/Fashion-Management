@@ -156,7 +156,8 @@ public class PhieuNhapKhoController {
     @PutMapping("/{id}/complete-transfer")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
-            inWarehouse = true
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<String>> completeTransfer(@PathVariable Integer id) {
         Integer staffId = SecurityContextHolder.getUser().getId();

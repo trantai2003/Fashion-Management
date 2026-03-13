@@ -32,6 +32,9 @@ export const phieuNhapKhoService = {
         return res.data;
     },
     createFromTransfer: (transferId) => {
-        return axiosClient.post(`/api/v1/phieu-nhap-kho/from-transfer/${transferId}`);
+        return apiClient.post(`/api/v1/phieu-nhap-kho/from-transfer/${transferId}`);
+    },
+    completeTransferReceipt: (id) => {
+        return apiClient.put(`/api/v1/phieu-nhap-kho/${id}/complete-transfer`);
     },
 };
