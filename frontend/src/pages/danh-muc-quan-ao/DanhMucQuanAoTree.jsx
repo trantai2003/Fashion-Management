@@ -67,15 +67,7 @@ const DanhMucQuanAoTree = () => {
         const data = response.data.data;
         setTreeData(data);
         setStats(computeStats(data));
-        const allIds = new Set();
-        const collectIds = (nodes) => {
-          nodes.forEach((node) => {
-            allIds.add(node.id);
-            if (node.danhMucCons?.length) collectIds(node.danhMucCons);
-          });
-        };
-        collectIds(data);
-        setExpandedNodes(allIds);
+        setExpandedNodes(new Set());
       }
     } catch {
       toast.error('Không thể tải dữ liệu danh mục');
@@ -201,46 +193,66 @@ const DanhMucQuanAoTree = () => {
   // ── Render create form ────────────────────────────────────────────────────
   const renderCreateForm = (parentId) => (
     <div className={`my-2 ${parentId !== 'root' ? 'ml-5' : ''}`}>
-      <div className="rounded-xl border-2 border-purple-300 bg-purple-50/60 p-4 shadow-sm">
-        <p className="text-xs font-semibold text-purple-700 mb-3 uppercase tracking-wide">
+      <div
+        className="rounded-xl border border-[#b8860b]/30 bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] p-4 shadow-sm"
+        style={{ fontFamily: "'DM Sans', sans-serif" }}
+      >
+        <p
+          className="mb-3 text-sm font-semibold text-slate-500"
+          style={{ fontFamily: "'DM Sans', sans-serif" }}
+        >
           {parentId === 'root' ? 'Thêm danh mục gốc mới' : 'Thêm danh mục con'}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Mã danh mục *</label>
+            <label className="text-xs font-medium text-[#7a6e5f]">Mã danh mục *</label>
             <Input
               value={createForm.maDanhMuc}
               onChange={(e) => setCreateForm({ ...createForm, maDanhMuc: e.target.value })}
               placeholder="VD: DM001"
-              className="h-8 text-sm border-purple-200 focus:border-purple-500"
+              className="h-8 text-sm border-[#b8860b]/25 focus:border-[#b8860b] focus-visible:ring-[#b8860b]/30"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
               autoFocus
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Tên danh mục *</label>
+            <label className="text-xs font-medium text-[#7a6e5f]">Tên danh mục *</label>
             <Input
               value={createForm.tenDanhMuc}
               onChange={(e) => setCreateForm({ ...createForm, tenDanhMuc: e.target.value })}
               placeholder="VD: Áo thun"
-              className="h-8 text-sm border-purple-200 focus:border-purple-500"
+              className="h-8 text-sm border-[#b8860b]/25 focus:border-[#b8860b] focus-visible:ring-[#b8860b]/30"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             />
           </div>
         </div>
         <div className="space-y-1 mb-3">
-          <label className="text-xs font-medium text-gray-600">Mô tả</label>
+          <label className="text-xs font-medium text-[#7a6e5f]">Mô tả</label>
           <textarea
             value={createForm.moTa}
             onChange={(e) => setCreateForm({ ...createForm, moTa: e.target.value })}
             placeholder="Nhập mô tả..."
             rows={2}
-            className="w-full rounded-md border border-purple-200 bg-white px-3 py-2 text-sm outline-none focus:border-purple-500 resize-none"
+            className="w-full rounded-md border border-[#b8860b]/25 bg-white px-3 py-2 text-sm outline-none focus:border-[#b8860b] resize-none"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
         </div>
         <div className="flex justify-end gap-2">
-          <Button size="sm" variant="outline" onClick={handleCancelCreate} className="h-8 gap-1.5 border-gray-300 hover:bg-gray-100">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleCancelCreate}
+            className="h-8 gap-1.5 border-[#b8860b]/35 text-[#7a6e5f] hover:bg-[#f7edd3] hover:text-[#7a5700]"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
             <X className="h-3.5 w-3.5" /> Hủy
           </Button>
-          <Button size="sm" onClick={handleSaveCreate} className="h-8 gap-1.5 bg-slate-900 hover:bg-white hover:text-slate-900 border border-slate-900 text-white">
+          <Button
+            size="sm"
+            onClick={handleSaveCreate}
+            className="h-8 gap-1.5 border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white hover:from-[#c79616] hover:to-[#a97700]"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
             <Save className="h-3.5 w-3.5" /> Lưu
           </Button>
         </div>
@@ -383,8 +395,8 @@ const DanhMucQuanAoTree = () => {
         {/* Children */}
         {isExpanded && (
           <div className="mt-1">
+            {activeChildren.map((child) => renderNode(child, level + 1, node.id))}
             {isCreating && renderCreateForm(node.id)}
-            {hasChildren && node.danhMucCons.map((child) => renderNode(child, level + 1, node.id))}
           </div>
         )}
       </div>
@@ -392,7 +404,10 @@ const DanhMucQuanAoTree = () => {
   };
 
   return (
-    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+    <div
+      className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
 
       {/* ── Delete Confirm Modal ── */}
       {deleteModal.show && (
@@ -424,36 +439,36 @@ const DanhMucQuanAoTree = () => {
 
       {/* ── Stats ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-purple-50 to-white">
+        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Tổng danh mục</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-              <Tag className="h-6 w-6 text-purple-600" />
+            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <Tag className="h-6 w-6 text-blue-600" />
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-indigo-50 to-white">
+        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Danh mục gốc</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats.root}</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-              <Folder className="h-6 w-6 text-indigo-600" />
+            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+              <Folder className="h-6 w-6 text-green-600" />
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-white">
+        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-gray-50 to-white">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Danh mục con</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats.sub}</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
-              <Layers className="h-6 w-6 text-orange-500" />
+            <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+              <Layers className="h-6 w-6 text-red-500" />
             </div>
           </CardContent>
         </Card>
@@ -463,7 +478,8 @@ const DanhMucQuanAoTree = () => {
         <Button
           size="sm"
           onClick={handleAddRoot}
-          className="gap-1.5 bg-slate-900 hover:bg-white hover:text-slate-900 border border-slate-900 text-white shadow-sm"
+          className="gap-1.5 border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md hover:from-[#c79616] hover:to-[#a97700]"
+          style={{ fontFamily: "'DM Sans', sans-serif" }}
         >
           <Plus className="h-4 w-4" />
           Thêm danh mục gốc
@@ -475,7 +491,10 @@ const DanhMucQuanAoTree = () => {
         <CardHeader className="border-b border-slate-100 pb-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <CardTitle
+                className="flex items-center gap-2 text-lg font-semibold text-gray-900"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
                 <Tag className="h-5 w-5 text-purple-600" />
                 Danh mục sản phẩm
               </CardTitle>

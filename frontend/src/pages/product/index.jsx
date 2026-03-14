@@ -488,10 +488,8 @@ export default function ProductList() {
                                                 className="transition-colors duration-150 hover:bg-violet-50/50"
                                             >
                                                 {/* STT */}
-                                                <td className="px-4 py-3.5 align-middle text-center w-14">
-                                                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
-                                                        {filters.page * filters.size + index + 1}
-                                                    </span>
+                                                <td className="px-4 py-3.5 align-middle text-center w-14 text-slate-500 text-xs">
+                                                    {filters.page * filters.size + index + 1}
                                                 </td>
 
                                                 {/* Hình ảnh */}

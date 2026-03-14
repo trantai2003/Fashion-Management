@@ -336,67 +336,51 @@ const ProductAttributeHub = () => {
                     </button>
                 </section>
 
-                {/* ── Table ── */}
-                <div className="wh-tbl-card">
-                    {loading ? (
-                        <div className="py-24 flex flex-col items-center justify-center gap-4">
-                            <Loader2 size={32} className="animate-spin text-[#b8860b]" />
-                            <span className="text-sm font-bold text-[#b8860b] uppercase tracking-widest">Đang tải dữ liệu...</span>
-                        </div>
-                    ) : data.length === 0 ? (
-                        <div className="py-24 flex flex-col items-center justify-center opacity-30 gap-3 grayscale">
-                            <TabIcon size={64} />
-                            <p className="font-mono text-xs uppercase tracking-widest italic">Không có {TAB_LABELS[activeTab]}</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="wh-tbl">
-                                <thead>
-                                    <tr>
-                                        <th className="wh-th w-16 text-center">STT</th>
-                                        <th className="wh-th">Mã định danh</th>
-                                        <th className="wh-th">Tên hiển thị</th>
-                                        {activeTab === 'color' && <th className="wh-th">Trực quan</th>}
-                                        {activeTab === 'size' && <th className="wh-th">Phân loại</th>}
-                                        {activeTab === 'material' && <th className="wh-th">Mô tả</th>}
-                                        <th className="wh-th text-center">Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.map((item, index) => (
-                                        <tr key={item.id} className="wh-tr">
-                                            <td className="wh-td text-center text-xs font-mono text-slate-400">
-                                                {filters.page * filters.size + index + 1}
-                                            </td>
-                                            <td className="wh-td">
-                                                <span className="font-mono font-bold text-[#b8860b] text-xs px-2 py-1 bg-[#b8860b]/5 rounded border border-[#b8860b]/10">
-                                                    {item.maMau || item.maSize || item.maChatLieu}
-                                                </span>
-                                            </td>
-                                            <td className="wh-td font-bold">{item.tenMau || item.tenSize || item.tenChatLieu}</td>
-                                            {activeTab === 'color' && (
-                                                <td className="wh-td">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-6 h-6 rounded-md border border-slate-200 shadow-sm" style={{ background: item.maMauHex }} />
-                                                        <span className="font-mono text-[11px] text-slate-500 uppercase">{item.maMauHex}</span>
-                                                    </div>
-                                                </td>
-                                            )}
-                                            {activeTab === 'size' && (
-                                                <td className="wh-td text-xs font-medium text-slate-500">
-                                                    LOẠI: {item.loaiSize || '—'} / THỨ TỰ: {item.thuTuSapXep ?? '—'}
-                                                </td>
-                                            )}
-                                            {activeTab === 'material' && (
-                                                <td className="wh-td text-xs text-slate-500 mt-1 max-w-[300px] truncate italic">
-                                                    {item.moTa || 'Không có mô tả'}
-                                                </td>
-                                            )}
-                                            <td className="wh-td">
-                                                <div className="flex items-center justify-center gap-1">
-                                                    <button className="act-btn" onClick={() => handleOpenModal('view', item)}><Eye size={16} /></button>
-                                                    <button className="act-btn" onClick={() => handleOpenModal('edit', item)}><Edit size={16} /></button>
-                                                    <button className="act-btn red" onClick={() => setDeleteConfig({ open: true, item })}><Trash2 size={16} /></button>
+            {/* ── Action buttons ── */}
+            <div className="flex items-center justify-end">
+                <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                    <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
+                </Button>
+            </div>
+
+            {/* ── Table ── */}
+            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                {loading ? (
+                    <div className="flex items-center justify-center py-16 gap-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                        <span className="text-sm text-gray-600">Đang tải...</span>
+                    </div>
+                ) : data.length === 0 ? <EmptyState icon={TabIcon} label={TAB_LABELS[activeTab]} /> : (
+                    <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-slate-200 bg-slate-50">
+                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase w-16">STT</th>
+                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mã</th>
+                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Tên hiển thị</th>
+                                    {activeTab === 'color' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Màu sắc</th>}
+                                    {activeTab === 'size' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Phân loại</th>}
+                                    {activeTab === 'material' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mô tả</th>}
+                                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {data.map((item, index) => (
+                                    <tr key={item.id} className="hover:bg-violet-50/50 transition-colors duration-150 cursor-pointer" onClick={() => handleOpenModal('edit', item)}>
+                                        <td className="px-4 py-3.5 align-middle text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
+                                        <td className="px-4 py-3.5 align-middle">
+                                            <span className="font-bold text-violet-600 tracking-wide font-mono">
+                                                {item.maMau || item.maSize || item.maChatLieu}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3.5 align-middle font-semibold text-slate-900">
+                                            {item.tenMau || item.tenSize || item.tenChatLieu}
+                                        </td>
+                                        {activeTab === 'color' && (
+                                            <td className="px-4 py-3.5 align-middle">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 rounded-md border border-slate-200 shadow-sm flex-shrink-0" style={{ backgroundColor: item.maMauHex }} />
+                                                    <span className="font-mono text-xs text-slate-500">{item.maMauHex}</span>
                                                 </div>
                                             </td>
                                         </tr>

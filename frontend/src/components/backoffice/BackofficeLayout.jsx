@@ -13,7 +13,7 @@ export default function BackofficeLayout() {
         {
             key: "DASHBOARD",
             match: (path) => path === "/dashboard",
-            title: "Dashboard",
+            title: "Tổng quan Admin",
             subtitle: "Tổng quan hoạt động quản trị",
         },
         {
@@ -31,7 +31,7 @@ export default function BackofficeLayout() {
         {
             key: "ADD_USER",
             match: (path) => path === "/users/add",
-            title: "Add User",
+            title: "Thêm người dùng",
             subtitle: "Thêm người dùng mới",
         },
         {
@@ -67,7 +67,7 @@ export default function BackofficeLayout() {
         {
             key: "SKU_BUILDER",
             match: (path) => path === "/sku-builder",
-            title: "Danh sách Biến thể & Giá",
+            title: "Danh sách Biến thể và Giá",
             subtitle: "Quản lý biến thể SKU và giá sản phẩm",
         },
         {
@@ -79,8 +79,8 @@ export default function BackofficeLayout() {
         {
             key: "WAREHOUSE",
             match: (path) => path === "/warehouse",
-            title: "Quản lý kho",
-            subtitle: "Quản lý thông tin vận hành các kho hàng",
+            title: "FS WMS · INVENTORY",
+            subtitle: "Quản lý kho hàng",
         },
         {
             key: "GOODS_RECEIPTS",
@@ -163,7 +163,7 @@ export default function BackofficeLayout() {
         {
             key: "DANH_MUC_QUAN_AO",
             match: (path) => path === "/danh-muc-quan-ao",
-            title: "Quản lý danh mục quần áo",
+            title: "Quản lý danh mục",
             subtitle: "Xem và quản lý cấu trúc danh mục quần áo",
         },
         {
@@ -300,9 +300,10 @@ export default function BackofficeLayout() {
                     <BackofficeHeader
                         title={pageMeta?.title}
                         subtitle={pageMeta?.subtitle}
+                        routeKey={pageMeta?.key}
                     />
 
-                    <main className="flex-1 min-w-0 overflow-y-auto bg-gray-50">
+                    <main className="flex-1 min-w-0 overflow-y-auto bg-[#f8f4ea]">
                         <Outlet />
                     </main>
                 </SidebarInset>

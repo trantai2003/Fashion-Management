@@ -362,97 +362,27 @@ export default function PhieuNhapKhoList() {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ) : (
-                                        data.map((item, index) => {
-                                            const st = STATUS_UI[item.trangThai] || { label: "---", cls: "slate" };
-                                            return (
-                                                <tr key={item.id} onClick={() => navigate(`/goods-receipts/${item.id}`)}>
-                                                    <td className="wh-td text-center">
-                                                        <span className="font-mono text-[11px] opacity-40">{(filters.page * filters.size) + index + 1}</span>
-                                                    </td>
-                                                    <td className="wh-td">
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="id-badge w-fit">#{item.soPhieuNhap}</span>
-                                                            {item.soDonMua && <span className="text-[10px] text-[#a89f92] font-mono">PO: {item.soDonMua}</span>}
-                                                        </div>
-                                                    </td>
-                                                    <td className="wh-td">
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-[#1a1612] truncate max-w-[240px]">{item.tenNhaCungCap || "Nội bộ"}</span>
-                                                            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[#7a6e5f]">
-                                                                <Warehouse size={10} className="text-[#b8860b]" /> {item.tenKho}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="wh-td text-center">
-                                                        <div className="flex flex-col items-center">
-                                                            <span className="font-semibold">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</span>
-                                                            {item.ngayNhap && <span className="text-[10px] text-[#16a34a] font-bold">Imported: {new Date(item.ngayNhap).toLocaleDateString("vi-VN")}</span>}
-                                                        </div>
-                                                    </td>
-                                                    <td className="wh-td text-center">
-                                                        <span className={`badge ${st.cls}`}>{st.label}</span>
-                                                    </td>
-                                                    <td className="wh-td text-right">
-                                                        <div className="flex justify-end pr-2">
-                                                            <div className="w-8 h-8 rounded-full bg-[#faf8f3] flex items-center justify-center text-[#b8860b] hover:bg-[#b8860b] hover:text-white transition-all">
-                                                                <ArrowUpRight size={14} />
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* ── Pagination ── */}
-                    {data.length > 0 && (
-                        <div className="pag-card">
-                            <div className="flex items-center gap-6">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[11px] font-bold text-[#a89f92] uppercase">Hiển thị</span>
-                                    <select 
-                                        className="h-8 px-2 border border-[#ede9de] rounded-lg text-xs bg-[#faf8f3]"
-                                        value={filters.size}
-                                        onChange={(e) => setFilters(p => ({ ...p, size: Number(e.target.value), page: 0 }))}
-                                    >
-                                        {[10, 20, 50, 100].map(s => <option key={s} value={s}>{s} dòng</option>)}
-                                    </select>
-                                </div>
-                                <span className="text-xs text-[#7a6e5f]">
-                                    Showing <strong className="text-[#1a1612]">{(filters.page * filters.size) + 1}</strong> - <strong className="text-[#1a1612]">{Math.min((filters.page + 1) * filters.size, total)}</strong> of <strong className="text-[#b8860b]">{total}</strong>
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button 
-                                    disabled={filters.page === 0}
-                                    onClick={() => setFilters(p => ({ ...p, page: p.page - 1 }))}
-                                    className="pag-btn"
-                                >
-                                    <ChevronLeft size={14} /> Prev
-                                </button>
-                                <div className="flex items-center gap-1">
-                                    {[...Array(totalPages)].map((_, i) => (
-                                        <button 
-                                            key={i} 
-                                            onClick={() => setFilters(p => ({ ...p, page: i }))}
-                                            className={`w-9 h-9 rounded-lg font-mono text-xs font-bold transition-all ${filters.page === i ? 'bg-[#1a1612] text-white' : 'hover:bg-[#faf8f3] text-[#7a6e5f]'}`}
-                                        >
-                                            {i + 1}
-                                        </button>
-                                    ))}
-                                </div>
-                                <button 
-                                    disabled={filters.page >= totalPages - 1}
-                                    onClick={() => setFilters(p => ({ ...p, page: p.page + 1 }))}
-                                    className="pag-btn"
-                                >
-                                    Next <ChevronRight size={14} />
-                                </button>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {data.map((item, index) => (
+                                            <tr key={item.id} onClick={() => navigate(`/goods-receipts/${item.id}`)} className="cursor-pointer transition-colors duration-150 hover:bg-violet-50/50">
+                                                <td className="px-4 py-3.5 align-middle text-center w-14 text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
+                                                <td className="px-4 py-3.5 align-middle font-semibold text-violet-600">{item.soPhieuNhap}</td>
+                                                <td className="px-4 py-3.5 align-middle text-slate-600">{item.soDonMua || "-"}</td>
+                                                <td className="px-4 py-3.5 align-middle">{item.tenNhaCungCap}</td>
+                                                <td className="px-4 py-3.5 align-middle">{item.tenKho}</td>
+                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</span></td>
+                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{item.ngayNhap ? new Date(item.ngayNhap).toLocaleDateString("vi-VN") : "Chưa nhập kho"}</span></td>
+                                                <td className="px-4 py-3.5 align-middle text-center">
+                                                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${STATUS_MAP[item.trangThai]?.className}`}>
+                                                        <span className={`h-1.5 w-1.5 rounded-full ${STATUS_MAP[item.trangThai]?.dot}`} />
+                                                        {STATUS_MAP[item.trangThai]?.label}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     )}

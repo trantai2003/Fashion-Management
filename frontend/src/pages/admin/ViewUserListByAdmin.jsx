@@ -164,6 +164,14 @@ export default function ViewUserListByAdmin() {
 
     const formatRole = (role) =>
         ROLE_OPTIONS.find((r) => r.value === role)?.label || role;
+
+    const getInitials = (user) => {
+        const source = (user?.hoTen || user?.tenDangNhap || "U").trim();
+        const parts = source.split(/\s+/).filter(Boolean);
+        if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+        return `${parts[0][0] || ""}${parts[parts.length - 1][0] || ""}`.toUpperCase();
+    };
+
     function StatusBadge({ status }) {
         return status === 1 ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 whitespace-nowrap">
@@ -333,12 +341,13 @@ export default function ViewUserListByAdmin() {
 
             {/* TABLE */}
             <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
 
                     <table className="w-full text-sm">
 
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50">
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase w-14">STT</th>
                                 <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Username</th>
                                 <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Họ tên</th>
                                 <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Email</th>
@@ -354,7 +363,7 @@ export default function ViewUserListByAdmin() {
 
                             {users.length === 0 && (
                                 <tr>
-                                    <td colSpan={8} className="py-14 text-center text-gray-500">
+                                    <td colSpan={9} className="py-14 text-center text-gray-500">
                                         <div className="flex flex-col items-center gap-2">
                                             <Users className="h-8 w-8 text-gray-300" />
                                             Không có dữ liệu
@@ -363,14 +372,21 @@ export default function ViewUserListByAdmin() {
                                 </tr>
                             )}
 
-                            {users.map((u) => (
+                            {users.map((u, index) => (
                                 <tr
                                     key={u.id}
                                     onClick={() => navigate(`/users/${u.id}`)}
                                     className="hover:bg-violet-50/50 transition cursor-pointer"
                                 >
+                                    <td className="px-4 py-3 text-center text-slate-500 text-xs">
+                                        {pagination.pageNumber * pagination.pageSize + index + 1}
+                                    </td>
+
                                     <td className="px-4 py-3 font-semibold">
-                                        {u.tenDangNhap}
+                                        <div className="flex items-center gap-2">
+                                            <span className="user-avatar">{getInitials(u)}</span>
+                                            <span>{u.tenDangNhap}</span>
+                                        </div>
                                     </td>
 
                                     <td className="px-4 py-3">{u.hoTen}</td>
@@ -380,7 +396,7 @@ export default function ViewUserListByAdmin() {
                                     <td className="px-4 py-3 text-slate-600">{u.soDienThoai}</td>
 
                                     <td className="px-4 py-3 text-center">
-                                        <span className="px-2.5 py-1 text-xs rounded-lg bg-blue-50 text-blue-700">
+                                        <span className="role-badge px-2.5 py-1 text-xs rounded-lg bg-blue-50 text-blue-700">
                                             {formatRole(u.vaiTro)}
                                         </span>
                                     </td>
@@ -399,7 +415,7 @@ export default function ViewUserListByAdmin() {
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            className="text-red-600 border-red-200 hover:bg-red-700 hover:text-white"
+                                            className="user-action-btn text-red-600 border-red-200 hover:bg-red-700 hover:text-white"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 navigate(`/users/${u.id}/reset-password`);
@@ -431,7 +447,7 @@ export default function ViewUserListByAdmin() {
                                 <DropdownMenuTrigger asChild>
                                     <Button
                                         variant="outline"
-                                        className="w-[120px] justify-between font-normal bg-white border-gray-200"
+                                        className="pagination-size-btn w-[120px] justify-between font-normal bg-white border-gray-200"
                                     >
                                         {pagination.pageSize} dòng
                                         <ChevronDown className="h-4 w-4 opacity-50" />
@@ -480,7 +496,7 @@ export default function ViewUserListByAdmin() {
                                 size="sm"
                                 onClick={() => handlePageChange(pagination.pageNumber - 1)}
                                 disabled={pagination.pageNumber === 0}
-                                className="gap-1 disabled:opacity-50"
+                                className="pagination-btn gap-1 disabled:opacity-50"
                             >
                                 <ChevronLeft className="h-4 w-4" />
                                 Trước
@@ -508,8 +524,8 @@ export default function ViewUserListByAdmin() {
                                             onClick={() => handlePageChange(pageNum)}
                                             className={
                                                 pagination.pageNumber === pageNum
-                                                    ? "bg-purple-600 text-white hover:bg-purple-700 shadow-sm"
-                                                    : "border-gray-200"
+                                                    ? "pagination-btn active"
+                                                    : "pagination-btn border-gray-200"
                                             }
                                         >
                                             {pageNum + 1}
@@ -523,7 +539,7 @@ export default function ViewUserListByAdmin() {
                                 size="sm"
                                 onClick={() => handlePageChange(pagination.pageNumber + 1)}
                                 disabled={pagination.pageNumber >= pagination.totalPages - 1}
-                                className="gap-1 disabled:opacity-50"
+                                className="pagination-btn gap-1 disabled:opacity-50"
                             >
                                 Sau
                                 <ChevronRight className="h-4 w-4" />
