@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
     Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight,
     Save, RotateCcw, Palette, Ruler, Layers, Loader2, AlertTriangle,
-    Filter, RefreshCcw, ChevronDown, Check, Package
+    Filter, RefreshCcw, ChevronDown, Check, Package, AlertCircle
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,7 +34,7 @@ const formSchema = z.object({
 // ── Shared helpers ────────────────────────────────────────────────────────
 function ActionBtn({ title, onClick, color, children }) {
     const colors = {
-        violet: "text-violet-600 hover:bg-violet-50 hover:border-violet-200",
+        violet: "text-[#b8860b] hover:bg-[#f7edd3] hover:border-[#b8860b]/30",
         blue: "text-blue-600   hover:bg-blue-50   hover:border-blue-200",
         red: "text-red-500    hover:bg-red-50    hover:border-red-200",
     };
@@ -94,25 +94,25 @@ function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPage
     const start = total === 0 ? 0 : page * pageSize + 1;
     const end = Math.min((page + 1) * pageSize, total);
     return (
-        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-4">
+        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-[#b8860b]/20 p-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                    <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                    <Label className="text-sm text-[#7a6e5f] whitespace-nowrap">Hiển thị:</Label>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
+                            <Button variant="outline" className="w-[120px] justify-between font-normal bg-[#fffaf0] border-[#b8860b]/25 text-[#4a3f2f] hover:bg-[#f7edd3]">
                                 {pageSize} dòng <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                        <DropdownMenuContent className="w-[120px] bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] shadow-lg border border-[#b8860b]/25 z-50 rounded-xl p-1">
                             {[5, 10, 20, 50].map(s => (
-                                <DropdownMenuItem key={s} onClick={() => onPageSizeChange(s)} className="cursor-pointer">{s} dòng</DropdownMenuItem>
+                                <DropdownMenuItem key={s} onClick={() => onPageSizeChange(s)} className="cursor-pointer rounded-md text-[#4a3f2f] focus:bg-[#f2e4bc] focus:text-[#7a5700]">{s} dòng</DropdownMenuItem>
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <div className="text-sm text-gray-600">
-                    Hiển thị <span className="font-semibold text-gray-900">{start}</span> – <span className="font-semibold text-gray-900">{end}</span> trong tổng số <span className="font-semibold text-violet-600">{total}</span> kết quả
+                <div className="text-sm text-[#7a6e5f]">
+                    Hiển thị <span className="font-semibold text-[#1a1612]">{start}</span> – <span className="font-semibold text-[#1a1612]">{end}</span> trong tổng số <span className="font-semibold text-[#b8860b]">{total}</span> kết quả
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => onPageChange(page - 1)} disabled={page === 0} className="gap-1 disabled:opacity-50">
@@ -123,7 +123,7 @@ function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPage
                             let p = totalPages <= 5 ? idx : page < 3 ? idx : page > totalPages - 4 ? totalPages - 5 + idx : page - 2 + idx;
                             return (
                                 <Button key={idx} variant={page === p ? "default" : "outline"} size="sm" onClick={() => onPageChange(p)}
-                                    className={page === p ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm" : "border-gray-200"}>
+                                    className={page === p ? "bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white border border-[#b8860b]/20 shadow-sm hover:from-[#c79616] hover:to-[#a97700]" : "border-[#b8860b]/25 text-[#7a6e5f] hover:bg-[#f7edd3] hover:text-[#7a5700]"}>
                                     {p + 1}
                                 </Button>
                             );
@@ -267,12 +267,12 @@ const ProductAttributeHub = () => {
             <div className="flex items-center justify-between">
             </div>
             <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleReset(); }}>
-                <TabsList className="bg-white border border-slate-200 shadow-sm h-12 rounded-xl p-1">
+                <TabsList className="bg-white border border-[#b8860b]/25 shadow-sm h-12 rounded-xl p-1">
                     {['color', 'size', 'material'].map(tab => {
                         const Icon = TAB_ICONS[tab];
                         return (
                             <TabsTrigger key={tab} value={tab}
-                                className="flex items-center gap-2 px-6 rounded-lg data-[state=active]:bg-slate-900 data-[state=active]:text-white transition-all">
+                                className="flex items-center gap-2 px-6 rounded-lg text-[#7a6e5f] data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#d4a72b] data-[state=active]:to-[#b8860b] data-[state=active]:text-white transition-all">
                                 <Icon className="h-4 w-4" />{TAB_NAMES[tab]}
                             </TabsTrigger>
                         );
@@ -282,21 +282,21 @@ const ProductAttributeHub = () => {
             <Card className="border-0 shadow-lg bg-white">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                        <Filter className="h-5 w-5 text-violet-600" />
+                        <Filter className="h-5 w-5 text-[#b8860b]" />
                         Bộ lọc tìm kiếm
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                     <div className="flex flex-wrap items-end gap-4">
                         <div className="flex-1 min-w-[300px] space-y-2">
-                            <Label className="text-gray-700 font-medium">Tìm kiếm mã hoặc tên</Label>
+                            <Label className="text-[#7a6e5f] font-medium">Tìm kiếm mã hoặc tên</Label>
                             <div className="relative">
                                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                 <Input value={filters.keyword} onChange={e => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
-                                    placeholder="Nhập từ khóa tìm kiếm..." className="h-11 pl-10 border-gray-200 focus:border-violet-500 focus:ring-violet-500" />
+                                    placeholder="Nhập từ khóa tìm kiếm..." className="h-11 pl-10 border-[#b8860b]/25 focus:border-[#b8860b] focus:ring-[#b8860b]/30" />
                             </div>
                         </div>
-                        <Button variant="outline" onClick={handleReset} className="h-11 px-6 flex items-center gap-2 transition-all duration-300 hover:bg-slate-50 border-gray-300">
+                        <Button variant="outline" onClick={handleReset} className="h-11 px-6 flex items-center gap-2 transition-all duration-300 border-[#b8860b]/30 text-[#7a6e5f] hover:bg-[#f7edd3] hover:text-[#7a5700]">
                             <RefreshCcw className="h-4 w-4" />Đặt lại bộ lọc
                         </Button>
                     </div>
@@ -305,38 +305,38 @@ const ProductAttributeHub = () => {
 
             {/* ── Action buttons ── */}
             <div className="flex items-center justify-end">
-                <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                <Button onClick={() => handleOpenModal('add')} className="border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md transition-all duration-200 hover:from-[#c79616] hover:to-[#a97700]">
                     <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
                 </Button>
             </div>
 
             {/* ── Table ── */}
-            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-[#b8860b]/20 overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center py-16 gap-2">
-                        <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                        <Loader2 className="h-6 w-6 animate-spin text-[#b8860b]" />
                         <span className="text-sm text-gray-600">Đang tải...</span>
                     </div>
                 ) : data.length === 0 ? <EmptyState icon={TabIcon} label={TAB_LABELS[activeTab]} /> : (
                     <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
                         <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-slate-200 bg-slate-50">
-                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase w-16">STT</th>
-                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mã</th>
-                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Tên hiển thị</th>
-                                    {activeTab === 'color' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Màu sắc</th>}
-                                    {activeTab === 'size' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Phân loại</th>}
-                                    {activeTab === 'material' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mô tả</th>}
-                                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
+                            <thead className="sticky top-0 z-20">
+                                <tr className="border-b border-[#b8860b]/20 bg-[#faf8f3] shadow-sm">
+                                    <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase w-16">STT</th>
+                                    <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Mã</th>
+                                    <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Tên hiển thị</th>
+                                    {activeTab === 'color' && <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Màu sắc</th>}
+                                    {activeTab === 'size' && <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Phân loại</th>}
+                                    {activeTab === 'material' && <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Mô tả</th>}
+                                    <th className="h-12 px-4 text-center font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {data.map((item, index) => (
-                                    <tr key={item.id} className="hover:bg-violet-50/50 transition-colors duration-150 cursor-pointer" onClick={() => handleOpenModal('edit', item)}>
+                                    <tr key={item.id} className="hover:bg-[#f7edd3]/60 transition-colors duration-150 cursor-pointer" onClick={() => handleOpenModal('edit', item)}>
                                         <td className="px-4 py-3.5 align-middle text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
                                         <td className="px-4 py-3.5 align-middle">
-                                            <span className="font-bold text-violet-600 tracking-wide font-mono">
+                                            <span className="font-bold text-[#b8860b] tracking-wide font-mono">
                                                 {item.maMau || item.maSize || item.maChatLieu}
                                             </span>
                                         </td>
@@ -387,7 +387,7 @@ const ProductAttributeHub = () => {
 
             {/* ── Add/Edit Modal ── */}
             <Dialog open={modalConfig.open} onOpenChange={o => setModalConfig({ ...modalConfig, open: o })}>
-                <DialogContent className="bg-white rounded-2xl border border-gray-100 shadow-2xl max-w-lg">
+                <DialogContent className="bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] rounded-2xl border border-[#b8860b]/25 shadow-2xl max-w-lg">
                     <DialogHeader className="border-b border-slate-100 pb-4">
                         <DialogTitle className="text-lg font-bold text-slate-900">
                             {modalConfig.mode === 'add' ? 'Thêm mới' : 'Chỉnh sửa'} {TAB_LABELS[activeTab]}
@@ -403,9 +403,9 @@ const ProductAttributeHub = () => {
                                 <Label className="text-sm font-semibold text-slate-700">Mã định danh *</Label>
                                 <div className="flex gap-2">
                                     <Input {...form.register("ma")} placeholder={activeTab === 'color' ? 'MS-0000' : activeTab === 'material' ? 'CL-0000' : 'Nhập mã...'}
-                                        className="h-10 border-gray-200 focus:border-violet-500 font-mono text-violet-600 font-semibold" />
+                                        className="h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b] font-mono text-[#b8860b] font-semibold" />
                                     {modalConfig.mode === 'add' && (activeTab === 'color' || activeTab === 'material') && (
-                                        <Button type="button" variant="outline" size="icon" onClick={() => form.setValue('ma', generateAutoCode())} title="Tạo mã tự động" className="h-10 w-10 border-gray-200 flex-shrink-0">
+                                        <Button type="button" variant="outline" size="icon" onClick={() => form.setValue('ma', generateAutoCode())} title="Tạo mã tự động" className="h-10 w-10 border-[#b8860b]/25 text-[#7a6e5f] hover:bg-[#f7edd3] flex-shrink-0">
                                             <RotateCcw className="h-4 w-4" />
                                         </Button>
                                     )}
@@ -419,7 +419,7 @@ const ProductAttributeHub = () => {
                             </div>
                             <div className="space-y-1.5">
                                 <Label className="text-sm font-semibold text-slate-700">Tên hiển thị *</Label>
-                                <Input {...form.register("ten")} placeholder="Nhập tên..." className="h-10 border-gray-200 focus:border-violet-500" />
+                                <Input {...form.register("ten")} placeholder="Nhập tên..." className="h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b]" />
                                 {form.formState.errors.ten && (
                                     <Alert variant="destructive" className="py-2">
                                         <AlertCircle className="h-4 w-4" />
@@ -433,8 +433,8 @@ const ProductAttributeHub = () => {
                             <div className="space-y-1.5">
                                 <Label className="text-sm font-semibold text-slate-700">Mã màu Hex</Label>
                                 <div className="flex gap-3 items-center">
-                                    <input type="color" className="h-10 w-14 rounded-lg border border-gray-200 cursor-pointer p-1 bg-white flex-shrink-0" {...form.register("maMauHex")} />
-                                    <Input {...form.register("maMauHex")} className="flex-1 h-10 border-gray-200 focus:border-violet-500 font-mono" placeholder="#000000" />
+                                    <input type="color" className="h-10 w-14 rounded-lg border border-[#b8860b]/25 cursor-pointer p-1 bg-white flex-shrink-0" {...form.register("maMauHex")} />
+                                    <Input {...form.register("maMauHex")} className="flex-1 h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b] font-mono" placeholder="#000000" />
                                 </div>
                             </div>
                         )}
@@ -443,11 +443,11 @@ const ProductAttributeHub = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <Label className="text-sm font-semibold text-slate-700">Loại kích cỡ</Label>
-                                    <Input {...form.register("loaiSize")} placeholder="VD: Chữ/Số" className="h-10 border-gray-200 focus:border-violet-500" />
+                                    <Input {...form.register("loaiSize")} placeholder="VD: Chữ/Số" className="h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b]" />
                                 </div>
                                 <div className="space-y-1.5">
                                     <Label className="text-sm font-semibold text-slate-700">Thứ tự ưu tiên</Label>
-                                    <Input type="number" {...form.register("thuTuSapXep")} className="h-10 border-gray-200 focus:border-violet-500" />
+                                    <Input type="number" {...form.register("thuTuSapXep")} className="h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b]" />
                                 </div>
                             </div>
                         )}
@@ -455,13 +455,13 @@ const ProductAttributeHub = () => {
                         {(activeTab === 'material' || activeTab === 'size') && (
                             <div className="space-y-1.5">
                                 <Label className="text-sm font-semibold text-slate-700">Mô tả chi tiết</Label>
-                                <Textarea {...form.register("moTa")} rows={3} placeholder="Ghi chú thêm..." className="resize-none border-gray-200 focus:border-violet-500" />
+                                <Textarea {...form.register("moTa")} rows={3} placeholder="Ghi chú thêm..." className="resize-none border-[#b8860b]/25 bg-white focus:border-[#b8860b]" />
                             </div>
                         )}
 
                         <DialogFooter className="border-t border-slate-100 pt-4 gap-2">
-                            <Button type="button" variant="outline" className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-11 px-8 rounded-xl font-medium" onClick={() => setModalConfig({ ...modalConfig, open: false })}>Hủy bỏ</Button>
-                            <Button type="submit" className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                            <Button type="button" variant="outline" className="bg-white text-[#7a6e5f] border-[#b8860b]/30 hover:bg-[#f7edd3] hover:text-[#7a5700] h-11 px-8 rounded-xl font-medium" onClick={() => setModalConfig({ ...modalConfig, open: false })}>Hủy bỏ</Button>
+                            <Button type="submit" className="border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md transition-all duration-200 hover:from-[#c79616] hover:to-[#a97700]">
                                 <Save className="mr-2 h-4 w-4" />{modalConfig.mode === 'add' ? 'Thêm mới' : 'Lưu thay đổi'}
                             </Button>
                         </DialogFooter>
@@ -471,7 +471,7 @@ const ProductAttributeHub = () => {
 
             {/* ── View Modal ── */}
             <Dialog open={!!viewItem} onOpenChange={o => !o && setViewItem(null)}>
-                <DialogContent className="bg-white rounded-2xl border border-gray-100 shadow-2xl max-w-lg">
+                <DialogContent className="bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] rounded-2xl border border-[#b8860b]/25 shadow-2xl max-w-lg">
                     <DialogHeader className="border-b border-slate-100 pb-4">
                         <DialogTitle className="text-lg font-bold text-slate-900">Chi tiết {TAB_LABELS[activeTab]}</DialogTitle>
                         <DialogDescription className="text-slate-500 text-sm">Xem thông tin chi tiết</DialogDescription>
@@ -481,7 +481,7 @@ const ProductAttributeHub = () => {
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1.5">
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Mã định danh</p>
-                                    <p className="font-bold text-violet-600 font-mono">{viewItem.maMau || viewItem.maSize || viewItem.maChatLieu}</p>
+                                    <p className="font-bold text-[#b8860b] font-mono">{viewItem.maMau || viewItem.maSize || viewItem.maChatLieu}</p>
                                 </div>
                                 <div className="space-y-1.5">
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tên hiển thị</p>
@@ -526,8 +526,8 @@ const ProductAttributeHub = () => {
                         </div>
                     )}
                     <DialogFooter className="border-t border-slate-100 pt-4 gap-2">
-                        <Button variant="outline" className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-11 px-8 rounded-xl font-medium" onClick={() => setViewItem(null)}>Đóng</Button>
-                        <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200" onClick={() => { handleOpenModal('edit', viewItem); setViewItem(null); }}>
+                        <Button variant="outline" className="bg-white text-[#7a6e5f] border-[#b8860b]/30 hover:bg-[#f7edd3] hover:text-[#7a5700] h-11 px-8 rounded-xl font-medium" onClick={() => setViewItem(null)}>Đóng</Button>
+                        <Button className="border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md transition-all duration-200 hover:from-[#c79616] hover:to-[#a97700]" onClick={() => { handleOpenModal('edit', viewItem); setViewItem(null); }}>
                             <Edit className="mr-2 h-4 w-4" />Chỉnh sửa
                         </Button>
                     </DialogFooter>
