@@ -32,7 +32,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.Normalizer;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -171,36 +174,43 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 List<MultipartFile> anhSanPhams,
                 List<MultipartFile> anhBienThes) {
 
-                List<BienTheSanPhamCreating> list = new ArrayList<>(creating.getBienTheSanPhams());
-                Set<BienTheSanPhamCreating> set = new HashSet<>(creating.getBienTheSanPhams());
-
-                if (list.size() != set.size()) {
-                        throw new CommonException("Có biến thể sản phẩm trùng lặp!");
+                Set<String> checkDuplicateSet = new HashSet<>();
+                for (BienTheSanPhamCreating bt : creating.getBienTheSanPhams()) {
+                        String key = bt.getMauSacId() + "-" + bt.getSizeId() + "-" + bt.getChatLieuId();
+                        if (!checkDuplicateSet.add(key)) {
+                                throw new CommonException("Có biến thể sản phẩm trùng lặp về thuộc tính (Màu, Size, Chất liệu)!");
+                        }
                 }
 
                 Instant instantNow = Instant.now();
-                Optional<SanPhamQuanAo> findingSanPhamQuanAo = repository.findSanPhamQuanAoByMaSanPham(creating.getMaSanPham());
-                if (findingSanPhamQuanAo.isPresent()) {
-                        throw new CommonException("Mã sản phẩm đã tồn tại: " + creating.getMaSanPham());
-                }
+                Date now = new Date();
+
+                DanhMucQuanAo danhMucQuanAo = danhMucQuanAoService.getOne(creating.getDanhMucId()).orElseThrow(
+                        () -> new CommonException("Danh mục không tồn tại id: " + creating.getDanhMucId())
+                );
+
+                String maVietTatDM = generateCodeFromName(danhMucQuanAo.getTenDanhMuc());
+                String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+                String prefixMaSp = maVietTatDM + datePart; // VD: AT260314
+
+                // Đếm số sản phẩm đã tồn tại trong ngày để lấy STT
+                long stt = repository.countByMaSanPhamStartingWith(prefixMaSp) + 1;
+                String maSanPhamAuto = prefixMaSp + stt;
 
                 SanPhamQuanAo sanPhamQuanAo = SanPhamQuanAoCreating.toEntity(creating);
 
-                DanhMucQuanAo danhMucQuanAo = danhMucQuanAoService.getOne(creating.getDanhMucId()).orElseThrow(
-                        () -> new CommonException("Danh mục quần không tồn tại id: " + creating.getDanhMucId())
-                );
-
                 Integer nguoiTaoId = SecurityContextHolder.getUser().getId();
-
                 NguoiDung nguoiTao = nguoiDungService.getOne(nguoiTaoId).orElseThrow(
                         () -> new CommonException("Người tạo không tồn tại id: " + nguoiTaoId)
                 );
 
+                sanPhamQuanAo.setMaSanPham(maSanPhamAuto);
                 sanPhamQuanAo.setDanhMuc(danhMucQuanAo);
                 sanPhamQuanAo.setNguoiTao(nguoiTao);
                 sanPhamQuanAo.setNgayTao(instantNow);
+
+                // Lưu sản phẩm vào DB trước
                 sanPhamQuanAo = create(sanPhamQuanAo);
-                Date now = new Date();
 
                 if (anhSanPhams != null && !anhSanPhams.isEmpty()) {
                         try {
@@ -229,45 +239,45 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                                         .ngayTao(instantNow)
                                                         .build()
                                         );
-
                                 }
                         } catch (Exception e) {
                                 log.error("Lỗi tạo tệp tin cho quần áo: {}", creating.getTenSanPham(), e);
-                                throw new RuntimeException("Lỗi tạo tệp tin cho quần áo: " + creating.getTenSanPham(), e);
+                                throw new RuntimeException("Lỗi tạo tệp tin cho quần áo: " + creating.getTenSanPham());
                         }
                 }
 
-
                 int imageCount = 0;
                 for (BienTheSanPhamCreating btspCreating : creating.getBienTheSanPhams()) {
-                        Optional<BienTheSanPham> findingBtsp = bienTheSanPhamService.checkExist(
-                                sanPhamQuanAo.getId(),
-                                btspCreating.getMauSacId(),
-                                btspCreating.getSizeId(),
-                                btspCreating.getMaSku(),
-                                btspCreating.getMaVachSku()
-                        );
-                        if (findingBtsp.isPresent()) {
-                                throw new CommonException("Mã biến thể sản phẩm đã tồn tại: " + btspCreating.getMaSku());
-                        }
+
+                        MauSac mauSac = mauSacService.getOne(btspCreating.getMauSacId()).orElseThrow(
+                                () -> new CommonException("Không tìm thấy màu id: " + btspCreating.getMauSacId()));
+
+                        Size size = sizeService.getOne(btspCreating.getSizeId()).orElseThrow(
+                                () -> new CommonException("Không tìm thấy size id: " + btspCreating.getSizeId()));
+
+                        ChatLieu chatLieu = chatLieuService.getOne(btspCreating.getChatLieuId()).orElseThrow(
+                                () -> new CommonException("Không tìm thấy chất liệu id: " + btspCreating.getChatLieuId()));
+
+                        // Công thức SKU = [Mã SP] + [Mã chất liệu] + [Mã size] + [Mã màu]
+                        String maCL = chatLieu.getMaChatLieu();
+                        String maSize = size.getMaSize();
+                        String maMau = mauSac.getMaMau();
+
+                        String autoSku = maSanPhamAuto + "-" + maCL + "-" + maSize + "-" + maMau;
 
                         BienTheSanPham bienTheSanPham = BienTheSanPhamCreating.toEntity(btspCreating);
-
                         bienTheSanPham.setSanPham(sanPhamQuanAo);
-                        bienTheSanPham.setMauSac(mauSacService.getOne(btspCreating.getMauSacId()).orElseThrow(
-                                () -> new CommonException("Không tìm thấy màu id: " + btspCreating.getMauSacId())
-                        ));
-                        bienTheSanPham.setSize(sizeService.getOne(btspCreating.getSizeId()).orElseThrow(
-                                () -> new CommonException("Không tìm thấy size id: " + btspCreating.getSizeId())
-                        ));
-                        bienTheSanPham.setChatLieu(chatLieuService.getOne(btspCreating.getChatLieuId()).orElseThrow(
-                                () -> new CommonException("Không tìm thấy chat lieu id: " + btspCreating.getChatLieuId())
-                        ));
+                        bienTheSanPham.setMaSku(autoSku); // Gán SKU tự động
+                        bienTheSanPham.setMauSac(mauSac);
+                        bienTheSanPham.setSize(size);
+                        bienTheSanPham.setChatLieu(chatLieu);
+
                         bienTheSanPhamService.create(bienTheSanPham);
 
-                        if (anhBienThes != null && !anhBienThes.isEmpty()) {
+                        // Xử lý ảnh biến thể
+                        if (anhBienThes != null && imageCount < anhBienThes.size()) {
                                 try {
-                                        String objectName = minioService.upload(anhBienThes.get(imageCount), ITable.bien_the_san_pham + "_" + sanPhamQuanAo.getMaSanPham() + "_" + now.getTime() + "_" + imageCount++);
+                                        String objectName = minioService.upload(anhBienThes.get(imageCount), ITable.bien_the_san_pham + "_" + autoSku + "_" + now.getTime());
                                         TepTin tepTin = tepTinService.create(
                                                 TepTin.builder()
                                                         .tenTepGoc(objectName)
@@ -285,54 +295,64 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                                 AnhBienThe.builder()
                                                         .bienThe(bienTheSanPham)
                                                         .tepTin(tepTin)
-                                                        .trangThai(btspCreating.getTrangThai())
+                                                        .trangThai(1)
                                                         .ngayTao(instantNow)
                                                         .build()
                                         );
+                                        imageCount++;
                                 } catch (Exception e) {
-                                        log.error("Lỗi tạo tệp tin cho biến thể quần áo: {}", btspCreating.getMaSku(), e);
-                                        throw new RuntimeException("Lỗi tạo tệp tin cho quần áo: " + btspCreating.getMaSku(), e);
+                                        log.error("Lỗi tạo tệp tin cho biến thể: {}", autoSku, e);
                                 }
                         }
-
                 }
                 recalculatePriceAndStatus(sanPhamQuanAo.getId());
-                sanPhamQuanAo = getOne(sanPhamQuanAo.getId()).orElseThrow(
-                        () -> new CommonException("Không tìm thấy sản phẩm đã tạo: " + creating.getMaSanPham())
-                );
 
-                String giaTriMoiJson;
+                sanPhamQuanAo = getOne(sanPhamQuanAo.getId()).get();
 
-                try {
-                        objectMapper.registerModule(new JavaTimeModule());
-                        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                        giaTriMoiJson = objectMapper.writeValueAsString(creating);
-                } catch (JsonProcessingException e) {
-                        log.error("Lỗi json", e);
-                        giaTriMoiJson = "error when parse";
-                }
-
-                lichSuThayDoiService.create(
-                        LichSuThayDoi.builder()
-                                .loaiThamChieu(ITable.san_pham_quan_ao)
-                                .idThamChieu(sanPhamQuanAo.getId())
-                                .kho(null)
-                                .hanhDong(IHanhDong.them_moi_san_pham)
-                                .giaTriCu("")
-                                .giaTriMoi(giaTriMoiJson)
-                                .nguoiThucHien(nguoiTao)
-                                .ngayThucHien(instantNow)
-                                .ghiChu("Tạo sản phẩm mới: " + sanPhamQuanAo.getTenSanPham() + " id: " + sanPhamQuanAo.getId())
-                                .build()
-                );
+                saveLichSu(sanPhamQuanAo, creating, nguoiTao, instantNow);
 
                 return ResponseEntity.ok(
                         ResponseData.<SanPhamQuanAoDto>builder()
                                 .status(HttpStatus.OK.value())
                                 .data(sanPhamQuanAoMapper.toDto(sanPhamQuanAo))
-                                .message("Success")
+                                .message("Tạo sản phẩm thành công với mã: " + maSanPhamAuto)
                                 .build()
                 );
+        }
+
+        private String generateCodeFromName(String name) {
+                if (name == null || name.isEmpty()) return "XX";
+                String normalized = Normalizer.normalize(name, Normalizer.Form.NFD)
+                        .replaceAll("\\p{M}", "")
+                        .toUpperCase();
+                String[] words = normalized.split("\\s+");
+                StringBuilder code = new StringBuilder();
+                for (String word : words) {
+                        if (!word.isEmpty()) code.append(word.charAt(0));
+                }
+                return code.toString();
+        }
+
+        private void saveLichSu(SanPhamQuanAo sp, SanPhamQuanAoCreating creating, NguoiDung nguoiTao, Instant now) {
+                try {
+                        objectMapper.registerModule(new JavaTimeModule());
+                        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                        String giaTriMoiJson = objectMapper.writeValueAsString(creating);
+
+                        lichSuThayDoiService.create(
+                                LichSuThayDoi.builder()
+                                        .loaiThamChieu(ITable.san_pham_quan_ao)
+                                        .idThamChieu(sp.getId())
+                                        .hanhDong(IHanhDong.them_moi_san_pham)
+                                        .giaTriMoi(giaTriMoiJson)
+                                        .nguoiThucHien(nguoiTao)
+                                        .ngayThucHien(now)
+                                        .ghiChu("Tạo sản phẩm tự động mã: " + sp.getMaSanPham())
+                                        .build()
+                        );
+                } catch (Exception e) {
+                        log.error("Lỗi lưu lịch sử", e);
+                }
         }
 
 

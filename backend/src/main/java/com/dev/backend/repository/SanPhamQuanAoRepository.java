@@ -18,5 +18,5 @@ public interface SanPhamQuanAoRepository extends JpaRepository<SanPhamQuanAo, In
             "LEFT JOIN FETCH d.danhMucCha " +
             "WHERE s.id = :id")
     Optional<SanPhamQuanAo> findDetailById(@Param("id") Integer id);
-
+    long countByMaSanPhamStartingWith(String prefix);
 }
