@@ -573,7 +573,7 @@ export default function PurchaseOrderList() {
     };
 
     return (
-        <div className="lux-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
             {/* Notifications */}
             {success && (
                 <Alert className="bg-green-50 border-green-200 animate-in slide-in-from-top-2 duration-300">

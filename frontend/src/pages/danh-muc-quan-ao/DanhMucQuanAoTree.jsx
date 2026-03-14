@@ -392,7 +392,7 @@ const DanhMucQuanAoTree = () => {
   };
 
   return (
-    <div className="lux-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
 
       {/* ── Delete Confirm Modal ── */}
       {deleteModal.show && (
@@ -459,6 +459,17 @@ const DanhMucQuanAoTree = () => {
         </Card>
       </div>
 
+      <div className="flex items-center justify-end">
+        <Button
+          size="sm"
+          onClick={handleAddRoot}
+          className="gap-1.5 bg-slate-900 hover:bg-white hover:text-slate-900 border border-slate-900 text-white shadow-sm"
+        >
+          <Plus className="h-4 w-4" />
+          Thêm danh mục gốc
+        </Button>
+      </div>
+
       {/* ── Main Card ── */}
       <Card className="border-0 shadow-lg bg-white">
         <CardHeader className="border-b border-slate-100 pb-4">
@@ -480,14 +491,6 @@ const DanhMucQuanAoTree = () => {
               >
                 <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                 Làm mới
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleAddRoot}
-                className="gap-1.5 bg-slate-900 hover:bg-white hover:text-slate-900 border border-slate-900 text-white shadow-sm"
-              >
-                <Plus className="h-4 w-4" />
-                Thêm danh mục gốc
               </Button>
             </div>
           </div>

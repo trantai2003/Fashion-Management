@@ -120,3 +120,121 @@
 	box-shadow: 0 8px 24px rgba(100, 80, 30, 0.1) !important;
 }
 
+/* Scoped Warehouse visual system for selected management pages */
+.warehouse-unified {
+	min-height: 100vh;
+	background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 55%, #ede9de 100%) !important;
+	padding: 28px 28px 56px !important;
+	position: relative;
+	overflow-x: hidden;
+	overflow-y: clip;
+	color: #1a1612;
+	font-family: 'DM Sans', system-ui, sans-serif !important;
+	isolation: isolate;
+}
+
+.warehouse-unified,
+.warehouse-unified * {
+	font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+.warehouse-unified > * {
+	position: relative;
+	z-index: 1;
+	max-width: 1400px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.warehouse-unified::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 0;
+	background-image:
+		linear-gradient(rgba(184, 134, 11, 0.05) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(184, 134, 11, 0.05) 1px, transparent 1px);
+	background-size: 56px 56px;
+	animation: warehouseUnifiedGrid 35s linear infinite;
+}
+
+.warehouse-unified::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 0;
+	background:
+		radial-gradient(circle at 90% -8%, rgba(184, 134, 11, 0.07) 0, rgba(184, 134, 11, 0) 34%),
+		radial-gradient(circle at 6% 106%, rgba(201, 150, 12, 0.06) 0, rgba(201, 150, 12, 0) 30%);
+	filter: blur(0.2px);
+}
+
+@keyframes warehouseUnifiedGrid {
+	to {
+		background-position: 56px 56px;
+	}
+}
+
+.warehouse-unified .text-violet-600,
+.warehouse-unified .text-purple-600,
+.warehouse-unified .text-indigo-600 {
+	color: #b8860b !important;
+}
+
+.warehouse-unified .bg-violet-600,
+.warehouse-unified .bg-purple-600,
+.warehouse-unified .bg-indigo-600,
+.warehouse-unified .bg-slate-900 {
+	background: linear-gradient(135deg, #b8860b, #e8b923) !important;
+	border-color: #b8860b !important;
+	color: #fff !important;
+}
+
+.warehouse-unified .bg-white,
+.warehouse-unified .rounded-2xl.bg-white {
+	background-color: #fffdf8 !important;
+}
+
+.warehouse-unified .ring-slate-200\/80,
+.warehouse-unified .border-slate-200,
+.warehouse-unified .border-gray-200,
+.warehouse-unified .border-gray-300,
+.warehouse-unified .border-gray-100 {
+	border-color: rgba(184, 134, 11, 0.16) !important;
+}
+
+.warehouse-unified .shadow-lg,
+.warehouse-unified .shadow-md,
+.warehouse-unified .shadow-sm {
+	box-shadow: 0 8px 24px rgba(100, 80, 30, 0.1) !important;
+}
+
+.warehouse-unified thead tr,
+.warehouse-unified .bg-slate-50 {
+	background: #f8f3e8 !important;
+}
+
+.warehouse-unified th {
+	font-family: 'DM Mono', monospace !important;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #7a6e5f !important;
+}
+
+.warehouse-unified input,
+.warehouse-unified textarea,
+.warehouse-unified [role="combobox"] {
+	background: #faf8f3 !important;
+	border-color: rgba(184, 134, 11, 0.18) !important;
+}
+
+.warehouse-unified .hover\:bg-violet-50:hover,
+.warehouse-unified .hover\:bg-purple-50:hover,
+.warehouse-unified .hover\:bg-violet-50\/50:hover,
+.warehouse-unified .hover\:bg-purple-50\/50:hover,
+.warehouse-unified .hover\:bg-indigo-50:hover {
+	background-color: rgba(184, 134, 11, 0.08) !important;
+}
+
