@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2, ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import {
+    Loader2, ChevronDown, ChevronLeft, ChevronRight, Plus,
+    Package, CheckCircle2, XCircle, BarChart3, Filter,
+    Search, RefreshCcw, Eye, Edit, Trash2, Check,
+} from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,14 +15,423 @@ import { khoService } from '@/services/khoService';
 import { useToggle } from '@/hooks/useToggle';
 import ConfirmModal from '@/components/ui/confirm-modal';
 import {
-    WarehouseHeader,
-    WarehouseStats,
-    WarehouseSearchFilter,
-    WarehouseList,
-    WarehouseEmptyState,
     WarehouseDialog
 } from '.';
 
+/* ══════════════════════════════════════════════════════
+   STYLES — Light Ivory / Gold  (matches homepage + login)
+══════════════════════════════════════════════════════ */
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+/* ── Root ── */
+.wh-root {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 55%, #ede9de 100%);
+  padding: 28px 28px 56px;
+  position: relative;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ── Animated grid ── */
+.wh-grid {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  animation: whGrid 35s linear infinite;
+}
+@keyframes whGrid { to { background-position: 56px 56px; } }
+
+/* ── Orbs ── */
+.wh-orb-1 {
+  position: fixed; width: 500px; height: 500px; border-radius: 50%;
+  background: rgba(184,134,11,0.07); filter: blur(100px);
+  top: -180px; right: -120px; pointer-events: none; z-index: 0;
+}
+.wh-orb-2 {
+  position: fixed; width: 360px; height: 360px; border-radius: 50%;
+  background: rgba(201,150,12,0.05); filter: blur(90px);
+  bottom: -100px; left: -80px; pointer-events: none; z-index: 0;
+}
+
+/* ── Inner ── */
+.wh-inner {
+  position: relative; z-index: 1;
+  max-width: 1400px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 22px;
+}
+
+/* ════════════════════════════════
+   PAGE HEADER
+════════════════════════════════ */
+.wh-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid rgba(184,134,11,0.15);
+}
+.wh-title-wrap { display: flex; flex-direction: column; gap: 3px; }
+.wh-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; color: rgba(184,134,11,0.65);
+  text-transform: uppercase;
+}
+.wh-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px; font-weight: 900; color: #1a1612;
+  letter-spacing: -0.5px; line-height: 1;
+}
+.wh-title span { color: #b8860b; }
+
+/* ── Add button ── */
+.wh-btn-add {
+  height: 42px; padding: 0 22px; border-radius: 11px;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  border: none; color: #fff;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; gap: 7px; cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 18px rgba(184,134,11,0.35);
+  position: relative; overflow: hidden;
+}
+.wh-btn-add::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0; transition: opacity 0.2s;
+}
+.wh-btn-add:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(184,134,11,0.48); }
+.wh-btn-add:hover::after { opacity: 1; }
+
+/* ════════════════════════════════
+   STAT CARDS
+════════════════════════════════ */
+.wh-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+}
+@media (max-width: 900px) { .wh-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .wh-stats { grid-template-columns: 1fr; } }
+
+.wh-stat {
+  background: #fff;
+  border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; padding: 22px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  position: relative; overflow: hidden;
+}
+.wh-stat::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.wh-stat.s-gold::before  { background: linear-gradient(90deg, transparent, #b8860b, transparent); }
+.wh-stat.s-green::before { background: linear-gradient(90deg, transparent, #16a34a, transparent); }
+.wh-stat.s-red::before   { background: linear-gradient(90deg, transparent, #dc2626, transparent); }
+.wh-stat.s-blue::before  { background: linear-gradient(90deg, transparent, #2563eb, transparent); }
+.wh-stat:hover {
+  border-color: rgba(184,134,11,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(100,80,30,0.13);
+}
+.wh-stat-lbl {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: #a89f92; letter-spacing: 0.05em; margin-bottom: 6px;
+}
+.wh-stat-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 800; color: #1a1612; letter-spacing: -1px;
+}
+.wh-stat-ico {
+  width: 44px; height: 44px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.wh-stat-ico.s-gold  { background: rgba(184,134,11,0.12); }
+.wh-stat-ico.s-green { background: rgba(34,197,94,0.1); }
+.wh-stat-ico.s-red   { background: rgba(220,38,38,0.08); }
+.wh-stat-ico.s-blue  { background: rgba(37,99,235,0.08); }
+
+/* ════════════════════════════════
+   FILTER CARD
+════════════════════════════════ */
+.wh-filter {
+  background: #fff;
+  border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+}
+.wh-filter-head {
+  padding: 16px 22px 14px;
+  border-bottom: 1px solid rgba(184,134,11,0.08);
+  background: linear-gradient(180deg, rgba(184,134,11,0.03) 0%, transparent 100%);
+  display: flex; align-items: center; gap: 8px;
+}
+.wh-filter-ttl {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.15em; text-transform: uppercase; color: rgba(184,134,11,0.7);
+}
+.wh-filter-body {
+  padding: 18px 22px 22px;
+  display: grid; grid-template-columns: 2fr 1fr auto; gap: 14px; align-items: end;
+}
+@media (max-width: 700px) { .wh-filter-body { grid-template-columns: 1fr; } }
+
+.wh-field { display: flex; flex-direction: column; gap: 6px; }
+.wh-lbl {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: rgba(184,134,11,0.7);
+}
+
+.wh-search-wrap { position: relative; }
+.wh-search-ico {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  color: #a89f92; pointer-events: none; display: flex; align-items: center;
+}
+.wh-inp {
+  width: 100%; height: 42px; padding: 0 14px 0 38px;
+  background: #faf8f3;
+  border: 1.5px solid rgba(184,134,11,0.18);
+  border-radius: 11px; outline: none;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: #1a1612;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.wh-inp::placeholder { color: #a89f92; }
+.wh-inp:focus {
+  border-color: #b8860b; background: #fff;
+  box-shadow: 0 0 0 3px rgba(184,134,11,0.1);
+}
+.wh-inp:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.wh-sel-btn {
+  width: 100%; height: 42px; padding: 0 14px;
+  background: #faf8f3;
+  border: 1.5px solid rgba(184,134,11,0.18);
+  border-radius: 11px;
+  color: #7a6e5f; font-size: 13px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.wh-sel-btn:hover { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
+
+.wh-btn-reset {
+  height: 42px; padding: 0 18px; border-radius: 11px;
+  background: transparent;
+  border: 1.5px solid rgba(184,134,11,0.2);
+  color: #7a6e5f; font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+}
+.wh-btn-reset:hover { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.06); }
+.wh-btn-reset:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Dropdown */
+.wh-dd-content {
+  background: #fff !important;
+  border: 1px solid rgba(184,134,11,0.2) !important;
+  border-radius: 13px !important;
+  box-shadow: 0 12px 40px rgba(100,80,30,0.15) !important;
+  overflow: hidden !important;
+}
+.wh-dd-item {
+  color: #7a6e5f !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  font-family: 'DM Sans', sans-serif !important;
+  padding: 10px 14px !important;
+  display: flex !important; align-items: center !important; justify-content: space-between !important;
+  transition: background 0.15s, color 0.15s !important;
+}
+.wh-dd-item:hover { background: rgba(184,134,11,0.07) !important; color: #b8860b !important; }
+
+/* ════════════════════════════════
+   TABLE
+════════════════════════════════ */
+.wh-tbl-card {
+  background: #fff;
+  border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+}
+.wh-tbl-card::before {
+  content: ''; display: block; height: 2px;
+  background: linear-gradient(90deg, transparent, #b8860b, transparent);
+}
+.wh-tbl-scroll { overflow-x: auto; overflow-y: auto; max-height: 520px; }
+
+.wh-tbl { width: 100%; border-collapse: collapse; text-align: left; }
+
+.wh-thead { position: sticky; top: 0; z-index: 5; }
+.wh-thead tr {
+  background: #faf8f3;
+  border-bottom: 1px solid rgba(184,134,11,0.12);
+}
+.wh-th {
+  height: 44px; padding: 0 16px;
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase;
+  color: rgba(184,134,11,0.6); white-space: nowrap;
+}
+.wh-th.c { text-align: center; }
+
+.wh-tbody tr { border-bottom: 1px solid rgba(184,134,11,0.07); transition: background 0.15s; }
+.wh-tbody tr:last-child { border-bottom: none; }
+.wh-tbody tr:hover { background: rgba(184,134,11,0.04); }
+.wh-td { padding: 14px 16px; vertical-align: middle; }
+.wh-td.c { text-align: center; }
+
+.wh-stt {
+  display: inline-flex; width: 28px; height: 28px; border-radius: 8px;
+  align-items: center; justify-content: center;
+  background: rgba(184,134,11,0.08);
+  font-family: 'DM Mono', monospace; font-size: 11px; color: #a89f92;
+}
+.wh-code {
+  font-family: 'DM Mono', monospace; font-size: 12px; color: #b8860b; font-weight: 500;
+  background: rgba(184,134,11,0.08); border: 1px solid rgba(184,134,11,0.18);
+  padding: 3px 10px; border-radius: 7px; white-space: nowrap;
+}
+.wh-name { font-size: 14px; font-weight: 600; color: #1a1612; font-family: 'DM Sans', sans-serif; }
+.wh-addr {
+  font-size: 12px; color: #a89f92; margin-top: 2px;
+  font-family: 'DM Sans', sans-serif;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;
+}
+.wh-mgr { font-size: 13px; color: #3d3529; font-family: 'DM Sans', sans-serif; }
+
+.wh-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 99px; padding: 4px 12px; font-size: 11px; font-weight: 600;
+  white-space: nowrap; font-family: 'DM Sans', sans-serif;
+}
+.wh-badge.on  { background: rgba(34,197,94,0.08);  border: 1px solid rgba(34,197,94,0.22);  color: #16a34a; }
+.wh-badge.off { background: rgba(220,38,38,0.07);  border: 1px solid rgba(220,38,38,0.2);   color: #dc2626; }
+.wh-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.wh-badge.on  .wh-dot { background: #16a34a; }
+.wh-badge.off .wh-dot { background: #dc2626; }
+
+.wh-stock { font-family: 'DM Mono', monospace; font-size: 13px; color: #b8860b; font-weight: 600; }
+.wh-date  { font-family: 'DM Mono', monospace; font-size: 12px; color: #a89f92; }
+
+.wh-acts { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.wh-act {
+  width: 32px; height: 32px; border-radius: 9px;
+  border: 1.5px solid transparent; background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.wh-act:hover { transform: scale(1.1); }
+.wh-act.v      { color: #b8860b; }
+.wh-act.v:hover{ background: rgba(184,134,11,0.1);  border-color: rgba(184,134,11,0.3); }
+.wh-act.e      { color: #2563eb; }
+.wh-act.e:hover{ background: rgba(37,99,235,0.08);  border-color: rgba(37,99,235,0.25); }
+.wh-act.d      { color: #dc2626; }
+.wh-act.d:hover{ background: rgba(220,38,38,0.08);  border-color: rgba(220,38,38,0.25); }
+
+/* ════════════════════════════════
+   EMPTY STATE
+════════════════════════════════ */
+.wh-empty {
+  background: #fff; border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; padding: 72px 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+}
+.wh-empty-ico {
+  width: 72px; height: 72px; border-radius: 20px;
+  background: rgba(184,134,11,0.08); border: 1px solid rgba(184,134,11,0.15);
+  display: flex; align-items: center; justify-content: center;
+}
+.wh-empty-ttl {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 700; color: #1a1612;
+}
+.wh-empty-dsc { font-size: 13px; color: #a89f92; max-width: 380px; line-height: 1.7; font-family: 'DM Sans', sans-serif; }
+
+/* ════════════════════════════════
+   LOADING
+════════════════════════════════ */
+.wh-loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 80px 32px; color: #7a6e5f; font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+}
+.wh-spin { animation: whSpin 0.9s linear infinite; }
+@keyframes whSpin { to { transform: rotate(360deg); } }
+
+/* ════════════════════════════════
+   PAGINATION
+════════════════════════════════ */
+.wh-pag {
+  background: #fff; border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; padding: 16px 22px;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+}
+.wh-pag-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+.wh-pag-left   { display: flex; align-items: center; gap: 8px; }
+.wh-pag-lbl    { font-family: 'DM Mono', monospace; font-size: 10px; color: #a89f92; letter-spacing: 0.1em; text-transform: uppercase; }
+.wh-pag-sz-btn {
+  height: 34px; padding: 0 12px; border-radius: 9px;
+  background: #faf8f3; border: 1.5px solid rgba(184,134,11,0.18);
+  color: #7a6e5f; font-size: 12px;
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  transition: all 0.15s; font-family: 'DM Mono', monospace;
+}
+.wh-pag-sz-btn:hover { border-color: #b8860b; color: #b8860b; }
+.wh-pag-info   { font-family: 'DM Mono', monospace; font-size: 11px; color: #a89f92; letter-spacing: 0.04em; }
+.wh-pag-info strong { color: #3d3529; }
+.wh-pag-info .g { color: #b8860b; }
+.wh-pag-nav    { display: flex; align-items: center; gap: 5px; }
+.wh-pag-btn {
+  height: 34px; min-width: 34px; padding: 0 10px; border-radius: 9px;
+  background: #faf8f3; border: 1.5px solid rgba(184,134,11,0.15);
+  color: #7a6e5f; font-size: 13px; font-weight: 500;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
+  transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+}
+.wh-pag-btn:hover:not(:disabled) { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.06); }
+.wh-pag-btn.act {
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  border-color: transparent; color: #fff; font-weight: 700;
+  box-shadow: 0 3px 12px rgba(184,134,11,0.35);
+}
+.wh-pag-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+`;
+
+/* ── Filter payload builder ── */
+function buildPayload(filters) {
+    const list = [];
+    if (filters.searchTerm?.trim()) {
+        ["tenKho", "maKho", "diaChi"].forEach(f =>
+            list.push({ fieldName: f, operation: "ILIKE", value: filters.searchTerm.trim(), logicType: "OR" })
+        );
+    }
+    if (filters.filterStatus === "active")
+        list.push({ fieldName: "trangThai", operation: "EQUALS", value: 1, logicType: "AND" });
+    else if (filters.filterStatus === "inactive")
+        list.push({ fieldName: "trangThai", operation: "EQUALS", value: 0, logicType: "AND" });
+
+    return {
+        filters: list,
+        sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
+        page: filters.pageNumber,
+        size: filters.pageSize,
+    };
+}
+
+const STATUS_OPTIONS = [
+    { value: 'all', label: 'Tất cả trạng thái' },
+    { value: 'active', label: 'Đang hoạt động' },
+    { value: 'inactive', label: 'Ngừng hoạt động' },
+];
+
+/* ════════════════════════════════════════════════════════════════
+   COMPONENT
+════════════════════════════════════════════════════════════════ */
 export default function WarehouseManagement() {
     const [warehouses, setWarehouses] = useState([]);
     const [managers, setManagers] = useState([]);
@@ -31,60 +441,47 @@ export default function WarehouseManagement() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [pagination, setPagination] = useState({
-        pageNumber: 0,
-        pageSize: 10,
-        totalElements: 0,
-        totalPages: 0,
+        pageNumber: 0, pageSize: 10, totalElements: 0, totalPages: 0,
     });
+
     const [showDialog, setShowDialog] = useState(false);
-    const [dialogMode, setDialogMode] = useState('create'); // create, edit, view
+    const [dialogMode, setDialogMode] = useState('create');
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
     const [isConfirmOpen, openConfirm, closeConfirm] = useToggle(false);
     const [warehouseToDelete, setWarehouseToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
     const [formData, setFormData] = useState({
-        maKho: '',
-        tenKho: '',
-        diaChi: '',
-        quanLyId: '',
-        trangThai: 1
+        maKho: '', tenKho: '', diaChi: '', quanLyId: '', trangThai: 1,
     });
-
     const [errors, setErrors] = useState({});
 
-    // Fetch warehouses
-    const fetchWarehouses = useCallback(async (page = pagination.pageNumber, size = pagination.pageSize) => {
+    /* ── Fetch warehouses ── */
+    const fetchWarehouses = useCallback(async (
+        page = pagination.pageNumber,
+        size = pagination.pageSize,
+    ) => {
         try {
             setIsLoading(true);
-            const payload = buildWarehouseFilterPayload({ searchTerm, filterStatus, pageNumber: page, pageSize: size });
-            const res = await khoService.filter(payload);
-
+            const res = await khoService.filter(
+                buildPayload({ searchTerm, filterStatus, pageNumber: page, pageSize: size })
+            );
             console.log(res);
-
-            if (res?.data?.data) {
-                setWarehouses(res.data.data.content || []);
+            const d = res?.data?.data ?? res?.data;
+            if (d) {
+                setWarehouses(d.content || []);
                 setPagination(prev => ({
                     ...prev,
-                    pageNumber: res.data.data.number || 0,
-                    pageSize: Math.max(res.data.data.size, 1),
-                    totalElements: res.data.data.totalElements || 0,
-                    totalPages: res.data.data.totalPages || 0,
-                }));
-            } else if (res?.data) {
-                setWarehouses(res.data.content || []);
-                setPagination(prev => ({
-                    ...prev,
-                    pageNumber: res.data.number || 0,
-                    pageSize: Math.max(res.data.size, 1),
-                    totalElements: res.data.totalElements || 0,
-                    totalPages: res.data.totalPages || 0,
+                    pageNumber: d.number || 0,
+                    pageSize: Math.max(d.size, 1),
+                    totalElements: d.totalElements || 0,
+                    totalPages: d.totalPages || 0,
                 }));
             } else {
                 setWarehouses([]);
             }
-        } catch (error) {
-            console.error("Lỗi khi tải danh sách kho:", error);
+        } catch (err) {
+            console.error("Lỗi khi tải danh sách kho:", err);
             toast.error("Không thể tải danh sách kho");
             setWarehouses([]);
         } finally {
@@ -92,366 +489,359 @@ export default function WarehouseManagement() {
         }
     }, [searchTerm, filterStatus, pagination.pageNumber, pagination.pageSize]);
 
-    const handlePageChange = (newPage) => {
-        if (newPage >= 0 && newPage < pagination.totalPages) {
-            setPagination(prev => ({...prev, pageNumber: newPage}));
-        }
-    };
-
-    const handlePageSizeChange = (newSize) => {
-        setPagination(prev => ({...prev, pageSize: newSize, pageNumber: 0}));
-    };
-
-    // Fetch managers
+    /* ── Fetch managers ── */
     const fetchManagers = useCallback(async () => {
         try {
             setIsLoadingManagers(true);
             const res = await khoService.getManagers();
             if (res.data?.status === 200) {
-                const pageData = res.data.data;
-                const users = pageData.content || [];
-                setManagers(users.map(u => ({ id: u.id, name: u.hoTen })));
+                setManagers((res.data.data.content || []).map(u => ({ id: u.id, name: u.hoTen })));
             }
-        } catch (error) {
-            console.error("Lỗi khi tải danh sách quản lý:", error);
+        } catch (err) {
+            console.error("Lỗi khi tải danh sách quản lý:", err);
             toast.error("Không thể tải danh sách người quản lý");
         } finally {
             setIsLoadingManagers(false);
         }
     }, []);
 
-    useEffect(() => {
-        fetchWarehouses();
-    }, [fetchWarehouses]);
+    useEffect(() => { fetchWarehouses(); }, [fetchWarehouses]);
+    useEffect(() => { if (showDialog) fetchManagers(); }, [showDialog, fetchManagers]);
 
-    useEffect(() => {
-        if (showDialog) {
-            fetchManagers();
-        }
-    }, [showDialog, fetchManagers]);
+    /* ── Pagination ── */
+    const handlePageChange = p => { if (p >= 0 && p < pagination.totalPages) setPagination(prev => ({ ...prev, pageNumber: p })); };
+    const handlePageSizeChange = sz => setPagination(prev => ({ ...prev, pageSize: sz, pageNumber: 0 }));
 
+    /* ── Validation ── */
     const validateForm = () => {
-        const newErrors = {};
-
-        if (!formData.maKho) {
-            newErrors.maKho = 'Vui lòng nhập mã kho';
-        }
-
-        if (!formData.tenKho) {
-            newErrors.tenKho = 'Vui lòng nhập tên kho';
-        } else if (formData.tenKho.length < 5) {
-            newErrors.tenKho = 'Tên kho phải có ít nhất 5 ký tự';
-        }
-
-        if (!formData.diaChi) {
-            newErrors.diaChi = 'Vui lòng nhập địa chỉ';
-        }
-
-        if (!formData.quanLyId) {
-            newErrors.quanLyId = 'Vui lòng chọn người quản lý';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        const e = {};
+        if (!formData.maKho) e.maKho = 'Vui lòng nhập mã kho';
+        if (!formData.tenKho) e.tenKho = 'Vui lòng nhập tên kho';
+        else if (formData.tenKho.length < 5) e.tenKho = 'Tên kho phải có ít nhất 5 ký tự';
+        if (!formData.diaChi) e.diaChi = 'Vui lòng nhập địa chỉ';
+        if (!formData.quanLyId) e.quanLyId = 'Vui lòng chọn người quản lý';
+        setErrors(e);
+        return Object.keys(e).length === 0;
     };
 
-    function buildWarehouseFilterPayload(filters) {
-        const filterList = [];
-
-        if (filters.searchTerm?.trim()) {
-            ["tenKho", "maKho", "diaChi"].forEach((field) => {
-                filterList.push({
-                    fieldName: field,
-                    operation: "ILIKE",
-                    value: filters.searchTerm.trim(),
-                    logicType: "OR",
-                });
-            });
-        }
-
-        if (filters.filterStatus === "active") {
-            filterList.push({
-                fieldName: "trangThai",
-                operation: "EQUALS",
-                value: 1,
-                logicType: "AND",
-            });
-        } else if (filters.filterStatus === "inactive") {
-            filterList.push({
-                fieldName: "trangThai",
-                operation: "EQUALS",
-                value: 0,
-                logicType: "AND",
-            });
-        }
-
-        return {
-            filters: filterList,
-            sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
-            page: filters.pageNumber,
-            size: filters.pageSize,
-        };
-    }
-
-    const handleOpenDialog = (mode, warehouse = null) => {
+    /* ── Dialog ── */
+    const handleOpenDialog = (mode, wh = null) => {
         setDialogMode(mode);
-        setSelectedWarehouse(warehouse);
-
-        if (mode === 'create') {
-            setFormData({
-                maKho: '',
-                tenKho: '',
-                diaChi: '',
-                quanLyId: '',
-                trangThai: 1
-            });
-        } else if (mode === 'edit' && warehouse) {
-            setFormData({
-                maKho: warehouse.maKho,
-                tenKho: warehouse.tenKho,
-                diaChi: warehouse.diaChi,
-                quanLyId: warehouse.quanLy?.id?.toString() || '',
-                trangThai: warehouse.trangThai ?? 1
-            });
-        } else if (mode === 'view' && warehouse) {
-            setSelectedWarehouse(warehouse);
-        }
-
+        setSelectedWarehouse(wh);
+        if (mode === 'create')
+            setFormData({ maKho: '', tenKho: '', diaChi: '', quanLyId: '', trangThai: 1 });
+        else if (mode === 'edit' && wh)
+            setFormData({ maKho: wh.maKho, tenKho: wh.tenKho, diaChi: wh.diaChi, quanLyId: wh.quanLy?.id?.toString() || '', trangThai: wh.trangThai ?? 1 });
         setErrors({});
         setShowDialog(true);
     };
 
-    const handleCloseDialog = () => {
-        setShowDialog(false);
-        setSelectedWarehouse(null);
-        setErrors({});
-    };
+    const handleCloseDialog = () => { setShowDialog(false); setSelectedWarehouse(null); setErrors({}); };
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
-
         try {
-            const warehouseData = {
-                maKho: formData.maKho,
-                tenKho: formData.tenKho,
-                diaChi: formData.diaChi,
-                quanLyId: Number(formData.quanLyId),
-                trangThai: Number(formData.trangThai)
-            };
-
-            console.log('Sending warehouse data:', warehouseData);
-
+            const data = { maKho: formData.maKho, tenKho: formData.tenKho, diaChi: formData.diaChi, quanLyId: Number(formData.quanLyId), trangThai: Number(formData.trangThai) };
+            console.log('Sending warehouse data:', data);
             let res;
-            if (dialogMode === 'create') {
-                res = await khoService.create(warehouseData);
-            } else if (dialogMode === 'edit') {
-                const updateData = {
-                    id: selectedWarehouse.id,
-                    ...warehouseData
-                };
-                res = await khoService.update(updateData);
-            }
-
-            // Check if backend returns error in response body (HTTP 200 with data.status = 400)
-            if (res?.data?.status >= 400) {
-                toast.error(res.data.message || 'Có lỗi xảy ra');
-                return;
-            }
-
-            // Success
+            if (dialogMode === 'create') res = await khoService.create(data);
+            else if (dialogMode === 'edit') res = await khoService.update({ id: selectedWarehouse.id, ...data });
+            if (res?.data?.status >= 400) { toast.error(res.data.message || 'Có lỗi xảy ra'); return; }
             toast.success(dialogMode === 'create' ? 'Thêm kho mới thành công!' : 'Cập nhật thông tin kho thành công!');
-            setShowDialog(false);
-            setErrors({});
-            fetchWarehouses();
-        } catch (error) {
-            console.error('Chi tiết lỗi:', error);
-            console.error('Error response:', error.response);
-            console.error('Error response data:', error.response?.data);
-
-            const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra khi xử lý kho';
-            toast.error(errorMessage);
+            setShowDialog(false); setErrors({}); fetchWarehouses();
+        } catch (err) {
+            console.error('Chi tiết lỗi:', err);
+            console.error('Error response:', err.response);
+            console.error('Error response data:', err.response?.data);
+            toast.error(err.response?.data?.message || err.message || 'Có lỗi xảy ra khi xử lý kho');
         }
     };
 
-    const handleDeleteClick = useCallback((warehouse) => {
-        setWarehouseToDelete(warehouse);
-        openConfirm();
-    }, [openConfirm]);
+    const handleDeleteClick = useCallback((wh) => { setWarehouseToDelete(wh); openConfirm(); }, [openConfirm]);
 
     const handleConfirmDelete = useCallback(async () => {
         if (!warehouseToDelete) return;
-
         try {
             setIsDeleting(true);
             await khoService.delete(warehouseToDelete.id);
             toast.success('Xóa kho thành công!');
-            closeConfirm();
-            setWarehouseToDelete(null);
-            fetchWarehouses();
-        } catch (error) {
-            console.error('Lỗi khi xóa kho:', error);
-            toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa kho');
-        } finally {
-            setIsDeleting(false);
-        }
+            closeConfirm(); setWarehouseToDelete(null); fetchWarehouses();
+        } catch (err) {
+            console.error('Lỗi khi xóa kho:', err);
+            toast.error(err.response?.data?.message || 'Có lỗi xảy ra khi xóa kho');
+        } finally { setIsDeleting(false); }
     }, [warehouseToDelete, closeConfirm, fetchWarehouses]);
 
     const handleCancelDelete = useCallback(() => {
-        if (!isDeleting) {
-            setWarehouseToDelete(null);
-            closeConfirm();
-        }
+        if (!isDeleting) { setWarehouseToDelete(null); closeConfirm(); }
     }, [isDeleting, closeConfirm]);
 
+    /* ── Computed stats ── */
     const stats = {
-        total: warehouses.length,
+        total: pagination.totalElements,
         active: warehouses.filter(w => w.trangThai === 1).length,
         inactive: warehouses.filter(w => w.trangThai === 0).length,
-        totalStock: warehouses.reduce((sum, w) => sum + (w.soLuongTon || 0), 0)
+        totalStock: warehouses.reduce((s, w) => s + (w.soLuongTon || 0), 0),
     };
 
+    const statusLabel = STATUS_OPTIONS.find(o => o.value === filterStatus)?.label ?? 'Tất cả trạng thái';
+
+    /* ══════════════
+       RENDER
+    ══════════════ */
     return (
-        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-            <div className="space-y-6 w-full">
-                <WarehouseStats stats={stats} />
-                <WarehouseSearchFilter
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    filterStatus={filterStatus}
-                    setFilterStatus={setFilterStatus}
-                />
-                
-                <div className="flex justify-end">
-                    <Button
-                        onClick={() => handleOpenDialog('create')}
-                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Thêm kho mới
-                    </Button>
-                </div>
+        <>
+            <style>{STYLES}</style>
 
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-                        <span className="ml-3 text-gray-600">Đang tải danh sách kho...</span>
+            <div className="wh-root">
+                <div className="wh-grid" />
+                <div className="wh-orb-1" />
+                <div className="wh-orb-2" />
+
+                <div className="wh-inner">
+
+                    {/* ── Header ── */}
+                    <div className="wh-header">
+                        <div className="wh-title-wrap">
+                            <p className="wh-eyebrow">FS WMS · Inventory</p>
+                            <h1 className="wh-title">Quản lý <span>kho hàng</span></h1>
+                        </div>
+                        <button className="wh-btn-add" onClick={() => handleOpenDialog('create')}>
+                            <Plus size={15} /> Thêm kho mới
+                        </button>
                     </div>
-                ) : warehouses.length > 0 ? (
-                    <>
-                        <WarehouseList
-                            warehouses={warehouses}
-                            onView={(warehouse) => handleOpenDialog('view', warehouse)}
-                            onEdit={(warehouse) => handleOpenDialog('edit', warehouse)}
-                            onDelete={handleDeleteClick}
-                        />
 
-                        {/* Pagination Section */}
-                        <Card className="border-0 shadow-md bg-white">
-                            <CardContent className="p-4">
-                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                    {/* Left side - Page size selector */}
-                                    <div className="flex items-center gap-2">
-                                        <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                    {/* ── Stats ── */}
+                    <div className="wh-stats">
+                        {[
+                            { cls: 's-gold', lbl: 'Tổng kho', val: stats.total, icon: <Package size={20} style={{ color: '#b8860b' }} strokeWidth={1.5} /> },
+                            { cls: 's-green', lbl: 'Đang hoạt động', val: stats.active, icon: <CheckCircle2 size={20} style={{ color: '#16a34a' }} strokeWidth={1.5} /> },
+                            { cls: 's-red', lbl: 'Ngừng hoạt động', val: stats.inactive, icon: <XCircle size={20} style={{ color: '#dc2626' }} strokeWidth={1.5} /> },
+                            { cls: 's-blue', lbl: 'Tổng tồn kho', val: stats.totalStock.toLocaleString(), icon: <BarChart3 size={20} style={{ color: '#2563eb' }} strokeWidth={1.5} /> },
+                        ].map(({ cls, lbl, val, icon }) => (
+                            <div key={lbl} className={`wh-stat ${cls}`}>
+                                <div>
+                                    <p className="wh-stat-lbl">{lbl}</p>
+                                    <p className="wh-stat-val">{val}</p>
+                                </div>
+                                <div className={`wh-stat-ico ${cls}`}>{icon}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* ── Filter ── */}
+                    <div className="wh-filter">
+                        <div className="wh-filter-head">
+                            <Filter size={13} style={{ color: '#b8860b' }} />
+                            <span className="wh-filter-ttl">Bộ lọc tìm kiếm</span>
+                        </div>
+                        <div className="wh-filter-body">
+                            {/* Search */}
+                            <div className="wh-field">
+                                <label className="wh-lbl">Tìm kiếm</label>
+                                <div className="wh-search-wrap">
+                                    <span className="wh-search-ico"><Search size={14} /></span>
+                                    <input
+                                        className="wh-inp"
+                                        placeholder="Tìm theo tên kho, mã kho, địa chỉ..."
+                                        value={searchTerm}
+                                        onChange={e => setSearchTerm(e.target.value)}
+                                        disabled={isLoading}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Status */}
+                            <div className="wh-field">
+                                <label className="wh-lbl">Trạng thái</label>
+                                <DropdownMenu modal={false}>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="wh-sel-btn">
+                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {statusLabel}
+                                            </span>
+                                            <ChevronDown size={14} style={{ flexShrink: 0, opacity: 0.6 }} />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="wh-dd-content" style={{ minWidth: 200 }}>
+                                        {STATUS_OPTIONS.map(opt => (
+                                            <DropdownMenuItem
+                                                key={opt.value}
+                                                onClick={() => setFilterStatus(opt.value)}
+                                                className="wh-dd-item"
+                                            >
+                                                {opt.label}
+                                                {filterStatus === opt.value && <Check size={13} style={{ color: '#b8860b' }} />}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+
+                            {/* Reset */}
+                            <div className="wh-field">
+                                <label className="wh-lbl" style={{ opacity: 0 }}>.</label>
+                                <button
+                                    className="wh-btn-reset"
+                                    onClick={() => { setSearchTerm(''); setFilterStatus('all'); }}
+                                    disabled={isLoading}
+                                >
+                                    <RefreshCcw size={13} /> Đặt lại
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Content ── */}
+                    {isLoading ? (
+                        <div className="wh-loading">
+                            <Loader2 size={22} className="wh-spin" style={{ color: '#b8860b' }} />
+                            <span>Đang tải danh sách kho...</span>
+                        </div>
+                    ) : warehouses.length > 0 ? (
+                        <>
+                            {/* ── Table ── */}
+                            <div className="wh-tbl-card">
+                                <div className="wh-tbl-scroll">
+                                    <table className="wh-tbl">
+                                        <thead className="wh-thead">
+                                            <tr>
+                                                <th className="wh-th c" style={{ width: 52 }}>STT</th>
+                                                <th className="wh-th">Mã kho</th>
+                                                <th className="wh-th">Tên kho</th>
+                                                <th className="wh-th">Người quản lý</th>
+                                                <th className="wh-th c">Trạng thái</th>
+                                                <th className="wh-th c">Tồn kho</th>
+                                                <th className="wh-th c">Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="wh-tbody">
+                                            {warehouses.map((wh, idx) => (
+                                                <tr key={wh.id}>
+                                                    <td className="wh-td c">
+                                                        <span className="wh-stt">
+                                                            {pagination.pageNumber * pagination.pageSize + idx + 1}
+                                                        </span>
+                                                    </td>
+                                                    <td className="wh-td">
+                                                        <span className="wh-code">{wh.maKho || '—'}</span>
+                                                    </td>
+                                                    <td className="wh-td">
+                                                        <p className="wh-name">{wh.tenKho}</p>
+                                                        {wh.diaChi && <p className="wh-addr">{wh.diaChi}</p>}
+                                                    </td>
+                                                    <td className="wh-td">
+                                                        <span className="wh-mgr">{wh.quanLy?.hoTen || '—'}</span>
+                                                    </td>
+                                                    <td className="wh-td c">
+                                                        {wh.trangThai === 1 ? (
+                                                            <span className="wh-badge on"><span className="wh-dot" />Hoạt động</span>
+                                                        ) : (
+                                                            <span className="wh-badge off"><span className="wh-dot" />Ngừng hoạt động</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="wh-td c">
+                                                        <span className="wh-stock">{(wh.soLuongTon || 0).toLocaleString()}</span>
+                                                    </td>
+                                                    <td className="wh-td">
+                                                        <div className="wh-acts">
+                                                            <button type="button" title="Xem chi tiết" className="wh-act v"
+                                                                onClick={() => handleOpenDialog('view', wh)}>
+                                                                <Eye size={15} />
+                                                            </button>
+                                                            <button type="button" title="Chỉnh sửa" className="wh-act e"
+                                                                onClick={() => handleOpenDialog('edit', wh)}>
+                                                                <Edit size={15} />
+                                                            </button>
+                                                            <button type="button" title="Xóa kho" className="wh-act d"
+                                                                onClick={() => handleDeleteClick(wh)}>
+                                                                <Trash2 size={15} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* ── Pagination ── */}
+                            <div className="wh-pag">
+                                <div className="wh-pag-row">
+                                    {/* Size selector */}
+                                    <div className="wh-pag-left">
+                                        <span className="wh-pag-lbl">Hiển thị</span>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
+                                                <button className="wh-pag-sz-btn">
                                                     {pagination.pageSize} dòng
-                                                    <ChevronDown className="h-4 w-4 opacity-50" />
-                                                </Button>
+                                                    <ChevronDown size={12} style={{ opacity: 0.5 }} />
+                                                </button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
-                                                {[5, 10, 20, 50, 100].map(size => (
-                                                    <DropdownMenuItem
-                                                        key={size}
-                                                        onClick={() => handlePageSizeChange(size)}
-                                                        className="cursor-pointer"
-                                                    >
-                                                        {size} dòng
+                                            <DropdownMenuContent className="wh-dd-content" style={{ minWidth: 130 }}>
+                                                {[5, 10, 20, 50, 100].map(sz => (
+                                                    <DropdownMenuItem key={sz} onClick={() => handlePageSizeChange(sz)} className="wh-dd-item">
+                                                        {sz} dòng
                                                     </DropdownMenuItem>
                                                 ))}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
 
-                                    {/* Center - Page info */}
-                                    <div className="text-sm text-gray-600">
-                                        Hiển thị{' '}
-                                        <span className="font-semibold text-gray-900">
-                                            {pagination.pageNumber * pagination.pageSize + 1}
-                                        </span>
-                                        {' '}-{' '}
-                                        <span className="font-semibold text-gray-900">
-                                            {Math.min((pagination.pageNumber + 1) * pagination.pageSize, pagination.totalElements)}
-                                        </span>
-                                        {' '}trong tổng số{' '}
-                                        <span className="font-semibold text-purple-600">{pagination.totalElements}</span> kết quả
-                                    </div>
+                                    {/* Info */}
+                                    <p className="wh-pag-info">
+                                        <strong>{pagination.pageNumber * pagination.pageSize + 1}</strong>
+                                        {' — '}
+                                        <strong>{Math.min((pagination.pageNumber + 1) * pagination.pageSize, pagination.totalElements)}</strong>
+                                        {' / '}
+                                        <span className="g">{pagination.totalElements}</span> kết quả
+                                    </p>
 
-                                    {/* Right side - Navigation buttons */}
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handlePageChange(pagination.pageNumber - 1)}
-                                            disabled={pagination.pageNumber === 0}
-                                            className="gap-1 disabled:opacity-50"
-                                        >
-                                            <ChevronLeft className="h-4 w-4" />
-                                            Trước
-                                        </Button>
+                                    {/* Nav */}
+                                    <div className="wh-pag-nav">
+                                        <button className="wh-pag-btn" onClick={() => handlePageChange(pagination.pageNumber - 1)} disabled={pagination.pageNumber === 0}>
+                                            <ChevronLeft size={14} /> Trước
+                                        </button>
 
-                                        {/* Page numbers */}
-                                        <div className="hidden sm:flex gap-1">
-                                            {[...Array(Math.min(5, pagination.totalPages))].map((_, idx) => {
-                                                let pageNum;
-                                                if (pagination.totalPages <= 5) {
-                                                    pageNum = idx;
-                                                } else if (pagination.pageNumber < 3) {
-                                                    pageNum = idx;
-                                                } else if (pagination.pageNumber > pagination.totalPages - 4) {
-                                                    pageNum = pagination.totalPages - 5 + idx;
-                                                } else {
-                                                    pageNum = pagination.pageNumber - 2 + idx;
-                                                }
-
+                                        <div style={{ display: 'flex', gap: 4 }}>
+                                            {[...Array(Math.min(5, pagination.totalPages))].map((_, i) => {
+                                                let p;
+                                                if (pagination.totalPages <= 5) p = i;
+                                                else if (pagination.pageNumber < 3) p = i;
+                                                else if (pagination.pageNumber > pagination.totalPages - 4) p = pagination.totalPages - 5 + i;
+                                                else p = pagination.pageNumber - 2 + i;
                                                 return (
-                                                    <Button
-                                                        key={idx}
-                                                        variant={pagination.pageNumber === pageNum ? "default" : "outline"}
-                                                        size="sm"
-                                                        onClick={() => handlePageChange(pageNum)}
-                                                        className={
-                                                            pagination.pageNumber === pageNum
-                                                                ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
-                                                                : "border-gray-200"
-                                                        }
-                                                    >
-                                                        {pageNum + 1}
-                                                    </Button>
+                                                    <button key={i} className={`wh-pag-btn ${pagination.pageNumber === p ? 'act' : ''}`}
+                                                        onClick={() => handlePageChange(p)}>
+                                                        {p + 1}
+                                                    </button>
                                                 );
                                             })}
                                         </div>
 
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handlePageChange(pagination.pageNumber + 1)}
-                                            disabled={pagination.pageNumber >= pagination.totalPages - 1}
-                                            className="gap-1 disabled:opacity-50"
-                                        >
-                                            Sau
-                                            <ChevronRight className="h-4 w-4" />
-                                        </Button>
+                                        <button className="wh-pag-btn" onClick={() => handlePageChange(pagination.pageNumber + 1)} disabled={pagination.pageNumber >= pagination.totalPages - 1}>
+                                            Sau <ChevronRight size={14} />
+                                        </button>
                                     </div>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </>
-                ) : (
-                    <WarehouseEmptyState />
-                )}
+                            </div>
+                        </>
+                    ) : (
+                        /* ── Empty ── */
+                        <div className="wh-empty">
+                            <div className="wh-empty-ico">
+                                <Package size={32} style={{ color: 'rgba(184,134,11,0.45)' }} strokeWidth={1.5} />
+                            </div>
+                            <p className="wh-empty-ttl">Không tìm thấy kho hàng</p>
+                            <p className="wh-empty-dsc">
+                                Chưa có dữ liệu kho phù hợp. Hãy thay đổi bộ lọc hoặc thêm kho mới.
+                            </p>
+                        </div>
+                    )}
+                </div>
 
-                {/* Dialog for Create/Edit/View */}
+                {/* ── Modals ── */}
                 <WarehouseDialog
                     showDialog={showDialog}
                     setShowDialog={setShowDialog}
@@ -466,7 +856,6 @@ export default function WarehouseManagement() {
                     onClose={handleCloseDialog}
                 />
 
-                {/* Confirm Delete Modal */}
                 <ConfirmModal
                     isOpen={isConfirmOpen}
                     onClose={handleCancelDelete}
@@ -483,6 +872,6 @@ export default function WarehouseManagement() {
                     isLoading={isDeleting}
                 />
             </div>
-        </div>
+        </>
     );
 }
