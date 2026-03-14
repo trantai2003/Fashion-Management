@@ -27,10 +27,10 @@ export default function KhaiBaoLo() {
     // LOGIC KIỂM SOÁT QUYỀN CHỈNH SỬA
     const checkIsEditable = () => {
         if (!detail?.phieu) return false;
-        
+
         // 1. Kiểm tra trạng thái phiếu (Chỉ Nháp = 0 mới được sửa)
         const isDraft = detail.phieu.trangThai === 0;
-        
+
         // 2. Kiểm tra loại nghiệp vụ (Chuyển kho/Hoàn trả = Lô tự động -> Không được sửa)
         const loaiNhap = detail.phieu.loaiNhap || "";
         const isAutoLot = loaiNhap.includes("Chuyển kho") || loaiNhap.includes("hoàn trả");
@@ -79,8 +79,9 @@ export default function KhaiBaoLo() {
         }
 
         const { maLo, soLuongNhap, nsx, ghiChu } = form;
-        if (!maLo || !soLuongNhap) {
-            return toast.error("Vui lòng nhập mã lô và số lượng");
+
+        if (!maLo || !soLuongNhap || !nsx) {
+            return toast.error("Vui lòng nhập đầy đủ: Mã lô, Số lượng và Ngày sản xuất");
         }
 
         setLoading(true);
@@ -106,7 +107,7 @@ export default function KhaiBaoLo() {
     async function handleDelete() {
         if (!isEditable) return;
         if (!selectedLot) return;
-        
+
         try {
             await phieuNhapKhoService.deleteLo(phieuNhapKhoId, selectedLot.chiTietPhieuNhapKhoId);
             toast.success("Xoá lô thành công");
@@ -180,7 +181,7 @@ export default function KhaiBaoLo() {
                                     </tr>
                                 ) : (
                                     lotList.map((lo) => (
-                                        <tr key={lo.loHangId} 
+                                        <tr key={lo.loHangId}
                                             className={`hover:bg-gray-50 transition-colors ${isEditable ? 'cursor-pointer' : ''}`}
                                             onClick={() => {
                                                 if (isEditable) {
@@ -232,7 +233,7 @@ export default function KhaiBaoLo() {
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[11px] font-bold text-gray-500 ">Ngày sản xuất</label>
-                                    <input name="nsx" type="date" value={form.nsx} onChange={handleInputChange} className="w-full h-11 px-3 border rounded-md focus:ring-2 focus:ring-purple-500 outline-none" />
+                                    <input name="nsx" type="date" required value={form.nsx} onChange={handleInputChange} className="w-full h-11 px-3 border rounded-md focus:ring-2 focus:ring-purple-500 outline-none" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[11px] font-bold text-gray-500 ">Số lượng</label>
@@ -264,11 +265,11 @@ export default function KhaiBaoLo() {
                     ) : (
                         <div className="p-5 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 text-sm flex items-center gap-3">
                             <div className="bg-blue-600 text-white p-1 rounded-full">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
                             </div>
                             <span>
-                                {isAutoLotMode 
-                                    ? "Lô hàng cho sản phẩm này đã được hệ thống kế thừa tự động từ phiếu xuất kho. Bạn không cần thực hiện khai báo thủ công." 
+                                {isAutoLotMode
+                                    ? "Lô hàng cho sản phẩm này đã được hệ thống kế thừa tự động từ phiếu xuất kho. Bạn không cần thực hiện khai báo thủ công."
                                     : "Phiếu đã được xử lý hoặc bị hủy, không thể chỉnh sửa dữ liệu lô hàng."}
                             </span>
                         </div>
@@ -281,7 +282,7 @@ export default function KhaiBaoLo() {
                         <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl animate-in fade-in zoom-in duration-200">
                             <h2 className="text-lg font-bold mb-2">Xác nhận xoá lô</h2>
                             <p className="text-sm text-gray-600 mb-4">
-                                Bạn chắc chắn muốn xoá lô <strong className="text-red-600">{selectedLot?.maLo}</strong>? 
+                                Bạn chắc chắn muốn xoá lô <strong className="text-red-600">{selectedLot?.maLo}</strong>?
                                 Hành động này sẽ trừ số lượng đã khai báo của biến thể này.
                             </p>
                             <div className="flex justify-end gap-3">
