@@ -253,7 +253,7 @@ export default function SupplierList() {
                 onCancel={handleCancelDelete}
             />
 
-            <div className="lux-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+            <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
                 <div className="space-y-6 w-full">
 
                     {/* ── Page header ── */}

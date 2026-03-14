@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import {
     Search,
     Filter,
@@ -6,6 +6,8 @@ import {
     ChevronRight,
     ChevronDown,
     Users,
+    CheckCircle2,
+    XCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -154,6 +156,12 @@ export default function ViewUserListByAdmin() {
 
     const totalPages = Math.max(Math.ceil(total / filters.size), 1);
 
+    const stats = useMemo(() => ({
+        totalUsers: total,
+        activeUsers: users.filter((u) => u.trangThai === 1).length,
+        lockedUsers: users.filter((u) => u.trangThai === 0).length,
+    }), [users, total]);
+
     const formatRole = (role) =>
         ROLE_OPTIONS.find((r) => r.value === role)?.label || role;
     function StatusBadge({ status }) {
@@ -171,16 +179,52 @@ export default function ViewUserListByAdmin() {
     }
 
     return (
-        <div className="lux-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
 
-            {/* HEADER */}
-            <div className="flex justify-end">
-                <Link to="/users/add">
-                    <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                        + Thêm người dùng
-                    </Button>
-                </Link>
-            </div>
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Tổng người dùng</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalUsers}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <Users className="h-6 w-6 text-blue-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Hoạt động</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.activeUsers}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <CheckCircle2 className="h-6 w-6 text-green-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-red-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Bị khóa</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.lockedUsers}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                                <XCircle className="h-6 w-6 text-red-500" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+            </section>
 
             {/* FILTER */}
             <Card className="border-0 shadow-lg bg-white">
@@ -278,6 +322,14 @@ export default function ViewUserListByAdmin() {
                     </div>
                 </CardContent>
             </Card>
+
+            <div className="flex items-center justify-end">
+                <Link to="/users/add">
+                    <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                        + Thêm người dùng
+                    </Button>
+                </Link>
+            </div>
 
             {/* TABLE */}
             <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
