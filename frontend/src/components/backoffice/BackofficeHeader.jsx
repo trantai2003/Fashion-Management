@@ -49,6 +49,7 @@ export default function BackofficeHeader({
   const mainHeaderKeys = new Set([
     "DASHBOARD",
     "USER_LIST",
+    "ADD_USER",
     "ATTRIBUTES",
     "MATERIALS",
     "PRODUCTS",
@@ -72,17 +73,17 @@ export default function BackofficeHeader({
   const headerEyebrow = isWarehouseHeader ? "FS WMS · INVENTORY" : "FS WMS · BACKOFFICE";
   const mainTitle = isWarehouseHeader ? "Quản lý kho hàng" : title;
 
-  const buildTwoToneTitle = (rawTitle) => {
+  const buildTwoToneTitle = (rawTitle, key) => {
     if (!rawTitle || typeof rawTitle !== "string") {
       return { base: "", accent: "" };
     }
 
     const words = rawTitle.trim().split(/\s+/).filter(Boolean);
-    if (words.length <= 2) {
+    const splitIndex = key === "ADD_USER" ? 1 : 2;
+
+    if (words.length <= splitIndex) {
       return { base: words.join(" "), accent: "" };
     }
-
-    const splitIndex = 2;
 
     return {
       base: words.slice(0, splitIndex).join(" "),
@@ -90,9 +91,9 @@ export default function BackofficeHeader({
     };
   };
 
-  const { base: mainTitleBase, accent: mainTitleAccent } = buildTwoToneTitle(mainTitle);
+  const { base: mainTitleBase, accent: mainTitleAccent } = buildTwoToneTitle(mainTitle, routeKey);
   return (
-    <header className={`sticky top-0 z-40 border-b ${isWarehouseHeader ? "bg-[#fffdf8] border-[#b8860b]/20" : "bg-white"}`}>
+    <header className="sticky top-0 z-40 border-b border-[#b8860b]/20 bg-[#fffaf0]">
       <div className="h-16 px-6 flex items-center justify-between">
         {/* Left */}
         <div className="flex items-center gap-2">
@@ -100,7 +101,7 @@ export default function BackofficeHeader({
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="hover:bg-gray-100"
+            className="text-[#5b4c36] hover:bg-[#f2e4bc] hover:text-[#7a5700]"
           >
             {open ? (
               <PanelLeftClose className="h-5 w-5" />
@@ -134,11 +135,11 @@ export default function BackofficeHeader({
             </div>
           ) : (
             <div>
-              <h1 className="text-base md:text-lg font-bold text-gray-900">
+              <h1 className="text-base md:text-lg font-bold text-[#1a1612]">
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[#7a6e5f]">
                   {subtitle}
                 </p>
               )}
@@ -154,20 +155,20 @@ export default function BackofficeHeader({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 px-2"
+                className="flex items-center gap-2 px-2 hover:bg-[#f2e4bc]"
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="" alt="Admin Avatar" />
-                  <AvatarFallback className="bg-purple-600 text-white text-sm font-semibold">
+                  <AvatarFallback className="bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white text-sm font-semibold">
                     {username ? username.charAt(0).toUpperCase() : 'A'}
                   </AvatarFallback>
                 </Avatar>
 
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-[#4a3f2f]">
                   {username}
                 </span>
 
-                <ChevronDown className="h-4 w-4 text-gray-500" />
+                <ChevronDown className="h-4 w-4 text-[#7a6e5f]" />
               </Button>
             </DropdownMenuTrigger>
 
@@ -175,13 +176,13 @@ export default function BackofficeHeader({
               align="end"
               sideOffset={4}
               className="
-      w-44
-      bg-white
+      w-52
+      bg-gradient-to-b from-[#fffaf0] to-[#f7f0df]
       z-50
-      border border-gray-200
-      shadow-lg
-      rounded-md
-      p-1
+      border border-[#b8860b]/25
+      shadow-[0_16px_40px_rgba(122,87,0,0.18)]
+      rounded-xl
+      p-1.5
     "
             >
               <DropdownMenuItem
@@ -189,7 +190,8 @@ export default function BackofficeHeader({
               >
                 <Link
                   to={`/user/${userId}`}
-                  className="text-sm px-3 py-2 rounded-sm focus:bg-gray-100 cursor-pointer"
+                  className="text-sm px-3 py-2 rounded-md focus:bg-[#f2e4bc] text-[#4a3f2f] cursor-pointer"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   Hồ sơ
                 </Link>
@@ -197,33 +199,36 @@ export default function BackofficeHeader({
 
 
               <DropdownMenuItem
-                className="text-sm px-3 py-2 rounded-sm focus:bg-gray-100 cursor-pointer"
+                className="text-sm px-3 py-2 rounded-md focus:bg-[#f2e4bc] text-[#4a3f2f] cursor-pointer"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 Đổi mật khẩu
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="my-1 bg-gray-200" />
+              <DropdownMenuSeparator className="my-1 bg-[#b8860b]/20" />
 
               <DropdownMenuItem asChild>
                 <Link
                   to="/store"
-                  className="text-sm px-3 py-2 rounded-sm focus:bg-gray-100 cursor-pointer flex items-center gap-2"
+                  className="text-sm px-3 py-2 rounded-md focus:bg-[#f2e4bc] text-[#4a3f2f] cursor-pointer flex items-center gap-2"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
-                  <ShoppingBag className="h-4 w-4" />
+                  <ShoppingBag className="h-4 w-4 text-[#b8860b]" />
                   Về cửa hàng
                 </Link>
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="my-1 bg-gray-200" />
+              <DropdownMenuSeparator className="my-1 bg-[#b8860b]/20" />
 
               <DropdownMenuItem
                 onClick={handleLogout}
                 className="
-        text-sm px-3 py-2 rounded-sm
-        text-red-600
-        focus:bg-red-50
+        text-sm px-3 py-2 rounded-md
+        text-[#b24a2d]
+        focus:bg-[#fde9df]
         cursor-pointer
       "
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 Đăng xuất
               </DropdownMenuItem>

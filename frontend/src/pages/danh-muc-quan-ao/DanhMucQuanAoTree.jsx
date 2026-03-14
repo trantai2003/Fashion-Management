@@ -193,46 +193,66 @@ const DanhMucQuanAoTree = () => {
   // ── Render create form ────────────────────────────────────────────────────
   const renderCreateForm = (parentId) => (
     <div className={`my-2 ${parentId !== 'root' ? 'ml-5' : ''}`}>
-      <div className="rounded-xl border-2 border-purple-300 bg-purple-50/60 p-4 shadow-sm">
-        <p className="text-xs font-semibold text-purple-700 mb-3 uppercase tracking-wide">
+      <div
+        className="rounded-xl border border-[#b8860b]/30 bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] p-4 shadow-sm"
+        style={{ fontFamily: "'DM Sans', sans-serif" }}
+      >
+        <p
+          className="mb-3 text-sm font-semibold text-slate-500"
+          style={{ fontFamily: "'DM Sans', sans-serif" }}
+        >
           {parentId === 'root' ? 'Thêm danh mục gốc mới' : 'Thêm danh mục con'}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Mã danh mục *</label>
+            <label className="text-xs font-medium text-[#7a6e5f]">Mã danh mục *</label>
             <Input
               value={createForm.maDanhMuc}
               onChange={(e) => setCreateForm({ ...createForm, maDanhMuc: e.target.value })}
               placeholder="VD: DM001"
-              className="h-8 text-sm border-purple-200 focus:border-purple-500"
+              className="h-8 text-sm border-[#b8860b]/25 focus:border-[#b8860b] focus-visible:ring-[#b8860b]/30"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
               autoFocus
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Tên danh mục *</label>
+            <label className="text-xs font-medium text-[#7a6e5f]">Tên danh mục *</label>
             <Input
               value={createForm.tenDanhMuc}
               onChange={(e) => setCreateForm({ ...createForm, tenDanhMuc: e.target.value })}
               placeholder="VD: Áo thun"
-              className="h-8 text-sm border-purple-200 focus:border-purple-500"
+              className="h-8 text-sm border-[#b8860b]/25 focus:border-[#b8860b] focus-visible:ring-[#b8860b]/30"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             />
           </div>
         </div>
         <div className="space-y-1 mb-3">
-          <label className="text-xs font-medium text-gray-600">Mô tả</label>
+          <label className="text-xs font-medium text-[#7a6e5f]">Mô tả</label>
           <textarea
             value={createForm.moTa}
             onChange={(e) => setCreateForm({ ...createForm, moTa: e.target.value })}
             placeholder="Nhập mô tả..."
             rows={2}
-            className="w-full rounded-md border border-purple-200 bg-white px-3 py-2 text-sm outline-none focus:border-purple-500 resize-none"
+            className="w-full rounded-md border border-[#b8860b]/25 bg-white px-3 py-2 text-sm outline-none focus:border-[#b8860b] resize-none"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
         </div>
         <div className="flex justify-end gap-2">
-          <Button size="sm" variant="outline" onClick={handleCancelCreate} className="h-8 gap-1.5 border-gray-300 hover:bg-gray-100">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleCancelCreate}
+            className="h-8 gap-1.5 border-[#b8860b]/35 text-[#7a6e5f] hover:bg-[#f7edd3] hover:text-[#7a5700]"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
             <X className="h-3.5 w-3.5" /> Hủy
           </Button>
-          <Button size="sm" onClick={handleSaveCreate} className="h-8 gap-1.5 bg-slate-900 hover:bg-white hover:text-slate-900 border border-slate-900 text-white">
+          <Button
+            size="sm"
+            onClick={handleSaveCreate}
+            className="h-8 gap-1.5 border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white hover:from-[#c79616] hover:to-[#a97700]"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
             <Save className="h-3.5 w-3.5" /> Lưu
           </Button>
         </div>
@@ -384,7 +404,10 @@ const DanhMucQuanAoTree = () => {
   };
 
   return (
-    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+    <div
+      className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
 
       {/* ── Delete Confirm Modal ── */}
       {deleteModal.show && (
@@ -455,7 +478,8 @@ const DanhMucQuanAoTree = () => {
         <Button
           size="sm"
           onClick={handleAddRoot}
-          className="gap-1.5 bg-slate-900 hover:bg-white hover:text-slate-900 border border-slate-900 text-white shadow-sm"
+          className="gap-1.5 border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md hover:from-[#c79616] hover:to-[#a97700]"
+          style={{ fontFamily: "'DM Sans', sans-serif" }}
         >
           <Plus className="h-4 w-4" />
           Thêm danh mục gốc
@@ -467,7 +491,10 @@ const DanhMucQuanAoTree = () => {
         <CardHeader className="border-b border-slate-100 pb-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <CardTitle
+                className="flex items-center gap-2 text-lg font-semibold text-gray-900"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
                 <Tag className="h-5 w-5 text-purple-600" />
                 Danh mục sản phẩm
               </CardTitle>

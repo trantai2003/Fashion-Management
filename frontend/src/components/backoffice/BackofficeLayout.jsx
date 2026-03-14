@@ -31,7 +31,7 @@ export default function BackofficeLayout() {
         {
             key: "ADD_USER",
             match: (path) => path === "/users/add",
-            title: "Add User",
+            title: "Thêm người dùng",
             subtitle: "Thêm người dùng mới",
         },
         {
@@ -303,7 +303,7 @@ export default function BackofficeLayout() {
                         routeKey={pageMeta?.key}
                     />
 
-                    <main className="flex-1 min-w-0 overflow-y-auto bg-gray-50">
+                    <main className="flex-1 min-w-0 overflow-y-auto bg-[#f8f4ea]">
                         <Outlet />
                     </main>
                 </SidebarInset>
