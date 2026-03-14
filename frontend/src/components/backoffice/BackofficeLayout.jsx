@@ -261,6 +261,24 @@ export default function BackofficeLayout() {
             match: (path) => /^\/customers\/\d+\/edit$/.test(path),
             title: "Chỉnh sửa khách hàng",
             subtitle: "Cập nhật thông tin khách hàng",
+        },
+        {
+            key: "SUPPLIER_EDIT",
+            match: (path) => /^\/supplier\/\d+$/.test(path),
+            title: "Chỉnh sửa nhà cung cấp",
+            subtitle: "Cập nhật thông tin nhà cung cấp",
+        },
+        {
+            key: "SUPPLIER_DETAIL",
+            match: (path) => /^\/supplier\/view\/\d+$/.test(path),
+            title: "Chi tiết nhà cung cấp",
+            subtitle: "Xem thông tin chi tiết về nhà cung cấp",
+        },
+        {
+            key: "SUPPLIER_CREATE",
+            match: (path) => path === "/supplier/new",
+            title: "Thêm nhà cung cấp mới",
+            subtitle: "Nhập thông tin để tạo nhà cung cấp mới",
         }
     ];
 

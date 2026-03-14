@@ -105,24 +105,18 @@ export default function SupplierDetailView() {
                 <button
                     type="button"
                     onClick={() => navigate("/supplier")}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-800 transition-colors duration-150"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium hover:text-violet-800 transition-colors duration-150"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Quay lại danh sách
                 </button>
                 <Button
                     onClick={() => navigate(`/supplier/${id}`)}
-                    className="bg-violet-600 hover:bg-violet-700 text-white shadow-sm transition-all duration-200"
+                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
                 >
                     <Edit className="mr-2 h-4 w-4" />
                     Chỉnh sửa
                 </Button>
-            </div>
-
-            {/* ── Page title ── */}
-            <div>
-                <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Chi tiết nhà cung cấp</h2>
-                <p className="text-sm text-gray-600 mt-1">Thông tin đầy đủ của nhà cung cấp</p>
             </div>
 
             {/* ── Row 1: Định danh — full width ── */}

@@ -163,16 +163,6 @@ export default function SupplierDetail() {
                 </button>
             </div>
 
-            {/* ── Page title ── */}
-            <div>
-                <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-                    {isEdit ? "Chỉnh sửa nhà cung cấp" : "Thêm nhà cung cấp mới"}
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                    {isEdit ? "Cập nhật thông tin nhà cung cấp" : "Nhập thông tin để tạo nhà cung cấp mới"}
-                </p>
-            </div>
-
             {loading && isEdit ? (
                 <div className="flex items-center justify-center py-24 gap-2">
                     <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
