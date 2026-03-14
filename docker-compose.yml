@@ -10,8 +10,7 @@ services:
     expose:
       - "8080"
     networks:
-      external:
-        - app-network
+      - app-network
 
   frontend_fs:
     build: ./frontend
@@ -20,8 +19,7 @@ services:
     expose:
       - "80"
     networks:
-      external:
-        - app-network
+      - app-network
     depends_on:
       - backend_fs
 
