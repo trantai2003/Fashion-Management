@@ -302,38 +302,37 @@ export default function DonBanHangList() {
 
         {/* TABLE SECTION */}
         <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Số đơn</th>
-                  <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Khách hàng</th>
-                  <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Kho xuất</th>
-                  <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Ngày đặt</th>
-                  <th className="h-12 px-4 text-right font-semibold text-slate-600 tracking-wide text-xs uppercase">Tổng tiền</th>
-                  <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Trạng thái</th>
-                  <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {loading ? (
-                  <tr>
-                    <td colSpan={7} className="text-center py-12 text-gray-500">
-                      <div className="flex items-center justify-center">
-                        <RefreshCcw className="h-6 w-6 animate-spin text-purple-600 mr-2" />
-                        Đang tải dữ liệu...
-                      </div>
-                    </td>
+          {loading ? (
+            <div className="text-center py-12 text-gray-500">
+              <div className="flex items-center justify-center">
+                <RefreshCcw className="h-6 w-6 animate-spin text-purple-600 mr-2" />
+                Đang tải dữ liệu...
+              </div>
+            </div>
+          ) : data.length === 0 ? (
+            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+              <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                <ShoppingCart className="h-10 w-10 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800">Không tìm thấy đơn bán hàng nào</h3>
+              <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">Hãy tạo một đơn bán mới hoặc điều chỉnh bộ lọc tìm kiếm.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50">
+                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Số đơn</th>
+                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Khách hàng</th>
+                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Kho xuất</th>
+                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Ngày đặt</th>
+                    <th className="h-12 px-4 text-right font-semibold text-slate-600 tracking-wide text-xs uppercase">Tổng tiền</th>
+                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Trạng thái</th>
+                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
                   </tr>
-                ) : data.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="text-center py-16 flex flex-col items-center justify-center text-gray-400">
-                      <ShoppingCart className="h-12 w-12 mb-3 opacity-30" />
-                      <p className="text-sm">Không tìm thấy đơn bán hàng nào</p>
-                    </td>
-                  </tr>
-                ) : (
-                  data.map((item) => (
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.map((item) => (
                     <tr
                       key={item.id}
                       className="transition-colors duration-150 hover:bg-purple-50/50 cursor-pointer"
@@ -381,11 +380,11 @@ export default function DonBanHangList() {
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* PAGINATION SECTION */}

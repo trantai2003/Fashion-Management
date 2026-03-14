@@ -309,13 +309,6 @@ export default function PhieuChuyenKhoCreate() {
                                     <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
                                         Nhấn "Thêm sản phẩm" để chọn hàng hóa cần điều chuyển.
                                     </p>
-                                    <Button
-                                        onClick={() => setShowProductDialog(true)}
-                                        className="mt-6 bg-yellow-500 text-white border border-yellow-500 hover:bg-yellow-600 shadow-sm transition-all duration-200"
-                                    >
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Thêm sản phẩm
-                                    </Button>
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
@@ -413,26 +406,29 @@ export default function PhieuChuyenKhoCreate() {
 
             {/* ── PRODUCT SELECTOR DIALOG ── */}
             <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
-                <DialogContent className="max-w-2xl p-0 overflow-hidden shadow-2xl rounded-2xl border-none bg-white text-slate-900">
-
-                    {/* Panel header — đồng bộ với panel header màn chính */}
-                    <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-100 flex-shrink-0">
-                            <Search className="h-4 w-4 text-yellow-600" />
+                <DialogContent
+                    className="max-w-2xl p-0 overflow-hidden shadow-2xl rounded-2xl border-none"
+                    style={{ background: "#ffffff", color: "#0f172a", outline: "none" }}
+                >
+                    {/* Panel header */}
+                    <div className="flex items-center gap-3 px-6 pt-6 pb-4">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0" style={{ background: "#fef9c3" }}>
+                            <Search className="h-4 w-4" style={{ color: "#ca8a04" }} />
                         </div>
                         <div>
-                            <p className="font-semibold text-slate-900 leading-snug">Tìm kiếm sản phẩm</p>
-                            <p className="text-xs text-slate-500 mt-0.5">Chọn biến thể sản phẩm từ danh mục hệ thống</p>
+                            <p className="font-semibold leading-snug" style={{ color: "#0f172a" }}>Tìm kiếm sản phẩm</p>
+                            <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>Chọn biến thể sản phẩm từ danh mục hệ thống</p>
                         </div>
                     </div>
 
                     {/* Search bar */}
-                    <div className="px-6 py-4 bg-white border-b border-slate-100">
+                    <div className="px-6 pb-4">
                         <div className="relative">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                            <Search className="absolute left-3 top-2.5 h-4 w-4" style={{ color: "#9ca3af" }} />
                             <Input
                                 placeholder="Nhập tên sản phẩm hoặc mã SKU..."
-                                className="pl-9 border-gray-200 focus:border-yellow-500 focus:ring-yellow-500 bg-white text-slate-900"
+                                className="pl-9"
+                                style={{ background: "#ffffff", color: "#0f172a", borderColor: "#e5e7eb" }}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 autoFocus
@@ -441,53 +437,66 @@ export default function PhieuChuyenKhoCreate() {
                     </div>
 
                     {/* Danh sách sản phẩm */}
-                    <div className="max-h-[400px] overflow-y-auto bg-white">
+                    <div className="max-h-[400px] overflow-y-auto" style={{ background: "#ffffff" }}>
                         {filteredProducts.length === 0 ? (
                             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-                                    <Search className="h-10 w-10 text-slate-400" />
+                                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full" style={{ background: "#f1f5f9" }}>
+                                    <Search className="h-10 w-10" style={{ color: "#94a3b8" }} />
                                 </div>
-                                <h3 className="text-lg font-semibold text-slate-800">Không tìm thấy sản phẩm</h3>
-                                <p className="mt-2 text-sm leading-6 text-slate-500">Thử tìm với từ khóa khác</p>
+                                <h3 className="text-lg font-semibold" style={{ color: "#1e293b" }}>Không tìm thấy sản phẩm</h3>
+                                <p className="mt-2 text-sm" style={{ color: "#64748b" }}>Thử tìm với từ khóa khác</p>
                             </div>
                         ) : (
-                            <table className="w-full text-sm">
-                                {/* Table header — đồng bộ với bảng sản phẩm màn chính */}
+                            <table className="w-full text-sm" style={{ background: "#ffffff", borderCollapse: "collapse" }}>
                                 <thead>
-                                    <tr className="border-b border-slate-200 bg-slate-50">
-                                        <th className="h-10 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">
+                                    <tr style={{ background: "#fafafa" }}>
+                                        <th
+                                            className="h-10 px-6 text-left font-semibold tracking-wide text-xs uppercase whitespace-nowrap"
+                                            style={{ color: "#64748b", borderTop: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9" }}
+                                        >
                                             Sản phẩm
                                         </th>
-                                        <th className="h-10 px-4 w-20" />
+                                        <th
+                                            className="h-10 px-4 w-24"
+                                            style={{ borderTop: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9" }}
+                                        />
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {filteredProducts.map((product) => (
+                                <tbody>
+                                    {filteredProducts.map((product, idx) => (
                                         <tr
                                             key={product.id}
-                                            className="transition-colors duration-150 cursor-pointer hover:bg-yellow-50/50"
+                                            style={{
+                                                background: "#ffffff",
+                                                borderBottom: idx < filteredProducts.length - 1 ? "1px solid #f8fafc" : "none",
+                                                cursor: "pointer",
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = "#fefce8"}
+                                            onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
                                             onClick={() => handleAddProduct(product)}
                                         >
-                                            <td className="px-4 py-3.5 align-middle">
-                                                <span className="font-semibold text-slate-900 leading-snug">
+                                            <td className="px-6 py-3.5 align-middle">
+                                                <span className="font-semibold leading-snug" style={{ color: "#0f172a" }}>
                                                     {product.tenSanPham}
                                                 </span>
-                                                <span className="block font-mono text-xs text-yellow-600 mt-0.5">
+                                                <span className="block font-mono text-xs mt-0.5" style={{ color: "#ca8a04" }}>
                                                     {product.maBienThe}
                                                 </span>
-                                                <span className="block text-xs text-slate-400 mt-0.5 italic">
+                                                <span className="block text-xs mt-0.5 italic" style={{ color: "#94a3b8" }}>
                                                     {product.tenMau || "N/A"} / {product.tenSize || "N/A"} / {product.tenChatLieu || "N/A"}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3.5 align-middle text-right">
-                                                {/* Button "Chọn" — đồng bộ với button chính */}
-                                                <Button
-                                                    size="sm"
-                                                    className="bg-yellow-500 text-white border border-yellow-500 hover:bg-yellow-600 shadow-sm transition-all duration-200 h-8 px-3 text-xs font-bold"
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-bold transition-all duration-150"
+                                                    style={{ background: "#eab308", color: "#ffffff", border: "none" }}
+                                                    onMouseEnter={e => e.currentTarget.style.background = "#ca8a04"}
+                                                    onMouseLeave={e => e.currentTarget.style.background = "#eab308"}
                                                     onClick={(e) => { e.stopPropagation(); handleAddProduct(product); }}
                                                 >
                                                     Chọn
-                                                </Button>
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
@@ -496,19 +505,21 @@ export default function PhieuChuyenKhoCreate() {
                         )}
                     </div>
 
-                    {/* Panel footer — đồng bộ với footer bảng sản phẩm màn chính */}
-                    <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-100">
-                        <p className="text-sm text-slate-500">
-                            <span className="font-semibold text-yellow-600">{filteredProducts.length}</span> kết quả
+                    {/* Panel footer */}
+                    <div className="flex items-center justify-between px-6 py-4" style={{ background: "#fafafa", borderTop: "1px solid #f1f5f9" }}>
+                        <p className="text-sm" style={{ color: "#64748b" }}>
+                            <span className="font-semibold" style={{ color: "#ca8a04" }}>{filteredProducts.length}</span> kết quả
                         </p>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium"
+                        <button
+                            type="button"
+                            className="inline-flex h-8 items-center justify-center rounded-lg px-4 text-sm font-semibold transition-all duration-150"
+                            style={{ background: "#ffffff", color: "#374151", border: "1px solid #d1d5db" }}
+                            onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+                            onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
                             onClick={() => { setShowProductDialog(false); setSearchTerm(""); }}
                         >
                             Đóng
-                        </Button>
+                        </button>
                     </div>
                 </DialogContent>
             </Dialog>

@@ -47,13 +47,13 @@ function StepIndicator({ step }) {
           <div key={idx} className="flex items-center gap-2">
             <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
               done   ? "bg-emerald-500 text-white" :
-              active ? "bg-violet-600 text-white shadow-md shadow-violet-200" :
+              active ? "bg-yellow-500 text-white shadow-md shadow-yellow-200" :
                        "bg-slate-100 text-slate-400"
             }`}>
               {done ? "✓" : idx + 1}
             </div>
             <span className={`text-sm font-medium ${
-              active ? "text-violet-700" : done ? "text-emerald-600" : "text-slate-400"
+              active ? "text-yellow-700" : done ? "text-emerald-600" : "text-slate-400"
             }`}>
               {s.label}
             </span>
@@ -169,7 +169,7 @@ export default function StockTakeCreate() {
   }, 0);
 
   return (
-    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-yellow-50 via-yellow-50 to-amber-50 min-h-screen">
       <div className="space-y-6 w-full">
 
         {/* ── Header ── */}
@@ -235,8 +235,8 @@ export default function StockTakeCreate() {
           <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
 
             <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100">
-                <PackageSearch className="h-4.5 w-4.5 text-violet-600" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-100">
+                <PackageSearch className="h-4 w-4 text-yellow-600" />
               </div>
               <div>
                 <p className="font-semibold text-slate-900 leading-snug">Thông tin đợt kiểm kê</p>
@@ -261,13 +261,26 @@ export default function StockTakeCreate() {
                           defaultValue={field.value ? field.value.toString() : ""}
                         >
                           <FormControl>
-                            <SelectTrigger className="bg-white border-gray-200 focus:border-violet-500 focus:ring-violet-500 h-10">
+                            <SelectTrigger className="border-gray-200 focus:border-yellow-500 focus:ring-yellow-500 h-10" style={{ background: "#ffffff" }}>
                               <SelectValue placeholder="Chọn kho..." />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-white">
+                          <SelectContent
+                            position="popper"
+                            className="z-50 rounded-xl shadow-xl border"
+                            style={{
+                              background: "#ffffff",
+                              borderColor: "#e5e7eb",
+                              color: "#0f172a",
+                            }}
+                          >
                             {khos.map((kho) => (
-                              <SelectItem key={kho.id} value={kho.id.toString()}>
+                              <SelectItem
+                                key={kho.id}
+                                value={kho.id.toString()}
+                                style={{ color: "#0f172a", cursor: "pointer" }}
+                                className="focus:bg-yellow-50 focus:text-slate-900 data-[highlighted]:bg-yellow-50 data-[highlighted]:text-slate-900"
+                              >
                                 {kho.tenKho}
                               </SelectItem>
                             ))}
@@ -287,7 +300,8 @@ export default function StockTakeCreate() {
                         <FormControl>
                           <Textarea
                             placeholder="Ghi chú thêm (nếu có)..."
-                            className="border-gray-200 focus:border-violet-500 focus:ring-violet-500 resize-none"
+                            className="border-gray-200 focus:border-yellow-500 focus:ring-yellow-500 resize-none"
+                            style={{ background: "#ffffff" }}
                             rows={3}
                             {...field}
                           />
@@ -298,25 +312,30 @@ export default function StockTakeCreate() {
                   />
                 </div>
 
-                <div className="flex justify-end gap-3 px-6 py-5 bg-slate-50 border-t border-slate-100">
-                  <Button
+                <div className="flex justify-end gap-3 px-6 py-5" style={{ background: "#f8fafc", borderTop: "1px solid #f1f5f9" }}>
+                  <button
                     type="button"
-                    variant="outline"
-                    className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium"
+                    className="inline-flex h-9 items-center justify-center rounded-lg px-4 text-sm font-semibold transition-all duration-150"
+                    style={{ background: "#ffffff", color: "#374151", border: "1px solid #d1d5db" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+                    onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
                     onClick={() => navigate("/stock-take")}
                   >
                     Hủy
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="submit"
                     disabled={loading}
-                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 min-w-[160px] font-bold"
+                    className="inline-flex h-9 items-center justify-center rounded-lg px-5 text-sm font-bold transition-all duration-150 min-w-[160px]"
+                    style={{ background: "#eab308", color: "#ffffff", border: "none", opacity: loading ? 0.7 : 1 }}
+                    onMouseEnter={e => { if (!loading) e.currentTarget.style.background = "#ca8a04"; }}
+                    onMouseLeave={e => { if (!loading) e.currentTarget.style.background = "#eab308"; }}
                   >
                     {loading
                       ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang tạo...</>
                       : <><PackageSearch className="mr-2 h-4 w-4" />Tạo đợt kiểm kê</>
                     }
-                  </Button>
+                  </button>
                 </div>
               </form>
             </Form>
@@ -327,7 +346,7 @@ export default function StockTakeCreate() {
         {dotKiemKeId && (
           <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
 
-            <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
+            <div className="flex items-center gap-3 px-6 py-5" style={{ background: "#f8fafc", borderBottom: "1px solid #f1f5f9" }}>
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
                 <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600" />
               </div>
@@ -339,7 +358,7 @@ export default function StockTakeCreate() {
 
             {loading ? (
               <div className="flex items-center justify-center py-16 gap-2">
-                <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                <Loader2 className="h-6 w-6 animate-spin text-yellow-500" />
                 <span className="text-sm text-gray-600">Đang tải danh sách lô hàng...</span>
               </div>
 
@@ -358,7 +377,7 @@ export default function StockTakeCreate() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50">
+                    <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
                       {[
                         { label: "Sản phẩm / Biến thể", right: false },
                         { label: "Mã SKU",               right: false },
@@ -386,7 +405,7 @@ export default function StockTakeCreate() {
                       const hasInput   = updates[ct.id] !== undefined;
 
                       return (
-                        <tr key={ct.id} className="transition-colors duration-150 hover:bg-violet-50/50">
+                        <tr key={ct.id} className="transition-colors duration-150 hover:bg-yellow-50/50">
 
                           <td className="px-4 py-3.5 align-middle">
                             <span className="font-semibold text-slate-900">
@@ -431,7 +450,7 @@ export default function StockTakeCreate() {
                                     : Math.round(parseFloat(ct.soLuongThucTe ?? tonHeThong))
                                 }
                                 onChange={(e) => handleSoLuongChange(ct.id, e.target.value)}
-                                className="w-28 text-right border-gray-200 focus:border-violet-500 focus:ring-violet-500 ml-auto"
+                                className="w-28 text-right border-gray-200 focus:border-yellow-500 focus:ring-yellow-500 ml-auto"
                               />
                             )}
                           </td>
@@ -461,31 +480,38 @@ export default function StockTakeCreate() {
             )}
 
             {chiTiets.length > 0 && (
-              <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-t border-slate-100">
+              <div className="flex items-center justify-between px-6 py-5" style={{ background: "#f8fafc", borderTop: "1px solid #f1f5f9" }}>
                 <p className="text-sm text-slate-500">
                   Tổng{" "}
-                  <span className="font-semibold text-violet-600">{chiTiets.length}</span>{" "}
+                  <span className="font-semibold text-yellow-600">{chiTiets.length}</span>{" "}
                   lô hàng
                 </p>
                 {!isCompleted && (
                   <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium"
+                    <button
+                      type="button"
+                      className="inline-flex h-9 items-center justify-center rounded-lg px-4 text-sm font-semibold transition-all duration-150"
+                      style={{ background: "#ffffff", color: "#374151", border: "1px solid #d1d5db" }}
+                      onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+                      onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
                       onClick={() => navigate("/stock-take")}
                     >
                       Hủy
-                    </Button>
-                    <Button
-                      onClick={onComplete}
+                    </button>
+                    <button
+                      type="button"
                       disabled={loading}
-                      className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 min-w-[180px] font-bold"
+                      className="inline-flex h-9 items-center justify-center rounded-lg px-5 text-sm font-bold transition-all duration-150 min-w-[180px]"
+                      style={{ background: "#eab308", color: "#ffffff", border: "none", opacity: loading ? 0.7 : 1 }}
+                      onMouseEnter={e => { if (!loading) e.currentTarget.style.background = "#ca8a04"; }}
+                      onMouseLeave={e => { if (!loading) e.currentTarget.style.background = "#eab308"; }}
+                      onClick={onComplete}
                     >
                       {loading
                         ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
                         : <><CheckCircle2 className="mr-2 h-4 w-4" />Hoàn thành kiểm kê</>
                       }
-                    </Button>
+                    </button>
                   </div>
                 )}
               </div>
