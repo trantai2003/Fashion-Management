@@ -93,11 +93,11 @@ export default function QuoteSuccess() {
                     {/* Action Button */}
                     <div className="flex justify-center">
                         <Button
-                            onClick={() => navigate('/')}
+                            onClick={() => navigate('/supplier/login')}
                             size="lg"
-                            className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg shadow-indigo-200 px-8"
+                            className="gap-2 px-8 bg-slate-900 text-white rounded-xl shadow-lg transition-all duration-300 border border-slate-900 hover:bg-white hover:text-slate-900"
                         >
-                            Quay về trang chủ
+                            Quay về trang đăng nhập
                         </Button>
                     </div>
                 </CardContent>

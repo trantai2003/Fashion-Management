@@ -152,6 +152,7 @@ public class RestControllerGlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseData<?>> handleGeneric(Exception ex, WebRequest request) {
+        ex.printStackTrace();
         ResponseData<Void> body = ResponseData.<Void>builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message("Internal server error")

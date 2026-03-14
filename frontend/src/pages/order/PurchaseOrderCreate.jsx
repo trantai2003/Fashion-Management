@@ -872,7 +872,7 @@ export default function PurchaseOrderCreate() {
                         <Button
                             onClick={confirmSendEmail}
                             disabled={sendingEmail}
-                            className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-md shadow-indigo-200"
+                            className="gap-2 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
                         >
                             {sendingEmail ? (
                                 <>

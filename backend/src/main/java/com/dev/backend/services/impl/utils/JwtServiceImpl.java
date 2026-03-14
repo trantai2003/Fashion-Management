@@ -104,8 +104,6 @@ public class JwtServiceImpl implements JwtService {
             jwsObject.sign(new MACSigner(ConstantVariables.SIGNER_KEY.getBytes()));
             return jwsObject.serialize();
         } catch (JOSEException | JsonProcessingException e) {
-            // Thêm log ở đây để nhìn thấy lỗi thật sự ở bảng Console của IntelliJ/Eclipse
-            e.printStackTrace();
             throw new RuntimeException("Error generating token: " + e.getMessage(), e);
         }
     }
