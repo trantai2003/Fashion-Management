@@ -68,27 +68,6 @@ const STYLES = `
   display: flex; flex-direction: column; gap: 22px;
 }
 
-/* ════════════════════════════════
-   PAGE HEADER
-════════════════════════════════ */
-.wh-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding-bottom: 20px;
-  border-bottom: 1.5px solid rgba(184,134,11,0.15);
-}
-.wh-title-wrap { display: flex; flex-direction: column; gap: 3px; }
-.wh-eyebrow {
-  font-family: 'DM Mono', monospace; font-size: 10px;
-  letter-spacing: 0.2em; color: rgba(184,134,11,0.65);
-  text-transform: uppercase;
-}
-.wh-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 26px; font-weight: 900; color: #1a1612;
-  letter-spacing: -0.5px; line-height: 1;
-}
-.wh-title span { color: #b8860b; }
-
 /* ── Add button ── */
 .wh-btn-add {
   height: 42px; padding: 0 22px; border-radius: 11px;
@@ -601,14 +580,6 @@ export default function WarehouseManagement() {
                 <div className="wh-orb-2" />
 
                 <div className="wh-inner">
-
-                    {/* ── Header ── */}
-                    <div className="wh-header">
-                        <div className="wh-title-wrap">
-                            <p className="wh-eyebrow">FS WMS · Inventory</p>
-                            <h1 className="wh-title">Quản lý <span>kho hàng</span></h1>
-                        </div>
-                    </div>
 
                     {/* ── Stats ── */}
                     <div className="wh-stats">

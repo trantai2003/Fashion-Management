@@ -530,9 +530,7 @@ export default function DashboardByAdmin() {
                                 <BarChart2 size={11} />
                                 Quản trị hệ thống
                             </div>
-                            <h1 className="dash-header-title">
-                                Tổng quan <span>Admin</span>
-                            </h1>
+        
                             <p className="dash-header-subtitle">
                                 Theo dõi hiệu suất và hoạt động toàn bộ nền tảng FS WMS
                             </p>

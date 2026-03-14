@@ -21,6 +21,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 export default function BackofficeHeader({
   title,
   subtitle,
+  routeKey,
 }) {
   const { toggleSidebar, open } = useSidebar();
   const navigate = useNavigate();
@@ -43,8 +44,55 @@ export default function BackofficeHeader({
     sessionStorage.clear();
     navigate("/login");
   };
+
+  const isWarehouseHeader = routeKey === "WAREHOUSE";
+  const mainHeaderKeys = new Set([
+    "DASHBOARD",
+    "USER_LIST",
+    "ATTRIBUTES",
+    "MATERIALS",
+    "PRODUCTS",
+    "SKU_BUILDER",
+    "SUPPLIERS",
+    "WAREHOUSE",
+    "GOODS_RECEIPTS",
+    "GOODS_ISSUES",
+    "PURCHASE_ORDERS",
+    "TRANSFER_TICKETS",
+    "STOCK_TAKE_LIST",
+    "DANH_MUC_QUAN_AO",
+    "SALES_ORDERS",
+    "CUSTOMERS",
+    "BAO_CAO_DOANH_THU",
+    "BAO_CAO_KHACH_HANG",
+    "BAO_CAO_NHAP_XUAT",
+  ]);
+  const isMainScreenHeader = routeKey ? mainHeaderKeys.has(routeKey) : false;
+
+  const headerEyebrow = isWarehouseHeader ? "FS WMS · INVENTORY" : "FS WMS · BACKOFFICE";
+  const mainTitle = isWarehouseHeader ? "Quản lý kho hàng" : title;
+
+  const buildTwoToneTitle = (rawTitle) => {
+    if (!rawTitle || typeof rawTitle !== "string") {
+      return { base: "", accent: "" };
+    }
+
+    const words = rawTitle.trim().split(/\s+/).filter(Boolean);
+    if (words.length <= 2) {
+      return { base: words.join(" "), accent: "" };
+    }
+
+    const splitIndex = 2;
+
+    return {
+      base: words.slice(0, splitIndex).join(" "),
+      accent: words.slice(splitIndex).join(" "),
+    };
+  };
+
+  const { base: mainTitleBase, accent: mainTitleAccent } = buildTwoToneTitle(mainTitle);
   return (
-    <header className="sticky top-0 z-40 bg-white border-b">
+    <header className={`sticky top-0 z-40 border-b ${isWarehouseHeader ? "bg-[#fffdf8] border-[#b8860b]/20" : "bg-white"}`}>
       <div className="h-16 px-6 flex items-center justify-between">
         {/* Left */}
         <div className="flex items-center gap-2">
@@ -61,16 +109,41 @@ export default function BackofficeHeader({
             )}
           </Button>
 
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="text-xs text-gray-500">
-                {subtitle}
+          {isMainScreenHeader ? (
+            <div className="flex flex-col gap-0.5">
+              <p
+                className="text-[9px] md:text-[10px] tracking-[0.18em] uppercase text-[#b8860b]/80"
+                style={{ fontFamily: "'DM Mono', monospace" }}
+              >
+                {headerEyebrow}
               </p>
-            )}
-          </div>
+              <h1
+                className="text-[20px] md:text-[24px] lg:text-[26px] leading-tight font-black text-[#1a1612]"
+                style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em" }}
+              >
+                <>
+                  {mainTitleBase}
+                  {mainTitleAccent ? (
+                    <>
+                      {" "}
+                      <span className="text-[#b8860b]">{mainTitleAccent}</span>
+                    </>
+                  ) : null}
+                </>
+              </h1>
+            </div>
+          ) : (
+            <div>
+              <h1 className="text-base md:text-lg font-bold text-gray-900">
+                {title}
+              </h1>
+              {subtitle && (
+                <p className="text-xs text-gray-500">
+                  {subtitle}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
 
