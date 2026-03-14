@@ -47,6 +47,7 @@ import {
     AlertCircle,
     CheckCircle2,
     RefreshCcw,
+    Loader2,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
@@ -471,16 +472,16 @@ export default function KhachHangPage() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
-                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("all")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("all")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
                                             Tất cả loại {loaiKhachHang === "all" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("le")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("le")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
                                             Khách lẻ {loaiKhachHang === "le" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("si")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("si")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
                                             Khách sỉ {loaiKhachHang === "si" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("doanh_nghiep")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("doanh_nghiep")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
                                             Doanh nghiệp {loaiKhachHang === "doanh_nghiep" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -502,13 +503,13 @@ export default function KhachHangPage() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
-                                        <DropdownMenuItem onClick={() => setTrangThai("all")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                        <DropdownMenuItem onClick={() => setTrangThai("all")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
                                             Tất cả trạng thái {trangThai === "all" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setTrangThai("1")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                        <DropdownMenuItem onClick={() => setTrangThai("1")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
                                             Hoạt động {trangThai === "1" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setTrangThai("0")} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">
+                                        <DropdownMenuItem onClick={() => setTrangThai("0")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
                                             Ngưng hoạt động {trangThai === "0" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -577,7 +578,7 @@ export default function KhachHangPage() {
                                     <tr>
                                         <td colSpan={7} className="text-center py-12 text-gray-500">
                                             <div className="flex items-center justify-center">
-                                                <RefreshCcw className="h-6 w-6 animate-spin text-purple-600 mr-2" />
+                                                <Loader2 className="h-6 w-6 animate-spin text-violet-500 mr-2" />
                                                 Đang tải dữ liệu...
                                             </div>
                                         </td>
@@ -631,7 +632,7 @@ export default function KhachHangPage() {
                                                 <div className="flex items-center justify-center gap-1">
                                                     <button
                                                         onClick={() => navigate(`/customers/${khachHang.id}`)}
-                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-purple-600 hover:bg-purple-50 hover:border-purple-200"
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-purple-600 hover:bg-violet-50 hover:border-purple-200"
                                                         title="Xem chi tiết"
                                                     >
                                                         <Eye className="w-4 h-4" />
@@ -690,7 +691,7 @@ export default function KhachHangPage() {
                                     {Math.min((currentPage + 1) * pageSize, totalItems)}
                                 </span>
                                 {' '}trong tổng số{' '}
-                                <span className="font-semibold text-purple-600">{totalItems}</span> kết quả
+                                <span className="font-semibold text-violet-600">{totalItems}</span> kết quả
                             </div>
 
                             <div className="flex items-center gap-2">

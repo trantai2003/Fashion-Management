@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,31 +27,65 @@ import {
     DialogHeader,
     DialogTitle,
     DialogFooter,
-    DialogOverlay,
-    DialogPortal,
 } from "@/components/ui/dialog";
 import {
     ChevronDown,
     Plus,
     Trash2,
-    Save,
     Send,
     ArrowLeft,
     Building2,
     Package,
     Calendar,
-    CheckCircle,
     AlertCircle,
     Loader2,
     Search,
-    X,
     Mail,
     FileText,
     RotateCw,
+    MapPin,
+    Phone,
+    User,
+    ShoppingCart,
 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 import purchaseOrderCreateService from '@/services/purchaseOrderCreateService';
 import { khoService } from "@/services/khoService";
+
+// ── Shared components for lux-sync layout ──────────────────────────────
+function SectionCard({ icon: Icon, iconBg, iconColor, title, children }) {
+    return (
+        <div className="rounded-2xl bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-200/80 overflow-hidden flex flex-col h-full items-stretch">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
+                <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${iconBg}`}>
+                    <Icon className={`h-4 w-4 ${iconColor}`} />
+                </div>
+                <p className="font-bold text-slate-800 text-[14px]">{title}</p>
+            </div>
+            <div className="p-5 flex-1 flex flex-col gap-6 justify-start">{children}</div>
+        </div>
+    );
+}
+
+function InfoField({ label, value, mono = false, icon: Icon, children }) {
+    return (
+        <div className="space-y-1.5 flex flex-col">
+            <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 uppercase tracking-widest">
+                {Icon && <Icon className="h-3.5 w-3.5 opacity-70" />}
+                {label}
+            </div>
+            <div className="flex-1 flex items-start mt-0.5">
+                {children ?? (
+                    <p className={`text-[14px] font-semibold text-slate-800 ${mono ? "font-mono font-bold tracking-tight" : ""}`}>
+                        {value || "—"}
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+}
+// ─────────────────────────────────────────────────────────────────────────
 
 export default function PurchaseOrderCreate() {
     const navigate = useNavigate();
@@ -112,8 +145,6 @@ export default function PurchaseOrderCreate() {
                         filters: []
                     })
                 ]);
-                console.log("warehousesRes full:", warehousesRes);
-                console.log("warehousesRes.data:", warehousesRes.data);
 
                 // Handle Suppliers Response
                 if (suppliersRes && suppliersRes.data) {
@@ -134,7 +165,6 @@ export default function PurchaseOrderCreate() {
 
                 // Handle Warehouses Response
                 if (warehousesRes && warehousesRes.data && warehousesRes.data.data.content) {
-                    console.log("Warehouses:", warehousesRes.data.data.content);
                     setWarehouses(warehousesRes.data.data.content);
                 }
             } catch (error) {
@@ -197,10 +227,11 @@ export default function PurchaseOrderCreate() {
             maBienThe: product.maBienThe,
             tenSanPham: product.tenSanPham,
             thuocTinh: product.thuocTinh,
-            donViTinh: product.donViTinh,
+            donViTinh: product.donViTinh || '',
             soLuongDat: 1,
             donGia: 0,
             ghiChu: '',
+            anhBienThe: product.anhBienThe || null, // Capture image if available
         };
 
         setOrderItems(prev => [...prev, newItem]);
@@ -330,13 +361,9 @@ export default function PurchaseOrderCreate() {
                 })),
             };
 
-            console.log('Payload:', JSON.stringify(payload, null, 2));
-            console.log('Selected Supplier:', selectedSupplier);
-            console.log('Order Items:', orderItems);
-
             const response = await purchaseOrderCreateService.create(payload, formData.khoId);
 
-            showNotification('success', `Đã gửi email đến ${selectedSupplier.email} thành công!`);
+            showNotification('success', `Đã gửi điện đến ${selectedSupplier.email} thành công!`);
             setShowSendDialog(false);
 
             setTimeout(() => {
@@ -344,14 +371,13 @@ export default function PurchaseOrderCreate() {
             }, 2000);
         } catch (error) {
             console.error('Error sending email:', error);
-            console.error('Error response:', error.response?.data);
 
             if (error.response?.status === 409) {
                 showNotification('error', 'Mã đơn mua hàng đã tồn tại. Vui lòng tạo lại mã mới.');
             } else {
                 const errorMessage = error.response?.data?.message
                     || error.response?.data?.error
-                    || 'Không thể gửi email. Vui lòng thử lại!';
+                    || 'Không thể gửi yêu cầu. Vui lòng thử lại!';
                 showNotification('error', errorMessage);
             }
         } finally {
@@ -366,95 +392,133 @@ export default function PurchaseOrderCreate() {
 
     const selectedSupplier = getSelectedSupplier();
 
+    const selectedWarehouse = formData.khoId ? warehouses.find(k => k.id === formData.khoId) : null;
+
+
+    if (isLoadingData) {
+        return (
+            <div className="p-6 md:p-8 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync flex flex-col items-center justify-center">
+                <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm w-full max-w-sm">
+                    <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+                    <span className="text-[15px] font-medium text-slate-600">Đang khởi tạo biểu mẫu...</span>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        className="gap-2"
-                        onClick={() => navigate('/purchase-orders')}
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        Quay lại
-                    </Button>
+        <div className="p-6 md:p-8 pb-32 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync">
+            
+            {/* ── Top Header and Navigation ── */}
+            <div className="flex flex-col gap-4 mb-2">
+                <button
+                    type="button"
+                    onClick={() => navigate("/purchase-orders")}
+                    className="inline-flex items-center gap-1.5 text-[14px] font-medium text-slate-500 hover:text-violet-600 transition-colors duration-200 w-fit"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Quay lại danh sách đơn hàng
+                </button>
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/60 shrink-0">
+                            <Package className="h-6 w-6 text-violet-600" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight leading-tight flex items-center gap-3">
+                                Tạo đơn mua hàng mới
+                            </h1>
+                            <p className="mt-1 text-[15px] font-medium text-slate-500">
+                                Lập đơn đặt hàng và gửi thông báo chờ báo giá đến nhà cung cấp
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-3 shrink-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/purchase-orders')}
+                            className="h-11 px-6 rounded-xl border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-all shadow-sm"
+                        >
+                            Hủy bỏ
+                        </Button>
+                        <Button
+                            onClick={handleSendToSupplier}
+                            disabled={loading || orderItems.length === 0}
+                            className="h-11 px-6 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition-all duration-200 shadow-md shadow-violet-600/20 gap-2"
+                        >
+                            <Send className="h-4 w-4" />
+                            Gửi yêu cầu
+                        </Button>
+                    </div>
                 </div>
             </div>
 
-            {/* Order Information */}
-            <Card className="border-0 shadow-lg bg-white">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                        <FileText className="h-5 w-5 text-indigo-600" />
-                        Thông tin đơn hàng
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Số đơn mua */}
+            {/* ── Info Cards Grid ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                {/* Card Thông tin đơn */}
+                <SectionCard title="Thiết lập chứng từ" icon={FileText} iconBg="bg-violet-100" iconColor="text-violet-600">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                         <div className="space-y-2">
-                            <Label className="text-gray-700 font-medium">
-                                Số đơn mua <span className="text-red-500">*</span>
+                            <Label className="text-[13px] font-bold text-slate-700">
+                                Số Đơn <span className="text-rose-500">*</span>
                             </Label>
                             <div className="flex gap-2">
                                 <Input
                                     value={formData.soDonMua}
                                     onChange={(e) => handleInputChange('soDonMua', e.target.value)}
-                                    className="font-semibold text-indigo-600"
-                                    placeholder="Nhập số đơn mua..."
+                                    className="h-11 font-mono font-bold text-violet-700 rounded-xl border-slate-200 shadow-sm pr-9 text-[15px] focus-visible:ring-violet-500 flex-1"
+                                    placeholder="Mã đơn tự sinh"
                                 />
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    size="icon"
                                     onClick={() => handleInputChange('soDonMua', generateOrderNumber())}
-                                    title="Tạo mã mới"
+                                    className="h-11 w-11 p-0 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-violet-600 shrink-0"
+                                    title="Tái tạo mã"
                                 >
                                     <RotateCw className="h-4 w-4" />
                                 </Button>
                             </div>
                         </div>
 
-                        {/* Kho nhập */}
                         <div className="space-y-2">
-                            <Label className="text-gray-700 font-medium">
-                                Kho nhập <span className="text-red-500">*</span>
+                            <Label className="text-[13px] font-bold text-slate-700">
+                                Kho Tiếp Nhận <span className="text-rose-500">*</span>
                             </Label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
                                         variant="outline"
-                                        className="w-full justify-between font-normal"
+                                        className="w-full h-11 justify-between font-medium rounded-xl border-slate-200 hover:bg-slate-50 px-4 text-[14px]"
                                     >
-                                        <div className="flex items-center">
-                                            <Package className="h-4 w-4 mr-2 text-gray-400" />
+                                        <div className="flex items-center gap-2 truncate">
+                                            <Package className="h-4 w-4 text-slate-400 shrink-0" />
                                             <span className="truncate">
-                                                {formData.khoId
-                                                    ? warehouses.find(k => k.id === formData.khoId)?.tenKho
-                                                    : "Chọn kho nhập"}
+                                                {selectedWarehouse ? selectedWarehouse.tenKho : "Chọn kho nhập..."}
                                             </span>
                                         </div>
-                                        <ChevronDown className="h-4 w-4 opacity-50 ml-2" />
+                                        <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[300px] max-h-[300px] overflow-y-auto bg-white" align="start">
+                                <DropdownMenuContent className="w-[300px] max-h-[300px] overflow-y-auto bg-white rounded-xl shadow-lg border-slate-100" align="start">
                                     {warehouses.length === 0 ? (
-                                        <DropdownMenuItem disabled className="text-gray-500 italic">
-                                            Không có kho nào
+                                        <DropdownMenuItem disabled className="text-slate-500 italic p-3">
+                                            Không có danh mục kho
                                         </DropdownMenuItem>
                                     ) : (
                                         warehouses.map((kho) => (
                                             <DropdownMenuItem
                                                 key={kho.id}
                                                 onClick={() => handleInputChange('khoId', kho.id)}
-                                                className="cursor-pointer hover:bg-gray-100 py-2 flex flex-col items-start"
+                                                className="cursor-pointer hover:bg-violet-50 focus:bg-violet-50 p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5"
                                             >
-                                                <span className="font-medium text-gray-900">
+                                                <span className="font-bold text-slate-800">
                                                     {kho.tenKho}
                                                 </span>
-                                                <span className="text-xs text-gray-500">
-                                                    {kho.diaChi}
+                                                <span className="text-[13px] text-slate-500 line-clamp-1">
+                                                    {kho.diaChi || "Không có địa chỉ"}
                                                 </span>
                                             </DropdownMenuItem>
                                         ))
@@ -462,431 +526,432 @@ export default function PurchaseOrderCreate() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
+                    </div>
 
-                        {/* Nhà cung cấp */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-1">
                         <div className="space-y-2">
-                            <Label className="text-gray-700 font-medium">
-                                Nhà cung cấp <span className="text-red-500">*</span>
-                            </Label>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className="w-full justify-between font-normal"
-                                    >
-                                        <div className="flex items-center overflow-hidden">
-                                            <Building2 className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                            <span className="truncate">
-                                                {selectedSupplier ? selectedSupplier.tenNhaCungCap : "Chọn nhà cung cấp"}
-                                            </span>
-                                        </div>
-                                        <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[400px] max-h-[400px] overflow-y-auto bg-white">
-                                    {suppliers.length === 0 ? (
-                                        <DropdownMenuItem disabled className="text-gray-500 italic">
-                                            Không có nhà cung cấp nào
-                                        </DropdownMenuItem>
-                                    ) : (
-                                        suppliers.map((supplier) => (
-                                            <DropdownMenuItem
-                                                key={supplier.id}
-                                                onClick={() => handleInputChange('nhaCungCapId', supplier.id)}
-                                                className="cursor-pointer hover:bg-indigo-50 py-3"
-                                            >
-                                                <div className="flex flex-col w-full gap-1">
-                                                    <span className="font-medium text-gray-900">
-                                                        {supplier.tenNhaCungCap}
-                                                    </span>
-                                                    <div className="flex items-center justify-between text-xs">
-                                                        <span className="text-gray-500">
-                                                            Mã: {supplier.maNhaCungCap}
-                                                        </span>
-                                                        <span className="text-gray-400">
-                                                            {supplier.soDienThoai}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </DropdownMenuItem>
-                                        ))
-                                    )}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
-                            {selectedSupplier && (
-                                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <span className="text-gray-600">Người liên hệ:</span>
-                                            <span className="ml-2 font-medium">{selectedSupplier.nguoiLienHe}</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-600">Điện thoại:</span>
-                                            <span className="ml-2 font-medium">{selectedSupplier.soDienThoai}</span>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <span className="text-gray-600">Email:</span>
-                                            <span className="ml-2 font-medium text-blue-600">{selectedSupplier.email}</span>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <span className="text-gray-600">Địa chỉ:</span>
-                                            <span className="ml-2 font-medium">{selectedSupplier.diaChi}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Ngày đặt hàng */}
-                        <div className="space-y-2">
-                            <Label className="text-gray-700 font-medium">
-                                Ngày đặt hàng <span className="text-red-500">*</span>
+                            <Label className="text-[13px] font-bold text-slate-700">
+                                Ngày đặt <span className="text-rose-500">*</span>
                             </Label>
                             <div className="relative">
-                                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Calendar className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                                 <Input
                                     type="date"
-                                    className="pl-9"
+                                    className="pl-10 h-11 rounded-xl border-slate-200 font-medium text-[15px] focus-visible:ring-violet-500 shadow-sm"
                                     value={formData.ngayDatHang}
                                     onChange={(e) => handleInputChange('ngayDatHang', e.target.value)}
                                 />
                             </div>
                         </div>
 
-                        {/* Ngày giao dự kiến */}
                         <div className="space-y-2">
-                            <Label className="text-gray-700 font-medium">
-                                Ngày giao dự kiến <span className="text-red-500">*</span>
+                            <Label className="text-[13px] font-bold text-slate-700">
+                                Ngày giao dự kiến <span className="text-rose-500">*</span>
                             </Label>
                             <div className="relative">
-                                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Calendar className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                                 <Input
                                     type="date"
-                                    className="pl-9"
+                                    className="pl-10 h-11 rounded-xl border-slate-200 font-medium text-[15px] focus-visible:ring-violet-500 shadow-sm"
                                     value={formData.ngayGiaoDuKien}
                                     onChange={(e) => handleInputChange('ngayGiaoDuKien', e.target.value)}
                                     min={formData.ngayDatHang}
                                 />
                             </div>
                         </div>
-
-                        {/* Ghi chú */}
-                        <div className="space-y-2 md:col-span-2">
-                            <Label className="text-gray-700 font-medium">
-                                Ghi chú
-                            </Label>
-                            <Textarea
-                                placeholder="Nhập ghi chú cho đơn hàng (nếu có)..."
-                                className="min-h-[100px]"
-                                value={formData.ghiChu}
-                                onChange={(e) => handleInputChange('ghiChu', e.target.value)}
-                            />
-                        </div>
                     </div>
-                </CardContent>
-            </Card>
 
-            {/* Order Items */}
-            <Card className="border-0 shadow-lg bg-white">
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                            <Package className="h-5 w-5 text-indigo-600" />
-                            Chi tiết sản phẩm
-                        </CardTitle>
-                        <Button
-                            onClick={() => setShowProductDialog(true)}
-                            className="gap-2 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Thêm sản phẩm
-                        </Button>
+                    <div className="space-y-2 mt-1">
+                        <Label className="text-[13px] font-bold text-slate-700">
+                            Ghi chú đơn hàng
+                        </Label>
+                        <Textarea
+                            placeholder="Nhập yêu cầu đặc biệt hoặc ghi chú giao hàng (tuỳ chọn)..."
+                            className="min-h-[90px] rounded-xl border-slate-200 focus-visible:ring-violet-500 resize-none text-[14px] shadow-sm p-3.5"
+                            value={formData.ghiChu}
+                            onChange={(e) => handleInputChange('ghiChu', e.target.value)}
+                        />
                     </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    {orderItems.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-12">
-                            <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                                <Package className="h-8 w-8 text-gray-400" />
+                </SectionCard>
+
+                {/* Card Nhà Cung Cấp */}
+                <SectionCard title="Đối tác cung cấp" icon={Building2} iconBg="bg-blue-100" iconColor="text-blue-600">
+                    <div className="space-y-2">
+                        <Label className="text-[13px] font-bold text-slate-700">
+                            Lựa chọn nhà cung cấp <span className="text-rose-500">*</span>
+                        </Label>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-11 justify-between font-medium rounded-xl border-slate-200 hover:bg-slate-50 px-4 text-[14px]"
+                                >
+                                    <div className="flex items-center gap-2 truncate">
+                                        <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
+                                        <span className="truncate">
+                                            {selectedSupplier ? selectedSupplier.tenNhaCungCap : "Tìm nhà cung cấp..."}
+                                        </span>
+                                    </div>
+                                    <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-[400px] max-h-[350px] overflow-y-auto bg-white rounded-xl shadow-lg border-slate-100 p-1">
+                                {suppliers.length === 0 ? (
+                                    <DropdownMenuItem disabled className="text-slate-500 italic p-3">
+                                        Chuỗi cung ứng trống
+                                    </DropdownMenuItem>
+                                ) : (
+                                    suppliers.map((supplier) => (
+                                        <DropdownMenuItem
+                                            key={supplier.id}
+                                            onClick={() => handleInputChange('nhaCungCapId', supplier.id)}
+                                            className="cursor-pointer hover:bg-blue-50 focus:bg-blue-50 p-3 rounded-lg flex flex-col items-start gap-1"
+                                        >
+                                            <span className="font-bold text-slate-800 text-[14px]">
+                                                {supplier.tenNhaCungCap}
+                                            </span>
+                                            <div className="flex items-center justify-between w-full text-[12px] opacity-80">
+                                                <span className="font-mono text-blue-700 bg-blue-100/50 px-1 rounded">
+                                                    {supplier.maNhaCungCap}
+                                                </span>
+                                                <span className="text-slate-500 font-medium">
+                                                    {supplier.soDienThoai}
+                                                </span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
+                    {selectedSupplier ? (
+                        <div className="mt-4 p-5 rounded-xl border border-blue-100 bg-blue-50/50 flex flex-col gap-3">
+                            <InfoField label="Người liên hệ" icon={User} value={selectedSupplier.nguoiLienHe} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <InfoField label="Số điện thoại" icon={Phone} value={selectedSupplier.soDienThoai} mono />
+                                <InfoField label="Email" icon={Mail}>
+                                    <span className="text-[14px] font-semibold text-blue-700 truncate block" title={selectedSupplier.email}>
+                                        {selectedSupplier.email || "—"}
+                                    </span>
+                                </InfoField>
                             </div>
-                            <p className="text-gray-600 font-medium">Chưa có sản phẩm nào</p>
-                            <p className="text-sm text-gray-500 mt-1">Nhấn "Thêm sản phẩm" để bắt đầu</p>
+                            <Separator className="bg-blue-100" />
+                            <InfoField label="Địa chỉ" icon={MapPin}>
+                                <span className="text-[14px] text-slate-700 block leading-snug">
+                                    {selectedSupplier.diaChi || "—"}
+                                </span>
+                            </InfoField>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50">
-                                        <TableHead className="w-[50px]">STT</TableHead>
-                                        <TableHead>Mã sản phẩm</TableHead>
-                                        <TableHead>Tên sản phẩm</TableHead>
-                                        <TableHead>Thuộc tính</TableHead>
-                                        <TableHead className="w-[120px]">Số lượng</TableHead>
-                                        <TableHead className="w-[200px]">Ghi chú</TableHead>
-                                        <TableHead className="w-[80px]">Thao tác</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {orderItems.map((item, index) => (
-                                        <TableRow key={index} className="hover:bg-gray-50">
-                                            <TableCell className="font-medium">{index + 1}</TableCell>
-                                            <TableCell className="font-mono text-sm text-indigo-600">
-                                                {item.maBienThe}
-                                            </TableCell>
-                                            <TableCell className="font-medium">{item.tenSanPham}</TableCell>
-                                            <TableCell className="text-sm text-gray-600">{item.thuocTinh}</TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    type="number"
-                                                    min="1"
-                                                    value={item.soLuongDat}
-                                                    onChange={(e) => handleUpdateItem(index, 'soLuongDat', e.target.value)}
-                                                    className="w-full"
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    value={item.ghiChu}
-                                                    onChange={(e) => handleUpdateItem(index, 'ghiChu', e.target.value)}
-                                                    className="w-full"
-                                                    placeholder="Ghi chú..."
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleRemoveItem(index)}
-                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                        <div className="mt-4 flex-1 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center justify-center p-8 text-center min-h-[180px]">
+                            <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center border border-slate-200 mb-3 shadow-sm">
+                                <Building2 className="h-5 w-5 text-slate-300" />
+                            </div>
+                            <p className="text-[14px] font-semibold text-slate-500">Chưa chọn NCC</p>
+                            <p className="text-[13px] text-slate-400 mt-1 max-w-[200px]">Chọn một nhà cung cấp để xem hồ sơ liên lạc.</p>
                         </div>
                     )}
-                </CardContent>
-            </Card>
-
-            {/* Summary */}
-            {orderItems.length > 0 && (
-                <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
-                    <CardContent className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="text-center">
-                                <p className="text-sm text-gray-600 mb-1">Tổng số mặt hàng</p>
-                                <p className="text-3xl font-bold text-gray-900">{orderItems.length}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-sm text-gray-600 mb-1">Tổng số lượng</p>
-                                <p className="text-3xl font-bold text-blue-600">{calculateTotalQuantity()}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pb-6">
-                <Button
-                    variant="outline"
-                    onClick={() => navigate('/purchase-orders')}
-                    className="gap-2"
-                >
-                    Hủy
-                </Button>
-                <Button
-                    onClick={handleSendToSupplier}
-                    disabled={loading}
-                    className="gap-2 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
-                >
-                    <Send className="h-4 w-4" />
-                    Gửi yêu cầu báo giá
-                </Button>
+                </SectionCard>
             </div>
 
+            {/* ── Main Product Table ── */}
+            <div className="bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-200/80 overflow-hidden flex flex-col">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
+                            <ShoppingCart className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-800 leading-none">Danh mục mặt hàng</h2>
+                            <p className="text-[13px] text-slate-500 font-medium mt-1">
+                                {orderItems.length} sản phẩm được chọn
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        onClick={() => setShowProductDialog(true)}
+                        className="h-10 px-5 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-all shadow-md gap-2"
+                    >
+                        <Plus className="h-4 w-4" />
+                        <span className="hidden sm:inline">Tuyển chọn sản phẩm</span>
+                        <span className="sm:hidden">Thêm</span>
+                    </Button>
+                </div>
+                
+                <div className="overflow-x-auto min-h-[300px]">
+                    {orderItems.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full py-20 px-4 text-center">
+                            <div className="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 mb-5 shadow-inner">
+                                <Package className="h-10 w-10 text-slate-300" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-700 mb-1">Cần bổ sung mặt hàng</h3>
+                            <p className="text-[14px] text-slate-500 max-w-sm mx-auto mb-6">
+                                Bạn chưa đẩy sản phẩm nào vào phiếu yêu cầu. Nhấn nút "Tuyển chọn" ở róc trên để duyệt danh mục.
+                            </p>
+                            <Button
+                                onClick={() => setShowProductDialog(true)}
+                                variant="outline"
+                                className="h-11 rounded-xl border-dashed border-violet-300 text-violet-700 bg-violet-50 hover:bg-violet-100 font-bold px-8"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Mở danh mục
+                            </Button>
+                        </div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b border-slate-200">
+                                    <TableHead className="w-[60px] text-center font-bold text-[13px] uppercase tracking-wider text-slate-500 h-12">#</TableHead>
+                                    <TableHead className="font-bold text-[13px] uppercase tracking-wider text-slate-500 h-12 w-[350px]">Sản phẩm</TableHead>
+                                    <TableHead className="font-bold text-[13px] uppercase tracking-wider text-slate-500 text-center h-12">ĐVT</TableHead>
+                                    <TableHead className="font-bold text-[13px] uppercase tracking-wider text-slate-500 text-center w-[150px] h-12">SL Yêu Cầu</TableHead>
+                                    <TableHead className="font-bold text-[13px] uppercase tracking-wider text-slate-500 h-12">Mô tả (gửi NCC)</TableHead>
+                                    <TableHead className="w-[80px] text-center font-bold text-[13px] uppercase tracking-wider text-slate-500 h-12 pr-6">Xóa</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {orderItems.map((item, index) => (
+                                    <TableRow key={index} className="hover:bg-slate-50 transition-colors border-b border-slate-100 group">
+                                        <TableCell className="text-center font-medium text-slate-400">
+                                            {index + 1}
+                                        </TableCell>
+                                        <TableCell className="py-4">
+                                            <div className="flex items-center gap-4">
+                                                {item.anhBienThe?.tepTin?.duongDan ? (
+                                                    <div className="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200/60 overflow-hidden shadow-sm shrink-0">
+                                                        <img
+                                                            src={item.anhBienThe.tepTin.duongDan}
+                                                            alt="Product"
+                                                            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200/60 flex items-center justify-center shrink-0">
+                                                        <Package className="h-5 w-5 text-slate-300" />
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <p className="font-bold text-[14px] text-slate-900 leading-tight">
+                                                        {item.tenSanPham}
+                                                    </p>
+                                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                        <span className="font-mono text-xs font-bold text-violet-700 bg-violet-50 border border-violet-100 px-1.5 py-0.5 rounded">
+                                                            {item.maBienThe}
+                                                        </span>
+                                                        <span className="text-[12px] text-slate-500 font-medium">
+                                                            {item.thuocTinh}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <span className="inline-flex h-7 px-2.5 items-center justify-center rounded bg-slate-100 text-slate-700 font-semibold text-[13px]">
+                                                {item.donViTinh || 'Cái'}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Input
+                                                type="number"
+                                                min="1"
+                                                value={item.soLuongDat}
+                                                onChange={(e) => handleUpdateItem(index, 'soLuongDat', e.target.value)}
+                                                className="w-full text-center font-bold text-emerald-700 bg-emerald-50/30 border-emerald-200 focus-visible:ring-emerald-500 h-10 rounded-xl"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Input
+                                                value={item.ghiChu}
+                                                onChange={(e) => handleUpdateItem(index, 'ghiChu', e.target.value)}
+                                                className="w-full text-[13px] border-slate-200 shadow-none hover:border-slate-300 focus-visible:ring-violet-500 h-10 rounded-xl placeholder:text-slate-400"
+                                                placeholder="Lưu ý về màu sắc, in ấn..."
+                                            />
+                                        </TableCell>
+                                        <TableCell className="text-center pr-6">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleRemoveItem(index)}
+                                                className="h-9 w-9 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg group-hover:opacity-100 opacity-50 transition-all"
+                                                title="Loại bỏ"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
+                </div>
+            </div>
+
+            {/* ── Dialogs ── */}
             {/* Product Selection Dialog */}
             <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
-                {/* Chỉnh sửa: Thay max-w-6xl thành max-w-[95vw] hoặc screen-2xl, thêm overflow-x-hidden */}
-                <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-hidden flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-0">
-                    <div className="p-6 flex flex-col h-full overflow-x-hidden"> {/* Thêm overflow-x-hidden ở đây */}
-                        <DialogHeader className="border-b pb-4 mb-4">
-                            <DialogTitle className="flex items-center gap-2 text-lg">
-                                <Package className="h-5 w-5 text-indigo-600" />
-                                Chọn sản phẩm
+                <DialogContent className="max-w-[1000px] w-[95vw] p-0 overflow-hidden border-0 shadow-2xl rounded-2xl bg-white flex flex-col max-h-[85vh]">
+                    <div className="bg-slate-900 p-5 flex items-center justify-between shrink-0">
+                        <div className="flex items-center gap-3">
+                            <div className="h-9 w-9 bg-white/10 rounded-xl flex items-center justify-center">
+                                <Search className="h-5 w-5 text-white" />
+                            </div>
+                            <DialogTitle className="text-lg font-bold text-white m-0 tracking-wide">
+                                Tuyển chọn mặt hàng
                             </DialogTitle>
-                            <DialogDescription className="text-gray-600">
-                                Tìm kiếm và chọn sản phẩm để thêm vào đơn hàng
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="relative mb-4">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        </div>
+                    </div>
+                    
+                    <div className="p-5 border-b border-slate-100 shrink-0 bg-slate-50/50">
+                        <div className="relative">
+                            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                             <Input
-                                placeholder="Tìm kiếm sản phẩm theo tên, mã..."
-                                className="pl-9 bg-white text-gray-900"
+                                placeholder="Gõ tên, mã vạch, mã SKU, màu sắc..."
+                                className="pl-10 h-11 bg-white border-slate-200 rounded-xl text-[14px] shadow-sm focus-visible:ring-slate-900 font-medium placeholder:font-normal"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
+                    </div>
 
-                        {/* Chỉnh sửa: Bọc Table trong một div có overflow-y-auto nhưng KHÔNG có overflow-x-auto */}
-                        <div className="flex-1 overflow-y-auto border rounded-lg bg-white shadow-sm overflow-x-hidden">
-                            <Table>
-                                <TableHeader className="sticky top-0 bg-gray-50 z-10">
-                                    <TableRow className="border-b">
-                                        <TableHead className="font-semibold text-gray-700">Mã sản phẩm</TableHead>
-                                        <TableHead className="font-semibold text-gray-700">Tên sản phẩm</TableHead>
-                                        <TableHead className="font-semibold text-gray-700">Thuộc tính</TableHead>
-                                        <TableHead className="font-semibold text-gray-700 w-[120px] text-right">Thao tác</TableHead>
+                    <div className="flex-1 overflow-y-auto min-h-0 bg-slate-50/30">
+                        <Table>
+                            <TableHeader className="sticky top-0 bg-slate-100/90 backdrop-blur-sm z-10 shadow-sm border-b-slate-200">
+                                <TableRow>
+                                    <TableHead className="font-bold text-[13px] uppercase text-slate-500 h-12 w-[120px]">Kho</TableHead>
+                                    <TableHead className="font-bold text-[13px] uppercase text-slate-500 h-12">Thông tin sản phẩm</TableHead>
+                                    <TableHead className="font-bold text-[13px] uppercase text-slate-500 h-12 w-[100px] text-center">Thao tác</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredProducts.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="text-center py-16">
+                                            <div className="flex flex-col items-center justify-center gap-2">
+                                                <Search className="h-8 w-8 text-slate-300 mb-2" />
+                                                <p className="text-[15px] font-bold text-slate-600">Không tìm thấy sản phẩm</p>
+                                                <p className="text-[13px] text-slate-400">Thử thay đổi từ khóa tìm kiếm</p>
+                                            </div>
+                                        </TableCell>
                                     </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredProducts.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                                                Không tìm thấy sản phẩm phù hợp
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        filteredProducts.map((product) => (
-                                            <TableRow key={product.id} className="hover:bg-indigo-50/30 transition-colors">
-                                                <TableCell className="font-mono text-sm text-indigo-600 font-medium whitespace-nowrap">
+                                ) : (
+                                    filteredProducts.map((product) => {
+                                        const isSelected = orderItems.some(item => item.bienTheSanPhamId === product.id);
+                                        return (
+                                            <TableRow key={product.id} className={`hover:bg-slate-50 ${isSelected ? 'opacity-50 bg-slate-50/50' : ''}`}>
+                                                <TableCell className="font-mono text-[13px] text-violet-700 font-bold whitespace-nowrap">
                                                     {product.maBienThe}
                                                 </TableCell>
-                                                <TableCell className="font-medium text-gray-900">
-                                                    {product.tenSanPham}
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        {product.anhBienThe?.tepTin?.duongDan ? (
+                                                            <div className="h-10 w-10 rounded-lg bg-white border border-slate-200 overflow-hidden shrink-0">
+                                                                <img src={product.anhBienThe.tepTin.duongDan} alt="" className="h-full w-full object-cover" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="h-10 w-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                                                                <Package className="h-4 w-4 text-slate-300" />
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <p className="font-bold text-[14px] text-slate-800 line-clamp-1">{product.tenSanPham}</p>
+                                                            <p className="text-[12px] text-slate-500 mt-0.5">{product.thuocTinh}</p>
+                                                        </div>
+                                                    </div>
                                                 </TableCell>
-                                                <TableCell className="text-sm text-gray-600">
-                                                    {product.thuocTinh}
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => handleAddProduct(product)}
-                                                        disabled={orderItems.some(item => item.bienTheSanPhamId === product.id)}
-                                                        className="gap-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white"
-                                                    >
-                                                        <Plus className="h-3 w-3" />
-                                                        Thêm
-                                                    </Button>
+                                                <TableCell className="text-center">
+                                                    {isSelected ? (
+                                                        <Button size="sm" variant="outline" disabled className="h-8 rounded-lg gap-1 border-slate-200 text-slate-400 font-medium">
+                                                            <CheckCircle className="h-3.5 w-3.5" /> Thêm
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => handleAddProduct(product)}
+                                                            className="h-8 rounded-lg gap-1 bg-violet-600 hover:bg-violet-700 text-white font-semibold shadow-sm"
+                                                        >
+                                                            <Plus className="h-3.5 w-3.5" /> Lấy
+                                                        </Button>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                        );
+                                    })
+                                )}
+                            </TableBody>
+                        </Table>
                     </div>
                 </DialogContent>
             </Dialog>
 
             {/* Send Confirmation Dialog */}
             <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
-                {/* Apply light theme gradient explicitly to match Add Product Dialog */}
-                <DialogContent className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border-gray-200 shadow-xl max-w-md w-full">
-                    <DialogHeader className="pb-4 border-b border-gray-200">
-                        <DialogTitle className="flex items-center gap-2 text-xl text-indigo-700">
-                            <Mail className="h-6 w-6" />
-                            Xác nhận gửi yêu cầu
-                        </DialogTitle>
-                        <DialogDescription className="text-gray-600">
-                            Email yêu cầu báo giá sẽ được gửi đến nhà cung cấp
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    {selectedSupplier && (
-                        <div className="space-y-4 py-2">
-                            {/* Supplier Info - Using White Card style */}
-                            <div className="bg-white border border-blue-100 rounded-xl p-4 shadow-sm">
-                                <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                                    <Building2 className="h-4 w-4" />
-                                    Thông tin nhà cung cấp
-                                </h4>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                                        <span className="text-gray-500">Tên:</span>
-                                        <span className="font-medium text-gray-900 text-right">{selectedSupplier.tenNhaCungCap}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                                        <span className="text-gray-500">Email:</span>
-                                        <span className="font-medium text-blue-600 text-right">{selectedSupplier.email}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-500">Người liên hệ:</span>
-                                        <span className="font-medium text-gray-900 text-right">{selectedSupplier.nguoiLienHe}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Order Info - Using White Card style */}
-                            <div className="bg-white border border-green-100 rounded-xl p-4 shadow-sm">
-                                <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
-                                    <Package className="h-4 w-4" />
-                                    Thông tin đơn hàng
-                                </h4>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                                        <span className="text-gray-500">Số đơn:</span>
-                                        <span className="font-mono font-medium text-indigo-600 text-right">{formData.soDonMua}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                                        <span className="text-gray-500">Số mặt hàng:</span>
-                                        <span className="font-medium text-gray-900 text-right">{orderItems.length}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                                        <span className="text-gray-500">Tổng số lượng:</span>
-                                        <span className="font-medium text-gray-900 text-right">{calculateTotalQuantity()}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-500">Ngày giao DK:</span>
-                                        <span className="font-medium text-gray-900 text-right">
-                                            {new Date(formData.ngayGiaoDuKien).toLocaleDateString('vi-VN')}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <Alert className="bg-amber-50 border-amber-200 text-amber-900">
-                                <AlertCircle className="h-4 w-4 text-amber-600" />
-                                <AlertDescription className="text-xs text-amber-800 ml-2">
-                                    Nhà cung cấp sẽ nhận được email báo giá và cần xác thực trước khi phản hồi.
-                                </AlertDescription>
-                            </Alert>
+                <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border-0 shadow-2xl">
+                    <div className="bg-violet-600 p-6 flex items-center gap-3">
+                        <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+                            <Send className="h-5 w-5 text-white" />
                         </div>
-                    )}
+                        <DialogTitle className="text-xl font-bold text-white m-0">
+                            Phát tín hiệu Y/C báo giá
+                        </DialogTitle>
+                    </div>
+                    
+                    <div className="p-6">
+                        <DialogDescription className="text-[15px] text-slate-600 mb-6">
+                            Thông qua tính năng này, email yêu cầu báo giá sẽ gửi trực tiếp đến hộp thư của đối tác. Vui lòng rà soát cẩn trọng.
+                        </DialogDescription>
 
-                    <DialogFooter className="border-t border-gray-200 pt-4">
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowSendDialog(false)}
-                            disabled={sendingEmail}
-                            className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                        >
-                            Hủy
-                        </Button>
-                        <Button
-                            onClick={confirmSendEmail}
-                            disabled={sendingEmail}
-                            className="gap-2 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
-                        >
-                            {sendingEmail ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Đang gửi...
-                                </>
-                            ) : (
-                                <>
-                                    <Send className="h-4 w-4" />
-                                    Xác nhận gửi
-                                </>
-                            )}
-                        </Button>
-                    </DialogFooter>
+                        {selectedSupplier && (
+                            <div className="space-y-4 mb-6">
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 -mr-2 -mt-2 opacity-5 pointer-events-none">
+                                        <Building2 className="w-24 h-24 text-slate-900" />
+                                    </div>
+                                    <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest mb-1">Thiết lập gốc</p>
+                                    <p className="font-bold text-[15px] text-slate-800">{selectedSupplier.tenNhaCungCap}</p>
+                                    <p className="text-[14px] text-blue-600 font-medium mt-1">{selectedSupplier.email}</p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mã đơn</p>
+                                        <p className="font-mono font-bold text-[14px] text-violet-700 truncate">{formData.soDonMua}</p>
+                                    </div>
+                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mặt hàng</p>
+                                        <p className="font-black text-[15px] text-emerald-600">{orderItems.length} <span className="text-[12px] font-medium text-slate-500">sp</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <DialogFooter className="gap-2 sm:gap-0 mt-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowSendDialog(false)}
+                                disabled={sendingEmail}
+                                className="h-11 rounded-xl font-semibold border-slate-200 hover:bg-slate-50 w-full sm:w-auto"
+                            >
+                                Hủy bỏ
+                            </Button>
+                            <Button
+                                onClick={confirmSendEmail}
+                                disabled={sendingEmail}
+                                className="h-11 rounded-xl font-semibold bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/20 w-full sm:w-auto relative overflow-hidden"
+                            >
+                                {sendingEmail ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        Hệ thống đang gửi thư...
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center justify-center gap-2">
+                                        Phát lệnh gửi <Send className="h-4 w-4" />
+                                    </span>
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

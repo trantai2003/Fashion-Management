@@ -13,7 +13,10 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2, PackageSearch, CheckCircle2, Warehouse } from "lucide-react";
+import {
+  ArrowLeft, Loader2, PackageSearch, CheckCircle2, Warehouse,
+  Package, ClipboardList,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
 import { getKhoList } from "@/services/khoService";
 import {
@@ -23,7 +26,7 @@ import {
   completeStockTake,
 } from "@/services/stockTakeService";
 
-// ── Schema validation ─────────────────────────────────────────────────────
+// ── Schema ────────────────────────────────────────────────────────────────
 const formSchema = z.object({
   khoId: z.number({ invalid_type_error: "Vui lòng chọn kho" }).min(1, "Vui lòng chọn kho"),
   ghiChu: z.string().optional(),
@@ -32,23 +35,26 @@ const formSchema = z.object({
 // ── Step indicator ────────────────────────────────────────────────────────
 function StepIndicator({ step }) {
   const steps = [
-    { label: "Chọn kho", icon: Warehouse },
-    { label: "Nhập số lượng", icon: CheckCircle2 },
+    { label: "Chọn kho" },
+    { label: "Nhập số lượng" },
   ];
   return (
-    <div className="flex items-center gap-2 mb-6">
+    <div className="flex items-center gap-2">
       {steps.map((s, idx) => {
         const active = idx + 1 === step;
-        const done = idx + 1 < step;
+        const done   = idx + 1 <  step;
         return (
           <div key={idx} className="flex items-center gap-2">
-            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${done ? "bg-emerald-500 text-white" :
-                active ? "bg-violet-600 text-white shadow-md shadow-violet-200" :
-                  "bg-slate-100 text-slate-400"
-              }`}>
+            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
+              done   ? "bg-emerald-500 text-white" :
+              active ? "bg-violet-600 text-white shadow-md shadow-violet-200" :
+                       "bg-slate-100 text-slate-400"
+            }`}>
               {done ? "✓" : idx + 1}
             </div>
-            <span className={`text-sm font-medium ${active ? "text-violet-700" : done ? "text-emerald-600" : "text-slate-400"}`}>
+            <span className={`text-sm font-medium ${
+              active ? "text-violet-700" : done ? "text-emerald-600" : "text-slate-400"
+            }`}>
               {s.label}
             </span>
             {idx < steps.length - 1 && (
@@ -61,32 +67,30 @@ function StepIndicator({ step }) {
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────
 export default function StockTakeCreate() {
-  const { id } = useParams();
+  const { id }   = useParams();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
-  const [khos, setKhos] = useState([]);
-  const [dotKiemKeId, setDotKiemKeId] = useState(id ? parseInt(id) : null);
+  const [loading,       setLoading]       = useState(false);
+  const [khos,          setKhos]          = useState([]);
+  const [dotKiemKeId,   setDotKiemKeId]   = useState(id ? parseInt(id) : null);
   const [selectedKhoId, setSelectedKhoId] = useState(null);
-  const [chiTiets, setChiTiets] = useState([]);
-  const [updates, setUpdates] = useState({});
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [chiTiets,      setChiTiets]      = useState([]);
+  const [updates,       setUpdates]       = useState({});
+  const [isCompleted,   setIsCompleted]   = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: { khoId: 0, ghiChu: "" },
   });
 
-  // ── Load dữ liệu ban đầu ──
   useEffect(() => {
     const init = async () => {
       setLoading(true);
       try {
         const khoData = await getKhoList();
         setKhos(khoData);
-
         if (dotKiemKeId) {
           const [dot, details] = await Promise.all([
             getStockTake(dotKiemKeId),
@@ -95,12 +99,11 @@ export default function StockTakeCreate() {
           setSelectedKhoId(dot.kho?.id);
           setIsCompleted(dot.trangThai === 1);
           setChiTiets(details);
-
-          const initialUpdates = {};
+          const initMap = {};
           details.forEach((ct) => {
-            initialUpdates[ct.id] = parseFloat(ct.soLuongThucTe ?? ct.soLuongHeThong ?? 0);
+            initMap[ct.id] = parseFloat(ct.soLuongThucTe ?? ct.soLuongHeThong ?? 0);
           });
-          setUpdates(initialUpdates);
+          setUpdates(initMap);
         }
       } catch (err) {
         toast.error(err.response?.data?.message || "Không thể tải dữ liệu");
@@ -111,14 +114,12 @@ export default function StockTakeCreate() {
     init();
   }, [dotKiemKeId]);
 
-  // ── Tạo đợt kiểm kê ──
   const onCreate = async (values) => {
     setLoading(true);
     try {
       const newId = await createStockTake(values);
       setDotKiemKeId(newId);
       setSelectedKhoId(values.khoId);
-
       const details = await getStockTakeDetails(newId);
       setChiTiets(details);
       toast.success("Tạo đợt kiểm kê thành công! Hãy nhập số lượng thực tế.");
@@ -129,7 +130,6 @@ export default function StockTakeCreate() {
     }
   };
 
-  // ── Cập nhật số lượng ──
   const handleSoLuongChange = (chiTietId, value) => {
     setUpdates((prev) => ({
       ...prev,
@@ -137,7 +137,6 @@ export default function StockTakeCreate() {
     }));
   };
 
-  // ── Hoàn thành kiểm kê ──
   const onComplete = async () => {
     if (!dotKiemKeId || !selectedKhoId) {
       toast.error("Thiếu thông tin đợt kiểm kê");
@@ -151,7 +150,6 @@ export default function StockTakeCreate() {
           ? updates[ct.id]
           : parseFloat(ct.soLuongThucTe ?? 0),
       }));
-
       await completeStockTake(dotKiemKeId, selectedKhoId, updateList);
       toast.success("Hoàn thành kiểm kê thành công!");
       navigate("/stock-take");
@@ -162,28 +160,80 @@ export default function StockTakeCreate() {
     }
   };
 
-  // ── Render ────────────────────────────────────────────────────────────
+  // Stats bước 2
+  const totalLo      = chiTiets.length;
+  const totalHeThong = chiTiets.reduce((s, ct) => s + parseFloat(ct.soLuongHeThong ?? 0), 0);
+  const totalThucTe  = chiTiets.reduce((s, ct) => {
+    const v = updates[ct.id] !== undefined ? updates[ct.id] : parseFloat(ct.soLuongThucTe ?? 0);
+    return s + v;
+  }, 0);
+
   return (
-    <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+      <div className="space-y-6 w-full">
 
-        {/* Back button */}
-        <button
-          type="button"
-          onClick={() => navigate("/stock-take")}
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Quay lại danh sách
-        </button>
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => navigate("/stock-take")}
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Quay lại danh sách
+          </button>
+          <StepIndicator step={dotKiemKeId ? 2 : 1} />
+        </div>
 
+        {/* ── Stats cards (bước 2) ── */}
+        {dotKiemKeId && chiTiets.length > 0 && (
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Tổng lô hàng</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{totalLo}</p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Package className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+            </div>
 
-        <StepIndicator step={dotKiemKeId ? 2 : 1} />
+            <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-amber-50 to-white p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Tồn hệ thống</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {totalHeThong.toLocaleString("vi-VN")}
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                  <ClipboardList className="h-6 w-6 text-amber-600" />
+                </div>
+              </div>
+            </div>
 
-        {/* ── BƯỚC 1: Form tạo đợt ── */}
+            <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Thực tế đã nhập</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {totalThucTe.toLocaleString("vi-VN")}
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ══ BƯỚC 1: Form tạo đợt ══ */}
         {!dotKiemKeId && (
           <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-            {/* Card header */}
+
             <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100">
                 <PackageSearch className="h-4.5 w-4.5 text-violet-600" />
@@ -197,7 +247,7 @@ export default function StockTakeCreate() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onCreate)}>
                 <div className="p-8 space-y-6">
-                  {/* Chọn kho */}
+
                   <FormField
                     control={form.control}
                     name="khoId"
@@ -207,7 +257,7 @@ export default function StockTakeCreate() {
                           Kho kiểm kê <span className="text-red-500">*</span>
                         </FormLabel>
                         <Select
-                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          onValueChange={(v) => field.onChange(parseInt(v))}
                           defaultValue={field.value ? field.value.toString() : ""}
                         >
                           <FormControl>
@@ -228,7 +278,6 @@ export default function StockTakeCreate() {
                     )}
                   />
 
-                  {/* Ghi chú */}
                   <FormField
                     control={form.control}
                     name="ghiChu"
@@ -249,8 +298,7 @@ export default function StockTakeCreate() {
                   />
                 </div>
 
-                {/* Footer */}
-                <div className="flex justify-end gap-3 px-8 py-5 bg-slate-50 border-t border-slate-100">
+                <div className="flex justify-end gap-3 px-6 py-5 bg-slate-50 border-t border-slate-100">
                   <Button
                     type="button"
                     variant="outline"
@@ -275,10 +323,10 @@ export default function StockTakeCreate() {
           </div>
         )}
 
-        {/* ── BƯỚC 2: Nhập số lượng thực tế ── */}
+        {/* ══ BƯỚC 2: Nhập số lượng ══ */}
         {dotKiemKeId && (
           <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-            {/* Card header */}
+
             <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
                 <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600" />
@@ -294,25 +342,36 @@ export default function StockTakeCreate() {
                 <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
                 <span className="text-sm text-gray-600">Đang tải danh sách lô hàng...</span>
               </div>
+
             ) : chiTiets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-                  <PackageSearch className="h-8 w-8 text-slate-400" />
+              <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                  <PackageSearch className="h-10 w-10 text-slate-400" />
                 </div>
-                <h3 className="text-base font-semibold text-slate-700">Kho không có hàng tồn kho</h3>
-                <p className="mt-1 text-sm text-slate-500">Kho này hiện không có lô hàng nào để kiểm kê.</p>
+                <h3 className="text-lg font-semibold text-slate-800">Kho không có hàng tồn kho</h3>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                  Kho này hiện không có lô hàng nào để kiểm kê.
+                </p>
               </div>
+
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
-                      {["Sản phẩm / Biến thể", "Mã SKU", "Mã lô", "Tồn hệ thống", "Số lượng thực tế", "Chênh lệch"].map((h, i) => (
+                      {[
+                        { label: "Sản phẩm / Biến thể", right: false },
+                        { label: "Mã SKU",               right: false },
+                        { label: "Mã lô",                right: false },
+                        { label: "Tồn hệ thống",         right: true  },
+                        { label: "Số lượng thực tế",     right: true  },
+                        { label: "Chênh lệch",           right: true  },
+                      ].map(({ label, right }) => (
                         <th
-                          key={h}
-                          className={`h-12 px-4 font-semibold text-slate-600 tracking-wide text-xs uppercase ${i >= 3 ? "text-right" : "text-left"}`}
+                          key={label}
+                          className={`h-12 px-4 font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap ${right ? "text-right" : "text-left"}`}
                         >
-                          {h}
+                          {label}
                         </th>
                       ))}
                     </tr>
@@ -320,48 +379,44 @@ export default function StockTakeCreate() {
                   <tbody className="divide-y divide-slate-100">
                     {chiTiets.map((ct) => {
                       const tonHeThong = parseFloat(ct.soLuongHeThong ?? 0);
-                      const thucTe = updates[ct.id] !== undefined
+                      const thucTe     = updates[ct.id] !== undefined
                         ? updates[ct.id]
                         : parseFloat(ct.soLuongThucTe ?? 0);
-                      const chenhLech = thucTe - tonHeThong;
-                      const hasInput = updates[ct.id] !== undefined;
+                      const chenhLech  = thucTe - tonHeThong;
+                      const hasInput   = updates[ct.id] !== undefined;
 
                       return (
                         <tr key={ct.id} className="transition-colors duration-150 hover:bg-violet-50/50">
-                          {/* Sản phẩm */}
+
                           <td className="px-4 py-3.5 align-middle">
                             <span className="font-semibold text-slate-900">
                               {ct.bienTheSanPham?.tenBienThe || "—"}
                             </span>
                           </td>
 
-                          {/* SKU */}
                           <td className="px-4 py-3.5 align-middle">
                             <span className="font-mono text-xs text-slate-500">
                               {ct.bienTheSanPham?.maSku || "—"}
                             </span>
                           </td>
 
-                          {/* Mã lô */}
                           <td className="px-4 py-3.5 align-middle">
                             <span className="font-mono text-xs text-slate-500">
                               {ct.loHang?.maLo || "—"}
                             </span>
                           </td>
 
-                          {/* Tồn hệ thống */}
                           <td className="px-4 py-3.5 align-middle text-right">
-                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1">
+                            <span className="inline-flex items-center justify-end rounded-lg bg-slate-100 px-2.5 py-1">
                               <span className="font-semibold text-slate-800 text-xs">
                                 {tonHeThong.toLocaleString("vi-VN")}
                               </span>
                             </span>
                           </td>
 
-                          {/* Nhập thực tế */}
                           <td className="px-4 py-3.5 align-middle text-right">
                             {isCompleted ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1">
+                              <span className="inline-flex items-center justify-end rounded-lg bg-slate-100 px-2.5 py-1">
                                 <span className="font-semibold text-slate-800 text-xs">
                                   {thucTe.toLocaleString("vi-VN")}
                                 </span>
@@ -381,16 +436,17 @@ export default function StockTakeCreate() {
                             )}
                           </td>
 
-                          {/* Chênh lệch */}
                           <td className="px-4 py-3.5 align-middle text-right">
                             {(isCompleted || hasInput) ? (
-                              <span className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold ${chenhLech > 0
+                              <span className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold ${
+                                chenhLech > 0
                                   ? "bg-emerald-50 text-emerald-700"
                                   : chenhLech < 0
                                     ? "bg-red-50 text-red-600"
                                     : "bg-slate-100 text-slate-500"
-                                }`}>
-                                {chenhLech > 0 ? "+" : ""}{chenhLech.toLocaleString("vi-VN")}
+                              }`}>
+                                {chenhLech > 0 ? "+" : ""}
+                                {chenhLech.toLocaleString("vi-VN")}
                               </span>
                             ) : (
                               <span className="text-xs text-slate-400">—</span>
@@ -404,41 +460,39 @@ export default function StockTakeCreate() {
               </div>
             )}
 
-            {/* Footer */}
             {chiTiets.length > 0 && (
               <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-t border-slate-100">
                 <p className="text-sm text-slate-500">
                   Tổng{" "}
-                  <span className="font-semibold text-violet-700">{chiTiets.length}</span>{" "}
+                  <span className="font-semibold text-violet-600">{chiTiets.length}</span>{" "}
                   lô hàng
                 </p>
-                <div className="flex gap-3">
-                  {isCompleted ? null : (
-                    <>
-                      <Button
-                        variant="outline"
-                        className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium"
-                        onClick={() => navigate("/stock-take")}
-                      >
-                        Hủy
-                      </Button>
-                      <Button
-                        onClick={onComplete}
-                        disabled={loading}
-                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 min-w-[180px] font-bold"
-                      >
-                        {loading
-                          ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
-                          : <><CheckCircle2 className="mr-2 h-4 w-4" />Hoàn thành kiểm kê</>
-                        }
-                      </Button>
-                    </>
-                  )}
-                </div>
+                {!isCompleted && (
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium"
+                      onClick={() => navigate("/stock-take")}
+                    >
+                      Hủy
+                    </Button>
+                    <Button
+                      onClick={onComplete}
+                      disabled={loading}
+                      className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 min-w-[180px] font-bold"
+                    >
+                      {loading
+                        ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
+                        : <><CheckCircle2 className="mr-2 h-4 w-4" />Hoàn thành kiểm kê</>
+                      }
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
+
       </div>
     </div>
   );

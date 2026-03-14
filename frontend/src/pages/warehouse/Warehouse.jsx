@@ -134,6 +134,25 @@ const STYLES = `
 .wh-stat-ico.s-red   { background: rgba(220,38,38,0.08); }
 .wh-stat-ico.s-blue  { background: rgba(37,99,235,0.08); }
 
+/* Shared stat-card accent line (same visual idea as issue screen) */
+.wh-stat-card {
+    position: relative;
+    overflow: hidden;
+}
+.wh-stat-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--stat-line, #b8860b), transparent);
+}
+.wh-stat-card.s-blue  { --stat-line: #2563eb; }
+.wh-stat-card.s-amber { --stat-line: #d97706; }
+.wh-stat-card.s-green { --stat-line: #16a34a; }
+.wh-stat-card.s-red   { --stat-line: #dc2626; }
+
 /* ════════════════════════════════
    FILTER CARD
 ════════════════════════════════ */
@@ -232,7 +251,7 @@ const STYLES = `
    TABLE
 ════════════════════════════════ */
 .wh-tbl-card {
-  background: #fff;
+    background: #fffdf8;
   border: 1px solid rgba(184,134,11,0.15);
   border-radius: 18px; overflow: hidden;
   box-shadow: 0 2px 12px rgba(100,80,30,0.07);
@@ -314,7 +333,7 @@ const STYLES = `
    EMPTY STATE
 ════════════════════════════════ */
 .wh-empty {
-  background: #fff; border: 1px solid rgba(184,134,11,0.15);
+    background: #fffdf8; border: 1px solid rgba(184,134,11,0.15);
   border-radius: 18px; padding: 72px 32px;
   display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
   box-shadow: 0 2px 12px rgba(100,80,30,0.07);
@@ -345,7 +364,7 @@ const STYLES = `
    PAGINATION
 ════════════════════════════════ */
 .wh-pag {
-  background: #fff; border: 1px solid rgba(184,134,11,0.15);
+    background: #fffdf8; border: 1px solid rgba(184,134,11,0.15);
   border-radius: 18px; padding: 16px 22px;
   box-shadow: 0 2px 12px rgba(100,80,30,0.07);
 }
@@ -582,30 +601,68 @@ export default function WarehouseManagement() {
                 <div className="wh-inner">
 
                     {/* ── Stats ── */}
-                    <div className="wh-stats">
-                        {[
-                            { cls: 's-gold', lbl: 'Tổng kho', val: stats.total, icon: <Package size={20} style={{ color: '#b8860b' }} strokeWidth={1.5} /> },
-                            { cls: 's-green', lbl: 'Đang hoạt động', val: stats.active, icon: <CheckCircle2 size={20} style={{ color: '#16a34a' }} strokeWidth={1.5} /> },
-                            { cls: 's-red', lbl: 'Ngừng hoạt động', val: stats.inactive, icon: <XCircle size={20} style={{ color: '#dc2626' }} strokeWidth={1.5} /> },
-                            { cls: 's-blue', lbl: 'Tổng tồn kho', val: stats.totalStock.toLocaleString(), icon: <BarChart3 size={20} style={{ color: '#2563eb' }} strokeWidth={1.5} /> },
-                        ].map(({ cls, lbl, val, icon }) => (
-                            <div key={lbl} className={`wh-stat ${cls}`}>
-                                <div>
-                                    <p className="wh-stat-lbl">{lbl}</p>
-                                    <p className="wh-stat-val">{val}</p>
+                    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Card className="wh-stat-card s-blue border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Tổng kho</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>{stats.total}</p>
+                                    </div>
+                                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <Package className="h-6 w-6 text-blue-600" />
+                                    </div>
                                 </div>
-                                <div className={`wh-stat-ico ${cls}`}>{icon}</div>
-                            </div>
-                        ))}
-                    </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="wh-stat-card s-amber border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-amber-50 to-white">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>{stats.active}</p>
+                                    </div>
+                                    <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                                        <CheckCircle2 className="h-6 w-6 text-amber-600" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="wh-stat-card s-green border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Ngừng hoạt động</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>{stats.inactive}</p>
+                                    </div>
+                                    <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                        <XCircle className="h-6 w-6 text-green-600" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="wh-stat-card s-red border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-red-50 to-white">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Tổng tồn kho</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Playfair Display', serif" }}>{stats.totalStock.toLocaleString()}</p>
+                                    </div>
+                                    <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                                        <BarChart3 className="h-6 w-6 text-red-500" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </section>
 
                     {/* ── Filter ── */}
-                    <Card className="border-0 shadow-lg bg-white">
+                    <Card className="border-0 shadow-lg bg-[#fffdf8]">
                         <CardHeader>
-                            <CardTitle
-                                className="flex items-center gap-2 text-lg font-semibold text-gray-900 tracking-tight"
-                                style={{ fontFamily: "'Playfair Display', serif" }}
-                            >
+                            <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900" style={{ fontFamily: "'Playfair Display', serif" }}>
                                 <Filter className="h-5 w-5 text-[#b8860b]" />
                                 Bộ lọc tìm kiếm
                             </CardTitle>
@@ -614,13 +671,12 @@ export default function WarehouseManagement() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {/* Search */}
                             <div className="space-y-2 md:col-span-2">
-                                <Label className="text-[#7a6e5f] font-medium" style={{ fontFamily: "'DM Sans', sans-serif" }}>Tìm kiếm</Label>
+                                <Label className="text-gray-700 font-medium">Tìm kiếm</Label>
                                 <div className="relative">
                                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                     <Input
                                         placeholder="Tìm theo tên kho, mã kho, địa chỉ..."
-                                        className="pl-9 border-[#b8860b]/20 focus:border-[#b8860b] focus:ring-[#b8860b]"
-                                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                        className="pl-9 bg-[#fffdf8] border-[#b8860b]/20 focus:border-[#b8860b] focus:ring-[#b8860b]"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         disabled={isLoading}
@@ -630,13 +686,12 @@ export default function WarehouseManagement() {
 
                             {/* Status */}
                             <div className="space-y-2">
-                                <Label className="text-[#7a6e5f] font-medium" style={{ fontFamily: "'DM Sans', sans-serif" }}>Trạng thái</Label>
+                                <Label className="text-gray-700 font-medium">Trạng thái</Label>
                                 <DropdownMenu modal={false}>
                                     <DropdownMenuTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className="w-full justify-between bg-white border-[#b8860b]/20 hover:bg-[#b8860b]/10 font-normal text-[#3d3529]"
-                                            style={{ fontFamily: "'DM Sans', sans-serif" }}
+                                            className="w-full justify-between bg-[#fffdf8] border-[#b8860b]/20 hover:bg-[#b8860b]/10 font-normal text-[#3d3529]"
                                             disabled={isLoading}
                                         >
                                             <span className="truncate">{statusLabel}</span>
@@ -649,7 +704,6 @@ export default function WarehouseManagement() {
                                                 key={opt.value}
                                                 onClick={() => setFilterStatus(opt.value)}
                                                 className="flex items-center justify-between cursor-pointer hover:bg-[#b8860b]/10"
-                                                style={{ fontFamily: "'DM Sans', sans-serif" }}
                                             >
                                                 {opt.label}
                                                 {filterStatus === opt.value && <Check className="h-4 w-4 text-[#b8860b]" />}
@@ -666,7 +720,6 @@ export default function WarehouseManagement() {
                                     onClick={() => { setSearchTerm(''); setFilterStatus('all'); }}
                                     disabled={isLoading}
                                     className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-[#b8860b] hover:text-white border-[#b8860b]/25 text-[#7a6e5f]"
-                                    style={{ fontFamily: "'DM Sans', sans-serif" }}
                                 >
                                     <RefreshCcw className="h-4 w-4" />
                                     Đặt lại
