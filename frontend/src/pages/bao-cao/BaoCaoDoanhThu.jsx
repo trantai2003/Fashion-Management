@@ -48,12 +48,12 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xl p-4 min-w-[180px]">
-      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-3">{label}</p>
+      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-3 font-mono">{label}</p>
       {payload.map((entry, i) => (
         <div key={i} className="flex items-center gap-2 mb-1.5">
           <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: entry.color }} />
           <span className="text-slate-600 text-xs flex-1">{entry.name}</span>
-          <span className="text-slate-900 font-bold text-xs">{fmt(entry.value)}</span>
+          <span className="text-slate-900 font-bold text-xs font-mono">{fmt(entry.value)}</span>
         </div>
       ))}
     </div>
@@ -302,10 +302,10 @@ export default function BaoCaoDoanhThu() {
                   <span className="w-3 h-3 rounded-sm bg-slate-200 inline-block" />Giá vốn
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-purple-400 inline-block" />Lợi nhuận
+                  <span className="w-3 h-3 rounded-sm bg-amber-400 inline-block" />Lợi nhuận
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-5 h-0.5 bg-emerald-500 inline-block rounded-full" />Doanh thu
+                  <span className="w-5 h-0.5 bg-amber-700 inline-block rounded-full" />Doanh thu
                 </span>
               </div>
             </div>
@@ -315,22 +315,22 @@ export default function BaoCaoDoanhThu() {
               <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="gradGiaVon" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#e2e8f0" />
-                    <stop offset="100%" stopColor="#cbd5e1" />
+                    <stop offset="0%" stopColor="#f6dda0" />
+                    <stop offset="100%" stopColor="#e8b923" />
                   </linearGradient>
                   <linearGradient id="gradLoiNhuan" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#a78bfa" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
+                    <stop offset="0%" stopColor="#f3cf6a" />
+                    <stop offset="100%" stopColor="#c79500" />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="nhanThoiGian" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={{ stroke: "#f1f5f9" }} tickLine={false} />
                 <YAxis tickFormatter={fmt} tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(139,92,246,0.04)" }} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(184,134,11,0.08)" }} />
                 <Bar dataKey="giaVon" name="Giá vốn" stackId="a" fill="url(#gradGiaVon)" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="loiNhuan" name="Lợi nhuận" stackId="a" fill="url(#gradLoiNhuan)" radius={[4, 4, 0, 0]} />
-                <Line dataKey="doanhThu" name="Doanh thu" stroke="#10b981" strokeWidth={2.5}
-                  dot={{ r: 3, fill: "#10b981", strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                <Line dataKey="doanhThu" name="Doanh thu" stroke="#8f6500" strokeWidth={2.5}
+                  dot={{ r: 3, fill: "#8f6500", strokeWidth: 0 }} activeDot={{ r: 5 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </CardContent>

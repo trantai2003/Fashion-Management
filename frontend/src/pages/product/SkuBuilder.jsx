@@ -312,10 +312,8 @@ export default function SkuBuilder() {
                                         const isPriceChanged = Number(sku.giaBan) !== Number(sku.originalPrice) || Number(sku.giaVon) !== Number(sku.originalCost);
                                         return (
                                             <tr key={`${sku.id}-${index}`} className="transition-colors duration-150 hover:bg-violet-50/50">
-                                                <td className="px-4 py-3.5 align-middle text-center w-14">
-                                                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
-                                                        {page * pageSize + index + 1}
-                                                    </span>
+                                                <td className="px-4 py-3.5 align-middle text-center w-14 text-slate-500 text-xs">
+                                                    {page * pageSize + index + 1}
                                                 </td>
 
                                                 <td className="px-4 py-3.5 align-middle">

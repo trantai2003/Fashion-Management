@@ -67,15 +67,7 @@ const DanhMucQuanAoTree = () => {
         const data = response.data.data;
         setTreeData(data);
         setStats(computeStats(data));
-        const allIds = new Set();
-        const collectIds = (nodes) => {
-          nodes.forEach((node) => {
-            allIds.add(node.id);
-            if (node.danhMucCons?.length) collectIds(node.danhMucCons);
-          });
-        };
-        collectIds(data);
-        setExpandedNodes(allIds);
+        setExpandedNodes(new Set());
       }
     } catch {
       toast.error('Không thể tải dữ liệu danh mục');
@@ -383,8 +375,8 @@ const DanhMucQuanAoTree = () => {
         {/* Children */}
         {isExpanded && (
           <div className="mt-1">
+            {activeChildren.map((child) => renderNode(child, level + 1, node.id))}
             {isCreating && renderCreateForm(node.id)}
-            {hasChildren && node.danhMucCons.map((child) => renderNode(child, level + 1, node.id))}
           </div>
         )}
       </div>
@@ -424,36 +416,36 @@ const DanhMucQuanAoTree = () => {
 
       {/* ── Stats ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-purple-50 to-white">
+        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Tổng danh mục</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-              <Tag className="h-6 w-6 text-purple-600" />
+            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <Tag className="h-6 w-6 text-blue-600" />
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-indigo-50 to-white">
+        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Danh mục gốc</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats.root}</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-              <Folder className="h-6 w-6 text-indigo-600" />
+            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+              <Folder className="h-6 w-6 text-green-600" />
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-orange-50 to-white">
+        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-gray-50 to-white">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Danh mục con</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{stats.sub}</p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
-              <Layers className="h-6 w-6 text-orange-500" />
+            <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+              <Layers className="h-6 w-6 text-red-500" />
             </div>
           </CardContent>
         </Card>

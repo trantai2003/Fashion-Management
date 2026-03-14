@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -198,20 +199,23 @@ export default function StockTakeList() {
         </section>
 
         {/* ── Filter bar ── */}
-        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="h-4 w-4 text-violet-600" />
-            <span className="text-sm font-semibold text-slate-700">Bộ lọc tìm kiếm</span>
-          </div>
+        <Card className="border-0 shadow-lg bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <Filter className="h-5 w-5 text-purple-600" />
+              Bộ lọc tìm kiếm
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
-            <div className="space-y-1.5 md:col-span-2">
-              <Label className="text-gray-700 font-medium text-xs">Tìm kiếm</Label>
+            <div className="space-y-2 md:col-span-2">
+              <Label className="text-gray-700 font-medium">Tìm kiếm</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Tìm theo mã đợt, tên đợt, kho..."
-                  className="pl-9 border-gray-200 focus:border-violet-500 focus:ring-violet-500"
+                  className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -219,15 +223,15 @@ export default function StockTakeList() {
             </div>
 
             {/* Status filter */}
-            <div className="space-y-1.5">
-              <Label className="text-gray-700 font-medium text-xs">Trạng thái</Label>
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Trạng thái</Label>
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
                     className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal"
                   >
-                    <span className="truncate text-sm">{currentFilterLabel}</span>
+                    <span className="truncate">{currentFilterLabel}</span>
                     <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -236,10 +240,10 @@ export default function StockTakeList() {
                     <DropdownMenuItem
                       key={opt.value}
                       onClick={() => setFilterStatus(opt.value)}
-                      className="flex items-center justify-between cursor-pointer hover:bg-violet-50"
+                      className="flex items-center justify-between cursor-pointer hover:bg-purple-50"
                     >
                       {opt.label}
-                      {filterStatus === opt.value && <Check className="h-4 w-4 text-violet-600" />}
+                      {filterStatus === opt.value && <Check className="h-4 w-4" />}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -251,14 +255,15 @@ export default function StockTakeList() {
               <Button
                 variant="outline"
                 onClick={handleReset}
-                className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-10 px-4 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 w-full justify-center"
+                className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
               >
                 <RefreshCcw className="h-4 w-4" />
                 Đặt lại
               </Button>
             </div>
           </div>
-        </div>
+          </CardContent>
+        </Card>
         
         <div className="flex justify-end">
           <Button
@@ -280,14 +285,14 @@ export default function StockTakeList() {
           ) : pageItems.length === 0 ? (
             <EmptyState onAdd={() => navigate("/stock-take/new")} />
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50">
-                    {["Mã đợt", "Tên đợt", "Kho", "Người chủ trì", "Ngày bắt đầu", "Trạng thái", "Thao tác"].map((h) => (
+                    {["STT", "Mã đợt", "Tên đợt", "Kho", "Người chủ trì", "Ngày bắt đầu", "Trạng thái", "Thao tác"].map((h) => (
                       <th
                         key={h}
-                        className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap"
+                        className={`h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap ${h === "STT" ? "text-center w-14" : ""}`}
                       >
                         {h}
                       </th>
@@ -295,11 +300,15 @@ export default function StockTakeList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {pageItems.map((item) => {
+                  {pageItems.map((item, index) => {
                     const tt        = TRANG_THAI[item.trangThai] ?? TRANG_THAI[0];
                     const isOngoing = item.trangThai === 0;
                     return (
                       <tr key={item.id} className="transition-colors duration-150 hover:bg-violet-50/50">
+
+                        <td className="px-4 py-3.5 align-middle text-center text-slate-500 text-xs">
+                          {safePage * pageSize + index + 1}
+                        </td>
 
                         {/* Mã đợt */}
                         <td className="px-4 py-3.5 align-middle">

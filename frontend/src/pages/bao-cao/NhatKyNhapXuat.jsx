@@ -48,12 +48,12 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xl p-4 min-w-[190px]">
-      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-3">{label}</p>
+      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-3 font-mono">{label}</p>
       {payload.map((entry, i) => (
         <div key={i} className="flex items-center gap-2 mb-1.5">
           <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: entry.color }} />
           <span className="text-slate-600 text-xs flex-1">{entry.name}</span>
-          <span className="text-slate-900 font-bold text-xs">{fmtSL(entry.value)}</span>
+          <span className="text-slate-900 font-bold text-xs font-mono">{fmtSL(entry.value)}</span>
         </div>
       ))}
     </div>
@@ -352,13 +352,13 @@ export default function NhatKyNhapXuat() {
               </div>
               <div className="flex gap-4 text-xs text-slate-500">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-emerald-400 inline-block" />Nhập kho
+                  <span className="w-3 h-3 rounded-sm bg-amber-300 inline-block" />Nhập kho
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-rose-400 inline-block" />Xuất kho
+                  <span className="w-3 h-3 rounded-sm bg-amber-500 inline-block" />Xuất kho
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-5 h-0.5 bg-purple-500 inline-block rounded-full" />Chênh lệch
+                  <span className="w-5 h-0.5 bg-amber-700 inline-block rounded-full" />Chênh lệch
                 </span>
               </div>
             </div>
@@ -368,22 +368,22 @@ export default function NhatKyNhapXuat() {
               <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="gradNhap" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#34d399" />
-                    <stop offset="100%" stopColor="#10b981" />
+                    <stop offset="0%" stopColor="#f7df9f" />
+                    <stop offset="100%" stopColor="#e8b923" />
                   </linearGradient>
                   <linearGradient id="gradXuat" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#fb7185" />
-                    <stop offset="100%" stopColor="#f43f5e" />
+                    <stop offset="0%" stopColor="#f3cf6a" />
+                    <stop offset="100%" stopColor="#c79500" />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="nhanThoiGian" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={{ stroke: "#f1f5f9" }} tickLine={false} />
                 <YAxis tickFormatter={fmtSL} tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(139,92,246,0.04)" }} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(184,134,11,0.08)" }} />
                 <Bar dataKey="tongNhap" name="Nhập kho" fill="url(#gradNhap)" radius={[4, 4, 0, 0]} maxBarSize={40} />
                 <Bar dataKey="tongXuat" name="Xuất kho" fill="url(#gradXuat)" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                <Line dataKey="chenhLech" name="Chênh lệch" stroke="#9333ea" strokeWidth={2.5}
-                  dot={{ r: 3, fill: "#9333ea", strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                <Line dataKey="chenhLech" name="Chênh lệch" stroke="#8f6500" strokeWidth={2.5}
+                  dot={{ r: 3, fill: "#8f6500", strokeWidth: 0 }} activeDot={{ r: 5 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </CardContent>
