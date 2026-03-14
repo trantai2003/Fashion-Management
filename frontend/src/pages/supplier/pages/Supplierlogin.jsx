@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Building2, Mail, Loader2, ArrowRight, Package,
+    Building2, Mail, Loader2, Package,
     TrendingUp, CheckCircle, ShieldCheck, Boxes,
-    ChevronRight, Zap,
+    ChevronRight,
 } from "lucide-react";
 import supplierQuotationService from '@/services/supplierQuotationService';
 import purchaseOrderService from '@/services/purchaseOrderService';
@@ -26,72 +24,73 @@ function SplashScreen({ onDone }) {
     }, []);
 
     return (
-        <div className={`splash-root ${phase}`}>
+        <div className={`sp-root ${phase}`}>
+            <style>{SPLASH_STYLES}</style>
+
             {/* Animated grid background */}
-            <div className="splash-grid" />
+            <div className="sp-grid" />
 
             {/* Corner accent lines */}
-            <div className="corner-tl" />
-            <div className="corner-br" />
+            <div className="sp-corner-tl" />
+            <div className="sp-corner-br" />
 
             {/* Floating orbs */}
-            <div className="orb orb-1" />
-            <div className="orb orb-2" />
-            <div className="orb orb-3" />
+            <div className="sp-orb-1" />
+            <div className="sp-orb-2" />
 
             {/* Scanline */}
-            <div className={`scanline ${phase === 'hold' ? 'active' : ''}`} />
+            <div className={`sp-scanline ${phase === 'hold' ? 'active' : ''}`} />
 
             {/* Content */}
-            <div className="splash-content">
+            <div className="sp-content">
                 {/* Logo mark */}
-                <div className={`logo-ring ${phase === 'hold' ? 'pulse' : ''}`}>
-                    <div className="logo-inner">
-                        <Boxes size={36} strokeWidth={1.5} className="logo-icon" />
+                <div className={`sp-logo-ring ${phase === 'hold' ? 'pulse' : ''}`}>
+                    <div className="sp-logo-inner">
+                        <Boxes size={36} strokeWidth={1.8} className="sp-logo-icon" />
                     </div>
-                    <svg className="logo-svg" viewBox="0 0 120 120">
-                        <circle className="logo-track" cx="60" cy="60" r="54" />
-                        <circle className={`logo-arc ${phase === 'hold' ? 'drawn' : ''}`} cx="60" cy="60" r="54" />
+                    <svg className="sp-logo-svg" viewBox="0 0 120 120">
+                        <circle className="sp-logo-track" cx="60" cy="60" r="54" />
+                        <circle className={`sp-logo-arc ${phase === 'hold' ? 'drawn' : ''}`} cx="60" cy="60" r="54" />
                     </svg>
                 </div>
 
                 {/* Brand */}
-                <div className={`brand-block ${phase === 'hold' ? 'visible' : ''}`}>
-                    <div className="brand-tag">WAREHOUSE MANAGEMENT SYSTEM</div>
-                    <h1 className="brand-title">
-                        <span className="brand-fs">FS</span>
-                        <span className="brand-divider" />
-                        <span className="brand-wms">WMS</span>
+                <div className={`sp-brand-block ${phase === 'hold' ? 'visible' : ''}`}>
+                    <div className="sp-brand-tag">WAREHOUSE MANAGEMENT SYSTEM</div>
+                    <h1 className="sp-brand-title">
+                        <span className="sp-brand-fs">FS</span>
+                        <span className="sp-brand-divider" />
+                        <span className="sp-brand-wms">WMS</span>
                     </h1>
                 </div>
 
                 {/* Welcome text */}
-                <div className={`welcome-block ${phase === 'hold' ? 'visible' : ''}`}>
-                    <p className="welcome-line">Welcome to the</p>
-                    <p className="welcome-main">FS Warehouse Management System</p>
-                    <p className="welcome-sub">Supplier Procurement Portal · v2.0</p>
+                <div className={`sp-welcome-block ${phase === 'hold' ? 'visible' : ''}`}>
+                    <p className="sp-welcome-line">Welcome to the future of Fashion</p>
+                    <p className="sp-welcome-main">FS Warehouse Management System</p>
+                    <p className="sp-welcome-sub">Supplier Procurement Portal · v2.0</p>
                 </div>
 
                 {/* Stats bar */}
-                <div className={`stats-bar ${phase === 'hold' ? 'visible' : ''}`}>
+                <div className={`sp-stats-bar ${phase === 'hold' ? 'visible' : ''}`}>
                     {[
-                        { n: '10K+', l: 'Orders' },
+                        { n: '10K+', l: 'Customers' },
                         { n: '500+', l: 'Suppliers' },
                         { n: '99.9%', l: 'Uptime' },
                         { n: '24/7', l: 'Support' },
                     ].map(({ n, l }) => (
-                        <div key={l} className="stat-item">
-                            <span className="stat-num">{n}</span>
-                            <span className="stat-label">{l}</span>
+                        <div key={l} className="sp-stat-item">
+                            <span className="sp-stat-num">{n}</span>
+                            <span className="sp-stat-label">{l}</span>
                         </div>
                     ))}
                 </div>
 
                 {/* Progress bar */}
-                <div className="progress-track">
-                    <div className={`progress-fill ${phase === 'hold' ? 'filling' : ''}`} />
+                <div className="sp-progress-track">
+                    <div className={`sp-progress-fill ${phase === 'hold' ? 'filling' : ''}`} />
                 </div>
-                <p className="progress-label">Initializing secure connection…</p>
+                <p className="sp-progress-label">Initializing secure connection…</p>
             </div>
         </div>
     );
@@ -176,106 +175,138 @@ function LoginForm() {
     };
 
     return (
-        <div className={`login-page ${visible ? 'lp-visible' : ''}`}>
+        <div className={`lf-page ${visible ? 'lf-visible' : ''}`}>
             <style>{LOGIN_STYLES}</style>
 
-            {/* Left panel — dark */}
-            <div className="lp-left">
-                <div className="lp-left-noise" />
+            {/* Left panel */}
+            <div className="lf-left">
+                <div className="lf-left-grid" />
+                <div className="lf-left-orb-1" />
+                <div className="lf-left-orb-2" />
+                <div className="lf-corner-tl" />
+                <div className="lf-corner-br" />
 
-                <div className="lp-left-content">
-                    <div className="lp-logo">
-                        <Boxes size={28} strokeWidth={1.5} />
+                <div className="lf-left-content">
+                    {/* Logo */}
+                    <div className="lf-logo">
+                        <div className="lf-logo-box">
+                            <Boxes size={22} strokeWidth={1.8} style={{ color: '#fff' }} />
+                        </div>
+                        <div className="lf-logo-text">
+                            <span className="lf-logo-fs">FS</span>
+                            <span className="lf-logo-sep" />
+                            <span className="lf-logo-wms">WMS</span>
+                        </div>
                     </div>
 
-                    <div className="lp-headline">
-                        <div className="lp-eyebrow">FS · Warehouse Management</div>
-                        <h1 className="lp-title">Supplier<br />Portal</h1>
-                        <p className="lp-desc">Nền tảng quản lý đơn hàng và báo giá dành riêng cho nhà cung cấp của FS Fashion Group.</p>
+                    {/* Headline */}
+                    <div className="lf-headline">
+                        <div className="lf-eyebrow">
+                            <TrendingUp size={10} style={{ color: '#b8860b' }} />
+                            FS · Warehouse Management
+                        </div>
+                        <h1 className="lf-title">Supplier<br />Portal</h1>
+                        <p className="lf-desc">
+                            Nền tảng quản lý đơn hàng và báo giá dành riêng cho nhà cung cấp của FS Fashion Group.
+                        </p>
                     </div>
 
-                    <div className="lp-features">
+                    {/* Features */}
+                    <div className="lf-features">
                         {[
-                            { Icon: CheckCircle, color: '#4ade80', title: 'Báo giá nhanh chóng', desc: 'Nhận và phản hồi RFQ trong vài phút' },
-                            { Icon: Package, color: '#60a5fa', title: 'Theo dõi đơn hàng', desc: 'Lịch sử và trạng thái đơn theo thời gian thực' },
-                            { Icon: TrendingUp, color: '#f59e0b', title: 'Phân tích hiệu suất', desc: 'Dashboard thống kê doanh thu & giao dịch' },
-                        ].map(({ Icon, color, title, desc }) => (
-                            <div key={title} className="lp-feat">
-                                <div className="lp-feat-icon" style={{ '--fc': color }}>
-                                    <Icon size={16} strokeWidth={2} style={{ color }} />
+                            { Icon: CheckCircle, color: '#22c55e', bg: 'rgba(34,197,94,0.12)', title: 'Báo giá nhanh chóng', desc: 'Nhận và phản hồi RFQ trong vài phút' },
+                            { Icon: Package, color: '#60a5fa', bg: 'rgba(96,165,250,0.12)', title: 'Theo dõi đơn hàng', desc: 'Lịch sử và trạng thái đơn theo thời gian thực' },
+                            { Icon: TrendingUp, color: '#e8b923', bg: 'rgba(232,185,35,0.12)', title: 'Phân tích hiệu suất', desc: 'Dashboard thống kê doanh thu & giao dịch' },
+                        ].map(({ Icon, color, bg, title, desc }) => (
+                            <div key={title} className="lf-feat">
+                                <div className="lf-feat-icon" style={{ background: bg, border: `1px solid ${color}33` }}>
+                                    <Icon size={15} strokeWidth={2} style={{ color }} />
                                 </div>
                                 <div>
-                                    <p className="lp-feat-title">{title}</p>
-                                    <p className="lp-feat-desc">{desc}</p>
+                                    <p className="lf-feat-title">{title}</p>
+                                    <p className="lf-feat-desc">{desc}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="lp-bottom-badge">
-                        <ShieldCheck size={13} />
+                    {/* Bottom badge */}
+                    <div className="lf-bottom-badge">
+                        <ShieldCheck size={12} style={{ color: '#b8860b' }} />
                         <span>Secured by 256-bit TLS Encryption</span>
                     </div>
                 </div>
             </div>
 
-            {/* Right panel — light form */}
-            <div className="lp-right">
-                <div className="lp-form-wrap">
+            {/* Right panel */}
+            <div className="lf-right">
+                <div className="lf-right-orb" />
+                <div className="lf-form-wrap">
 
                     {/* Step indicator */}
-                    <div className="lp-steps">
-                        <div className={`lp-step ${step >= 1 ? 'lp-step-done' : ''}`}>
-                            <span className="lp-step-dot">{step > 1 ? '✓' : '1'}</span>
+                    <div className="lf-steps">
+                        <div className={`lf-step ${step >= 1 ? 'lf-step-active' : 'lf-step-dim'}`}>
+                            <span className="lf-step-dot">{step > 1 ? '✓' : '1'}</span>
                             <span>Email</span>
                         </div>
-                        <div className="lp-step-line" />
-                        <div className={`lp-step ${step >= 2 ? 'lp-step-done' : 'lp-step-dim'}`}>
-                            <span className="lp-step-dot">{step > 2 ? '✓' : '2'}</span>
+                        <div className="lf-step-line" />
+                        <div className={`lf-step ${step >= 2 ? 'lf-step-active' : 'lf-step-dim'}`}>
+                            <span className="lf-step-dot">{step > 2 ? '✓' : '2'}</span>
                             <span>Xác thực</span>
                         </div>
                     </div>
 
                     {/* Card */}
-                    <div className="lp-card">
-                        <div className="lp-card-header">
-                            <h2 className="lp-card-title">
+                    <div className="lf-card">
+                        {/* Gold top line */}
+                        <div className="lf-card-topline" />
+
+                        <div className="lf-card-header">
+                            <h2 className="lf-card-title">
                                 {step === 1 ? 'Đăng nhập' : 'Nhập mã OTP'}
                             </h2>
-                            <p className="lp-card-sub">
+                            <p className="lf-card-sub">
                                 {step === 1
                                     ? 'Nhập email và mã đơn để nhận OTP xác thực'
-                                    : <>Mã đã gửi đến <strong>{email}</strong></>}
+                                    : <><span>Mã đã gửi đến </span><strong>{email}</strong></>}
                             </p>
                         </div>
 
-                        <form onSubmit={step === 1 ? handleSendOtp : handleVerifyOtp} className="lp-form">
-
-                            {/* Email */}
-                            <div className="lp-field">
-                                <Label className="lp-label">Email <span className="lp-req">*</span></Label>
-                                <div className="lp-input-wrap">
-                                    <Mail size={15} className="lp-input-icon" />
+                        <form
+                            onSubmit={step === 1 ? handleSendOtp : handleVerifyOtp}
+                            className="lf-form"
+                        >
+                            {/* Email field */}
+                            <div className="lf-field">
+                                <label className="lf-lbl">
+                                    Email <span className="lf-req">*</span>
+                                </label>
+                                <div className="lf-input-wrap">
+                                    <Mail size={14} className="lf-input-icon" />
                                     <input
-                                        type="email" placeholder="supplier@company.com"
-                                        className={`lp-input ${errors.email ? 'lp-input-err' : ''}`}
+                                        type="email"
+                                        placeholder="supplier@company.com"
+                                        className={`lf-input ${errors.email ? 'lf-input-err' : ''}`}
                                         value={email}
                                         onChange={e => { setEmail(e.target.value); setErrors(p => ({ ...p, email: '' })); }}
                                         disabled={loading || step === 2}
                                     />
                                 </div>
-                                {errors.email && <p className="lp-err-msg">{errors.email}</p>}
+                                {errors.email && <p className="lf-err-msg">{errors.email}</p>}
                             </div>
 
-                            {/* Order code */}
+                            {/* Order code field */}
                             {!orderId && step === 1 && (
-                                <div className="lp-field">
-                                    <Label className="lp-label">Mã đơn hàng <span className="lp-req">*</span></Label>
-                                    <div className="lp-input-wrap">
-                                        <Package size={15} className="lp-input-icon" />
+                                <div className="lf-field">
+                                    <label className="lf-lbl">
+                                        Mã đơn hàng <span className="lf-req">*</span>
+                                    </label>
+                                    <div className="lf-input-wrap">
+                                        <Package size={14} className="lf-input-icon" />
                                         <input
-                                            type="text" placeholder="VD: PO2026-00142"
-                                            className="lp-input lp-mono"
+                                            type="text"
+                                            placeholder="VD: PO2026-00142"
+                                            className="lf-input lf-mono"
                                             value={manualSoDonMua}
                                             onChange={e => setManualSoDonMua(e.target.value)}
                                             disabled={loading}
@@ -284,65 +315,69 @@ function LoginForm() {
                                 </div>
                             )}
 
-                            {/* OTP */}
+                            {/* OTP field */}
                             {step === 2 && (
-                                <div className="lp-field lp-otp-field">
-                                    <div className="lp-otp-label-row">
-                                        <Label className="lp-label">Mã OTP <span className="lp-req">*</span></Label>
-                                        <button type="button" onClick={() => { setStep(1); setOtp(''); setErrors({}); }}
-                                            className="lp-link">← Thay đổi email</button>
+                                <div className="lf-field lf-otp-anim">
+                                    <div className="lf-otp-label-row">
+                                        <label className="lf-lbl">
+                                            Mã OTP <span className="lf-req">*</span>
+                                        </label>
                                     </div>
-                                    <div className="lp-otp-boxes">
-                                        {Array.from({ length: 6 }).map((_, i) => (
-                                            <input
-                                                key={i}
-                                                type="text" maxLength={1}
-                                                className={`lp-otp-box ${errors.otp ? 'lp-otp-err' : ''} ${otp[i] ? 'lp-otp-filled' : ''}`}
-                                                value={otp[i] || ''}
-                                                onChange={e => {
-                                                    const v = e.target.value.replace(/\D/, '');
-                                                    const arr = otp.split('');
-                                                    arr[i] = v;
-                                                    const next = arr.join('').slice(0, 6);
-                                                    setOtp(next);
-                                                    setErrors(p => ({ ...p, otp: '' }));
-                                                    if (v && i < 5) document.getElementById(`otp-${i + 1}`)?.focus();
-                                                }}
-                                                onKeyDown={e => {
-                                                    if (e.key === 'Backspace' && !otp[i] && i > 0) document.getElementById(`otp-${i - 1}`)?.focus();
-                                                }}
-                                                id={`otp-${i}`}
-                                                autoFocus={i === 0}
-                                                disabled={loading}
-                                            />
-                                        ))}
+                                    <div className="lf-input-wrap">
+                                        <ShieldCheck size={14} className="lf-input-icon" />
+                                        <input
+                                            type="text"
+                                            maxLength={6}
+                                            placeholder="Nhập mã 6 chữ số"
+                                            className={`lf-input lf-input-otp ${errors.otp ? 'lf-input-err' : ''}`}
+                                            value={otp}
+                                            onChange={e => {
+                                                const v = e.target.value.replace(/\D/, '').slice(0, 6);
+                                                setOtp(v);
+                                                setErrors(p => ({ ...p, otp: '' }));
+                                            }}
+                                            autoFocus
+                                            disabled={loading}
+                                        />
                                     </div>
-                                    {errors.otp && <p className="lp-err-msg">{errors.otp}</p>}
-                                    <div className="lp-resend">
+                                    {errors.otp && <p className="lf-err-msg">{errors.otp}</p>}
+                                    <div className="lf-resend">
                                         Không nhận được mã?{' '}
-                                        <button type="button" className="lp-link"
+                                        <button
+                                            type="button"
+                                            className="lf-link"
                                             onClick={() => handleSendOtp({ preventDefault: () => { } })}
-                                            disabled={loading}>Gửi lại</button>
+                                            disabled={loading}
+                                        >
+                                            Gửi lại
+                                        </button>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Submit */}
-                            <button type="submit" disabled={loading} className="lp-btn">
-                                {loading
-                                    ? <><Loader2 size={16} className="lp-spin" />Đang xử lý...</>
-                                    : step === 1
-                                        ? <>Nhận mã OTP<ChevronRight size={16} className="opacity-50" /></>
-                                        : <>Xác thực & Đăng nhập<ChevronRight size={16} className="opacity-50" /></>}
+                            {/* Submit button */}
+                            <button type="submit" disabled={loading} className="lf-btn">
+                                {loading ? (
+                                    <>
+                                        <Loader2 size={15} className="lf-spin" />
+                                        Đang xử lý...
+                                    </>
+                                ) : step === 1 ? (
+                                    <>Nhận mã OTP <ChevronRight size={15} style={{ opacity: 0.7 }} /></>
+                                ) : (
+                                    <>Xác thực & Đăng nhập <ChevronRight size={15} style={{ opacity: 0.7 }} /></>
+                                )}
                             </button>
                         </form>
                     </div>
 
-                    <p className="lp-footer">
+                    <p className="lf-footer">
                         Cần hỗ trợ?{' '}
-                        <a href="mailto:support@fswms.vn" className="lp-link">Liên hệ bộ phận kỹ thuật</a>
+                        <a href="mailto:support@fswms.vn" className="lf-link">
+                            Liên hệ bộ phận kỹ thuật
+                        </a>
                     </p>
-                    <p className="lp-copy">© 2026 FS Fashion Group · All rights reserved</p>
+                    <p className="lf-copy">© 2026 FS Fashion Group · All rights reserved</p>
                 </div>
             </div>
         </div>
@@ -356,7 +391,6 @@ export default function SupplierLoginPage() {
     const [showLogin, setShowLogin] = useState(false);
     return (
         <>
-            <style>{SPLASH_STYLES}</style>
             {!showLogin && <SplashScreen onDone={() => setShowLogin(true)} />}
             {showLogin && <LoginForm />}
         </>
@@ -364,330 +398,429 @@ export default function SupplierLoginPage() {
 }
 
 /* ══════════════════════════════════════════
-   SPLASH CSS
+   SPLASH CSS — Gold / Ivory (matches homepage)
 ══════════════════════════════════════════ */
 const SPLASH_STYLES = `
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.splash-root {
+.sp-root {
   position: fixed; inset: 0; z-index: 9999;
-  background: #0a0b0f;
+  background: linear-gradient(160deg, #faf8f3 0%, #f0ead8 60%, #e8dfc8 100%);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
   transition: opacity 0.8s cubic-bezier(.4,0,.2,1), transform 0.8s cubic-bezier(.4,0,.2,1);
+  font-family: system-ui, sans-serif;
 }
-.splash-root.enter { opacity: 0; }
-.splash-root.hold  { opacity: 1; }
-.splash-root.exit  { opacity: 0; transform: scale(1.04); pointer-events: none; }
+.sp-root.enter { opacity: 0; }
+.sp-root.hold  { opacity: 1; }
+.sp-root.exit  { opacity: 0; transform: scale(1.03); pointer-events: none; }
 
 /* Grid */
-.splash-grid {
+.sp-grid {
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(212,175,55,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(212,175,55,0.06) 1px, transparent 1px);
-  background-size: 60px 60px;
-  animation: gridDrift 20s linear infinite;
+    linear-gradient(rgba(184,134,11,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,134,11,0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+  animation: spGrid 25s linear infinite;
 }
-@keyframes gridDrift { to { background-position: 60px 60px; } }
+@keyframes spGrid { to { background-position: 56px 56px; } }
 
 /* Corner accents */
-.corner-tl, .corner-br {
-  position: absolute;
-  width: 180px; height: 180px;
-  border: 1px solid rgba(212,175,55,0.3);
+.sp-corner-tl, .sp-corner-br {
+  position: absolute; width: 180px; height: 180px;
+  border: 1.5px solid rgba(184,134,11,0.3);
 }
-.corner-tl { top: 32px; left: 32px; border-right: none; border-bottom: none; animation: cornerIn 1s 0.5s both; }
-.corner-br { bottom: 32px; right: 32px; border-left: none; border-top: none; animation: cornerIn 1s 0.7s both; }
-@keyframes cornerIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+.sp-corner-tl { top: 32px; left: 32px; border-right: none; border-bottom: none; animation: spCorner 1s 0.5s both; }
+.sp-corner-br { bottom: 32px; right: 32px; border-left: none; border-top: none; animation: spCorner 1s 0.7s both; }
+@keyframes spCorner { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
 /* Orbs */
-.orb {
-  position: absolute; border-radius: 50%;
-  filter: blur(80px); pointer-events: none; opacity: 0;
-  animation: orbPulse 4s ease-in-out infinite alternate;
+.sp-orb-1 {
+  position: absolute; width: 500px; height: 500px; border-radius: 50%;
+  background: rgba(184,134,11,0.1); filter: blur(90px);
+  top: -150px; right: -150px; pointer-events: none;
+  animation: spOrb 5s ease-in-out infinite alternate;
 }
-.orb-1 { width: 400px; height: 400px; background: rgba(99,102,241,0.15); top: -100px; right: -100px; animation-delay: 0s; }
-.orb-2 { width: 300px; height: 300px; background: rgba(212,175,55,0.10); bottom: -80px; left: -80px; animation-delay: 1.5s; }
-.orb-3 { width: 250px; height: 250px; background: rgba(16,185,129,0.08); top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: 0.8s; }
-@keyframes orbPulse { from { opacity: 0.4; } to { opacity: 0.9; } }
+.sp-orb-2 {
+  position: absolute; width: 350px; height: 350px; border-radius: 50%;
+  background: rgba(201,150,12,0.08); filter: blur(80px);
+  bottom: -100px; left: -80px; pointer-events: none;
+  animation: spOrb 4s 1s ease-in-out infinite alternate;
+}
+@keyframes spOrb { from { opacity: 0.5; transform: scale(0.95); } to { opacity: 1; transform: scale(1.05); } }
 
 /* Scanline */
-.scanline {
+.sp-scanline {
   position: absolute; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.6), transparent);
+  background: linear-gradient(90deg, transparent, rgba(184,134,11,0.55), transparent);
   top: -2px; opacity: 0;
 }
-.scanline.active { animation: scan 3s 0.5s ease-in-out forwards; }
-@keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+.sp-scanline.active { animation: spScan 3.5s 0.5s ease-in-out forwards; }
+@keyframes spScan { 0%{top:0;opacity:0} 8%{opacity:1} 92%{opacity:1} 100%{top:100%;opacity:0} }
 
 /* Content */
-.splash-content {
-  display: flex; flex-direction: column; align-items: center; gap: 28px;
-  position: relative; z-index: 2; text-align: center;
+.sp-content {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 28px; position: relative; z-index: 2; text-align: center;
 }
 
 /* Logo ring */
-.logo-ring {
-  position: relative; width: 110px; height: 110px;
+.sp-logo-ring {
+  position: relative; width: 120px; height: 120px;
   display: flex; align-items: center; justify-content: center;
-  animation: logoAppear 0.8s 0.2s both;
+  animation: spLogoAppear 0.8s 0.2s both;
 }
-@keyframes logoAppear { from { opacity: 0; transform: scale(0.6) rotate(-20deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
-.logo-inner {
-  width: 72px; height: 72px; border-radius: 20px;
-  background: linear-gradient(135deg, #1a1b2e 0%, #16213e 100%);
-  border: 1px solid rgba(212,175,55,0.4);
+@keyframes spLogoAppear { from{opacity:0;transform:scale(0.6) rotate(-15deg)} to{opacity:1;transform:scale(1) rotate(0)} }
+.sp-logo-inner {
+  width: 78px; height: 78px; border-radius: 22px;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 40px rgba(212,175,55,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+  box-shadow: 0 8px 32px rgba(184,134,11,0.4), 0 0 0 1px rgba(184,134,11,0.2);
   transition: box-shadow 1s;
 }
-.logo-ring.pulse .logo-inner { box-shadow: 0 0 60px rgba(212,175,55,0.3), inset 0 1px 0 rgba(255,255,255,0.05); }
-.logo-icon { color: #d4af37; }
-.logo-svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
-.logo-track { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 2; }
-.logo-arc {
-  fill: none; stroke: #d4af37; stroke-width: 2;
-  stroke-dasharray: 340; stroke-dashoffset: 340;
-  stroke-linecap: round;
+.sp-logo-ring.pulse .sp-logo-inner {
+  box-shadow: 0 12px 48px rgba(184,134,11,0.55), 0 0 0 1px rgba(184,134,11,0.3);
+}
+.sp-logo-icon { color: #fff; }
+.sp-logo-svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.sp-logo-track { fill: none; stroke: rgba(184,134,11,0.15); stroke-width: 2; }
+.sp-logo-arc {
+  fill: none; stroke: #b8860b; stroke-width: 2;
+  stroke-dasharray: 340; stroke-dashoffset: 340; stroke-linecap: round;
   transition: stroke-dashoffset 2s cubic-bezier(.4,0,.2,1) 0.4s;
 }
-.logo-arc.drawn { stroke-dashoffset: 0; }
+.sp-logo-arc.drawn { stroke-dashoffset: 0; }
 
 /* Brand */
-.brand-block { opacity: 0; transform: translateY(20px); transition: all 0.7s 0.6s; }
-.brand-block.visible { opacity: 1; transform: translateY(0); }
-.brand-tag {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+.sp-brand-block { opacity: 0; transform: translateY(18px); transition: all 0.7s 0.6s; }
+.sp-brand-block.visible { opacity: 1; transform: translateY(0); }
+.sp-brand-tag {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px; letter-spacing: 0.2em;
-  color: rgba(212,175,55,0.7); margin-bottom: 8px;
+  color: rgba(184,134,11,0.7); text-transform: uppercase; margin-bottom: 8px;
 }
-.brand-title {
-  font-family: Inter, system-ui, sans-serif; font-size: 48px; font-weight: 800;
-  color: #fff; line-height: 1; display: flex; align-items: center; gap: 16px;
-  letter-spacing: -1px;
+.sp-brand-title {
+  font-size: 52px; font-weight: 900; line-height: 1; color: #1a1612;
+  display: flex; align-items: center; gap: 16px; letter-spacing: -1px;
 }
-.brand-fs { color: #d4af37; }
-.brand-divider { width: 1px; height: 40px; background: rgba(255,255,255,0.2); }
-.brand-wms { color: rgba(255,255,255,0.85); }
+.sp-brand-fs { color: #b8860b; }
+.sp-brand-divider { width: 1px; height: 42px; background: rgba(184,134,11,0.25); }
+.sp-brand-wms {
+  color: #3d3529;
+  font-family: ui-monospace, monospace; font-size: 38px; font-weight: 500;
+}
 
 /* Welcome */
-.welcome-block { opacity: 0; transform: translateY(16px); transition: all 0.7s 1s; }
-.welcome-block.visible { opacity: 1; transform: translateY(0); }
-.welcome-line { font-family: Inter, system-ui, sans-serif; font-size: 13px; color: rgba(255,255,255,0.4); font-weight: 300; }
-.welcome-main { font-family: Inter, system-ui, sans-serif; font-size: 22px; font-weight: 600; color: rgba(255,255,255,0.9); margin: 4px 0; }
-.welcome-sub {
+.sp-welcome-block { opacity: 0; transform: translateY(16px); transition: all 0.7s 1s; }
+.sp-welcome-block.visible { opacity: 1; transform: translateY(0); }
+.sp-welcome-line { font-size: 13px; color: #a89f92; font-weight: 300; }
+.sp-welcome-main { font-size: 22px; font-weight: 600; color: #1a1612; margin: 5px 0; }
+.sp-welcome-sub {
   font-family: ui-monospace, monospace; font-size: 11px;
-  color: rgba(212,175,55,0.6); letter-spacing: 0.1em;
+  color: rgba(184,134,11,0.7); letter-spacing: 0.1em;
 }
 
 /* Stats */
-.stats-bar {
+.sp-stats-bar {
   display: flex; gap: 32px; opacity: 0; transform: translateY(12px);
-  transition: all 0.7s 1.4s; padding: 16px 32px;
-  border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
-  background: rgba(255,255,255,0.03); backdrop-filter: blur(10px);
+  transition: all 0.7s 1.4s;
+  padding: 16px 32px;
+  border: 1px solid rgba(184,134,11,0.2); border-radius: 14px;
+  background: rgba(255,255,255,0.6); backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(100,80,30,0.1);
 }
-.stats-bar.visible { opacity: 1; transform: translateY(0); }
-.stat-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.stat-num { font-family: Inter, system-ui, sans-serif; font-size: 18px; font-weight: 700; color: #d4af37; }
-.stat-label { font-family: Inter, system-ui, sans-serif; font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; }
+.sp-stats-bar.visible { opacity: 1; transform: translateY(0); }
+.sp-stat-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.sp-stat-num { font-size: 20px; font-weight: 800; color: #b8860b; }
+.sp-stat-label {
+  font-family: ui-monospace, monospace; font-size: 10px;
+  color: #a89f92; text-transform: uppercase; letter-spacing: 0.1em;
+}
 
 /* Progress */
-.progress-track {
-  width: 200px; height: 2px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden;
+.sp-progress-track {
+  width: 220px; height: 3px; background: rgba(184,134,11,0.15); border-radius: 99px; overflow: hidden;
 }
-.progress-fill {
-  height: 100%; width: 0; background: linear-gradient(90deg, #d4af37, #f0d060);
-  border-radius: 99px; transition: width 5s cubic-bezier(.4,0,.2,1) 0.8s;
+.sp-progress-fill {
+  height: 100%; width: 0;
+  background: linear-gradient(90deg, #b8860b, #e8b923);
+  border-radius: 99px;
+  transition: width 8.4s cubic-bezier(.4,0,.2,1) 0.8s;
+  box-shadow: 0 0 8px rgba(184,134,11,0.5);
 }
-.progress-fill.filling { width: 100%; }
-.progress-label { font-family: ui-monospace, monospace; font-size: 10px; color: rgba(255,255,255,0.25); letter-spacing: 0.15em; }
+.sp-progress-fill.filling { width: 100%; }
+.sp-progress-label {
+  font-family: ui-monospace, monospace; font-size: 10px;
+  color: #c9b99a; letter-spacing: 0.15em;
+}
 `;
 
 /* ══════════════════════════════════════════
-   LOGIN CSS
+   LOGIN CSS — Gold / Ivory (matches homepage)
 ══════════════════════════════════════════ */
 const LOGIN_STYLES = `
 
-.login-page {
+.lf-page {
   display: flex; min-height: 100vh;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: system-ui, sans-serif;
   opacity: 0; transform: translateY(12px);
   transition: opacity 0.6s ease, transform 0.6s ease;
+  background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 55%, #ede9de 100%);
 }
-.login-page.lp-visible { opacity: 1; transform: translateY(0); }
+.lf-page.lf-visible { opacity: 1; transform: translateY(0); }
 
-/* Left dark panel */
-.lp-left {
-  width: 440px; flex-shrink: 0;
-  background: #0a0b0f;
+/* ── Left dark panel ── */
+.lf-left {
+  width: 420px; flex-shrink: 0;
+  background: linear-gradient(160deg, #1a1200 0%, #2d2106 60%, #3d2e08 100%);
   position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   padding: 48px 40px;
 }
-@media (max-width: 900px) { .lp-left { display: none; } }
-.lp-left-noise {
-  position: absolute; inset: 0; opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-}
-.lp-left-content { position: relative; z-index: 1; width: 100%; display: flex; flex-direction: column; gap: 36px; }
-.lp-logo {
-  width: 48px; height: 48px; border-radius: 14px;
-  background: linear-gradient(135deg, #1c1d2e, #252640);
-  border: 1px solid rgba(212,175,55,0.35);
-  display: flex; align-items: center; justify-content: center;
-  color: #d4af37;
-  box-shadow: 0 0 24px rgba(212,175,55,0.15);
-}
-.lp-eyebrow {
-  font-family: ui-monospace, monospace; font-size: 10px;
-  letter-spacing: 0.18em; color: rgba(212,175,55,0.65);
-  text-transform: uppercase; margin-bottom: 8px;
-}
-.lp-title {
-  font-family: Inter, system-ui, sans-serif; font-size: 40px; font-weight: 800;
-  color: #fff; line-height: 1.05; letter-spacing: -1px;
-  margin-bottom: 12px;
-}
-.lp-desc { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; }
+@media (max-width: 900px) { .lf-left { display: none; } }
 
-.lp-features { display: flex; flex-direction: column; gap: 12px; }
-.lp-feat {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 14px; border-radius: 12px;
-  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-  transition: background 0.2s;
-}
-.lp-feat:hover { background: rgba(255,255,255,0.05); }
-.lp-feat-icon {
-  width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
-  background: rgba(255,255,255,0.05);
-  display: flex; align-items: center; justify-content: center;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.lp-feat-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 2px; }
-.lp-feat-desc { font-size: 11px; color: rgba(255,255,255,0.35); line-height: 1.4; }
-
-.lp-bottom-badge {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 11px; color: rgba(255,255,255,0.25);
-  font-family: ui-monospace, monospace; letter-spacing: 0.05em;
-}
-
-/* Right light panel */
-.lp-right {
-  flex: 1; background: #f9fafb;
-  display: flex; align-items: center; justify-content: center;
-  padding: 40px 32px;
+.lf-left-grid {
+  position: absolute; inset: 0;
   background-image:
-    radial-gradient(circle at 80% 20%, rgba(99,102,241,0.05) 0%, transparent 60%),
-    radial-gradient(circle at 20% 80%, rgba(212,175,55,0.04) 0%, transparent 60%);
+    linear-gradient(rgba(184,134,11,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,134,11,0.08) 1px, transparent 1px);
+  background-size: 56px 56px;
+  animation: lfGrid 35s linear infinite;
 }
-.lp-form-wrap { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 20px; }
+@keyframes lfGrid { to { background-position: 56px 56px; } }
+
+.lf-left-orb-1 {
+  position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: rgba(184,134,11,0.12); filter: blur(90px);
+  top: -130px; right: -130px; pointer-events: none;
+}
+.lf-left-orb-2 {
+  position: absolute; width: 300px; height: 300px; border-radius: 50%;
+  background: rgba(201,150,12,0.08); filter: blur(80px);
+  bottom: -80px; left: -80px; pointer-events: none;
+}
+
+.lf-corner-tl, .lf-corner-br {
+  position: absolute; width: 100px; height: 100px;
+  border: 1px solid rgba(184,134,11,0.25);
+}
+.lf-corner-tl { top: 24px; left: 24px; border-right: none; border-bottom: none; }
+.lf-corner-br { bottom: 24px; right: 24px; border-left: none; border-top: none; }
+
+.lf-left-content {
+  position: relative; z-index: 1; width: 100%;
+  display: flex; flex-direction: column; gap: 32px;
+}
+
+/* Logo */
+.lf-logo { display: flex; align-items: center; gap: 10px; }
+.lf-logo-box {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 18px rgba(184,134,11,0.45);
+}
+.lf-logo-text { display: flex; align-items: center; gap: 8px; }
+.lf-logo-fs { font-size: 22px; font-weight: 900; color: #e8b923; letter-spacing: -0.5px; }
+.lf-logo-sep { width: 1px; height: 18px; background: rgba(184,134,11,0.4); }
+.lf-logo-wms {
+  font-family: ui-monospace, monospace; font-size: 13px;
+  font-weight: 500; color: rgba(255,255,255,0.5); letter-spacing: 0.08em;
+}
+
+/* Headline */
+.lf-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: ui-monospace, monospace; font-size: 10px;
+  letter-spacing: 0.18em; color: rgba(184,134,11,0.65);
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.lf-title {
+  font-size: 40px; font-weight: 900; color: #fff;
+  line-height: 1.05; letter-spacing: -1px; margin-bottom: 12px;
+}
+.lf-desc { font-size: 13px; color: rgba(255,255,255,0.38); line-height: 1.7; }
+
+/* Feature items */
+.lf-features { display: flex; flex-direction: column; gap: 10px; }
+.lf-feat {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px; border-radius: 12px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(184,134,11,0.12);
+  transition: background 0.2s, border-color 0.2s;
+}
+.lf-feat:hover { background: rgba(255,255,255,0.07); border-color: rgba(184,134,11,0.25); }
+.lf-feat-icon {
+  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.lf-feat-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 2px; }
+.lf-feat-desc { font-size: 11px; color: rgba(255,255,255,0.32); line-height: 1.5; }
+
+/* Bottom badge */
+.lf-bottom-badge {
+  display: flex; align-items: center; gap: 6px;
+  font-family: ui-monospace, monospace; font-size: 10px;
+  color: rgba(184,134,11,0.5); letter-spacing: 0.06em;
+}
+
+/* ── Right panel ── */
+.lf-right {
+  flex: 1; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 32px; overflow: hidden;
+  background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 60%, #ede9de 100%);
+}
+.lf-right-orb {
+  position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: rgba(184,134,11,0.07); filter: blur(90px);
+  top: -120px; right: -80px; pointer-events: none;
+}
+
+.lf-form-wrap {
+  width: 100%; max-width: 420px;
+  display: flex; flex-direction: column; gap: 18px;
+  position: relative; z-index: 1;
+}
 
 /* Steps */
-.lp-steps { display: flex; align-items: center; gap: 8px; }
-.lp-step { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #6b7280; transition: color 0.3s; }
-.lp-step-done { color: #0a0b0f; }
-.lp-step-dim { color: #d1d5db; }
-.lp-step-dot {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: #e5e7eb; color: #9ca3af;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; transition: all 0.3s;
+.lf-steps { display: flex; align-items: center; gap: 8px; }
+.lf-step {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: #a89f92;
+  transition: color 0.3s;
 }
-.lp-step-done .lp-step-dot { background: #0a0b0f; color: #fff; }
-.lp-step-line { flex: 1; height: 1px; background: #e5e7eb; max-width: 40px; }
+.lf-step-active { color: #1a1612; }
+.lf-step-dim { color: #c9b99a; }
+.lf-step-dot {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(184,134,11,0.12); color: #a89f92;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+  transition: all 0.3s;
+}
+.lf-step-active .lf-step-dot {
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(184,134,11,0.4);
+}
+.lf-step-line { flex: 1; height: 1px; background: rgba(184,134,11,0.2); max-width: 40px; }
 
 /* Card */
-.lp-card {
-  background: #fff; border-radius: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.05);
-  overflow: hidden;
+.lf-card {
+  background: #fff;
+  border: 1px solid rgba(184,134,11,0.2);
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 4px 24px rgba(100,80,30,0.1), 0 1px 4px rgba(100,80,30,0.06);
+  position: relative;
 }
-.lp-card-header {
-  padding: 28px 28px 0;
-  border-bottom: 1px solid #f3f4f6; padding-bottom: 20px; margin-bottom: 4px;
+.lf-card-topline {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #b8860b, transparent);
 }
-.lp-card-title { font-family: Inter, system-ui, sans-serif; font-size: 22px; font-weight: 700; color: #0a0b0f; }
-.lp-card-sub { font-size: 13px; color: #9ca3af; margin-top: 4px; }
-.lp-card-sub strong { color: #374151; }
+.lf-card-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid rgba(184,134,11,0.1);
+  background: linear-gradient(180deg, rgba(184,134,11,0.03) 0%, transparent 100%);
+}
+.lf-card-title {
+  font-size: 22px; font-weight: 800; color: #1a1612; letter-spacing: -0.5px;
+}
+.lf-card-sub { font-size: 13px; color: #a89f92; margin-top: 4px; }
+.lf-card-sub strong { color: #3d3529; }
 
 /* Form */
-.lp-form { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 18px; }
-.lp-field { display: flex; flex-direction: column; gap: 6px; }
-.lp-label { font-size: 12px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.06em; }
-.lp-req { color: #ef4444; }
+.lf-form {
+  padding: 24px 28px 28px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.lf-field { display: flex; flex-direction: column; gap: 6px; }
+.lf-lbl {
+  font-family: ui-monospace, monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: rgba(184,134,11,0.7);
+}
+.lf-req { color: #ef4444; }
 
-.lp-input-wrap { position: relative; }
-.lp-input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; }
-.lp-input {
+.lf-input-wrap { position: relative; }
+.lf-input-icon {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  color: #a89f92; pointer-events: none;
+}
+.lf-input {
   width: 100%; height: 44px; padding: 0 14px 0 38px;
-  border: 1.5px solid #e5e7eb; border-radius: 12px;
-  font-family: Inter, system-ui, sans-serif; font-size: 14px; color: #111827;
-  background: #fafafa; outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  background: #faf8f3; border: 1.5px solid rgba(184,134,11,0.2);
+  border-radius: 11px; outline: none;
+  font-size: 14px; color: #1a1612;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
-.lp-input:focus { border-color: #0a0b0f; background: #fff; box-shadow: 0 0 0 3px rgba(10,11,15,0.08); }
-.lp-input:disabled { opacity: 0.5; cursor: not-allowed; }
-.lp-input-err { border-color: #ef4444 !important; }
-.lp-input.lp-mono { font-family: ui-monospace, monospace; font-size: 13px; letter-spacing: 0.05em; }
+.lf-input::placeholder { color: #a89f92; }
+.lf-input:focus {
+  border-color: #b8860b; background: #fff;
+  box-shadow: 0 0 0 3px rgba(184,134,11,0.1);
+}
+.lf-input:disabled { opacity: 0.5; cursor: not-allowed; }
+.lf-input-err { border-color: #ef4444 !important; }
+.lf-input.lf-mono { font-family: ui-monospace, monospace; font-size: 13px; letter-spacing: 0.05em; }
+.lf-input.lf-input-otp { font-family: ui-monospace, monospace; font-size: 18px; letter-spacing: 0.3em; font-weight: bold; }
+.lf-input.lf-input-otp::placeholder { font-family: system-ui, sans-serif; font-size: 14px; letter-spacing: normal; font-weight: normal; }
 
-.lp-err-msg { font-size: 12px; color: #ef4444; display: flex; align-items: center; gap: 4px; }
+.lf-err-msg { font-size: 12px; color: #ef4444; }
 
-/* OTP boxes */
-.lp-otp-field { animation: slideUp 0.35s ease both; }
-@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.lp-otp-label-row { display: flex; align-items: center; justify-content: space-between; }
-.lp-otp-boxes { display: flex; gap: 8px; }
-.lp-otp-box {
+/* OTP */
+.lf-otp-anim { animation: lfOtpIn 0.35s ease both; }
+@keyframes lfOtpIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.lf-otp-label-row { display: flex; align-items: center; justify-content: space-between; }
+.lf-otp-boxes { display: flex; gap: 8px; margin-top: 2px; }
+.lf-otp-box {
   flex: 1; height: 52px; border-radius: 12px;
-  border: 1.5px solid #e5e7eb; background: #fafafa;
-  text-align: center; font-family: ui-monospace, monospace;
-  font-size: 20px; font-weight: 600; color: #0a0b0f;
-  outline: none; transition: all 0.15s;
+  border: 1.5px solid rgba(184,134,11,0.2); background: #faf8f3;
+  text-align: center;
+  font-family: ui-monospace, monospace; font-size: 20px; font-weight: 700;
+  color: #1a1612; outline: none; transition: all 0.15s;
 }
-.lp-otp-box:focus { border-color: #0a0b0f; background: #fff; box-shadow: 0 0 0 3px rgba(10,11,15,0.08); }
-.lp-otp-box.lp-otp-filled { border-color: #4ade80; background: #f0fdf4; }
-.lp-otp-box.lp-otp-err { border-color: #ef4444; }
-.lp-otp-err-box { border-color: #ef4444 !important; }
-.lp-resend { font-size: 12px; color: #9ca3af; text-align: center; }
+.lf-otp-box:focus { border-color: #b8860b; background: #fff; box-shadow: 0 0 0 3px rgba(184,134,11,0.1); }
+.lf-otp-box.lf-otp-filled { border-color: #22c55e; background: rgba(34,197,94,0.06); }
+.lf-otp-box.lf-otp-err { border-color: #ef4444; }
+.lf-resend { font-size: 12px; color: #a89f92; text-align: center; margin-top: 6px; }
 
-/* Button */
-.lp-btn {
+/* Submit button */
+.lf-btn {
   height: 48px; border-radius: 12px; width: 100%;
-  background: #0a0b0f; color: #fff;
-  font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 600;
-  border: 1px solid #0a0b0f; cursor: pointer;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  color: #fff; border: none;
+  font-size: 14px; font-weight: 700; cursor: pointer;
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); letter-spacing: 0.02em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 18px rgba(184,134,11,0.38);
   position: relative; overflow: hidden;
 }
-.lp-btn::before {
+.lf-btn::before {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
   opacity: 0; transition: opacity 0.3s;
 }
-.lp-btn:hover { 
-  background: #fff; 
-  color: #0a0b0f; 
-  transform: translateY(-1px); 
-  box-shadow: 0 12px 24px rgba(10,11,15,0.12);
+.lf-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(184,134,11,0.52);
 }
-.lp-btn:hover::before { opacity: 1; }
-.lp-btn:active { transform: translateY(0); }
-.lp-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-.lp-btn-arrow { margin-left: auto; opacity: 0.5; }
-.lp-spin { animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.lf-btn:hover::before { opacity: 1; }
+.lf-btn:active { transform: translateY(0); }
+.lf-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.lf-spin { animation: lfSpin 1s linear infinite; }
+@keyframes lfSpin { to { transform: rotate(360deg); } }
 
 /* Links */
-.lp-link { background: none; border: none; cursor: pointer; color: #6366f1; font-size: 12px; font-weight: 600; text-decoration: none; }
-.lp-link:hover { color: #4f46e5; text-decoration: underline; }
+.lf-link {
+  background: none; border: none; cursor: pointer;
+  color: #b8860b; font-size: 12px; font-weight: 600;
+  text-decoration: none; transition: color 0.2s;
+}
+.lf-link:hover { color: #8a6308; text-decoration: underline; }
 
-.lp-footer { font-size: 13px; color: #9ca3af; text-align: center; }
-.lp-copy { font-size: 11px; color: #d1d5db; text-align: center; }
+.lf-footer { font-size: 13px; color: #a89f92; text-align: center; }
+.lf-copy {
+  font-family: ui-monospace, monospace; font-size: 11px;
+  color: #c9b99a; text-align: center; letter-spacing: 0.04em;
+}
 `;
