@@ -13,6 +13,7 @@ import {
 import {
   Plus, Eye, ClipboardList, Loader2, ChevronDown, ChevronLeft,
   ChevronRight, Check, Filter, RefreshCcw, Search, Play,
+  Package, CheckCircle2, Clock, Warehouse,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { getStockTakes } from "@/services/stockTakeService";
@@ -110,6 +111,18 @@ export default function StockTakeList() {
     });
   }, [stockTakes, searchTerm, filterStatus]);
 
+  const stats = useMemo(() => {
+    const total = filtered.length;
+    const ongoing = filtered.filter((i) => i.trangThai === 0).length;
+    const done = filtered.filter((i) => i.trangThai === 1).length;
+    const warehouses = new Set(
+      filtered
+        .map((i) => i.kho?.id ?? i.kho?.tenKho)
+        .filter(Boolean)
+    ).size;
+    return { total, ongoing, done, warehouses };
+  }, [filtered]);
+
   // ── Pagination ────────────────────────────────────────────────────────
   const totalElements = filtered.length;
   const totalPages    = Math.max(1, Math.ceil(totalElements / pageSize));
@@ -123,7 +136,7 @@ export default function StockTakeList() {
   const currentFilterLabel = FILTER_OPTIONS.find(o => o.value === filterStatus)?.label ?? "Tất cả trạng thái";
 
   return (
-    <div className="lux-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
       <div className="space-y-6 w-full">
 
         {/* ── Page header ── */}
@@ -133,6 +146,56 @@ export default function StockTakeList() {
             <p className="text-sm text-gray-600 mt-1"></p>
           </div>
         </div>
+
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Tổng đợt kiểm kê</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <Package className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-amber-50 to-white p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Đang kiểm kê</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.ongoing}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                <Clock className="h-6 w-6 text-amber-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Hoàn thành</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.done}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-white p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Kho tham gia</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.warehouses}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                <Warehouse className="h-6 w-6 text-purple-600" />
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* ── Filter bar ── */}
         <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-5">

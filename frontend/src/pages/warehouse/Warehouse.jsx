@@ -606,9 +606,6 @@ export default function WarehouseManagement() {
                             <p className="wh-eyebrow">FS WMS · Inventory</p>
                             <h1 className="wh-title">Quản lý <span>kho hàng</span></h1>
                         </div>
-                        <button className="wh-btn-add" onClick={() => handleOpenDialog('create')}>
-                            <Plus size={15} /> Thêm kho mới
-                        </button>
                     </div>
 
                     {/* ── Stats ── */}
@@ -690,6 +687,12 @@ export default function WarehouseManagement() {
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <button className="wh-btn-add" onClick={() => handleOpenDialog('create')}>
+                            <Plus size={15} /> Thêm kho mới
+                        </button>
                     </div>
 
                     {/* ── Content ── */}
