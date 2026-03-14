@@ -123,7 +123,7 @@ export default function StockTakeList() {
   const currentFilterLabel = FILTER_OPTIONS.find(o => o.value === filterStatus)?.label ?? "Tất cả trạng thái";
 
   return (
-    <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+    <div className="lux-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
       <div className="space-y-6 w-full">
 
         {/* ── Page header ── */}

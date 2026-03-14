@@ -138,7 +138,7 @@ export default function SkuBuilder() {
     const totalPages = Math.max(1, Math.ceil(processedSkus.length / pageSize));
 
     return (
-        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+        <div className="lux-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
 
             {/* ══ STATS ════════════════════════════════════════════════════════ */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

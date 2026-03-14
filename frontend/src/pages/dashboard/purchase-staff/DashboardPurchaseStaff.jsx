@@ -17,7 +17,7 @@ export default function DashboardPurchaseStaff() {
 
     return (
 
-        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+        <div className="lux-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
 
             <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
 

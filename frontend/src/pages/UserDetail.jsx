@@ -16,12 +16,15 @@ import {
     Calendar,
     CheckCircle2,
     Clock,
+    Clock3,
     Edit,
+    IdCard,
     Mail,
     Phone,
     Save,
     Shield,
     User,
+    UserCog,
     X,
     AlertCircle,
     Activity,
@@ -209,52 +212,84 @@ export default function UserDetail() {
         return "bg-blue-100";
     };
 
+    const quickStats = [
+        { icon: <UserCog className="h-4 w-4 text-[#b8860b]" />, label: "Vai trò", value: getVaiTroLabel(userData.vaiTro) },
+        { icon: <Shield className="h-4 w-4 text-[#b8860b]" />, label: "Trạng thái", value: isActive ? "Đang hoạt động" : "Không hoạt động" },
+        { icon: <IdCard className="h-4 w-4 text-[#b8860b]" />, label: "Mã người dùng", value: userData.id ?? "—" },
+        { icon: <Clock3 className="h-4 w-4 text-[#b8860b]" />, label: "Cập nhật gần nhất", value: formatDateTime(userData.ngayCapNhat) },
+    ];
+
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="lux-sync min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 p-6">
             <div className="max-w-6xl mx-auto space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-                            <ArrowLeft className="w-4 h-4" />
-                        </Button>
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Chi tiết người dùng</h1>
+                <div className="rounded-2xl border border-[rgba(184,134,11,0.18)] bg-white p-5 shadow-sm">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex items-start gap-4">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => navigate(-1)}
+                                className="border-[rgba(184,134,11,0.28)] text-[#7a6e5f] hover:bg-[rgba(184,134,11,0.08)] hover:text-[#b8860b]"
+                            >
+                                <ArrowLeft className="w-4 h-4" />
+                            </Button>
+                            <div>
+                                <p className="text-xs uppercase tracking-[0.16em] text-[rgba(184,134,11,0.72)]">Tài khoản / Hồ sơ</p>
+                                <h1 className="text-2xl font-bold text-[#1a1612]">Chi tiết người dùng</h1>
+                                <p className="mt-1 text-sm text-[#7a6e5f]">Quản lý thông tin tài khoản và lịch sử thay đổi</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            {!isEditing ? (
+                                <Button
+                                    onClick={handleEdit}
+                                    disabled={loadingUser}
+                                    className="bg-gradient-to-r from-[#b8860b] to-[#e8b923] text-white hover:opacity-95"
+                                >
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Chỉnh sửa
+                                </Button>
+                            ) : (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleCancel}
+                                        disabled={saving}
+                                        className="border-[rgba(184,134,11,0.28)] text-[#7a6e5f] hover:bg-[rgba(184,134,11,0.08)] hover:text-[#b8860b]"
+                                    >
+                                        <X className="w-4 h-4 mr-2" />
+                                        Hủy
+                                    </Button>
+                                    <Button
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        className="bg-gradient-to-r from-[#b8860b] to-[#e8b923] text-white hover:opacity-95"
+                                    >
+                                        <Save className="w-4 h-4 mr-2" />
+                                        {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </div>
+                </div>
 
-                    <div className="flex gap-2">
-                        {!isEditing ? (
-                            <Button
-                                onClick={handleEdit}
-                                disabled={loadingUser}
-                                className="bg-gradient-to-r from-purple-600 to-blue-600"
-                            >
-                                <Edit className="w-4 h-4 mr-2" />
-                                Chỉnh sửa
-                            </Button>
-                        ) : (
-                            <>
-                                <Button variant="outline" onClick={handleCancel} disabled={saving}>
-                                    <X className="w-4 h-4 mr-2" />
-                                    Hủy
-                                </Button>
-                                <Button
-                                    onClick={handleSave}
-                                    disabled={saving}
-                                    className="bg-gradient-to-r from-purple-600 to-blue-600"
-                                >
-                                    <Save className="w-4 h-4 mr-2" />
-                                    {saving ? "Đang lưu..." : "Lưu thay đổi"}
-                                </Button>
-                            </>
-                        )}
-                    </div>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {quickStats.map((item) => (
+                        <OverviewTile
+                            key={item.label}
+                            icon={item.icon}
+                            label={item.label}
+                            value={item.value}
+                        />
+                    ))}
                 </div>
 
                 {/* Alerts */}
                 {showSuccess && (
-                    <Alert className="bg-green-50 border-green-200">
+                    <Alert className="bg-emerald-50 border-emerald-200">
                         <CheckCircle2 className="h-4 w-4 text-green-600" />
                         <AlertDescription className="text-green-800">
                             Cập nhật thông tin người dùng thành công!
@@ -269,14 +304,15 @@ export default function UserDetail() {
                     </Alert>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                     {/* Left - Summary */}
                     <div className="lg:col-span-1">
-                        <Card>
+                        <Card className="overflow-hidden border border-[rgba(184,134,11,0.16)] shadow-sm">
+                            <div className="h-1 bg-gradient-to-r from-transparent via-[#b8860b] to-transparent" />
                             <CardContent className="p-6">
                                 <div className="flex flex-col items-center text-center">
                                     <Avatar className="w-24 h-24 mb-4">
-                                        <AvatarFallback className="bg-gradient-to-r from-purple-600 to-blue-600 text-white text-2xl">
+                                        <AvatarFallback className="bg-gradient-to-r from-[#b8860b] to-[#e8b923] text-white text-2xl">
                                             {initials}
                                         </AvatarFallback>
                                     </Avatar>
@@ -285,9 +321,9 @@ export default function UserDetail() {
                                         {loadingUser ? "Loading..." : userData.hoTen || "—"}
                                     </h3>
 
-                                    <p className="text-gray-600 mb-2">@{userData.tenDangNhap || "—"}</p>
+                                    <p className="text-[#7a6e5f] mb-2">@{userData.tenDangNhap || "—"}</p>
 
-                                    <Badge className="mb-4" variant="outline">
+                                    <Badge className="mb-4 border-[rgba(184,134,11,0.24)] bg-[rgba(184,134,11,0.08)] text-[#3d3529]" variant="outline">
                                         <Shield className="w-3 h-3 mr-1" />
                                         {getVaiTroLabel(userData.vaiTro)}
                                     </Badge>
@@ -299,12 +335,12 @@ export default function UserDetail() {
                                         </span>
                                     </div>
 
-                                    <div className="w-full space-y-3 text-left border-t pt-4">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <div className="w-full space-y-3 text-left border-t border-[rgba(184,134,11,0.14)] pt-4">
+                                        <div className="flex items-center gap-2 text-sm text-[#7a6e5f]">
                                             <Calendar className="w-4 h-4" />
                                             <span>Ngày tạo: {formatDateTime(userData.ngayTao)}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <div className="flex items-center gap-2 text-sm text-[#7a6e5f]">
                                             <Clock className="w-4 h-4" />
                                             <span>Cập nhật: {formatDateTime(userData.ngayCapNhat)}</span>
                                         </div>
@@ -313,21 +349,21 @@ export default function UserDetail() {
                             </CardContent>
                         </Card>
 
-                        <Card className="mt-4">
+                        <Card className="mt-4 border border-[rgba(184,134,11,0.16)] shadow-sm">
                             <CardHeader>
                                 <CardTitle className="text-base">Thông tin hệ thống</CardTitle>
                                 <CardDescription>Thông tin quan trọng</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-2 text-sm text-gray-700">
-                                <div className="flex justify-between">
+                            <CardContent className="space-y-2 text-sm text-[#3d3529]">
+                                <div className="flex justify-between gap-3">
                                     <span>ID</span>
                                     <span className="font-medium">{userData.id ?? "—"}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between gap-3">
                                     <span>Vai trò</span>
-                                    <span className="font-medium">{getVaiTroLabel(userData.vaiTro)}</span>
+                                    <span className="font-medium text-right">{getVaiTroLabel(userData.vaiTro)}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between gap-3">
                                     <span>Trạng thái</span>
                                     <span className="font-medium">{isActive ? "Hoạt động" : "Không hoạt động"}</span>
                                 </div>
@@ -344,15 +380,15 @@ export default function UserDetail() {
                                 if (v === "activity") fetchActivities();
                             }}
                         >
-                            <TabsList className="grid w-full grid-cols-2">
+                            <TabsList className="grid w-full grid-cols-2 bg-[#f5f2ea] border border-[rgba(184,134,11,0.14)]">
                                 <TabsTrigger value="info">Thông tin</TabsTrigger>
                                 <TabsTrigger value="activity">Hoạt động</TabsTrigger>
                             </TabsList>
 
                             {/* Tab: Thông tin */}
                             <TabsContent value="info">
-                                <Card>
-                                    <CardHeader>
+                                <Card className="border border-[rgba(184,134,11,0.16)] shadow-sm overflow-hidden">
+                                    <CardHeader className="border-b border-[rgba(184,134,11,0.12)] bg-[rgba(184,134,11,0.05)]">
                                         <CardTitle>Thông tin người dùng</CardTitle>
                                         {/* <CardDescription>
                                             {isEditing ? "Chỉnh sửa các trường cho phép cập nhật" : "Chế độ chỉ xem (read-only)"}
@@ -371,7 +407,7 @@ export default function UserDetail() {
                                                 value={userData.tenDangNhap}
                                                 readOnly
                                                 disabled
-                                                className="bg-gray-50"
+                                                className="bg-[#faf8f3] border-[rgba(184,134,11,0.18)]"
                                             />
                                         </div>
 
@@ -383,7 +419,7 @@ export default function UserDetail() {
                                                 value={isEditing ? editedData.hoTen : userData.hoTen}
                                                 onChange={(e) => handleInputChange("hoTen", e.target.value)}
                                                 disabled={!isEditing || loadingUser}
-                                                className={!isEditing ? "bg-gray-50" : ""}
+                                                className={!isEditing ? "bg-[#faf8f3] border-[rgba(184,134,11,0.18)]" : "border-[rgba(184,134,11,0.25)] focus-visible:ring-[rgba(184,134,11,0.35)]"}
                                             />
                                         </div>
 
@@ -399,7 +435,7 @@ export default function UserDetail() {
                                                 value={userData.email}
                                                 readOnly
                                                 disabled
-                                                className="bg-gray-50"
+                                                className="bg-[#faf8f3] border-[rgba(184,134,11,0.18)]"
                                             />
                                         </div>
 
@@ -413,7 +449,7 @@ export default function UserDetail() {
                                                 value={isEditing ? editedData.soDienThoai : userData.soDienThoai}
                                                 onChange={(e) => handleInputChange("soDienThoai", e.target.value)}
                                                 disabled={!isEditing || loadingUser}
-                                                className={!isEditing ? "bg-gray-50" : ""}
+                                                className={!isEditing ? "bg-[#faf8f3] border-[rgba(184,134,11,0.18)]" : "border-[rgba(184,134,11,0.25)] focus-visible:ring-[rgba(184,134,11,0.35)]"}
                                             />
                                         </div>
 
@@ -430,7 +466,7 @@ export default function UserDetail() {
                                                 placeholder={isEditing ? "Nhập mật khẩu mới" : ""}
                                                 onChange={(e) => handleInputChange("password", e.target.value)}
                                                 disabled={!isEditing || loadingUser}
-                                                className={!isEditing ? "bg-gray-50" : ""}
+                                                className={!isEditing ? "bg-[#faf8f3] border-[rgba(184,134,11,0.18)]" : "border-[rgba(184,134,11,0.25)] focus-visible:ring-[rgba(184,134,11,0.35)]"}
                                             />
                                         </div>
 
@@ -438,11 +474,11 @@ export default function UserDetail() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label>Vai trò</Label>
-                                                <Input value={getVaiTroLabel(userData.vaiTro)} disabled className="bg-gray-50" />
+                                                <Input value={getVaiTroLabel(userData.vaiTro)} disabled className="bg-[#faf8f3] border-[rgba(184,134,11,0.18)]" />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label>Trạng thái</Label>
-                                                <Input value={isActive ? "Hoạt động" : "Không hoạt động"} disabled className="bg-gray-50" />
+                                                <Input value={isActive ? "Hoạt động" : "Không hoạt động"} disabled className="bg-[#faf8f3] border-[rgba(184,134,11,0.18)]" />
                                             </div>
                                         </div>
                                     </CardContent>
@@ -451,8 +487,8 @@ export default function UserDetail() {
 
                             {/* Tab: Hoạt động */}
                             <TabsContent value="activity">
-                                <Card>
-                                    <CardHeader>
+                                <Card className="border border-[rgba(184,134,11,0.16)] shadow-sm overflow-hidden">
+                                    <CardHeader className="border-b border-[rgba(184,134,11,0.12)] bg-[rgba(184,134,11,0.05)]">
                                         <CardTitle>Lịch sử hoạt động</CardTitle>
                                         <CardDescription>Demo UI — cắm API sau</CardDescription>
                                     </CardHeader>
@@ -464,16 +500,16 @@ export default function UserDetail() {
                                             activities.map((a, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                                    className="flex items-start gap-4 p-4 bg-[#faf8f3] border border-[rgba(184,134,11,0.14)] rounded-lg hover:bg-[rgba(184,134,11,0.08)] transition-colors"
                                                 >
                                                     <div className={`p-2 rounded-lg ${activityBg(a.type)}`}>{activityIcon(a.type)}</div>
 
                                                     <div className="flex-1">
                                                         <div className="flex items-center justify-between gap-2">
                                                             <p className="font-medium text-gray-900">{a.title}</p>
-                                                            <span className="text-xs text-gray-500">{formatDateTime(a.at)}</span>
+                                                            <span className="text-xs text-[#7a6e5f]">{formatDateTime(a.at)}</span>
                                                         </div>
-                                                        <p className="text-sm text-gray-600 mt-1">{a.detail}</p>
+                                                        <p className="text-sm text-[#7a6e5f] mt-1">{a.detail}</p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -484,6 +520,18 @@ export default function UserDetail() {
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function OverviewTile({ icon, label, value }) {
+    return (
+        <div className="rounded-xl border border-[rgba(184,134,11,0.16)] bg-white px-4 py-3 shadow-sm">
+            <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[rgba(184,134,11,0.12)]">
+                {icon}
+            </div>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-[rgba(184,134,11,0.74)]">{label}</p>
+            <p className="mt-1 text-sm font-semibold text-[#1a1612]">{value}</p>
         </div>
     );
 }
