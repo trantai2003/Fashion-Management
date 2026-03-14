@@ -318,7 +318,7 @@ const ProductAttributeHub = () => {
                         <span className="text-sm text-gray-600">Đang tải...</span>
                     </div>
                 ) : data.length === 0 ? <EmptyState icon={TabIcon} label={TAB_LABELS[activeTab]} /> : (
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-slate-200 bg-slate-50">

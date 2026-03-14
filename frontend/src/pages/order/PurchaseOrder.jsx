@@ -916,12 +916,15 @@ export default function PurchaseOrderList() {
 
             {/* Table Section */}
             <div className="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
                     <table className="w-full text-sm">
 
                         {/* HEADER */}
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50">
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide w-14">
+                                    STT
+                                </th>
                                 <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">
                                     Số đơn mua
                                 </th>
@@ -954,7 +957,7 @@ export default function PurchaseOrderList() {
 
                             {loading ? (
                                 <tr>
-                                    <td colSpan={8} className="py-16 text-center">
+                                    <td colSpan={9} className="py-16 text-center">
                                         <div className="flex flex-col items-center gap-3">
                                             <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
                                             <span className="text-slate-500 font-medium">
@@ -966,7 +969,7 @@ export default function PurchaseOrderList() {
                             ) : purchaseOrders.length === 0 ? (
 
                                 <tr>
-                                    <td colSpan={8} className="py-16 text-center">
+                                    <td colSpan={9} className="py-16 text-center">
                                         <div className="flex flex-col items-center gap-4">
                                             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
                                                 <Package className="h-10 w-10 text-slate-400" />
@@ -985,12 +988,17 @@ export default function PurchaseOrderList() {
                                 </tr>
 
                             ) : (
-                                purchaseOrders.map((order) => (
+                                purchaseOrders.map((order, index) => (
                                     <tr
                                         key={order.id}
                                         onClick={() => handleViewDetail(order.id)}
                                         className="transition-colors duration-150 hover:bg-violet-50/50 cursor-pointer"
                                     >
+
+                                        {/* STT */}
+                                        <td className="px-4 py-3.5 text-center text-slate-500 text-xs">
+                                            {pagination.pageNumber * pagination.pageSize + index + 1}
+                                        </td>
 
                                         {/* Số đơn */}
                                         <td className="px-4 py-3.5">

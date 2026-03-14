@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,7 +14,7 @@ import {
 import {
     Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight,
     Eye, Loader2, Users, ChevronDown, Phone, Mail, User2,
-    Filter, RefreshCcw, Check, AlertTriangle,
+    Filter, RefreshCcw, Check, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getAllSupplier, deleteSupplier } from "@/services/supplierService";
@@ -226,6 +227,17 @@ export default function SupplierList() {
         });
     }, [suppliers, search, filterStatus]);
 
+    const stats = useMemo(() => {
+        const active = filtered.filter((item) => item.trangThai === 1).length;
+        const inactive = filtered.filter((item) => item.trangThai === 0).length;
+
+        return {
+            total: filtered.length,
+            active,
+            inactive,
+        };
+    }, [filtered]);
+
     // ── Pagination ─────────────────────────────────────────────────────
     const totalElements = filtered.length;
     const totalPages    = Math.max(1, Math.ceil(totalElements / pageSize));
@@ -258,21 +270,69 @@ export default function SupplierList() {
 
                     {/* ── Page header ── */}
 
+                    {/* ── Stats ── */}
+                    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Tổng nhà cung cấp</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                                    </div>
+                                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <Users className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-1">{stats.active}</p>
+                                    </div>
+                                    <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                        <CheckCircle2 className="h-6 w-6 text-green-600" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-red-50 to-white">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Ngừng hoạt động</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-1">{stats.inactive}</p>
+                                    </div>
+                                    <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                                        <AlertTriangle className="h-6 w-6 text-red-500" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </section>
+
                     {/* ── Filter bar ── */}
-                    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 p-5">
-                        <div className="flex items-center gap-2 mb-4">
-                            <Filter className="h-4 w-4 text-violet-600" />
-                            <span className="text-sm font-semibold text-slate-700">Bộ lọc tìm kiếm</span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card className="border-0 shadow-lg bg-white">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                                <Filter className="h-5 w-5 text-purple-600" />
+                                Bộ lọc tìm kiếm
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {/* Search */}
-                            <div className="space-y-1.5 md:col-span-2">
-                                <Label className="text-gray-700 font-medium text-xs">Tìm kiếm</Label>
+                            <div className="space-y-2 md:col-span-2">
+                                <Label className="text-gray-700 font-medium">Tìm kiếm</Label>
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                     <Input
                                         placeholder="Tìm theo mã, tên, người liên hệ..."
-                                        className="pl-9 border-gray-200 focus:border-violet-500 focus:ring-violet-500"
+                                        className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                     />
@@ -280,12 +340,12 @@ export default function SupplierList() {
                             </div>
 
                             {/* Status filter */}
-                            <div className="space-y-1.5">
-                                <Label className="text-gray-700 font-medium text-xs">Trạng thái</Label>
+                            <div className="space-y-2">
+                                <Label className="text-gray-700 font-medium">Trạng thái</Label>
                                 <DropdownMenu modal={false}>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="outline" className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal">
-                                            <span className="truncate text-sm">{currentFilterLabel}</span>
+                                            <span className="truncate">{currentFilterLabel}</span>
                                             <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -294,10 +354,10 @@ export default function SupplierList() {
                                             <DropdownMenuItem
                                                 key={opt.value}
                                                 onClick={() => setFilterStatus(opt.value)}
-                                                className="flex items-center justify-between cursor-pointer hover:bg-violet-50"
+                                                className="flex items-center justify-between cursor-pointer hover:bg-purple-50"
                                             >
                                                 {opt.label}
-                                                {filterStatus === opt.value && <Check className="h-4 w-4 text-violet-600" />}
+                                                {filterStatus === opt.value && <Check className="h-4 w-4" />}
                                             </DropdownMenuItem>
                                         ))}
                                     </DropdownMenuContent>
@@ -309,14 +369,15 @@ export default function SupplierList() {
                                 <Button
                                     variant="outline"
                                     onClick={handleReset}
-                                    className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300"
+                                    className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
                                 >
                                     <RefreshCcw className="h-4 w-4" />
                                     Đặt lại
                                 </Button>
                             </div>
                         </div>
-                    </div>
+                        </CardContent>
+                    </Card>
   
                     {/* ── Action buttons ── */}
                     <div className="flex items-center justify-end">
@@ -339,7 +400,7 @@ export default function SupplierList() {
                         ) : pageItems.length === 0 ? (
                             <EmptyState />
                         ) : (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-slate-200 bg-slate-50">
