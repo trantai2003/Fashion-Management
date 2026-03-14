@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Loader2, Upload, X, Package } from "lucide-react";
+import { Loader2, Upload, X, Package, Info } from "lucide-react";
 import { toast } from "sonner";
 import { productService } from "@/services/productService.js";
 import * as yup from "yup";
@@ -345,10 +345,10 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
     if (isLoadingProduct) {
         return (
             <Dialog open={isOpen} onOpenChange={handleCancel}>
-                <DialogContent className="sm:max-w-[900px] max-h-[90vh] bg-white text-gray-900 border border-gray-200 rounded-xl shadow-sm dark:bg-white dark:text-gray-900">
+                <DialogContent className="sm:max-w-[1180px] max-h-[92vh] bg-white dark:!bg-white text-amber-950 dark:!text-amber-950 border border-amber-200 rounded-2xl shadow-xl">
                     <div className="flex items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-                        <span className="ml-3 text-gray-600">Đang tải thông tin sản phẩm...</span>
+                        <Loader2 className="h-8 w-8 animate-spin text-amber-700" />
+                        <span className="ml-3 text-amber-800">Đang tải thông tin sản phẩm...</span>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -357,185 +357,231 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
 
     return (
         <Dialog open={isOpen} onOpenChange={handleCancel}>
-            <DialogContent className="sm:max-w-[900px] max-h-[90vh] bg-white text-gray-900 border border-gray-200 rounded-xl shadow-sm dark:bg-white dark:text-gray-900 flex flex-col">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Package className="w-5 h-5 text-purple-600" />
-                        Chỉnh sửa sản phẩm
-                    </DialogTitle>
-                    <DialogDescription>
-                        Cập nhật thông tin sản phẩm và biến thể. Nhấn lưu khi hoàn tất.
+            <DialogContent className="sm:max-w-[1180px] max-h-[92vh] bg-white dark:!bg-white text-amber-950 dark:!text-amber-950 border border-amber-200 rounded-2xl shadow-xl flex flex-col">
+                <DialogHeader className="border-b border-amber-200 pb-4">
+                    <div className="flex items-center justify-between gap-3">
+                        <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-amber-950">
+                            <Package className="w-5 h-5 text-amber-700" />
+                            Chỉnh sửa sản phẩm
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-sm text-amber-800/80">
+                        Chỉnh sửa theo từng nhóm thông tin để kiểm tra nhanh sản phẩm, ảnh và biến thể.
                     </DialogDescription>
+                    <div className="grid grid-cols-3 gap-2 mt-2 text-[11px] font-semibold">
+                        <div className="rounded-lg border border-amber-300 bg-amber-100 px-2 py-1 text-amber-900 text-center">Bước 1: Soát thông tin</div>
+                        <div className="rounded-lg border border-amber-300 bg-amber-100 px-2 py-1 text-amber-900 text-center">Bước 2: Cập nhật ảnh</div>
+                        <div className="rounded-lg border border-amber-300 bg-amber-100 px-2 py-1 text-amber-900 text-center">Bước 3: Lưu thay đổi</div>
+                    </div>
+                    <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 flex items-start gap-2">
+                        <Info className="h-4 w-4 text-amber-700 mt-0.5" />
+                        <p className="text-xs text-amber-800 leading-relaxed">
+                            Chỉ thay đổi giao diện hiển thị để dễ thao tác hơn, dữ liệu và quy trình lưu giữ nguyên như hiện tại.
+                        </p>
+                    </div>
                 </DialogHeader>
 
-                <div className="max-h-[calc(90vh-12rem)] overflow-y-auto overflow-x-visible px-1">
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">Thông tin cơ bản</h3>
+                <div className="max-h-[calc(92vh-14rem)] overflow-y-auto overflow-x-visible px-1">
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="space-y-6 py-1 [&_[data-slot=input]]:bg-white [&_[data-slot=input]]:text-amber-950 [&_[data-slot=textarea]]:bg-white [&_[data-slot=textarea]]:text-amber-950 [&_[data-slot=select-trigger]]:bg-white [&_[data-slot=select-trigger]]:text-amber-950 [&_[data-slot=select-content]]:bg-white [&_[data-slot=select-content]]:text-amber-950 dark:[&_[data-slot=input]]:bg-white dark:[&_[data-slot=textarea]]:bg-white dark:[&_[data-slot=select-trigger]]:bg-white dark:[&_[data-slot=select-content]]:bg-white"
+                    >
+                        <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr] items-start">
+                            <div className="space-y-4">
+                                <div className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+                                    <h3 className="font-semibold text-sm text-amber-900 border-b border-amber-200 pb-2">Thông tin cơ bản</h3>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Tên sản phẩm */}
-                                <div className="col-span-2 space-y-2">
-                                    <Label htmlFor="tenSanPham">
-                                        Tên sản phẩm <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Controller
-                                        name="tenSanPham"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input {...field} placeholder="VD: Áo sơ mi nam cổ tròn" disabled={isSubmitting} />
-                                        )}
-                                    />
-                                    {errors.tenSanPham && (
-                                        <p className="text-xs text-red-500">{errors.tenSanPham.message}</p>
-                                    )}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="col-span-2 space-y-2">
+                                            <Label htmlFor="tenSanPham">
+                                                Tên sản phẩm <span className="text-red-500">*</span>
+                                            </Label>
+                                            <Controller
+                                                name="tenSanPham"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input {...field} placeholder="VD: Áo sơ mi nam cổ tròn" disabled={isSubmitting} />
+                                                )}
+                                            />
+                                            {errors.tenSanPham && (
+                                                <p className="text-xs text-red-500">{errors.tenSanPham.message}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="maSanPham">Mã sản phẩm</Label>
+                                            <Controller
+                                                name="maSanPham"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input {...field} placeholder="Mã sản phẩm" disabled={isSubmitting} />
+                                                )}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="maVach">Mã vạch</Label>
+                                            <Controller
+                                                name="maVach"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input {...field} placeholder="Mã vạch" disabled={isSubmitting} />
+                                                )}
+                                            />
+                                        </div>
+
+                                        <Controller
+                                            name="danhMucId"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <input type="hidden" {...field} value={1} />
+                                            )}
+                                        />
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="trangThai">Trạng thái</Label>
+                                            <Controller
+                                                name="trangThai"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <div className="flex items-center gap-2 rounded-xl border border-amber-300 px-3 py-2 bg-amber-100">
+                                                        <span className="text-sm text-amber-900 font-medium">
+                                                            {PRODUCT_STATUS_LABELS[field.value] ?? "-"}
+                                                        </span>
+                                                        <input type="hidden" value={field.value ?? 1} readOnly {...field} />
+                                                    </div>
+                                                )}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="giaVonMacDinh">Giá vốn mặc định</Label>
+                                            <Controller
+                                                name="giaVonMacDinh"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder="0"
+                                                        disabled={isSubmitting}
+                                                    />
+                                                )}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="giaBanMacDinh">
+                                                Giá bán mặc định <span className="text-red-500">*</span>
+                                            </Label>
+                                            <Controller
+                                                name="giaBanMacDinh"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder="0"
+                                                        disabled={isSubmitting}
+                                                    />
+                                                )}
+                                            />
+                                            {errors.giaBanMacDinh && (
+                                                <p className="text-xs text-red-500">{errors.giaBanMacDinh.message}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="col-span-2 space-y-2">
+                                            <Label htmlFor="mucTonToiThieu">Mức tồn tối thiểu</Label>
+                                            <Controller
+                                                name="mucTonToiThieu"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder="0"
+                                                        disabled={isSubmitting}
+                                                    />
+                                                )}
+                                            />
+                                        </div>
+
+                                        <div className="col-span-2 space-y-2">
+                                            <Label htmlFor="moTa">Mô tả</Label>
+                                            <Controller
+                                                name="moTa"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Textarea
+                                                        {...field}
+                                                        placeholder="Nhập mô tả chi tiết về sản phẩm..."
+                                                        rows={3}
+                                                        disabled={isSubmitting}
+                                                    />
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Mã sản phẩm & Mã vạch */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="maSanPham">Mã sản phẩm</Label>
-                                    <Controller
-                                        name="maSanPham"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input {...field} placeholder="Mã sản phẩm" disabled={isSubmitting} />
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="maVach">Mã vạch</Label>
-                                    <Controller
-                                        name="maVach"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input {...field} placeholder="Mã vạch" disabled={isSubmitting} />
-                                        )}
-                                    />
-                                </div>
-
-                                {/* Hidden field for danhMucId - always set to 1 */}
-                                <Controller
-                                    name="danhMucId"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <input type="hidden" {...field} value={1} />
-                                    )}
-                                />
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="trangThai">Trạng thái</Label>
-                                    <Controller
-                                        name="trangThai"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <div className="flex items-center gap-2 rounded border border-gray-200 px-3 py-2 bg-gray-50">
-                                                <span className="text-sm text-gray-700">
-                                                    {PRODUCT_STATUS_LABELS[field.value] ?? "-"}
-                                                </span>
-                                                {/* Preserve value for submit while locking UI */}
-                                                <input type="hidden" value={field.value ?? 1} readOnly {...field} />
+                                <div className="space-y-4 rounded-2xl border border-amber-200 bg-white p-4">
+                                    <h3 className="font-semibold text-sm text-amber-900 border-b border-amber-200 pb-2">Ảnh sản phẩm</h3>
+                                    <div className="border-2 border-dashed border-amber-300 rounded-xl p-4 space-y-2 bg-amber-50/40">
+                                        {existingProductImages.length > 0 && (
+                                            <div className="mb-2">
+                                                <p className="text-xs text-gray-500 mb-2">Ảnh hiện tại:</p>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {existingProductImages.map((img, index) => (
+                                                        <div key={`existing-${index}`} className="relative">
+                                                            <img
+                                                                src={img.tepTin?.duongDan || img.urlAnh}
+                                                                alt="Product"
+                                                                className="w-full h-20 object-cover rounded"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveExistingProductImage(index)}
+                                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
-                                    />
-                                </div>
 
-                                {/* Giá mặc định */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="giaVonMacDinh">Giá vốn mặc định</Label>
-                                    <Controller
-                                        name="giaVonMacDinh"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input
-                                                {...field}
-                                                type="number"
-                                                min="0"
-                                                placeholder="0"
-                                                disabled={isSubmitting}
-                                            />
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="giaBanMacDinh">
-                                        Giá bán mặc định <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Controller
-                                        name="giaBanMacDinh"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input
-                                                {...field}
-                                                type="number"
-                                                min="0"
-                                                placeholder="0"
-                                                disabled={isSubmitting}
-                                            />
-                                        )}
-                                    />
-                                    {errors.giaBanMacDinh && (
-                                        <p className="text-xs text-red-500">{errors.giaBanMacDinh.message}</p>
-                                    )}
-                                </div>
-
-                                {/* Mức tồn tối thiểu */}
-                                <div className="col-span-2 space-y-2">
-                                    <Label htmlFor="mucTonToiThieu">Mức tồn tối thiểu</Label>
-                                    <Controller
-                                        name="mucTonToiThieu"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input
-                                                {...field}
-                                                type="number"
-                                                min="0"
-                                                placeholder="0"
-                                                disabled={isSubmitting}
-                                            />
-                                        )}
-                                    />
-                                </div>
-
-                                {/* Mô tả */}
-                                <div className="col-span-2 space-y-2">
-                                    <Label htmlFor="moTa">Mô tả</Label>
-                                    <Controller
-                                        name="moTa"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Textarea
-                                                {...field}
-                                                placeholder="Nhập mô tả chi tiết về sản phẩm..."
-                                                rows={3}
-                                                disabled={isSubmitting}
-                                            />
-                                        )}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Ảnh sản phẩm */}
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">Ảnh sản phẩm</h3>
-                            <div className="border-2 border-dashed rounded-lg p-4 space-y-2">
-                                {/* Existing images */}
-                                {existingProductImages.length > 0 && (
-                                    <div className="mb-2">
-                                        <p className="text-xs text-gray-500 mb-2">Ảnh hiện tại:</p>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {existingProductImages.map((img, index) => (
-                                                <div key={`existing-${index}`} className="relative">
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            onChange={handleProductImagesChange}
+                                            className="hidden"
+                                            id="product-images"
+                                            disabled={isSubmitting}
+                                        />
+                                        <label
+                                            htmlFor="product-images"
+                                            className="flex items-center justify-center gap-2 p-2 border border-amber-300 rounded-xl cursor-pointer hover:bg-amber-100 text-amber-900"
+                                        >
+                                            <Upload className="h-4 w-4" />
+                                            <span className="text-sm">Thêm ảnh mới</span>
+                                        </label>
+                                        <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                                            {productImages.map((file, index) => (
+                                                <div key={index} className="relative">
                                                     <img
-                                                        src={img.tepTin?.duongDan || img.urlAnh}
-                                                        alt="Product"
+                                                        src={URL.createObjectURL(file)}
+                                                        alt="Preview"
                                                         className="w-full h-20 object-cover rounded"
                                                     />
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleRemoveExistingProductImage(index)}
+                                                        onClick={() => handleRemoveProductImage(index)}
                                                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
                                                     >
                                                         <X className="h-3 w-3" />
@@ -544,58 +590,21 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                                             ))}
                                         </div>
                                     </div>
-                                )}
-
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    onChange={handleProductImagesChange}
-                                    className="hidden"
-                                    id="product-images"
-                                    disabled={isSubmitting}
-                                />
-                                <label
-                                    htmlFor="product-images"
-                                    className="flex items-center justify-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
-                                >
-                                    <Upload className="h-4 w-4" />
-                                    <span className="text-sm">Thêm ảnh mới</span>
-                                </label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {productImages.map((file, index) => (
-                                        <div key={index} className="relative">
-                                            <img
-                                                src={URL.createObjectURL(file)}
-                                                alt="Preview"
-                                                className="w-full h-20 object-cover rounded"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveProductImage(index)}
-                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-                                            >
-                                                <X className="h-3 w-3" />
-                                            </button>
-                                        </div>
-                                    ))}
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Biến thể sản phẩm */}
-                        <div className="space-y-4 overflow-visible">
-                            <div className="border-b pb-2">
-                                <h3 className="font-semibold text-sm text-gray-700">
+                            <div className="space-y-4 overflow-visible rounded-2xl border border-amber-200 bg-amber-50/70 p-4 xl:sticky xl:top-0">
+                            <div className="border-b border-amber-200 pb-2">
+                                <h3 className="font-semibold text-sm text-amber-900">
                                     Biến thể sản phẩm
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-1">Chỉ có thể cập nhật giá và trạng thái của biến thể</p>
+                                <p className="text-xs text-amber-800/80 mt-1">Chỉ có thể cập nhật giá và trạng thái của biến thể</p>
                             </div>
 
                             {fields.map((field, index) => (
-                                <div key={field.id} className="p-4 border rounded-lg space-y-3 bg-gray-50 relative overflow-visible">
+                                <div key={field.id} className="p-4 border border-amber-200 rounded-xl space-y-3 bg-white relative overflow-visible shadow-sm">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">Biến thể #{index + 1}</span>
+                                        <span className="text-sm font-semibold text-amber-900">Biến thể #{index + 1}</span>
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-3">
@@ -669,7 +678,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                                     {/* Variant Image */}
                                     <div className="space-y-2">
                                         <Label>Ảnh biến thể</Label>
-                                        <div className="border-2 border-dashed rounded-lg p-3 space-y-2">
+                                        <div className="border-2 border-dashed border-amber-300 rounded-lg p-3 space-y-2 bg-amber-50/40">
                                             {/* Existing variant image */}
                                             {existingVariantImages[index] && !variantImages[index] && (
                                                 <div className="mb-2">
@@ -701,7 +710,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                                             />
                                             <label
                                                 htmlFor={`variant-image-${index}`}
-                                                className="flex items-center justify-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
+                                                className="flex items-center justify-center gap-2 p-2 border border-amber-300 rounded-lg cursor-pointer hover:bg-amber-100 text-amber-900"
                                             >
                                                 <Upload className="h-4 w-4" />
                                                 <span className="text-sm">
@@ -738,24 +747,25 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                                     )}
                                 </div>
                             ))}
+                            </div>
                         </div>
                     </form>
                 </div>
 
-                <DialogFooter>
+                <DialogFooter className="border-t border-amber-200 pt-4 mt-3 bg-white dark:!bg-white">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={handleCancel}
                         disabled={isSubmitting}
-                        className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-11 px-8 rounded-xl font-medium"
+                        className="bg-white text-amber-900 border-amber-300 hover:bg-amber-50 h-11 px-8 rounded-xl font-medium"
                     >
                         Hủy
                     </Button>
                     <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+                        className="bg-amber-600 text-white border border-amber-600 hover:bg-amber-700 shadow-sm transition-all duration-200 h-11 px-8 rounded-xl font-medium"
                         onClick={handleSubmit(onSubmit)}
                     >
                         {isSubmitting ? (

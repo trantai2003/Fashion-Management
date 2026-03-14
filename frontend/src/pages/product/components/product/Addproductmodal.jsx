@@ -307,35 +307,50 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
 
     return (
         <Dialog open={isOpen} onOpenChange={handleCancel}>
-            <DialogContent className="sm:max-w-[900px] max-h-[90vh] bg-white text-gray-900 border border-gray-200 rounded-xl shadow-sm flex flex-col">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Package className="w-5 h-5 text-purple-600" />
-                        Thêm sản phẩm mới
-                    </DialogTitle>
-                    <DialogDescription>
-                        Nhập đầy đủ thông tin sản phẩm và biến thể. Ảnh sản phẩm và ảnh biến thể là bắt buộc.
+            <DialogContent className="sm:max-w-[1180px] max-h-[92vh] bg-white dark:!bg-white text-amber-950 dark:!text-amber-950 border border-amber-200 rounded-2xl shadow-xl flex flex-col">
+                <DialogHeader className="border-b border-amber-200 pb-4">
+                    <div className="flex items-center justify-between gap-3">
+                        <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-amber-950">
+                            <Package className="w-5 h-5 text-amber-700" />
+                            Thêm sản phẩm mới
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-sm text-amber-800/80">
+                        Điền thông tin theo từng nhóm để tạo sản phẩm mới đầy đủ và dễ kiểm soát hơn.
                     </DialogDescription>
-                    
-                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 flex items-start gap-2 mt-2">
-                        <Sparkles className="h-4 w-4 text-purple-600 mt-0.5" />
-                        <p className="text-xs text-purple-700">
-                            <b>Chế độ thông minh:</b> Mã sản phẩm và SKU sẽ được <b>tự động tạo</b> dựa trên Danh mục, Ngày tạo và Thuộc tính (Màu, Size, Chất liệu).
-                        </p>
+
+                    <div className="grid grid-cols-3 gap-2 mt-2 text-[11px] font-semibold">
+                        <div className="rounded-lg border border-amber-300 bg-amber-100 px-2 py-1 text-amber-900 text-center">Bước 1: Thông tin</div>
+                        <div className="rounded-lg border border-amber-300 bg-amber-100 px-2 py-1 text-amber-900 text-center">Bước 2: Ảnh sản phẩm</div>
+                        <div className="rounded-lg border border-amber-300 bg-amber-100 px-2 py-1 text-amber-900 text-center">Bước 3: Biến thể</div>
                     </div>
 
-                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-start gap-2 mt-2">
-                        <Info className="h-4 w-4 text-blue-600 mt-0.5" />
-                        <p className="text-xs text-blue-700">
-                            <b>Lưu ý hệ thống:</b> Không bắt buộc nhập Giá vốn và Giá bán khi tạo mới. Hệ thống sẽ tự động cập nhật giá từ các lô hàng thực tế trong kho. Trạng thái sẽ tự động chuyển thành <b>Hết hàng (0)</b> nếu hết tồn kho.
-                        </p>
+                    <div className="grid gap-2 lg:grid-cols-2 mt-2">
+                        <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 flex items-start gap-2">
+                            <Sparkles className="h-4 w-4 text-amber-700 mt-0.5" />
+                            <p className="text-xs text-amber-800 leading-relaxed">
+                                <b>Tự động sinh mã:</b> Mã sản phẩm và SKU sẽ được hệ thống tạo từ danh mục và thuộc tính biến thể.
+                            </p>
+                        </div>
+
+                        <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 flex items-start gap-2">
+                            <Info className="h-4 w-4 text-amber-700 mt-0.5" />
+                            <p className="text-xs text-amber-800 leading-relaxed">
+                                <b>Lưu ý giá:</b> Có thể để trống giá khi tạo, hệ thống sẽ cập nhật theo dữ liệu nhập kho thực tế.
+                            </p>
+                        </div>
                     </div>
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto overflow-x-visible px-1 min-h-0">
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">Thông tin cơ bản</h3>
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="space-y-6 py-1 [&_[data-slot=input]]:bg-white [&_[data-slot=input]]:text-amber-950 [&_[data-slot=textarea]]:bg-white [&_[data-slot=textarea]]:text-amber-950 [&_[data-slot=select-trigger]]:bg-white [&_[data-slot=select-trigger]]:text-amber-950 [&_[data-slot=select-content]]:bg-white [&_[data-slot=select-content]]:text-amber-950 dark:[&_[data-slot=input]]:bg-white dark:[&_[data-slot=textarea]]:bg-white dark:[&_[data-slot=select-trigger]]:bg-white dark:[&_[data-slot=select-content]]:bg-white"
+                    >
+                        <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr] items-start">
+                            <div className="space-y-4">
+                                <div className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+                            <h3 className="font-semibold text-sm text-amber-900 border-b border-amber-200 pb-2">Thông tin cơ bản</h3>
 
                             <div className="grid grid-cols-2 gap-4">
                                 {/* Tên sản phẩm */}
@@ -493,67 +508,70 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                         )}
                                     />
                                 </div>
-                            </div>
-                        </div>
+                                    </div>
+                                </div>
 
-                        {/* Ảnh sản phẩm - Required */}
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">
-                                Ảnh sản phẩm chính <span className="text-red-500">*</span>
-                            </h3>
-                            <div className="border-2 border-dashed rounded-lg p-4 space-y-2">
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    onChange={handleProductImagesChange}
-                                    className="hidden"
-                                    id="product-images"
-                                    disabled={isSubmitting}
-                                />
-                                <label
-                                    htmlFor="product-images"
-                                    className="flex items-center justify-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
-                                >
-                                    <Upload className="h-4 w-4" />
-                                    <span className="text-sm">Chọn ảnh sản phẩm</span>
-                                </label>
-                                {productImages.length === 0 && (
-                                    <p className="text-xs text-gray-500 text-center">Vui lòng thêm ít nhất 1 ảnh sản phẩm chính</p>
-                                )}
-                                <div className="grid grid-cols-4 gap-3">
-                                    {productImages.map((file, index) => (
-                                        <div key={index} className="relative">
-                                            <img
-                                                src={URL.createObjectURL(file)}
-                                                alt="Preview"
-                                                className="w-full h-24 object-cover rounded-lg border shadow-sm"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveProductImage(index)}
-                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                                            >
-                                                <X className="h-3 w-3" />
-                                            </button>
+                                {/* Ảnh sản phẩm - Required */}
+                                <div className="space-y-4 rounded-2xl border border-amber-200 bg-white p-4">
+                                    <h3 className="font-semibold text-sm text-amber-900 border-b border-amber-200 pb-2">
+                                        Ảnh sản phẩm chính <span className="text-red-500">*</span>
+                                    </h3>
+                                    <div className="border-2 border-dashed border-amber-300 rounded-xl p-4 space-y-2 bg-amber-50/40">
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            onChange={handleProductImagesChange}
+                                            className="hidden"
+                                            id="product-images"
+                                            disabled={isSubmitting}
+                                        />
+                                        <label
+                                            htmlFor="product-images"
+                                            className="flex items-center justify-center gap-2 p-2 border border-amber-300 rounded-xl cursor-pointer hover:bg-amber-100 text-amber-900"
+                                        >
+                                            <Upload className="h-4 w-4" />
+                                            <span className="text-sm">Chọn ảnh sản phẩm</span>
+                                        </label>
+                                        {productImages.length === 0 && (
+                                            <p className="text-xs text-gray-500 text-center">Vui lòng thêm ít nhất 1 ảnh sản phẩm chính</p>
+                                        )}
+                                        <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                                            {productImages.map((file, index) => (
+                                                <div key={index} className="relative">
+                                                    <img
+                                                        src={URL.createObjectURL(file)}
+                                                        alt="Preview"
+                                                        className="w-full h-24 object-cover rounded-lg border shadow-sm"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveProductImage(index)}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Biến thể sản phẩm */}
-                        <div className="space-y-4 overflow-visible">
-                            <div className="flex items-center justify-between border-b pb-2">
-                                <h3 className="font-semibold text-sm text-gray-700">
+                            {/* Biến thể sản phẩm */}
+                            <div className="space-y-4 overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/70 p-4 xl:sticky xl:top-0">
+                            <div className="flex items-center justify-between border-b border-amber-200 pb-2">
+                                <h3 className="font-semibold text-sm text-amber-900">
                                     Danh sách biến thể <span className="text-red-500">*</span>
                                 </h3>
+                                <span className="text-[11px] text-amber-700">Cuộn để xem thêm</span>
                             </div>
 
+                            <div className="max-h-[55vh] xl:max-h-[calc(92vh-25rem)] overflow-y-auto pr-1 space-y-3">
                             {fields.map((field, index) => (
-                                <div key={field.id} className="p-4 border border-gray-200 rounded-xl space-y-3 bg-gray-50 relative overflow-visible shadow-sm">
+                                <div key={field.id} className="p-4 border border-amber-200 rounded-xl space-y-3 bg-white relative overflow-visible shadow-sm">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm font-bold text-slate-700">Biến thể #{index + 1}</span>
+                                        <span className="text-sm font-semibold text-amber-900">Biến thể #{index + 1}</span>
                                         {fields.length > 1 && (
                                             <Button
                                                 type="button"
@@ -738,7 +756,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                     <div className="space-y-2 mt-4 pt-4 border-t">
                                         <Label>Ảnh biến thể <span className="text-red-500">*</span></Label>
                                         <div className="flex items-center gap-4">
-                                            <div className="flex-1 border-2 border-dashed rounded-lg p-2 bg-white">
+                                            <div className="flex-1 border-2 border-dashed border-amber-300 rounded-lg p-2 bg-white">
                                                 <input
                                                     type="file"
                                                     accept="image/*"
@@ -749,7 +767,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                 />
                                                 <label
                                                     htmlFor={`variant-image-${index}`}
-                                                    className="flex items-center justify-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50 h-full"
+                                                    className="flex items-center justify-center gap-2 p-2 border border-amber-300 rounded-lg cursor-pointer hover:bg-amber-100 h-full text-amber-900"
                                                 >
                                                     <Upload className="h-4 w-4" />
                                                     <span className="text-sm">Chọn ảnh biến thể</span>
@@ -780,11 +798,13 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                     </div>
                                 </div>
                             ))}
+                            </div>
+                            </div>
                         </div>
                     </form>
                 </div>
 
-                <DialogFooter className="mt-4 border-t pt-4 bg-white shrink-0">
+                <DialogFooter className="mt-4 border-t border-amber-200 pt-4 bg-white dark:!bg-white shrink-0">
                     <div className="w-full flex items-center justify-between gap-3">
                         <Button
                             type="button"
@@ -801,7 +821,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                 trangThai: 1,
                             })}
                             disabled={isSubmitting}
-                            className="flex items-center gap-1 border-dashed border-2 hover:bg-gray-50"
+                            className="flex items-center gap-1 border-dashed border-2 border-amber-300 hover:bg-amber-100 text-amber-900"
                         >
                             <Plus className="h-4 w-4" />
                             Thêm biến thể khác
@@ -812,14 +832,14 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                 variant="outline"
                                 onClick={handleCancel}
                                 disabled={isSubmitting}
-                                className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-10 px-6 rounded-lg font-medium"
+                                className="bg-white text-amber-900 border-amber-300 hover:bg-amber-50 h-10 px-6 rounded-xl font-medium"
                             >
                                 Hủy
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="bg-slate-900 text-white border border-slate-900 hover:bg-slate-800 shadow-sm transition-all duration-200 h-10 px-6 rounded-lg font-medium flex items-center"
+                                className="bg-amber-600 text-white border border-amber-600 hover:bg-amber-700 shadow-sm transition-all duration-200 h-10 px-6 rounded-xl font-medium flex items-center"
                                 onClick={handleSubmit(onSubmit)}
                             >
                                 {isSubmitting ? (
