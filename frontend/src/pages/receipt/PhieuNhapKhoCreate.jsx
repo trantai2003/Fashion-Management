@@ -53,44 +53,62 @@ export default function PhieuNhapKhoCreate() {
             const [poRes, transferRes3, transferRes4, allReceiptsRes] = await Promise.all([
                 purchaseOrderService.filter({
                     page: 0, size: 1000,
-                    filters: [{ fieldName: "trangThai", operator: "EQUALS", value: 4 }], 
+                    filters: [{ fieldName: "trangThai", operator: "EQUALS", value: 4 }],
                     sorts: [{ fieldName: "id", direction: "DESC" }]
                 }).catch(() => ({ content: [] })),
-                
+
                 phieuChuyenKhoService.filter({
                     page: 0, size: 1000,
-                    filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 3 }], 
+                    filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 3 }],
                     sorts: [{ fieldName: "ngayCapNhat", direction: "DESC" }]
                 }).catch(() => ({ content: [] })),
 
                 phieuChuyenKhoService.filter({
                     page: 0, size: 1000,
-                    filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 4 }], 
+                    filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 4 }],
                     sorts: [{ fieldName: "ngayCapNhat", direction: "DESC" }]
                 }).catch(() => ({ content: [] })),
-                
+
                 // Lấy TẤT CẢ phiếu nhập kho (cả nháp, cả đã nhập xong)
                 phieuNhapKhoService.filter({
                     page: 0, size: 2000, // Lấy số lượng lớn để bao quát hết dữ liệu cũ
                 }).catch(() => ({ content: [] }))
             ]);
 
-            setPoList(poRes.data?.content || poRes.content || []);
+            // --- LOGIC LỌC PO ---
+            // --- LOGIC LỌC PO ---
+            const rawPoList = poRes.data?.content || poRes.content || [];
+
+            const validPoList = rawPoList.filter(po => {
+                if (po.trangThai !== 4) return false;
+                if (po.chiTietDonMuaHangs && Array.isArray(po.chiTietDonMuaHangs)) {
+                    return po.chiTietDonMuaHangs.some(ct => (ct.soLuongDaNhan || 0) < (ct.soLuongDat || 0));
+                }
+                const tongDat = po.tongSoLuongDat ?? po.soLuongDat;
+                const tongNhan = po.tongSoLuongDaNhan ?? po.soLuongDaNhan ?? po.tongSoLuongNhan;
+
+                if (tongDat !== undefined && tongNhan !== undefined) {
+                    return tongNhan < tongDat;
+                }
+                return true;
+            });
+
+            setPoList(validPoList);
 
             // Gộp các phiếu chuyển đang vận chuyển và bị hủy
             const rawTransfers = [
                 ...(transferRes3.content || transferRes3.data?.content || []),
                 ...(transferRes4.content || transferRes4.data?.content || [])
             ];
-            
+
             const validTransfers = rawTransfers.filter(t => t.trangThai === 3 || t.trangThai === 4);
 
             // --- LOGIC LOẠI TRỪ TRIỆT ĐỂ ---
             const allReceipts = allReceiptsRes.content || allReceiptsRes.data?.content || [];
-            
+
             // 1. Tạo danh sách các ID gốc đã được sử dụng (dùng Set để tăng tốc độ tìm kiếm)
             const usedTransferIds = new Set(allReceipts.map(r => r.phieuChuyenKhoGocId).filter(Boolean));
-            
+
             // 2. Tạo danh sách các Mã chứng từ gốc đã được sử dụng (quan trọng cho đơn Hoàn trả)
             const usedTransferCodes = new Set(allReceipts.map(r => {
                 // Lấy soPhieuChuyenKhoGoc hoặc bóc từ ghi chú nếu soPhieuChuyenKhoGoc bị null
@@ -138,7 +156,7 @@ export default function PhieuNhapKhoCreate() {
                 ...item,
                 soLuongNhapTay: (item.soLuongDat || 0) - (item.soLuongDaNhan || 0)
             }));
-            
+
             setSelectedPO(data);
             setForm(prev => ({
                 ...prev,
@@ -168,9 +186,9 @@ export default function PhieuNhapKhoCreate() {
                 ...prev,
                 transferId: data.id,
                 // Nếu trạng thái 4 (Hủy) -> Nhập lại Kho Xuất (khoA). Ngược lại Nhập Kho Đích (khoB)
-                khoId: data.trangThai === 4 ? data.khoXuatId : data.khoNhapId, 
-                ghiChu: data.trangThai === 4 
-                    ? `Nhập hoàn trả (RET) từ phiếu chuyển bị hủy: ${data.soPhieuXuat}` 
+                khoId: data.trangThai === 4 ? data.khoXuatId : data.khoNhapId,
+                ghiChu: data.trangThai === 4
+                    ? `Nhập hoàn trả (RET) từ phiếu chuyển bị hủy: ${data.soPhieuXuat}`
                     : `Nhập kho thủ công từ phiếu chuyển: ${data.soPhieuXuat}`
             }));
         } catch (e) {
@@ -298,7 +316,7 @@ export default function PhieuNhapKhoCreate() {
                     {/* LEFT PANEL */}
                     <div className="lg:col-span-1 space-y-6">
                         <section className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-5">
-                            
+
                             {/* NGUỒN CHỨNG TỪ GỐC */}
                             {importSource === "PO" ? (
                                 <div>
@@ -388,7 +406,7 @@ export default function PhieuNhapKhoCreate() {
                                     value={form.ghiChu}
                                     onChange={(e) => setForm({ ...form, ghiChu: e.target.value })}
                                     rows={3}
-                                    readOnly={importSource === "TRANSFER"} 
+                                    readOnly={importSource === "TRANSFER"}
                                     className={`mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 transition-all outline-none resize-none text-sm
                                         ${importSource === "TRANSFER" ? "bg-gray-100 text-gray-500" : "bg-gray-50"}`}
                                 />
@@ -398,7 +416,7 @@ export default function PhieuNhapKhoCreate() {
 
                     {/* RIGHT PANEL - BẢNG PREVIEW DỮ LIỆU */}
                     <div className="lg:col-span-2">
-                        
+
                         {/* HIỂN THỊ NẾU CHỌN PO */}
                         {importSource === "PO" && selectedPO && (
                             <section className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
