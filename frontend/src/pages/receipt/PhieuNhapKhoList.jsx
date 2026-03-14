@@ -1,36 +1,180 @@
 import { useEffect, useState, useMemo } from "react";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import {
+import { 
     Loader2, Search, RefreshCcw, Package, Plus,
     ChevronDown, ChevronLeft, ChevronRight, Check, Filter,
     FileText, CheckCircle2, XCircle, ClipboardList,
+    ArrowUpRight, LayoutGrid, Warehouse
 } from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
-const STATUS_MAP = {
-    0: { label: "Nháp", className: "border-amber-200 bg-amber-50 text-amber-700", dot: "bg-amber-500" },
-    1: { label: "Chờ duyệt", className: "border-blue-200 bg-blue-50 text-blue-700", dot: "bg-blue-500" },
-    2: { label: "Đã duyệt", className: "border-indigo-200 bg-indigo-50 text-indigo-700", dot: "bg-indigo-500" },
-    3: { label: "Đã nhập kho", className: "border-green-200 bg-green-50 text-green-700", dot: "bg-green-500" },
-    4: { label: "Đã hủy", className: "border-red-200 bg-red-50 text-red-600", dot: "bg-red-500" },
+/* ══════════════════════════════════════════════════════
+   STYLES — Light Ivory / Gold Luxury
+   (Sync with Warehouse / Homepage / Login / Detail)
+══════════════════════════════════════════════════════ */
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+.wh-root {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 55%, #ede9de 100%);
+  padding: 28px 28px 56px;
+  position: relative;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.wh-grid {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.wh-orb-1 {
+  position: fixed; width: 600px; height: 600px; border-radius: 50%;
+  background: rgba(184,134,11,0.06); filter: blur(120px);
+  top: -200px; right: -150px; pointer-events: none; z-index: 0;
+}
+
+.wh-inner {
+  position: relative; z-index: 1;
+  max-width: 1400px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+/* ── Header ── */
+.wh-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid rgba(184,134,11,0.15);
+}
+.wh-title-wrap { display: flex; flex-direction: column; gap: 3px; }
+.wh-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; color: rgba(184,134,11,0.65);
+  text-transform: uppercase;
+}
+.wh-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 900; color: #1a1612;
+  letter-spacing: -0.5px; line-height: 1.1;
+}
+.wh-title span { color: #b8860b; }
+
+/* ── Stats ── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;
+}
+.stat-card {
+  background: #fff; border: 1px solid rgba(184,134,11,0.12);
+  border-radius: 18px; padding: 22px;
+  box-shadow: 0 4px 15px rgba(100,80,30,0.05);
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(100,80,30,0.1); border-color: #b8860b; }
+.stat-lbl { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; color: #a89f92; letter-spacing: 0.1em; }
+.stat-val { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 900; color: #1a1612; margin-top: 4px; }
+.stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+
+/* ── Filter Card ── */
+.filter-card {
+  background: #fff; border-radius: 20px; border: 1px solid rgba(184,134,11,0.15);
+  padding: 24px; box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+}
+.filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+.inp-wrap { display: flex; flex-direction: column; gap: 7px; }
+.inp-lbl { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600; text-transform: uppercase; color: #b8860b; }
+.inp-field {
+  height: 44px; padding: 0 16px; border-radius: 11px;
+  background: #faf8f3; border: 1.5px solid rgba(184,134,11,0.1);
+  font-size: 13px; color: #1a1612; transition: all 0.2s;
+}
+.inp-field:focus { outline: none; border-color: #b8860b; background: #fff; box-shadow: 0 0 0 3px rgba(184,134,11,0.1); }
+
+/* ── Table Container ── */
+.wh-tbl-card {
+  background: #fff; border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+}
+.wh-tbl-card::before {
+  content: ''; display: block; height: 2px;
+  background: linear-gradient(90deg, transparent, #b8860b, transparent);
+}
+.wh-tbl { width: 100%; border-collapse: collapse; text-align: left; }
+.wh-thead tr { background: #faf8f3; border-bottom: 2px solid rgba(184,134,11,0.12); }
+.wh-th {
+  height: 52px; padding: 0 20px;
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: rgba(184,134,11,0.6);
+}
+.wh-tbody tr { border-bottom: 1px solid rgba(184,134,11,0.07); transition: all 0.2s; cursor: pointer; }
+.wh-tbody tr:hover { background: rgba(184,134,11,0.045); }
+.wh-td { padding: 18px 20px; font-size: 14px; color: #3d3529; }
+
+.id-badge {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: #b8860b; font-weight: 700;
+  background: rgba(184,134,11,0.08); padding: 4px 10px; border-radius: 8px;
+}
+
+/* ── Pagination ── */
+.pag-card {
+  background: #fff; border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 16px; padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.pag-btn {
+  height: 36px; padding: 0 14px; border-radius: 9px;
+  background: #fff; border: 1px solid rgba(184,134,11,0.15);
+  color: #7a6e5f; font-size: 12px; font-weight: 600; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+}
+.pag-btn:hover:not(:disabled) { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
+.pag-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.pag-btn.active { background: #1a1612; color: #fff; border-color: #1a1612; }
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.03em;
+}
+.badge.green { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2); }
+.badge.amber { background: rgba(184,134,11,0.1); color: #b8860b; border: 1px solid rgba(184,134,11,0.2); }
+.badge.blue  { background: rgba(37,99,235,0.08); color: #2563eb; border: 1px solid rgba(37,99,235,0.2); }
+.badge.red   { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
+.badge.slate { background: rgba(122,110,95,0.08); color: #7a6e5f; border: 1px solid rgba(122,110,95,0.2); }
+
+/* ── Buttons ── */
+.btn-gold {
+  height: 44px; padding: 0 22px; border-radius: 11px;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  border: none; color: #fff;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  box-shadow: 0 4px 18px rgba(184,134,11,0.35); transition: all 0.2s;
+}
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(184,134,11,0.48); }
+
+.btn-white {
+  height: 44px; padding: 0 22px; border-radius: 11px;
+  background: #fff; border: 1.5px solid rgba(184,134,11,0.2);
+  color: #7a6e5f; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;
+}
+.btn-white:hover { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
+`;
+
+const STATUS_UI = {
+    0: { label: "Nháp", cls: "slate" },
+    1: { label: "Chờ duyệt", cls: "amber" },
+    2: { label: "Đã duyệt", cls: "blue" },
+    3: { label: "Đã nhập kho", cls: "green" },
+    4: { label: "Đã hủy", cls: "red" },
 };
-
-const STATUS_OPTIONS = [
-    { value: "", label: "Tất cả trạng thái" },
-    { value: "0", label: "Nháp" },
-    { value: "3", label: "Đã nhập kho" },
-    { value: "4", label: "Đã hủy" },
-];
 
 export default function PhieuNhapKhoList() {
     const navigate = useNavigate();
@@ -102,178 +246,232 @@ export default function PhieuNhapKhoList() {
     }), [data]);
 
     return (
-        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-            <div className="space-y-6 w-full">
+        <>
+            <style>{STYLES}</style>
+            <div className="wh-root">
+                <div className="wh-grid" />
+                <div className="wh-orb-1" />
 
-                {/* ══ STATS ═══════════════════════════════════════════════════════ */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div><p className="text-sm font-medium text-gray-600">Tổng phiếu nhập</p><p className="text-2xl font-bold text-gray-900 mt-1">{total}</p></div>
-                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center"><Package className="h-6 w-6 text-blue-600" /></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-amber-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div><p className="text-sm font-medium text-gray-600">Nháp</p><p className="text-2xl font-bold text-gray-900 mt-1">{stats.nhap}</p></div>
-                                <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center"><FileText className="h-6 w-6 text-amber-600" /></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div><p className="text-sm font-medium text-gray-600">Đã nhập kho</p><p className="text-2xl font-bold text-gray-900 mt-1">{stats.daHoanTat}</p></div>
-                                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center"><CheckCircle2 className="h-6 w-6 text-green-600" /></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-red-50 to-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div><p className="text-sm font-medium text-gray-600">Đã hủy</p><p className="text-2xl font-bold text-gray-900 mt-1">{stats.daHuy}</p></div>
-                                <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center"><XCircle className="h-6 w-6 text-red-500" /></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                <div className="wh-inner">
+                    {/* ── Header ── */}
+                    <div className="wh-header">
+                        <div className="wh-title-wrap">
+                            <span className="wh-eyebrow">Inventory Management</span>
+                            <h1 className="wh-title">Danh sách <span>phiếu nhập</span></h1>
+                        </div>
+                        <button onClick={() => navigate("/goods-receipts/create")} className="btn-gold">
+                            <Plus size={16} strokeWidth={3} /> Tạo Phiếu Nhập Kho
+                        </button>
+                    </div>
 
-                {/* ══ BỘ LỌC TÌM KIẾM ════════════════════════════════════════════ */}
-                <Card className="border-0 shadow-lg bg-white">
-                    <CardHeader><CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900"><Filter className="h-5 w-5 text-purple-600" />Bộ lọc tìm kiếm</CardTitle></CardHeader>
-                    <CardContent className="pt-0">
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Số phiếu / PO</Label>
-                                <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" /><Input placeholder="Nhập số phiếu hoặc PO" className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.keyword} onChange={(e) => setFilters((p) => ({ ...p, keyword: e.target.value, page: 0 }))} disabled={loading} /></div>
+                    {/* ── Stats ── */}
+                    <div className="stats-grid">
+                        <StatCard icon={Package} label="Tổng phiếu" value={total} color="#b8860b" />
+                        <StatCard icon={FileText} label="Bản nháp" value={stats.nhap} color="#7a6e5f" />
+                        <StatCard icon={CheckCircle2} label="Đã nhập kho" value={stats.daHoanTat} color="#16a34a" />
+                        <StatCard icon={XCircle} label="Đã hủy" value={stats.daHuy} color="#dc2626" />
+                    </div>
+
+                    {/* ── Filters ── */}
+                    <div className="filter-card">
+                        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-[#faf8f3]">
+                            <Filter size={16} className="text-[#b8860b]" />
+                            <span className="wh-eyebrow font-bold text-[#1a1612]">Bộ lọc nâng cao</span>
+                        </div>
+                        <div className="filter-grid">
+                            <div className="inp-wrap">
+                                <label className="inp-lbl">Số phiếu / PO</label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-3.5 h-4 w-4 text-[#a89f92]" />
+                                    <input 
+                                        placeholder="Tìm mã phiếu..." 
+                                        className="inp-field w-full pl-10"
+                                        value={filters.keyword}
+                                        onChange={(e) => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Nhà cung cấp</Label>
-                                <Input placeholder="Tên nhà cung cấp" className="border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.nhaCungCap} onChange={(e) => setFilters((p) => ({ ...p, nhaCungCap: e.target.value, page: 0 }))} disabled={loading} />
+                            <div className="inp-wrap">
+                                <label className="inp-lbl">Nhà cung cấp</label>
+                                <input 
+                                    placeholder="Tên đối tác..." 
+                                    className="inp-field"
+                                    value={filters.nhaCungCap}
+                                    onChange={(e) => setFilters(p => ({ ...p, nhaCungCap: e.target.value, page: 0 }))}
+                                />
                             </div>
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Trạng thái</Label>
-                                <DropdownMenu modal={false}>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="w-full justify-between bg-white border-gray-200 hover:bg-gray-50 font-normal">
-                                            <span className="truncate">{STATUS_OPTIONS.find((s) => s.value === filters.trangThai)?.label || "Tất cả trạng thái"}</span>
-                                            <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
-                                        {STATUS_OPTIONS.map((s) => (<DropdownMenuItem key={s.value} onClick={() => setFilters((p) => ({ ...p, trangThai: s.value, page: 0 }))} className="flex items-center justify-between cursor-pointer hover:bg-purple-50">{s.label}{filters.trangThai === s.value && <Check className="h-4 w-4" />}</DropdownMenuItem>))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                            <div className="inp-wrap">
+                                <label className="inp-lbl">Trạng thái</label>
+                                <select 
+                                    className="inp-field"
+                                    value={filters.trangThai}
+                                    onChange={(e) => setFilters(p => ({ ...p, trangThai: e.target.value, page: 0 }))}
+                                >
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="0">Nháp</option>
+                                    <option value="1">Chờ duyệt</option>
+                                    <option value="3">Đã nhập kho</option>
+                                    <option value="4">Đã hủy</option>
+                                </select>
                             </div>
-                            <div className="space-y-2">
-                                <Label className="text-gray-700 font-medium">Ngày nhập</Label>
-                                <Input type="date" value={filters.ngayNhap} onChange={(e) => setFilters((p) => ({ ...p, ngayNhap: e.target.value, page: 0 }))} className="border-gray-200 focus:border-purple-500 focus:ring-purple-500" disabled={loading} />
+                            <div className="inp-wrap">
+                                <label className="inp-lbl">Ngày nhập</label>
+                                <input 
+                                    type="date"
+                                    className="inp-field"
+                                    value={filters.ngayNhap}
+                                    onChange={(e) => setFilters(p => ({ ...p, ngayNhap: e.target.value, page: 0 }))}
+                                />
                             </div>
                             <div className="flex items-end">
-                                <Button variant="outline" onClick={handleReset} disabled={loading} className="flex items-center gap-2 w-full transition-all duration-300 hover:bg-slate-900 hover:text-white border-gray-300"><RefreshCcw className="h-4 w-4" />Đặt lại</Button>
+                                <button onClick={handleReset} className="btn-white w-full">
+                                    <RefreshCcw size={14} /> Đặt lại
+                                </button>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* ══ ACTION BUTTONS ══════════════════════════════════════════════ */}
-                <div className="flex items-center justify-end gap-3">
-                    <Link to="/goods-receipts/create">
-                        <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"><Plus className="w-4 h-4 mr-2" />Tạo Phiếu Nhập Kho</Button>
-                    </Link>
-                </div>
-
-                {/* ══ TABLE / LOADING / EMPTY ═════════════════════════════════════ */}
-                {loading ? (
-                    <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-purple-600" /><span className="ml-3 text-gray-600">Đang tải danh sách phiếu nhập kho...</span></div>
-                ) : data.length === 0 ? (
-                    <div className="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80">
-                        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100"><ClipboardList className="h-10 w-10 text-slate-400" /></div>
-                            <h3 className="text-lg font-semibold text-slate-800">Không tìm thấy phiếu nhập kho</h3>
-                            <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">Hiện tại chưa có dữ liệu phù hợp. Hãy thử thay đổi bộ lọc hoặc từ khoá tìm kiếm.</p>
                         </div>
                     </div>
-                ) : (
-                    <>
-                        <div className="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                            <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
-                                <table className="w-full text-sm">
-                                    <thead className="sticky top-0 z-10">
-                                        <tr className="border-b border-slate-200 bg-slate-50">
-                                            <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-14">STT</th>
-                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Số phiếu</th>
-                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Đơn mua</th>
-                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Nhà cung cấp</th>
-                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Kho</th>
-                                            <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Ngày tạo</th>
-                                            <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Ngày nhập</th>
-                                            <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">Trạng thái</th>
+
+                    {/* ── Table ── */}
+                    <div className="wh-tbl-card">
+                        <div className="p-5 border-b border-[#faf8f3] bg-[#faf8f3]/50 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <LayoutGrid size={14} className="text-[#b8860b]" />
+                                <span className="wh-eyebrow font-bold text-[#1a1612]">Dữ liệu phiếu nhập</span>
+                            </div>
+                            {loading && <Loader2 size={16} className="animate-spin text-[#b8860b]" />}
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="wh-tbl">
+                                <thead className="wh-thead">
+                                    <tr>
+                                        <th className="wh-th text-center w-20">No.</th>
+                                        <th className="wh-th">Mã Phiếu</th>
+                                        <th className="wh-th">Nhà Cung Cấp / Kho</th>
+                                        <th className="wh-th text-center">Ngày tạo</th>
+                                        <th className="wh-th text-center">Trạng thái</th>
+                                        <th className="wh-th text-right">Chi tiết</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="wh-tbody">
+                                    {data.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="wh-td text-center py-20 bg-white">
+                                                <div className="flex flex-col items-center gap-3 opacity-30">
+                                                    <ClipboardList size={48} />
+                                                    <p className="font-mono text-xs uppercase tracking-widest">Không tìm thấy dữ liệu</p>
+                                                </div>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {data.map((item, index) => (
-                                            <tr key={item.id} onClick={() => navigate(`/goods-receipts/${item.id}`)} className="cursor-pointer transition-colors duration-150 hover:bg-violet-50/50">
-                                                <td className="px-4 py-3.5 align-middle text-center w-14"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">{filters.page * filters.size + index + 1}</span></td>
-                                                <td className="px-4 py-3.5 align-middle font-semibold text-violet-600">{item.soPhieuNhap}</td>
-                                                <td className="px-4 py-3.5 align-middle text-slate-600">{item.soDonMua || "-"}</td>
-                                                <td className="px-4 py-3.5 align-middle">{item.tenNhaCungCap}</td>
-                                                <td className="px-4 py-3.5 align-middle">{item.tenKho}</td>
-                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</span></td>
-                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{item.ngayNhap ? new Date(item.ngayNhap).toLocaleDateString("vi-VN") : "Chưa nhập kho"}</span></td>
-                                                <td className="px-4 py-3.5 align-middle text-center">
-                                                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${STATUS_MAP[item.trangThai]?.className}`}>
-                                                        <span className={`h-1.5 w-1.5 rounded-full ${STATUS_MAP[item.trangThai]?.dot}`} />
-                                                        {STATUS_MAP[item.trangThai]?.label}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                    ) : (
+                                        data.map((item, index) => {
+                                            const st = STATUS_UI[item.trangThai] || { label: "---", cls: "slate" };
+                                            return (
+                                                <tr key={item.id} onClick={() => navigate(`/goods-receipts/${item.id}`)}>
+                                                    <td className="wh-td text-center">
+                                                        <span className="font-mono text-[11px] opacity-40">{(filters.page * filters.size) + index + 1}</span>
+                                                    </td>
+                                                    <td className="wh-td">
+                                                        <div className="flex flex-col gap-1">
+                                                            <span className="id-badge w-fit">#{item.soPhieuNhap}</span>
+                                                            {item.soDonMua && <span className="text-[10px] text-[#a89f92] font-mono">PO: {item.soDonMua}</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td className="wh-td">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-[#1a1612] truncate max-w-[240px]">{item.tenNhaCungCap || "Nội bộ"}</span>
+                                                            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[#7a6e5f]">
+                                                                <Warehouse size={10} className="text-[#b8860b]" /> {item.tenKho}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="wh-td text-center">
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="font-semibold">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</span>
+                                                            {item.ngayNhap && <span className="text-[10px] text-[#16a34a] font-bold">Imported: {new Date(item.ngayNhap).toLocaleDateString("vi-VN")}</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td className="wh-td text-center">
+                                                        <span className={`badge ${st.cls}`}>{st.label}</span>
+                                                    </td>
+                                                    <td className="wh-td text-right">
+                                                        <div className="flex justify-end pr-2">
+                                                            <div className="w-8 h-8 rounded-full bg-[#faf8f3] flex items-center justify-center text-[#b8860b] hover:bg-[#b8860b] hover:text-white transition-all">
+                                                                <ArrowUpRight size={14} />
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* ── Pagination ── */}
+                    {data.length > 0 && (
+                        <div className="pag-card">
+                            <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[11px] font-bold text-[#a89f92] uppercase">Hiển thị</span>
+                                    <select 
+                                        className="h-8 px-2 border border-[#ede9de] rounded-lg text-xs bg-[#faf8f3]"
+                                        value={filters.size}
+                                        onChange={(e) => setFilters(p => ({ ...p, size: Number(e.target.value), page: 0 }))}
+                                    >
+                                        {[10, 20, 50, 100].map(s => <option key={s} value={s}>{s} dòng</option>)}
+                                    </select>
+                                </div>
+                                <span className="text-xs text-[#7a6e5f]">
+                                    Showing <strong className="text-[#1a1612]">{(filters.page * filters.size) + 1}</strong> - <strong className="text-[#1a1612]">{Math.min((filters.page + 1) * filters.size, total)}</strong> of <strong className="text-[#b8860b]">{total}</strong>
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    disabled={filters.page === 0}
+                                    onClick={() => setFilters(p => ({ ...p, page: p.page - 1 }))}
+                                    className="pag-btn"
+                                >
+                                    <ChevronLeft size={14} /> Prev
+                                </button>
+                                <div className="flex items-center gap-1">
+                                    {[...Array(totalPages)].map((_, i) => (
+                                        <button 
+                                            key={i} 
+                                            onClick={() => setFilters(p => ({ ...p, page: i }))}
+                                            className={`w-9 h-9 rounded-lg font-mono text-xs font-bold transition-all ${filters.page === i ? 'bg-[#1a1612] text-white' : 'hover:bg-[#faf8f3] text-[#7a6e5f]'}`}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button 
+                                    disabled={filters.page >= totalPages - 1}
+                                    onClick={() => setFilters(p => ({ ...p, page: p.page + 1 }))}
+                                    className="pag-btn"
+                                >
+                                    Next <ChevronRight size={14} />
+                                </button>
                             </div>
                         </div>
+                    )}
+                </div>
+            </div>
+        </>
+    );
+}
 
-                        {/* ── Pagination ── */}
-                        <Card className="border-0 shadow-md bg-white">
-                            <CardContent className="p-4">
-                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                    <div className="flex items-center gap-2">
-                                        <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild><Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">{filters.size} dòng<ChevronDown className="h-4 w-4 opacity-50" /></Button></DropdownMenuTrigger>
-                                            <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
-                                                {[5, 10, 20, 50, 100].map(size => (<DropdownMenuItem key={size} onClick={() => setFilters((p) => ({ ...p, size, page: 0 }))} className="cursor-pointer">{size} dòng</DropdownMenuItem>))}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                        Hiển thị <span className="font-semibold text-gray-900">{filters.page * filters.size + 1}</span> - <span className="font-semibold text-gray-900">{Math.min((filters.page + 1) * filters.size, total)}</span> trong tổng số <span className="font-semibold text-purple-600">{total}</span> kết quả
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm" onClick={() => setFilters((p) => ({ ...p, page: p.page - 1 }))} disabled={filters.page === 0} className="gap-1 disabled:opacity-50"><ChevronLeft className="h-4 w-4" /> Trước</Button>
-                                        <div className="hidden sm:flex gap-1">
-                                            {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                                                let pageNum;
-                                                if (totalPages <= 5) pageNum = idx;
-                                                else if (filters.page < 3) pageNum = idx;
-                                                else if (filters.page > totalPages - 4) pageNum = totalPages - 5 + idx;
-                                                else pageNum = filters.page - 2 + idx;
-                                                return (<Button key={idx} variant={filters.page === pageNum ? "default" : "outline"} size="sm" onClick={() => setFilters((p) => ({ ...p, page: pageNum }))} className={filters.page === pageNum ? "bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm" : "border-gray-200"}>{pageNum + 1}</Button>);
-                                            })}
-                                        </div>
-                                        <Button variant="outline" size="sm" onClick={() => setFilters((p) => ({ ...p, page: p.page + 1 }))} disabled={filters.page + 1 >= totalPages} className="gap-1 disabled:opacity-50">Sau <ChevronRight className="h-4 w-4" /></Button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </>
-                )}
+function StatCard({ icon: Icon, label, value, color }) {
+    return (
+        <div className="stat-card">
+            <div>
+                <p className="stat-lbl">{label}</p>
+                <p className="stat-val">{value}</p>
+            </div>
+            <div className="stat-icon" style={{ backgroundColor: `${color}12` }}>
+                <Icon size={20} style={{ color }} />
             </div>
         </div>
     );
 }
-
