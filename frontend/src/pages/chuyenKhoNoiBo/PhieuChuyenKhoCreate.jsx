@@ -408,7 +408,7 @@ export default function PhieuChuyenKhoCreate() {
             <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
                 <DialogContent
                     className="max-w-2xl p-0 overflow-hidden shadow-2xl rounded-2xl border-none"
-                    style={{ background: "#ffffff", color: "#0f172a", outline: "none" }}
+                    style={{ background: "#faf7f0", color: "#0f172a", outline: "none" }}
                 >
                     {/* Panel header */}
                     <div className="flex items-center gap-3 px-6 pt-6 pb-4">
@@ -437,7 +437,7 @@ export default function PhieuChuyenKhoCreate() {
                     </div>
 
                     {/* Danh sách sản phẩm */}
-                    <div className="max-h-[400px] overflow-y-auto" style={{ background: "#ffffff" }}>
+                    <div className="max-h-[400px] overflow-y-auto" style={{ background: "#faf7f0" }}>
                         {filteredProducts.length === 0 ? (
                             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
                                 <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full" style={{ background: "#f1f5f9" }}>
@@ -447,18 +447,18 @@ export default function PhieuChuyenKhoCreate() {
                                 <p className="mt-2 text-sm" style={{ color: "#64748b" }}>Thử tìm với từ khóa khác</p>
                             </div>
                         ) : (
-                            <table className="w-full text-sm" style={{ background: "#ffffff", borderCollapse: "collapse" }}>
+                            <table className="w-full text-sm" style={{ background: "#faf7f0", borderCollapse: "collapse" }}>
                                 <thead>
-                                    <tr style={{ background: "#fafafa" }}>
+                                    <tr style={{ background: "#f5efe0" }}>
                                         <th
                                             className="h-10 px-6 text-left font-semibold tracking-wide text-xs uppercase whitespace-nowrap"
-                                            style={{ color: "#64748b", borderTop: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9" }}
+                                            style={{ color: "#64748b", borderTop: "1px solid #ede8db", borderBottom: "1px solid #ede8db" }}
                                         >
                                             Sản phẩm
                                         </th>
                                         <th
                                             className="h-10 px-4 w-24"
-                                            style={{ borderTop: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9" }}
+                                            style={{ borderTop: "1px solid #ede8db", borderBottom: "1px solid #ede8db" }}
                                         />
                                     </tr>
                                 </thead>
@@ -467,12 +467,12 @@ export default function PhieuChuyenKhoCreate() {
                                         <tr
                                             key={product.id}
                                             style={{
-                                                background: "#ffffff",
-                                                borderBottom: idx < filteredProducts.length - 1 ? "1px solid #f8fafc" : "none",
+                                                background: "#faf7f0",
+                                                borderBottom: idx < filteredProducts.length - 1 ? "1px solid #ede8db" : "none",
                                                 cursor: "pointer",
                                             }}
-                                            onMouseEnter={e => e.currentTarget.style.background = "#fefce8"}
-                                            onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
+                                            onMouseEnter={e => e.currentTarget.style.background = "#fef9c3"}
+                                            onMouseLeave={e => e.currentTarget.style.background = "#faf7f0"}
                                             onClick={() => handleAddProduct(product)}
                                         >
                                             <td className="px-6 py-3.5 align-middle">
@@ -506,7 +506,7 @@ export default function PhieuChuyenKhoCreate() {
                     </div>
 
                     {/* Panel footer */}
-                    <div className="flex items-center justify-between px-6 py-4" style={{ background: "#fafafa", borderTop: "1px solid #f1f5f9" }}>
+                    <div className="flex items-center justify-between px-6 py-4" style={{ background: "#f5efe0", borderTop: "1px solid #f1f5f9" }}>
                         <p className="text-sm" style={{ color: "#64748b" }}>
                             <span className="font-semibold" style={{ color: "#ca8a04" }}>{filteredProducts.length}</span> kết quả
                         </p>
@@ -514,7 +514,7 @@ export default function PhieuChuyenKhoCreate() {
                             type="button"
                             className="inline-flex h-8 items-center justify-center rounded-lg px-4 text-sm font-semibold transition-all duration-150"
                             style={{ background: "#ffffff", color: "#374151", border: "1px solid #d1d5db" }}
-                            onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+                            onMouseEnter={e => e.currentTarget.style.background = "#faf7f0"}
                             onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
                             onClick={() => { setShowProductDialog(false); setSearchTerm(""); }}
                         >
