@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Search, Package, ArrowDown, ChevronDown, Building2 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Plus, Trash2, Search, Package, ArrowDown, ChevronDown,
+    Building2, Loader2, ArrowLeft, ClipboardList,
+} from "lucide-react";
 
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { donBanHangService } from "@/services/donBanHangService";
@@ -20,38 +19,26 @@ import { khoService } from "@/services/khoService";
 export default function PhieuChuyenKhoCreate() {
     const navigate = useNavigate();
 
-    // --- Data States ---
-    const [warehouses, setWarehouses] = useState([]);
-    const [variants, setVariants] = useState([]);
+    const [warehouses,         setWarehouses]         = useState([]);
+    const [variants,           setVariants]           = useState([]);
+    const [showProductDialog,  setShowProductDialog]  = useState(false);
+    const [searchTerm,         setSearchTerm]         = useState("");
+    const [loading,            setLoading]            = useState(false);
+    const [formData,           setFormData]           = useState({ khoXuatId: "", khoNhapId: "", ghiChu: "" });
+    const [transferItems,      setTransferItems]      = useState([]);
 
-    // --- UI States ---
-    const [showProductDialog, setShowProductDialog] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [loading, setLoading] = useState(false);
-
-    // --- Form States ---
-    const [formData, setFormData] = useState({
-        khoXuatId: "",
-        khoNhapId: "",
-        ghiChu: ""
-    });
-    const [transferItems, setTransferItems] = useState([]);
-
-    useEffect(() => {
-        loadInitialData();
-    }, []);
+    useEffect(() => { loadInitialData(); }, []);
 
     async function loadInitialData() {
         try {
             const [variantRes, khoRes] = await Promise.all([
                 donBanHangService.getVariantsForCreate(),
-                khoService.filter({ page: 0, size: 100, filters: [] })
+                khoService.filter({ page: 0, size: 100, filters: [] }),
             ]);
-
             setVariants(variantRes?.data?.data || variantRes?.data || []);
             const listKho = khoRes.data?.data?.content || khoRes.data?.content || [];
             setWarehouses(listKho);
-        } catch (err) {
+        } catch {
             toast.error("Không thể tải dữ liệu khởi tạo");
         }
     }
@@ -67,45 +54,40 @@ export default function PhieuChuyenKhoCreate() {
 
     const handleAddProduct = (product) => {
         if (transferItems.some(i => i.variantId === product.id)) {
-            toast.warning("Sản phẩm này đã có trong danh sách");
+            toast("Sản phẩm này đã có trong danh sách", { icon: "⚠️" });
             return;
         }
         setTransferItems(prev => [...prev, {
             variantId: product.id,
-            sku: product.maBienThe,
-            name: product.tenSanPham,
-            color: product.tenMau,
-            size: product.tenSize,
-            material: product.tenChatLieu,
-            quantity: 1,
+            sku:       product.maBienThe,
+            name:      product.tenSanPham,
+            color:     product.tenMau,
+            size:      product.tenSize,
+            material:  product.tenChatLieu,
+            quantity:  1,
         }]);
         setShowProductDialog(false);
         setSearchTerm("");
     };
 
     async function handleCreate() {
-        if (!formData.khoXuatId || !formData.khoNhapId) {
+        if (!formData.khoXuatId || !formData.khoNhapId)
             return toast.error("Vui lòng chọn đầy đủ kho gửi và kho nhận");
-        }
-        if (formData.khoXuatId === formData.khoNhapId) {
+        if (formData.khoXuatId === formData.khoNhapId)
             return toast.error("Kho gửi và kho nhận không được trùng nhau");
-        }
-        if (transferItems.length === 0) {
+        if (transferItems.length === 0)
             return toast.error("Vui lòng chọn ít nhất 1 sản phẩm để điều chuyển");
-        }
-
         try {
             setLoading(true);
             const payload = {
-                khoXuatId: parseInt(formData.khoXuatId),
-                khoNhapId: parseInt(formData.khoNhapId),
-                ghiChu: formData.ghiChu?.trim() || "",
+                khoXuatId:   parseInt(formData.khoXuatId),
+                khoNhapId:   parseInt(formData.khoNhapId),
+                ghiChu:      formData.ghiChu?.trim() || "",
                 chiTietXuat: transferItems.map(item => ({
                     bienTheSanPhamId: item.variantId,
-                    soLuongXuat: item.quantity
-                }))
+                    soLuongXuat:      item.quantity,
+                })),
             };
-
             const res = await phieuChuyenKhoService.create(payload);
             toast.success("Tạo yêu cầu điều chuyển thành công");
             navigate(`/transfer-tickets/${res.id}`);
@@ -116,297 +98,420 @@ export default function PhieuChuyenKhoCreate() {
         }
     }
 
+    const totalQty = transferItems.reduce((s, i) => s + i.quantity, 0);
+
+    // ── Warehouse dropdown label helper ──
+    const khoXuatLabel = formData.khoXuatId
+        ? warehouses.find(k => k.id === parseInt(formData.khoXuatId))?.tenKho
+        : "Chọn kho gửi";
+    const khoNhapLabel = formData.khoNhapId
+        ? warehouses.find(k => k.id === parseInt(formData.khoNhapId))?.tenKho
+        : "Chọn kho nhận";
+
     return (
-        <main className="flex-1 bg-gray-50/50 min-h-screen pb-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-yellow-50 via-yellow-50 to-amber-50 min-h-screen">
+            <div className="space-y-6 w-full">
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    {/* Left: Configuration */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <section className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-5">
-                            <h3 className="text-xs font-bold uppercase text-purple-600 tracking-wider">Thông tin lộ trình</h3>
+                {/* ── Header ── */}
+                <div className="flex items-center justify-between">
+                    <button
+                        type="button"
+                        onClick={() => navigate("/transfer-tickets")}
+                        className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Quay lại danh sách
+                    </button>
+                </div>
 
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Kho xuất (Nguồn)</label>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="mt-2 w-full justify-between font-normal bg-white border-gray-300 h-10"
-                                            >
-                                                <div className="flex items-center overflow-hidden">
-                                                    <Building2 className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                                    <span className="truncate">
-                                                        {formData.khoXuatId
-                                                            ? warehouses.find(k => k.id === parseInt(formData.khoXuatId))?.tenKho
-                                                            : "Chọn kho gửi"}
-                                                    </span>
-                                                </div>
-                                                <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-[300px] max-h-[400px] overflow-y-auto bg-white" align="start">
-                                            {warehouses.length === 0 ? (
-                                                <DropdownMenuItem disabled className="text-gray-500 italic">
-                                                    Không có kho nào khả dụng
-                                                </DropdownMenuItem>
-                                            ) : (
-                                                warehouses.map((k) => (
-                                                    <DropdownMenuItem
-                                                        key={k.id}
-                                                        disabled={Number(formData.khoNhapId) === k.id}
-                                                        onClick={() => setFormData({ ...formData, khoXuatId: k.id.toString() })}
-                                                        className="cursor-pointer hover:bg-gray-100 py-2 flex flex-col items-start"
-                                                    >
-                                                        <span className="font-medium text-gray-900">
-                                                            {k.tenKho}
-                                                        </span>
-                                                        <span className="text-xs text-gray-500">
-                                                            Mã: {k.maKho}
-                                                        </span>
-                                                    </DropdownMenuItem>
-                                                ))
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-
-                                <div className="flex justify-center py-1">
-                                    <ArrowDown className="h-5 w-5 text-gray-300" />
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Kho nhập (Đích)</label>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="mt-2 w-full justify-between font-normal bg-white border-gray-300 h-10"
-                                            >
-                                                <div className="flex items-center overflow-hidden">
-                                                    <Building2 className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                                    <span className="truncate">
-                                                        {formData.khoNhapId
-                                                            ? warehouses.find(k => k.id === parseInt(formData.khoNhapId))?.tenKho
-                                                            : "Chọn kho nhận"}
-                                                    </span>
-                                                </div>
-                                                <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-[300px] max-h-[400px] overflow-y-auto bg-white" align="start">
-                                            {warehouses.length === 0 ? (
-                                                <DropdownMenuItem disabled className="text-gray-500 italic">
-                                                    Không có kho nào khả dụng
-                                                </DropdownMenuItem>
-                                            ) : (
-                                                warehouses.map((k) => (
-                                                    <DropdownMenuItem
-                                                        key={k.id}
-                                                        disabled={Number(formData.khoXuatId) === k.id}
-                                                        onClick={() => setFormData({ ...formData, khoNhapId: k.id.toString() })}
-                                                        className="cursor-pointer hover:bg-gray-100 py-2 flex flex-col items-start"
-                                                    >
-                                                        <span className="font-medium text-gray-900">
-                                                            {k.tenKho}
-                                                        </span>
-                                                        <span className="text-xs text-gray-500">
-                                                            Mã: {k.maKho}
-                                                        </span>
-                                                    </DropdownMenuItem>
-                                                ))
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
+                {/* ── Stats cards ── */}
+                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Kho nguồn</p>
+                                <p className="text-base font-bold text-gray-900 mt-1 truncate">
+                                    {khoXuatLabel === "Chọn kho gửi" ? <span className="text-gray-400 font-normal text-sm">Chưa chọn</span> : khoXuatLabel}
+                                </p>
                             </div>
-
-                            <div className="pt-2 border-t">
-                                <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Ghi chú</label>
-                                <textarea
-                                    value={formData.ghiChu}
-                                    onChange={(e) => setFormData({ ...formData, ghiChu: e.target.value })}
-                                    rows={3}
-                                    placeholder="Lý do điều phối hàng..."
-                                    className="mt-2 w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400 transition-all outline-none resize-none text-sm"
-                                />
+                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <Building2 className="h-6 w-6 text-blue-600" />
                             </div>
-                        </section>
+                        </div>
                     </div>
 
-                    {/* Right: Items Table */}
-                    <div className="lg:col-span-3 space-y-6">
-                        <section className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[427px]">
-                            <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
-                                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                                    <Package className="h-4 w-4 text-purple-600" /> Danh mục hàng điều chuyển
-                                </h3>
+                    <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-white p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Kho đích</p>
+                                <p className="text-base font-bold text-gray-900 mt-1 truncate">
+                                    {khoNhapLabel === "Chọn kho nhận" ? <span className="text-gray-400 font-normal text-sm">Chưa chọn</span> : khoNhapLabel}
+                                </p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                <Building2 className="h-6 w-6 text-purple-600" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-yellow-50 to-white p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Tổng số lượng</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{totalQty}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                                <Package className="h-6 w-6 text-yellow-600" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+                    {/* ── LEFT: Thông tin lộ trình ── */}
+                    <div className="lg:col-span-1">
+                        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                            {/* Panel header */}
+                            <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-100">
+                                    <ClipboardList className="h-4 w-4 text-yellow-600" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-slate-900 leading-snug">Thông tin lộ trình</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">Chọn kho xuất và kho nhập</p>
+                                </div>
+                            </div>
+
+                            <div className="p-5 space-y-5">
+                                {/* Kho xuất */}
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Kho xuất (Nguồn)
+                                    </label>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-between font-normal bg-white border-gray-200 focus:border-yellow-500 h-10"
+                                            >
+                                                <div className="flex items-center overflow-hidden">
+                                                    <Building2 className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                                                    <span className="truncate text-sm">{khoXuatLabel}</span>
+                                                </div>
+                                                <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[260px] max-h-[300px] overflow-y-auto bg-white border border-gray-100 shadow-xl z-50">
+                                            {warehouses.map((k) => (
+                                                <DropdownMenuItem
+                                                    key={k.id}
+                                                    disabled={Number(formData.khoNhapId) === k.id}
+                                                    onClick={() => setFormData({ ...formData, khoXuatId: k.id.toString() })}
+                                                    className="cursor-pointer hover:bg-yellow-50 py-2 flex flex-col items-start"
+                                                >
+                                                    <span className="font-medium text-gray-900">{k.tenKho}</span>
+                                                    <span className="text-xs text-gray-500">Mã: {k.maKho}</span>
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+
+                                {/* Arrow */}
+                                <div className="flex justify-center">
+                                    <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                        <ArrowDown className="h-4 w-4 text-slate-400" />
+                                    </div>
+                                </div>
+
+                                {/* Kho nhập */}
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Kho nhập (Đích)
+                                    </label>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-between font-normal bg-white border-gray-200 focus:border-yellow-500 h-10"
+                                            >
+                                                <div className="flex items-center overflow-hidden">
+                                                    <Building2 className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                                                    <span className="truncate text-sm">{khoNhapLabel}</span>
+                                                </div>
+                                                <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[260px] max-h-[300px] overflow-y-auto bg-white border border-gray-100 shadow-xl z-50">
+                                            {warehouses.map((k) => (
+                                                <DropdownMenuItem
+                                                    key={k.id}
+                                                    disabled={Number(formData.khoXuatId) === k.id}
+                                                    onClick={() => setFormData({ ...formData, khoNhapId: k.id.toString() })}
+                                                    className="cursor-pointer hover:bg-yellow-50 py-2 flex flex-col items-start"
+                                                >
+                                                    <span className="font-medium text-gray-900">{k.tenKho}</span>
+                                                    <span className="text-xs text-gray-500">Mã: {k.maKho}</span>
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+
+                                {/* Ghi chú */}
+                                <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Ghi chú
+                                    </label>
+                                    <textarea
+                                        value={formData.ghiChu}
+                                        onChange={(e) => setFormData({ ...formData, ghiChu: e.target.value })}
+                                        rows={3}
+                                        placeholder="Lý do điều phối hàng..."
+                                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all resize-none text-sm"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── RIGHT: Danh sách hàng điều chuyển ── */}
+                    <div className="lg:col-span-3">
+                        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                            {/* Panel header */}
+                            <div className="flex items-center justify-between gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-100">
+                                        <Package className="h-4 w-4 text-yellow-600" />
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-slate-900 leading-snug">Danh mục hàng điều chuyển</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">Chọn sản phẩm và số lượng cần chuyển</p>
+                                    </div>
+                                </div>
                                 <Button
-                                    size="sm"
                                     onClick={() => setShowProductDialog(true)}
-                                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 h-9 transition-all duration-200"
+                                    className="bg-yellow-500 text-white border border-yellow-500 hover:bg-yellow-600 shadow-sm transition-all duration-200 h-9"
                                 >
-                                    <Plus className="h-4 w-4 mr-1" /> Thêm sản phẩm
+                                    <Plus className="h-4 w-4 mr-1.5" />
+                                    Thêm sản phẩm
                                 </Button>
                             </div>
 
-                            <div className="overflow-x-auto flex-1">
-                                <Table>
-                                    <TableHeader className="bg-gray-50 text-gray-600 font-medium">
-                                        <TableRow className="hover:bg-transparent">
-                                            <TableHead className="px-5 py-3 text-xs font-bold uppercase tracking-wider">Thông tin sản phẩm</TableHead>
-                                            <TableHead className="px-5 py-3 text-xs font-bold uppercase tracking-wider text-center w-32">Số lượng</TableHead>
-                                            <TableHead className="w-16"></TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody className="divide-y divide-gray-100">
-                                        {transferItems.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={3} className="h-64 text-center">
-                                                    <div className="flex flex-col items-center justify-center text-gray-400">
-                                                        <Package className="h-10 w-10 opacity-10 mb-2" />
-                                                        <p className="text-sm italic font-medium">Chưa có sản phẩm nào được chọn</p>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            transferItems.map((item, index) => (
-                                                <TableRow key={index} className="hover:bg-gray-50/50 transition-colors">
-                                                    <TableCell className="px-5 py-4">
-                                                        {/* Dòng 1: Tên biến thể */}
-                                                        <div className="font-bold text-gray-900 text-[14px] leading-tight mb-1">
+                            {/* Table */}
+                            {transferItems.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                                    <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                                        <Package className="h-10 w-10 text-slate-400" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-slate-800">Chưa có sản phẩm nào</h3>
+                                    <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                                        Nhấn "Thêm sản phẩm" để chọn hàng hóa cần điều chuyển.
+                                    </p>
+                                    <Button
+                                        onClick={() => setShowProductDialog(true)}
+                                        className="mt-6 bg-yellow-500 text-white border border-yellow-500 hover:bg-yellow-600 shadow-sm transition-all duration-200"
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Thêm sản phẩm
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b border-slate-200 bg-slate-50">
+                                                <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">
+                                                    Thông tin sản phẩm
+                                                </th>
+                                                <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap w-36">
+                                                    Số lượng
+                                                </th>
+                                                <th className="h-12 px-4 w-14" />
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {transferItems.map((item, index) => (
+                                                <tr key={index} className="transition-colors duration-150 hover:bg-yellow-50/50">
+                                                    <td className="px-4 py-3.5 align-middle">
+                                                        <span className="font-semibold text-slate-900 leading-snug">
                                                             {item.name}
-                                                        </div>
-                                                        {/* Dòng 2: Mã biến thể */}
-                                                        <div className="text-[12px] font-mono text-blue-600 font-medium mb-1">
+                                                        </span>
+                                                        <span className="block font-mono text-xs text-yellow-600 mt-0.5">
                                                             {item.sku}
-                                                        </div>
-                                                        {/* Dòng 3: Thuộc tính */}
-                                                        <div className="text-[11px] text-gray-500 italic">
-                                                            Phân loại: {item.color || "N/A"} / {item.size || "N/A"} / {item.material || "N/A"}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-4 text-center">
+                                                        </span>
+                                                        <span className="block text-xs text-slate-400 mt-0.5 italic">
+                                                            {item.color || "N/A"} / {item.size || "N/A"} / {item.material || "N/A"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3.5 align-middle text-center">
                                                         <input
                                                             type="number"
                                                             min={1}
                                                             value={item.quantity}
                                                             onChange={(e) => {
                                                                 const val = Math.max(1, parseInt(e.target.value) || 1);
-                                                                setTransferItems(prev => prev.map((it, i) => i === index ? { ...it, quantity: val } : it));
+                                                                setTransferItems(prev =>
+                                                                    prev.map((it, i) => i === index ? { ...it, quantity: val } : it)
+                                                                );
                                                             }}
-                                                            className="w-20 h-9 border border-gray-300 rounded-lg text-center font-semibold focus:ring-2 focus:ring-purple-500 outline-none"
+                                                            className="w-24 h-9 border border-gray-200 rounded-lg text-center font-semibold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
                                                         />
-                                                    </TableCell>
-                                                    <TableCell className="px-5 py-4 text-right">
-                                                        <Button
-                                                            variant="ghost" size="icon"
-                                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                                                    </td>
+                                                    <td className="px-4 py-3.5 align-middle text-center">
+                                                        <button
+                                                            type="button"
                                                             onClick={() => setTransferItems(prev => prev.filter((_, i) => i !== index))}
+                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-red-400 hover:bg-red-50 hover:border-red-200 transition-all duration-150"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-
-                            {transferItems.length > 0 && (
-                                <div className="p-4 bg-gray-50 border-t flex justify-end items-center gap-4 px-8">
-                                    <span className="text-sm text-gray-500 font-medium uppercase tracking-wider">Tổng số lượng:</span>
-                                    <span className="text-xl font-black text-purple-600">
-                                        {transferItems.reduce((sum, item) => sum + item.quantity, 0)}
-                                    </span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             )}
-                        </section>
-                    </div>
-                </div>
-                {/* Footer Actions */}
-                <div className="pt-6 border-t border-gray-200 flex justify-between items-center">
-                    <Link to="/transfer-tickets" className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1">
-                        ← Quay lại danh sách
-                    </Link>
-                    <div className="flex gap-3">
-                        <Button
-                            onClick={handleCreate}
-                            disabled={loading}
-                            className="px-8 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 font-bold shadow-md transition-all duration-200 active:scale-95"
-                        >
-                            {loading ? "Đang xử lý..." : <>Tạo phiếu điều chuyển</>}
-                        </Button>
+
+                            {/* Panel footer */}
+                            {transferItems.length > 0 && (
+                                <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-t border-slate-100">
+                                    <p className="text-sm text-slate-500">
+                                        Tổng{" "}
+                                        <span className="font-semibold text-yellow-600">{transferItems.length}</span>{" "}
+                                        sản phẩm —{" "}
+                                        <span className="font-semibold text-yellow-600">{totalQty}</span>{" "}
+                                        đơn vị
+                                    </p>
+                                    <div className="flex gap-3">
+                                        <Button
+                                            variant="outline"
+                                            className="bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium"
+                                            onClick={() => navigate("/transfer-tickets")}
+                                        >
+                                            Hủy
+                                        </Button>
+                                        <Button
+                                            onClick={handleCreate}
+                                            disabled={loading}
+                                            className="bg-yellow-500 text-white border border-yellow-500 hover:bg-yellow-600 shadow-sm transition-all duration-200 min-w-[180px] font-bold"
+                                        >
+                                            {loading
+                                                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
+                                                : <>Tạo phiếu điều chuyển</>
+                                            }
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* PRODUCT SELECTOR DIALOG */}
+            {/* ── PRODUCT SELECTOR DIALOG ── */}
             <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
-                <DialogContent className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl rounded-xl">
-                    <DialogHeader className="p-6 bg-white border-b border-gray-100">
-                        <DialogTitle className="text-xl font-bold text-gray-800">Tìm kiếm sản phẩm</DialogTitle>
-                        <DialogDescription className="text-gray-500">Chọn biến thể sản phẩm từ danh mục hệ thống.</DialogDescription>
-                        <div className="relative mt-4">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <DialogContent className="max-w-2xl p-0 overflow-hidden shadow-2xl rounded-2xl border-none bg-white text-slate-900">
+
+                    {/* Panel header — đồng bộ với panel header màn chính */}
+                    <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-100 flex-shrink-0">
+                            <Search className="h-4 w-4 text-yellow-600" />
+                        </div>
+                        <div>
+                            <p className="font-semibold text-slate-900 leading-snug">Tìm kiếm sản phẩm</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Chọn biến thể sản phẩm từ danh mục hệ thống</p>
+                        </div>
+                    </div>
+
+                    {/* Search bar */}
+                    <div className="px-6 py-4 bg-white border-b border-slate-100">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                             <Input
                                 placeholder="Nhập tên sản phẩm hoặc mã SKU..."
-                                className="pl-10 h-11 bg-gray-50 border-gray-200 focus-visible:ring-slate-400"
+                                className="pl-9 border-gray-200 focus:border-yellow-500 focus:ring-yellow-500 bg-white text-slate-900"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 autoFocus
                             />
                         </div>
-                    </DialogHeader>
+                    </div>
 
-                    <div className="max-h-[450px] overflow-y-auto">
-                        <Table>
-                            <TableBody>
-                                {filteredProducts.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell className="h-32 text-center text-gray-400 italic text-sm">
-                                            Không tìm thấy sản phẩm phù hợp...
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    filteredProducts.map(product => (
-                                        <TableRow
+                    {/* Danh sách sản phẩm */}
+                    <div className="max-h-[400px] overflow-y-auto bg-white">
+                        {filteredProducts.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                                    <Search className="h-10 w-10 text-slate-400" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-slate-800">Không tìm thấy sản phẩm</h3>
+                                <p className="mt-2 text-sm leading-6 text-slate-500">Thử tìm với từ khóa khác</p>
+                            </div>
+                        ) : (
+                            <table className="w-full text-sm">
+                                {/* Table header — đồng bộ với bảng sản phẩm màn chính */}
+                                <thead>
+                                    <tr className="border-b border-slate-200 bg-slate-50">
+                                        <th className="h-10 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">
+                                            Sản phẩm
+                                        </th>
+                                        <th className="h-10 px-4 w-20" />
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredProducts.map((product) => (
+                                        <tr
                                             key={product.id}
-                                            className="hover:bg-gray-50 cursor-pointer group transition-all"
+                                            className="transition-colors duration-150 cursor-pointer hover:bg-yellow-50/50"
                                             onClick={() => handleAddProduct(product)}
                                         >
-                                            <TableCell className="py-4 px-6">
-                                                {/* Dòng 1: Tên sản phẩm */}
-                                                <div className="font-bold text-gray-900 group-hover:text-slate-900 transition-colors">
+                                            <td className="px-4 py-3.5 align-middle">
+                                                <span className="font-semibold text-slate-900 leading-snug">
                                                     {product.tenSanPham}
-                                                </div>
-                                                {/* Dòng 2: Mã SKU */}
-                                                <div className="text-[12px] font-mono text-gray-500 mt-0.5 font-medium">
+                                                </span>
+                                                <span className="block font-mono text-xs text-yellow-600 mt-0.5">
                                                     {product.maBienThe}
-                                                </div>
-                                                {/* Dòng 3: Chi tiết phân loại */}
-                                                <div className="text-[11px] text-gray-500 font-medium mt-1 uppercase tracking-tighter">
-                                                    {product.tenMau || "N/A"} / {product.tenSize || "N/A"} / {product.material || product.tenChatLieu || "N/A"}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right px-6">
-                                                <Button 
-                                                    size="sm" 
-                                                    className="h-8 bg-white text-slate-900 border border-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-200 font-bold"
+                                                </span>
+                                                <span className="block text-xs text-slate-400 mt-0.5 italic">
+                                                    {product.tenMau || "N/A"} / {product.tenSize || "N/A"} / {product.tenChatLieu || "N/A"}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3.5 align-middle text-right">
+                                                {/* Button "Chọn" — đồng bộ với button chính */}
+                                                <Button
+                                                    size="sm"
+                                                    className="bg-yellow-500 text-white border border-yellow-500 hover:bg-yellow-600 shadow-sm transition-all duration-200 h-8 px-3 text-xs font-bold"
+                                                    onClick={(e) => { e.stopPropagation(); handleAddProduct(product); }}
                                                 >
                                                     Chọn
                                                 </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+
+                    {/* Panel footer — đồng bộ với footer bảng sản phẩm màn chính */}
+                    <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-100">
+                        <p className="text-sm text-slate-500">
+                            <span className="font-semibold text-yellow-600">{filteredProducts.length}</span> kết quả
+                        </p>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium"
+                            onClick={() => { setShowProductDialog(false); setSearchTerm(""); }}
+                        >
+                            Đóng
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>
-        </main>
+        </div>
     );
 }
