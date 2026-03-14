@@ -217,7 +217,7 @@ export default function PhieuNhapKhoList() {
                                     <tbody className="divide-y divide-slate-100">
                                         {data.map((item, index) => (
                                             <tr key={item.id} onClick={() => navigate(`/goods-receipts/${item.id}`)} className="cursor-pointer transition-colors duration-150 hover:bg-violet-50/50">
-                                                <td className="px-4 py-3.5 align-middle text-center w-14"><span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">{filters.page * filters.size + index + 1}</span></td>
+                                                <td className="px-4 py-3.5 align-middle text-center w-14 text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
                                                 <td className="px-4 py-3.5 align-middle font-semibold text-violet-600">{item.soPhieuNhap}</td>
                                                 <td className="px-4 py-3.5 align-middle text-slate-600">{item.soDonMua || "-"}</td>
                                                 <td className="px-4 py-3.5 align-middle">{item.tenNhaCungCap}</td>

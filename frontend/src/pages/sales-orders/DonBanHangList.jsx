@@ -302,10 +302,11 @@ export default function DonBanHangList() {
 
         {/* TABLE SECTION */}
         <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
+                  <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase w-14">STT</th>
                   <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Số đơn</th>
                   <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Khách hàng</th>
                   <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Kho xuất</th>
@@ -318,7 +319,7 @@ export default function DonBanHangList() {
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-gray-500">
+                    <td colSpan={8} className="text-center py-12 text-gray-500">
                       <div className="flex items-center justify-center">
                         <RefreshCcw className="h-6 w-6 animate-spin text-purple-600 mr-2" />
                         Đang tải dữ liệu...
@@ -327,18 +328,21 @@ export default function DonBanHangList() {
                   </tr>
                 ) : data.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-16 flex flex-col items-center justify-center text-gray-400">
+                    <td colSpan={8} className="text-center py-16 flex flex-col items-center justify-center text-gray-400">
                       <ShoppingCart className="h-12 w-12 mb-3 opacity-30" />
                       <p className="text-sm">Không tìm thấy đơn bán hàng nào</p>
                     </td>
                   </tr>
                 ) : (
-                  data.map((item) => (
+                  data.map((item, index) => (
                     <tr
                       key={item.id}
                       className="transition-colors duration-150 hover:bg-purple-50/50 cursor-pointer"
                       onClick={() => navigate(`/sales-orders/${item.id}`)}
                     >
+                      <td className="px-4 py-3.5 align-middle text-center text-slate-500 text-xs">
+                        {filters.page * filters.size + index + 1}
+                      </td>
                       <td className="px-4 py-3.5 align-middle">
                         <span className="font-bold text-purple-600 tracking-wide uppercase">{item.soDonHang}</span>
                       </td>

@@ -560,10 +560,11 @@ export default function KhachHangPage() {
 
                 {/* Table Section */}
                 <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-slate-200 bg-slate-50">
+                                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase w-14">STT</th>
                                     <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mã KH</th>
                                     <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Khách hàng</th>
                                     <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Loại KH</th>
@@ -575,7 +576,7 @@ export default function KhachHangPage() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={6} className="text-center py-12 text-gray-500">
+                                        <td colSpan={7} className="text-center py-12 text-gray-500">
                                             <div className="flex items-center justify-center">
                                                 <Loader2 className="h-6 w-6 animate-spin text-violet-500 mr-2" />
                                                 Đang tải dữ liệu...
@@ -584,13 +585,16 @@ export default function KhachHangPage() {
                                     </tr>
                                 ) : khachHangs.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="text-center py-12 text-gray-500">
+                                        <td colSpan={7} className="text-center py-12 text-gray-500">
                                             Không có dữ liệu
                                         </td>
                                     </tr>
                                 ) : (
-                                    khachHangs.map((khachHang) => (
-                                        <tr key={khachHang.id} className="transition-colors duration-150 hover:bg-violet-50/50">
+                                    khachHangs.map((khachHang, index) => (
+                                        <tr key={khachHang.id} className="transition-colors duration-150 hover:bg-purple-50/50">
+                                            <td className="px-4 py-3.5 align-middle text-center text-slate-500 text-xs">
+                                                {currentPage * pageSize + index + 1}
+                                            </td>
                                             <td className="px-4 py-3.5 align-middle">
                                                 <span className="font-bold text-purple-600 tracking-wide">{khachHang.maKhachHang}</span>
                                             </td>
