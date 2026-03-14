@@ -185,6 +185,18 @@ const TAB_ICONS = { color: Palette, size: Ruler, material: Layers };
 const TAB_LABELS = { color: 'màu sắc', size: 'kích cỡ', material: 'chất liệu' };
 const TAB_NAMES = { color: 'Màu sắc', size: 'Kích cỡ', material: 'Chất liệu' };
 
+const EmptyState = ({ icon: Icon, label }) => (
+    <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6 border border-slate-100">
+            <Icon size={40} className="text-slate-300" />
+        </div>
+        <h3 className="lux-title text-xl mb-2">Chưa có <span>{label}</span></h3>
+        <p className="lux-eyebrow text-xs max-w-[240px] leading-relaxed">
+            Danh mục này hiện đang trống. <br /> Hãy bắt đầu bằng cách thêm mới một mục.
+        </p>
+    </div>
+);
+
 const ProductAttributeHub = () => {
     const [activeTab, setActiveTab] = useState('color');
     const [data, setData] = useState([]);
@@ -291,13 +303,6 @@ const ProductAttributeHub = () => {
             <style>{STYLES}</style>
             <div className="lux-grid" />
             <div className="lux-inner">
-                {/* ── Header ── */}
-                <header className="lux-header">
-                    <div className="lux-title-wrap">
-                        <span className="lux-eyebrow">Inventory Catalog</span>
-                        <h1 className="lux-title">Quản lý <span>thuộc tính</span></h1>
-                    </div>
-                </header>
 
                 {/* ── Tabs ── */}
                 <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleReset(); }}>
@@ -320,67 +325,90 @@ const ProductAttributeHub = () => {
                         <Label className="lux-label">Bộ lọc tìm kiếm</Label>
                         <div className="relative">
                             <Search size={16} className="absolute left-4 top-4 text-slate-400" />
-                            <Input 
-                                value={filters.keyword} 
+                            <Input
+                                value={filters.keyword}
                                 onChange={e => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
-                                placeholder="Tìm kiếm theo mã hoặc tên..." 
-                                className="lux-input pl-12" 
+                                placeholder="Tìm kiếm theo mã hoặc tên..."
+                                className="lux-input pl-12"
                             />
                         </div>
                     </div>
                     <button className="btn-white" onClick={handleReset}>
-                        <RefreshCcw size={16} /> Đặt lại
-                    </button>
-                    <button className="btn-gold" onClick={() => handleOpenModal('add')}>
-                        <Plus size={18} /> Thêm {TAB_LABELS[activeTab]} mới
+                        <RotateCcw size={16} /> Đặt lại
                     </button>
                 </section>
 
-            {/* ── Action buttons ── */}
-            <div className="flex items-center justify-end">
-                <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
-                    <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
-                </Button>
-            </div>
+                {/* ── Action buttons ── */}
+                <div className="flex items-center justify-end">
+                    <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
+                        <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
+                    </Button>
+                </div>
 
-            {/* ── Table ── */}
-            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                {loading ? (
-                    <div className="flex items-center justify-center py-16 gap-2">
-                        <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
-                        <span className="text-sm text-gray-600">Đang tải...</span>
-                    </div>
-                ) : data.length === 0 ? <EmptyState icon={TabIcon} label={TAB_LABELS[activeTab]} /> : (
-                    <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-slate-200 bg-slate-50">
-                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase w-16">STT</th>
-                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mã</th>
-                                    <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Tên hiển thị</th>
-                                    {activeTab === 'color' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Màu sắc</th>}
-                                    {activeTab === 'size' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Phân loại</th>}
-                                    {activeTab === 'material' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mô tả</th>}
-                                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {data.map((item, index) => (
-                                    <tr key={item.id} className="hover:bg-violet-50/50 transition-colors duration-150 cursor-pointer" onClick={() => handleOpenModal('edit', item)}>
-                                        <td className="px-4 py-3.5 align-middle text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
-                                        <td className="px-4 py-3.5 align-middle">
-                                            <span className="font-bold text-violet-600 tracking-wide font-mono">
-                                                {item.maMau || item.maSize || item.maChatLieu}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3.5 align-middle font-semibold text-slate-900">
-                                            {item.tenMau || item.tenSize || item.tenChatLieu}
-                                        </td>
-                                        {activeTab === 'color' && (
+                {/* ── Table ── */}
+                <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-16 gap-2">
+                            <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                            <span className="text-sm text-gray-600">Đang tải...</span>
+                        </div>
+                    ) : data.length === 0 ? <EmptyState icon={TabIcon} label={TAB_LABELS[activeTab]} /> : (
+                        <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-slate-200 bg-slate-50">
+                                        <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase w-16">STT</th>
+                                        <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mã</th>
+                                        <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Tên hiển thị</th>
+                                        {activeTab === 'color' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Màu sắc</th>}
+                                        {activeTab === 'size' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Phân loại</th>}
+                                        {activeTab === 'material' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mô tả</th>}
+                                        <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {data.map((item, index) => (
+                                        <tr key={item.id} className="hover:bg-violet-50/50 transition-colors duration-150 cursor-pointer" onClick={() => handleOpenModal('edit', item)}>
+                                            <td className="px-4 py-3.5 align-middle text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
                                             <td className="px-4 py-3.5 align-middle">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-md border border-slate-200 shadow-sm flex-shrink-0" style={{ backgroundColor: item.maMauHex }} />
-                                                    <span className="font-mono text-xs text-slate-500">{item.maMauHex}</span>
+                                                <span className="font-bold text-violet-600 tracking-wide font-mono">
+                                                    {item.maMau || item.maSize || item.maChatLieu}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3.5 align-middle font-semibold text-slate-900">
+                                                {item.tenMau || item.tenSize || item.tenChatLieu}
+                                            </td>
+                                            {activeTab === 'color' && (
+                                                <td className="px-4 py-3.5 align-middle">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 rounded-md border border-slate-200 shadow-sm flex-shrink-0" style={{ backgroundColor: item.maMauHex }} />
+                                                        <span className="font-mono text-xs text-slate-500">{item.maMauHex}</span>
+                                                    </div>
+                                                </td>
+                                            )}
+                                            {activeTab === 'size' && (
+                                                <td className="px-4 py-3.5 align-middle">
+                                                    <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-tight">
+                                                        {item.loaiSize || '—'}
+                                                    </span>
+                                                </td>
+                                            )}
+                                            {activeTab === 'material' && (
+                                                <td className="px-4 py-3.5 align-middle text-slate-600 italic line-clamp-1 max-w-[200px]">
+                                                    {item.moTa || '—'}
+                                                </td>
+                                            )}
+                                            <td className="px-4 py-3.5 align-middle">
+                                                <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                    <button className="act-btn" onClick={() => handleOpenModal('view', item)}>
+                                                        <Eye size={16} />
+                                                    </button>
+                                                    <button className="act-btn" onClick={() => handleOpenModal('edit', item)}>
+                                                        <Edit size={16} />
+                                                    </button>
+                                                    <button className="act-btn red" onClick={() => setDeleteConfig({ open: true, item })}>
+                                                        <Trash2 size={16} />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -393,12 +421,12 @@ const ProductAttributeHub = () => {
 
                 {/* ── Pagination ── */}
                 {total > 0 && (
-                    <div className="flex items-center justify-between px-6 py-4 bg-white/50 backdrop-blur-sm rounded-2xl border border-rgba(184,134,11,0.1)">
+                    <div className="flex items-center justify-between px-6 py-4 bg-white/50 backdrop-blur-sm rounded-2xl border border-[#b8860b]/10">
                         <span className="text-xs font-mono text-slate-500 uppercase tracking-wider">
                             Showing {filters.page * filters.size + 1}-{Math.min((filters.page + 1) * filters.size, total)} of {total} items
                         </span>
                         <div className="flex items-center gap-2">
-                            <button 
+                            <button
                                 disabled={filters.page === 0}
                                 onClick={() => setFilters(p => ({ ...p, page: p - 1 }))}
                                 className="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-30 transition-all"
@@ -406,7 +434,7 @@ const ProductAttributeHub = () => {
                                 <ChevronLeft size={16} />
                             </button>
                             <span className="font-mono text-xs font-bold px-4">{filters.page + 1} / {totalPages}</span>
-                            <button 
+                            <button
                                 disabled={filters.page >= totalPages - 1}
                                 onClick={() => setFilters(p => ({ ...p, page: p + 1 }))}
                                 className="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-30 transition-all"
@@ -434,13 +462,13 @@ const ProductAttributeHub = () => {
                                 <div className="space-y-2">
                                     <Label className="lux-label">Mã định danh *</Label>
                                     <div className="flex gap-2">
-                                        <Input 
-                                            {...form.register("ma")} 
-                                            className="lux-input font-mono font-bold text-[#b8860b]" 
+                                        <Input
+                                            {...form.register("ma")}
+                                            className="lux-input font-mono font-bold text-[#b8860b]"
                                             placeholder="AUTO-GEN"
                                         />
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             className="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
                                             onClick={() => form.setValue('ma', generateAutoCode())}
                                         >
@@ -514,7 +542,7 @@ const ProductAttributeHub = () => {
                                     <p className="text-xl font-bold text-slate-900">{viewItem.tenMau || viewItem.tenSize || viewItem.tenChatLieu}</p>
                                 </div>
                             </div>
-                            
+
                             {activeTab === 'color' && (
                                 <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-6">
                                     <div className="w-16 h-16 rounded-2xl border-4 border-white shadow-xl flex-shrink-0" style={{ background: viewItem.maMauHex }} />
@@ -569,12 +597,12 @@ const ProductAttributeHub = () => {
                         </div>
                         <div className="px-8 py-4 text-center">
                             <p className="text-sm text-slate-600">
-                                Bạn có chắc chắn muốn xóa vĩnh viễn {TAB_LABELS[activeTab]} 
+                                Bạn có chắc chắn muốn xóa vĩnh viễn {TAB_LABELS[activeTab]}
                                 <span className="block font-black text-slate-900 text-lg mt-1">"{deleteConfig.item.tenMau || deleteConfig.item.tenSize || deleteConfig.item.tenChatLieu}"</span>?
                             </p>
                         </div>
                         <div className="p-8 pt-4 flex flex-col gap-2">
-                            <button 
+                            <button
                                 className="h-12 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 flex items-center justify-center gap-2"
                                 onClick={confirmDelete}
                                 disabled={isDeleting}
@@ -582,7 +610,7 @@ const ProductAttributeHub = () => {
                                 {isDeleting ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
                                 Xóa dữ liệu
                             </button>
-                            <button 
+                            <button
                                 className="h-12 rounded-xl text-slate-500 font-bold hover:bg-slate-50 transition-all"
                                 onClick={() => setDeleteConfig({ open: false, item: null })}
                                 disabled={isDeleting}

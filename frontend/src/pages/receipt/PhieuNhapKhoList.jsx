@@ -345,9 +345,10 @@ export default function PhieuNhapKhoList() {
                                 <thead className="wh-thead">
                                     <tr>
                                         <th className="wh-th text-center w-20">No.</th>
-                                        <th className="wh-th">Mã Phiếu</th>
-                                        <th className="wh-th">Nhà Cung Cấp / Kho</th>
+                                        <th className="wh-th">Mã Phiếu / Đơn Mua</th>
+                                        <th className="wh-th">Nhà Cung Cấp & Kho</th>
                                         <th className="wh-th text-center">Ngày tạo</th>
+                                        <th className="wh-th text-center">Ngày nhập</th>
                                         <th className="wh-th text-center">Trạng thái</th>
                                         <th className="wh-th text-right">Chi tiết</th>
                                     </tr>
@@ -355,39 +356,50 @@ export default function PhieuNhapKhoList() {
                                 <tbody className="wh-tbody">
                                     {data.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="wh-td text-center py-20 bg-white">
+                                            <td colSpan={7} className="wh-td text-center py-20 bg-white">
                                                 <div className="flex flex-col items-center gap-3 opacity-30">
                                                     <ClipboardList size={48} />
                                                     <p className="font-mono text-xs uppercase tracking-widest">Không tìm thấy dữ liệu</p>
                                                 </div>
                                             </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {data.map((item, index) => (
-                                            <tr key={item.id} onClick={() => navigate(`/goods-receipts/${item.id}`)} className="cursor-pointer transition-colors duration-150 hover:bg-violet-50/50">
-                                                <td className="px-4 py-3.5 align-middle text-center w-14 text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
-                                                <td className="px-4 py-3.5 align-middle font-semibold text-violet-600">{item.soPhieuNhap}</td>
-                                                <td className="px-4 py-3.5 align-middle text-slate-600">{item.soDonMua || "-"}</td>
-                                                <td className="px-4 py-3.5 align-middle">{item.tenNhaCungCap}</td>
-                                                <td className="px-4 py-3.5 align-middle">{item.tenKho}</td>
-                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</span></td>
-                                                <td className="px-4 py-3.5 align-middle text-center"><span className="text-sm text-slate-500">{item.ngayNhap ? new Date(item.ngayNhap).toLocaleDateString("vi-VN") : "Chưa nhập kho"}</span></td>
-                                                <td className="px-4 py-3.5 align-middle text-center">
-                                                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${STATUS_MAP[item.trangThai]?.className}`}>
-                                                        <span className={`h-1.5 w-1.5 rounded-full ${STATUS_MAP[item.trangThai]?.dot}`} />
-                                                        {STATUS_MAP[item.trangThai]?.label}
+                                    ) : (
+                                        data.map((item, index) => (
+                                            <tr key={item.id} onClick={() => navigate(`/goods-receipts/${item.id}`)} className="wh-tr">
+                                                <td className="wh-td text-center text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
+                                                <td className="wh-td">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-violet-600">#{item.soPhieuNhap}</span>
+                                                        <span className="text-[10px] text-slate-400 font-mono tracking-tighter">PO: {item.soDonMua || "N/A"}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="wh-td">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-semibold">{item.tenNhaCungCap}</span>
+                                                        <span className="text-[11px] text-[#b8860b] flex items-center gap-1"><Warehouse size={10} /> {item.tenKho}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="wh-td text-center text-slate-500">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</td>
+                                                <td className="wh-td text-center text-slate-500">{item.ngayNhap ? new Date(item.ngayNhap).toLocaleDateString("vi-VN") : "—"}</td>
+                                                <td className="wh-td text-center">
+                                                    <span className={`badge ${STATUS_UI[item.trangThai]?.cls || 'slate'}`}>
+                                                        {STATUS_UI[item.trangThai]?.label || "N/A"}
                                                     </span>
                                                 </td>
+                                                <td className="wh-td text-right">
+                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-400 opacity-0 group-hover:opacity-100 transition-all">
+                                                        <ArrowUpRight size={16} />
+                                                    </div>
+                                                </td>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                    )}
                 </div>
             </div>
+        </div>
         </>
     );
 }
