@@ -99,8 +99,8 @@ const STYLES = `
 .wh-stat {
   background: #fff;
   border: 1px solid rgba(184,134,11,0.15);
-  border-radius: 18px; padding: 22px 24px;
-  display: flex; align-items: center; justify-content: space-between;
+    font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #7a6e5f; white-space: nowrap;
   box-shadow: 0 2px 12px rgba(100,80,30,0.07);
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   position: relative; overflow: hidden;
@@ -266,14 +266,14 @@ const STYLES = `
 
 .wh-thead { position: sticky; top: 0; z-index: 5; }
 .wh-thead tr {
-  background: #faf8f3;
-  border-bottom: 1px solid rgba(184,134,11,0.12);
+    background: #faf8f3;
+    border-bottom: 1px solid rgba(184,134,11,0.12);
 }
 .wh-th {
-  height: 44px; padding: 0 16px;
-  font-family: 'DM Mono', monospace; font-size: 10px;
-  font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase;
-  color: rgba(184,134,11,0.6); white-space: nowrap;
+    height: 48px; padding: 0 16px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #7a6e5f; white-space: nowrap;
 }
 .wh-th.c { text-align: center; }
 
@@ -288,9 +288,12 @@ const STYLES = `
     font-weight: 500;
 }
 .wh-code {
-  font-family: 'DM Mono', monospace; font-size: 12px; color: #b8860b; font-weight: 500;
-  background: rgba(184,134,11,0.08); border: 1px solid rgba(184,134,11,0.18);
-  padding: 3px 10px; border-radius: 7px; white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #b8860b;
+    letter-spacing: 0.025em;
+    white-space: nowrap;
 }
 .wh-name { font-size: 14px; font-weight: 600; color: #1a1612; font-family: 'DM Sans', sans-serif; }
 .wh-addr {
@@ -585,6 +588,11 @@ export default function WarehouseManagement() {
     };
 
     const statusLabel = STATUS_OPTIONS.find(o => o.value === filterStatus)?.label ?? 'Tất cả trạng thái';
+    const warehouseHeaderCellStyle = {
+        fontFamily: "'DM Mono', monospace",
+        letterSpacing: '0.08em',
+        color: '#7a6e5f',
+    };
 
     /* ══════════════
        RENDER
@@ -593,7 +601,7 @@ export default function WarehouseManagement() {
         <>
             <style>{STYLES}</style>
 
-            <div className="wh-root">
+            <div className="wh-root gold-text-sync">
                 <div className="wh-grid" />
                 <div className="wh-orb-1" />
                 <div className="wh-orb-2" />
@@ -747,15 +755,15 @@ export default function WarehouseManagement() {
                             <div className="wh-tbl-card">
                                 <div className="wh-tbl-scroll">
                                     <table className="wh-tbl">
-                                        <thead className="wh-thead">
-                                            <tr>
-                                                <th className="wh-th c" style={{ width: 52 }}>STT</th>
-                                                <th className="wh-th">Mã kho</th>
-                                                <th className="wh-th">Tên kho</th>
-                                                <th className="wh-th">Người quản lý</th>
-                                                <th className="wh-th c">Trạng thái</th>
-                                                <th className="wh-th c">Tồn kho</th>
-                                                <th className="wh-th c">Thao tác</th>
+                                        <thead className="sticky top-0 z-10">
+                                            <tr className="border-b border-[#e6dcc9] bg-[#f8f3e8]">
+                                                <th style={warehouseHeaderCellStyle} className="h-12 px-4 text-center text-xs font-semibold uppercase whitespace-nowrap w-14">STT</th>
+                                                <th style={warehouseHeaderCellStyle} className="h-12 px-4 text-left text-xs font-semibold uppercase whitespace-nowrap">Mã kho</th>
+                                                <th style={warehouseHeaderCellStyle} className="h-12 px-4 text-left text-xs font-semibold uppercase whitespace-nowrap">Tên kho</th>
+                                                <th style={warehouseHeaderCellStyle} className="h-12 px-4 text-left text-xs font-semibold uppercase whitespace-nowrap">Người quản lý</th>
+                                                <th style={warehouseHeaderCellStyle} className="h-12 px-4 text-center text-xs font-semibold uppercase whitespace-nowrap">Trạng thái</th>
+                                                <th style={warehouseHeaderCellStyle} className="h-12 px-4 text-center text-xs font-semibold uppercase whitespace-nowrap">Tồn kho</th>
+                                                <th style={warehouseHeaderCellStyle} className="h-12 px-4 text-center text-xs font-semibold uppercase whitespace-nowrap">Thao tác</th>
                                             </tr>
                                         </thead>
                                         <tbody className="wh-tbody">

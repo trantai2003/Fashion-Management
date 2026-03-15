@@ -317,7 +317,7 @@ export default function SkuBuilder() {
                                                 </td>
 
                                                 <td className="px-4 py-3.5 align-middle">
-                                                    <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 rounded px-2 py-0.5">
+                                                    <span className="font-bold text-violet-600 tracking-wide font-mono text-xs">
                                                         {sku.maSku || sku.maBienThe || sku.skuCode || "N/A"}
                                                     </span>
                                                 </td>
@@ -326,12 +326,12 @@ export default function SkuBuilder() {
                                                     <Link
                                                         to={`/products/${sku.productId}`}
                                                         title={sku.productName}
-                                                        className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-violet-600 hover:underline cursor-pointer"
+                                                        className="block w-full text-left font-bold text-violet-600 tracking-wide font-mono leading-snug truncate hover:text-violet-600 hover:underline cursor-pointer"
                                                     >
                                                         {sku.productName}
                                                     </Link>
                                                     {sku.productCode && (
-                                                        <p className="mt-0.5 text-xs text-slate-500 line-clamp-1">{sku.productCode}</p>
+                                                        <p className="mt-0.5 text-xs font-bold text-violet-600 tracking-wide font-mono line-clamp-1">{sku.productCode}</p>
                                                     )}
                                                 </td>
 

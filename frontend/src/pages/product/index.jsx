@@ -251,7 +251,7 @@ export default function ProductList() {
     const totalPages = Math.max(1, Math.ceil(total / filters.size));
 
     return (
-        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+        <div className="lux-sync warehouse-unified gold-text-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
             <div className="space-y-6 w-full">
 
                 {/* ══ STATS ════════════════════════════════════════════════════════ */}
@@ -512,7 +512,7 @@ export default function ProductList() {
                                                     <Link
                                                         to={`/products/${product.id}`}
                                                         title={product.tenSanPham}
-                                                        className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-violet-600 hover:underline cursor-pointer"
+                                                        className="block w-full text-left font-bold text-violet-600 tracking-wide font-mono leading-snug truncate hover:text-violet-600 hover:underline cursor-pointer"
                                                     >
                                                         {product.tenSanPham}
                                                     </Link>

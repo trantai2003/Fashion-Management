@@ -3,6 +3,7 @@
 @import "tw-animate-css";
 
 :root {
+	color-scheme: light;
 	--gold: #b8860b;
 	--gold-2: #e8b923;
 	--gold-soft: rgba(184, 134, 11, 0.12);
@@ -508,5 +509,89 @@
 
 .warehouse-unified table tbody tr:last-child {
 	border-bottom: none !important;
+}
+
+/* Global gold theme for dropdown popups (filter selectors rendered via portal) */
+[data-slot="dropdown-menu-content"] {
+	background: #fff9ef !important;
+	color: #3d3529 !important;
+	border-color: #e8dcc0 !important;
+	box-shadow: 0 12px 40px rgba(100, 80, 30, 0.15) !important;
+}
+
+[data-slot="dropdown-menu-item"],
+[data-slot="dropdown-menu-checkbox-item"],
+[data-slot="dropdown-menu-radio-item"],
+[data-slot="dropdown-menu-sub-trigger"] {
+	color: #7a6e5f !important;
+}
+
+[data-slot="dropdown-menu-item"]:hover,
+[data-slot="dropdown-menu-checkbox-item"]:hover,
+[data-slot="dropdown-menu-radio-item"]:hover,
+[data-slot="dropdown-menu-sub-trigger"]:hover,
+[data-slot="dropdown-menu-item"][data-highlighted],
+[data-slot="dropdown-menu-checkbox-item"][data-highlighted],
+[data-slot="dropdown-menu-radio-item"][data-highlighted],
+[data-slot="dropdown-menu-sub-trigger"][data-highlighted] {
+	background: rgba(184, 134, 11, 0.1) !important;
+	color: #b8860b !important;
+}
+
+[data-slot="dropdown-menu-separator"] {
+	background: rgba(184, 134, 11, 0.16) !important;
+}
+
+/* Force light mode for Add/Edit Attribute modal regardless of OS theme */
+.attr-light-modal,
+.attr-light-modal * {
+	color-scheme: light !important;
+}
+
+.attr-light-modal[data-slot="dialog-content"] {
+	background: #ffffff !important;
+	color: #0f172a !important;
+	border-color: #e8dcc0 !important;
+}
+
+.attr-light-modal [data-slot="input"],
+.attr-light-modal [data-slot="textarea"],
+.attr-light-modal input:not([type="color"]),
+.attr-light-modal textarea {
+	background: #ffffff !important;
+	color: #0f172a !important;
+	border-color: #e8dcc0 !important;
+}
+
+.attr-light-modal [data-slot="input"]::placeholder,
+.attr-light-modal [data-slot="textarea"]::placeholder,
+.attr-light-modal input::placeholder,
+.attr-light-modal textarea::placeholder {
+	color: #94a3b8 !important;
+}
+
+/* Brown-gold text harmonization for Product + Warehouse screens */
+.gold-text-sync .text-gray-900,
+.gold-text-sync .text-slate-900 {
+	color: #3d3529 !important;
+}
+
+.gold-text-sync .text-gray-800,
+.gold-text-sync .text-slate-800,
+.gold-text-sync .text-gray-700,
+.gold-text-sync .text-slate-700 {
+	color: #5a4f41 !important;
+}
+
+.gold-text-sync .text-gray-600,
+.gold-text-sync .text-slate-600,
+.gold-text-sync .text-gray-500,
+.gold-text-sync .text-slate-500 {
+	color: #7a6e5f !important;
+}
+
+.gold-text-sync .text-gray-400,
+.gold-text-sync .text-slate-400 {
+	color: #a89f92 !important;
 }
 
