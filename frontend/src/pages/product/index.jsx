@@ -512,7 +512,7 @@ export default function ProductList() {
                                                     <Link
                                                         to={`/products/${product.id}`}
                                                         title={product.tenSanPham}
-                                                        className="block w-full text-left font-bold text-violet-600 tracking-wide font-mono leading-snug truncate hover:text-violet-600 hover:underline cursor-pointer"
+                                                        className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-slate-900 hover:underline cursor-pointer"
                                                     >
                                                         {product.tenSanPham}
                                                     </Link>

@@ -326,12 +326,12 @@ export default function SkuBuilder() {
                                                     <Link
                                                         to={`/products/${sku.productId}`}
                                                         title={sku.productName}
-                                                        className="block w-full text-left font-bold text-violet-600 tracking-wide font-mono leading-snug truncate hover:text-violet-600 hover:underline cursor-pointer"
+                                                        className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-slate-900 hover:underline cursor-pointer"
                                                     >
                                                         {sku.productName}
                                                     </Link>
                                                     {sku.productCode && (
-                                                        <p className="mt-0.5 text-xs font-bold text-violet-600 tracking-wide font-mono line-clamp-1">{sku.productCode}</p>
+                                                        <p className="mt-0.5 text-xs font-semibold text-slate-700 font-mono line-clamp-1">{sku.productCode}</p>
                                                     )}
                                                 </td>
 
