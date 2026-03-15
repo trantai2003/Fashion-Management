@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
     Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight,
     Save, RotateCcw, Palette, Ruler, Layers, Loader2, AlertTriangle,
-    Filter, RefreshCcw, ChevronDown, Check, Package, X, AlertCircle
+    Filter, RefreshCcw, ChevronDown, Check, Package, X, AlertCircle,
+    Hash, Tag, Type, AlignLeft, SortAsc, Pipette
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,172 +22,6 @@ import {
 import { toast } from "sonner";
 import { mauSacService, sizeService } from "@/services/attributeService";
 import { getAllChatLieu, deleteChatLieu, createChatLieu, updateChatLieu } from "@/services/chatLieuService";
-
-/* ══════════════════════════════════════════════════════
-   STYLES — Light Ivory / Gold Luxury
-══════════════════════════════════════════════════════ */
-const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-
-.lux-root {
-  min-height: 100vh;
-  background: #faf8f3;
-  padding: 32px;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  position: relative;
-}
-
-.lux-grid {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background-image:
-    linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
-  background-size: 56px 56px;
-}
-
-.lux-inner {
-  position: relative; z-index: 1;
-  max-width: 1400px; margin: 0 auto;
-  display: flex; flex-direction: column; gap: 24px;
-}
-
-/* ── Header ── */
-.lux-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  padding-bottom: 24px;
-  border-bottom: 1.5px solid rgba(184,134,11,0.15);
-}
-.lux-title-wrap { display: flex; flex-direction: column; gap: 4px; }
-.lux-eyebrow {
-  font-family: 'DM Mono', monospace; font-size: 11px;
-  letter-spacing: 0.25em; color: rgba(184,134,11,0.6);
-  text-transform: uppercase; font-weight: 600;
-}
-.lux-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 32px; font-weight: 900; color: #1a1612;
-  letter-spacing: -0.5px;
-}
-.lux-title span { color: #b8860b; }
-
-/* ── Tabs ── */
-.lux-tabs-list {
-  background: rgba(184,134,11,0.05) !important;
-  border: 1px solid rgba(184,134,11,0.1) !important;
-  padding: 6px !important; border-radius: 16px !important;
-}
-.lux-tab-trigger {
-  font-family: 'DM Mono', monospace !important; font-size: 11px !important;
-  font-weight: 700 !important; text-transform: uppercase !important;
-  letter-spacing: 0.05em !important; padding: 10px 24px !important;
-  border-radius: 12px !important; transition: all 0.3s !important;
-  color: #7a6e5f !important;
-}
-.lux-tab-trigger[data-state='active'] {
-  background: #fff !important; color: #b8860b !important;
-  box-shadow: 0 4px 12px rgba(184,134,11,0.15) !important;
-}
-
-/* ── Filter Card ── */
-.lux-filter {
-  background: #fff; border-radius: 20px; border: 1px solid rgba(184,134,11,0.15);
-  padding: 24px; box-shadow: 0 4px 20px rgba(100,80,30,0.06);
-  display: flex; align-items: flex-end; gap: 20px;
-}
-.lux-input-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.lux-label {
-  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
-  text-transform: uppercase; color: #b8860b; letter-spacing: 0.05em;
-}
-.lux-input {
-  height: 48px !important; border-radius: 12px !important;
-  background: #faf8f3 !important; border: 1.5px solid rgba(184,134,11,0.1) !important;
-  font-size: 14px !important; transition: all 0.2s !important;
-}
-.lux-input:focus {
-  outline: none !important; border-color: #b8860b !important; background: #fff !important;
-  box-shadow: 0 0 0 4px rgba(184,134,11,0.08) !important;
-}
-
-/* ── Table ── */
-.wh-tbl-card {
-  background: #fff; border-radius: 24px; border: 1px solid rgba(184,134,11,0.15);
-  overflow: hidden; box-shadow: 0 10px 40px rgba(100,80,30,0.08);
-}
-.wh-tbl { width: 100%; border-collapse: collapse; }
-.wh-th {
-  height: 52px; padding: 0 20px; background: #faf8f3;
-  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
-  color: #b8860b; text-transform: uppercase; letter-spacing: 0.1em;
-  text-align: left; border-bottom: 2px solid rgba(184,134,11,0.12);
-}
-.wh-td { 
-  padding: 16px 20px; border-bottom: 1px solid rgba(184,134,11,0.08);
-  font-size: 14px; color: #1a1612; transition: all 0.2s;
-}
-.wh-tr:hover .wh-td { background: rgba(184,134,11,0.03); }
-
-/* ── Buttons ── */
-.btn-gold {
-  height: 48px; padding: 0 24px; border-radius: 12px;
-  background: linear-gradient(135deg, #b8860b, #e8b923);
-  border: none; color: #fff; font-size: 14px; font-weight: 700;
-  display: flex; align-items: center; gap: 10px; cursor: pointer;
-  box-shadow: 0 4px 15px rgba(184,134,11,0.3); transition: all 0.2s;
-}
-.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(184,134,11,0.45); }
-
-.btn-white {
-  height: 48px; padding: 0 24px; border-radius: 12px;
-  background: #fff; border: 1.5px solid rgba(184,134,11,0.2);
-  color: #7a6e5f; font-size: 14px; font-weight: 600;
-  display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;
-}
-.btn-white:hover { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
-
-/* ── Action Buttons ── */
-.act-btn {
-  width: 32px; height: 32px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(184,134,11,0.05); color: #b8860b;
-  transition: all 0.2s;
-}
-.act-btn:hover { background: #b8860b; color: #fff; transform: translateY(-2px); }
-.act-btn.red { color: #dc2626; background: rgba(220,38,38,0.05); }
-.act-btn.red:hover { background: #dc2626; color: #fff; }
-
-/* ── Dialogs ── */
-.lux-dialog-content {
-  background: #fff !important; border-radius: 24px !important;
-  border: 1px solid rgba(184,134,11,0.15) !important;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.12) !important;
-  padding: 0 !important; overflow: hidden !important;
-}
-.lux-dialog-head {
-  padding: 24px 32px; background: #faf8f3;
-  border-bottom: 1px solid rgba(184,134,11,0.12);
-}
-.lux-dialog-body { padding: 32px; display: flex; flex-direction: column; gap: 20px; }
-.lux-dialog-foot {
-  padding: 20px 32px; background: #faf8f3;
-  border-top: 1px solid rgba(184,134,11,0.12);
-  display: flex; justify-content: flex-end; gap: 12px;
-}
-/* ── Pagination ── */
-.pag-card {
-  background: #fff; border-radius: 16px; padding: 14px 24px;
-  border: 1px solid rgba(184,134,11,0.15);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.pag-btn {
-  height: 36px; padding: 0 14px; border-radius: 9px;
-  background: #fff; border: 1.5px solid rgba(184,134,11,0.15);
-  color: #7a6e5f; font-size: 12px; font-weight: 600; transition: all 0.2s;
-  display: flex; align-items: center; gap: 6px; cursor: pointer;
-}
-.pag-btn:hover:not(:disabled) { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
-.pag-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-`;
 
 const formSchema = z.object({
     ten: z.string().min(1, "Tên không được để trống"),
@@ -212,6 +47,311 @@ const EmptyState = ({ icon: Icon, label }) => (
         </p>
     </div>
 );
+
+/* ══════════════════════════════════════════════════════
+   VIEW MODAL — Luxury Ivory/Gold Theme
+══════════════════════════════════════════════════════ */
+const ViewModal = ({ viewItem, activeTab, onClose, onEdit }) => {
+    if (!viewItem) return null;
+
+    const TabIcon = TAB_ICONS[activeTab];
+    const tabLabel = TAB_NAMES[activeTab];
+
+    const getCode = (item) => item.maMau || item.maSize || item.maChatLieu || '—';
+    const getName = (item) => item.tenMau || item.tenSize || item.tenChatLieu || '—';
+
+    return (
+        <Dialog open={!!viewItem} onOpenChange={o => !o && onClose()}>
+            <DialogContent
+                className="max-w-md p-0 overflow-hidden border-0 shadow-2xl"
+                style={{
+                    background: '#fffdf8',
+                    borderRadius: '24px',
+                    border: '1px solid rgba(184,134,11,0.18)',
+                    boxShadow: '0 24px 64px rgba(100,80,20,0.16), 0 0 0 1px rgba(184,134,11,0.1)',
+                }}
+            >
+                {/* ── Header strip ── */}
+                <div style={{
+                    background: 'linear-gradient(135deg, #fdf3d8 0%, #fff8e8 60%, #fdf0cc 100%)',
+                    borderBottom: '1.5px solid rgba(184,134,11,0.15)',
+                    padding: '22px 28px 18px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                }}>
+                    {/* decorative corner accent */}
+                    <div style={{
+                        position: 'absolute', top: -20, right: -20,
+                        width: 100, height: 100, borderRadius: '50%',
+                        background: 'rgba(184,134,11,0.07)',
+                        pointerEvents: 'none',
+                    }} />
+                    <div style={{
+                        position: 'absolute', bottom: -30, right: 40,
+                        width: 60, height: 60, borderRadius: '50%',
+                        background: 'rgba(184,134,11,0.05)',
+                        pointerEvents: 'none',
+                    }} />
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
+                        {/* Icon badge */}
+                        <div style={{
+                            width: 42, height: 42, borderRadius: 12,
+                            background: 'linear-gradient(135deg, #b8860b, #d4a017)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(184,134,11,0.35)',
+                            flexShrink: 0,
+                        }}>
+                            <TabIcon size={20} color="#fff" />
+                        </div>
+                        <div>
+                            <p style={{
+                                fontFamily: "'DM Mono', monospace",
+                                fontSize: 10, fontWeight: 700,
+                                letterSpacing: '0.18em', textTransform: 'uppercase',
+                                color: 'rgba(184,134,11,0.65)', marginBottom: 2,
+                            }}>
+                                Chi tiết thuộc tính
+                            </p>
+                            <DialogTitle style={{
+                                fontFamily: "'Playfair Display', serif",
+                                fontSize: 20, fontWeight: 800,
+                                color: '#1a1612', margin: 0,
+                            }}>
+                                {tabLabel}
+                            </DialogTitle>
+                        </div>
+                    </div>
+                    <DialogDescription className="sr-only">Hồ sơ dữ liệu thuộc tính {tabLabel}</DialogDescription>
+                </div>
+
+                {/* ── Body ── */}
+                <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                    {/* Code + Name row */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                        <div style={{
+                            background: '#fff',
+                            border: '1.5px solid rgba(184,134,11,0.12)',
+                            borderRadius: 14,
+                            padding: '14px 16px',
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                                <Hash size={11} color="rgba(184,134,11,0.6)" />
+                                <span style={{
+                                    fontFamily: "'DM Mono', monospace",
+                                    fontSize: 9, fontWeight: 700,
+                                    letterSpacing: '0.15em', textTransform: 'uppercase',
+                                    color: 'rgba(184,134,11,0.6)',
+                                }}>Mã định danh</span>
+                            </div>
+                            <p style={{
+                                fontFamily: "'DM Mono', monospace",
+                                fontSize: 17, fontWeight: 800,
+                                color: '#b8860b', letterSpacing: '0.04em',
+                                lineHeight: 1.2,
+                            }}>
+                                {getCode(viewItem)}
+                            </p>
+                        </div>
+
+                        <div style={{
+                            background: '#fff',
+                            border: '1.5px solid rgba(184,134,11,0.12)',
+                            borderRadius: 14,
+                            padding: '14px 16px',
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                                <Tag size={11} color="rgba(184,134,11,0.6)" />
+                                <span style={{
+                                    fontFamily: "'DM Mono', monospace",
+                                    fontSize: 9, fontWeight: 700,
+                                    letterSpacing: '0.15em', textTransform: 'uppercase',
+                                    color: 'rgba(184,134,11,0.6)',
+                                }}>Tên hiển thị</span>
+                            </div>
+                            <p style={{
+                                fontSize: 15, fontWeight: 700,
+                                color: '#1a1612', lineHeight: 1.3,
+                                wordBreak: 'break-word',
+                            }}>
+                                {getName(viewItem)}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* ── COLOR specific ── */}
+                    {activeTab === 'color' && (
+                        <div style={{
+                            background: '#fff',
+                            border: '1.5px solid rgba(184,134,11,0.12)',
+                            borderRadius: 14,
+                            padding: '16px 18px',
+                            display: 'flex', alignItems: 'center', gap: 18,
+                        }}>
+                            {/* Large color swatch */}
+                            <div style={{
+                                width: 64, height: 64, borderRadius: 14, flexShrink: 0,
+                                background: viewItem.maMauHex || '#000',
+                                border: '2.5px solid rgba(184,134,11,0.18)',
+                                boxShadow: `0 6px 20px ${viewItem.maMauHex}55, 0 2px 6px rgba(0,0,0,0.08)`,
+                            }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                                    <Pipette size={11} color="rgba(184,134,11,0.6)" />
+                                    <span style={{
+                                        fontFamily: "'DM Mono', monospace",
+                                        fontSize: 9, fontWeight: 700,
+                                        letterSpacing: '0.15em', textTransform: 'uppercase',
+                                        color: 'rgba(184,134,11,0.6)',
+                                    }}>Mã màu Hex</span>
+                                </div>
+                                <p style={{
+                                    fontFamily: "'DM Mono', monospace",
+                                    fontSize: 22, fontWeight: 900,
+                                    color: '#1a1612', textTransform: 'uppercase',
+                                    letterSpacing: '0.06em', lineHeight: 1,
+                                }}>
+                                    {viewItem.maMauHex || '—'}
+                                </p>
+                                {/* mini color bar */}
+                                <div style={{
+                                    marginTop: 8, height: 4, borderRadius: 99,
+                                    background: `linear-gradient(90deg, ${viewItem.maMauHex}99, ${viewItem.maMauHex})`,
+                                    width: '80%',
+                                }} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── SIZE specific ── */}
+                    {activeTab === 'size' && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                            <div style={{
+                                background: '#fff',
+                                border: '1.5px solid rgba(184,134,11,0.12)',
+                                borderRadius: 14, padding: '14px 16px',
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                                    <Ruler size={11} color="rgba(184,134,11,0.6)" />
+                                    <span style={{
+                                        fontFamily: "'DM Mono', monospace",
+                                        fontSize: 9, fontWeight: 700,
+                                        letterSpacing: '0.15em', textTransform: 'uppercase',
+                                        color: 'rgba(184,134,11,0.6)',
+                                    }}>Loại kích cỡ</span>
+                                </div>
+                                {viewItem.loaiSize ? (
+                                    <span style={{
+                                        display: 'inline-block',
+                                        padding: '4px 12px', borderRadius: 99,
+                                        background: 'linear-gradient(135deg, #fdf3d8, #fff0cc)',
+                                        border: '1px solid rgba(184,134,11,0.2)',
+                                        fontSize: 13, fontWeight: 700,
+                                        color: '#b8860b', textTransform: 'uppercase',
+                                        letterSpacing: '0.06em',
+                                    }}>{viewItem.loaiSize}</span>
+                                ) : (
+                                    <p style={{ fontSize: 14, color: '#a09080', fontStyle: 'italic' }}>—</p>
+                                )}
+                            </div>
+                            <div style={{
+                                background: '#fff',
+                                border: '1.5px solid rgba(184,134,11,0.12)',
+                                borderRadius: 14, padding: '14px 16px',
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                                    <SortAsc size={11} color="rgba(184,134,11,0.6)" />
+                                    <span style={{
+                                        fontFamily: "'DM Mono', monospace",
+                                        fontSize: 9, fontWeight: 700,
+                                        letterSpacing: '0.15em', textTransform: 'uppercase',
+                                        color: 'rgba(184,134,11,0.6)',
+                                    }}>Thứ tự ưu tiên</span>
+                                </div>
+                                <p style={{
+                                    fontFamily: "'DM Mono', monospace",
+                                    fontSize: 22, fontWeight: 800,
+                                    color: '#1a1612', lineHeight: 1,
+                                }}>{viewItem.thuTuSapXep ?? '—'}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── Description (material & size) ── */}
+                    {(activeTab === 'material' || activeTab === 'size') && (
+                        <div style={{
+                            background: '#fff',
+                            border: '1.5px solid rgba(184,134,11,0.12)',
+                            borderRadius: 14, padding: '14px 16px',
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                                <AlignLeft size={11} color="rgba(184,134,11,0.6)" />
+                                <span style={{
+                                    fontFamily: "'DM Mono', monospace",
+                                    fontSize: 9, fontWeight: 700,
+                                    letterSpacing: '0.15em', textTransform: 'uppercase',
+                                    color: 'rgba(184,134,11,0.6)',
+                                }}>Mô tả chi tiết</span>
+                            </div>
+                            {viewItem.moTa ? (
+                                <p style={{
+                                    fontSize: 13, color: '#4a3f30', lineHeight: 1.7,
+                                    fontStyle: 'italic', margin: 0,
+                                }}>{viewItem.moTa}</p>
+                            ) : (
+                                <p style={{
+                                    fontSize: 13, color: '#b0a090', fontStyle: 'italic',
+                                    borderLeft: '2px solid rgba(184,134,11,0.15)',
+                                    paddingLeft: 10, margin: 0,
+                                }}>Không có mô tả chi tiết cho thuộc tính này.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* ── Footer ── */}
+                <div style={{
+                    padding: '16px 28px',
+                    background: 'linear-gradient(135deg, #fdf3d8 0%, #fff8e8 100%)',
+                    borderTop: '1.5px solid rgba(184,134,11,0.12)',
+                    display: 'flex', justifyContent: 'flex-end', gap: 10,
+                }}>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            height: 40, padding: '0 18px', borderRadius: 10,
+                            background: '#fff', border: '1.5px solid rgba(184,134,11,0.2)',
+                            color: '#7a6e5f', fontSize: 13, fontWeight: 600,
+                            cursor: 'pointer', transition: 'all 0.18s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#b8860b'; e.currentTarget.style.color = '#b8860b'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(184,134,11,0.2)'; e.currentTarget.style.color = '#7a6e5f'; }}
+                    >
+                        Đóng
+                    </button>
+                    <button
+                        onClick={() => { onEdit(viewItem); onClose(); }}
+                        style={{
+                            height: 40, padding: '0 20px', borderRadius: 10,
+                            background: 'linear-gradient(135deg, #b8860b, #d4a017)',
+                            border: '1.5px solid #b8860b',
+                            color: '#fff', fontSize: 13, fontWeight: 700,
+                            cursor: 'pointer', transition: 'all 0.18s',
+                            display: 'flex', alignItems: 'center', gap: 7,
+                            boxShadow: '0 4px 14px rgba(184,134,11,0.3)',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(184,134,11,0.45)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(184,134,11,0.3)'; }}
+                    >
+                        <Edit size={15} />
+                        Chỉnh sửa
+                    </button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 const ProductAttributeHub = () => {
     const [activeTab, setActiveTab] = useState('color');
@@ -319,22 +459,6 @@ const ProductAttributeHub = () => {
     return (
         <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
             <div className="space-y-6 w-full">
-                <div className="rounded-2xl border border-[rgba(184,134,11,0.18)] bg-white p-5 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/60 shrink-0">
-                            <Package className="h-6 w-6 text-[#b8860b]" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
-                                Quản lý thuộc tính sản phẩm
-                            </h1>
-                            <p className="text-sm text-slate-600 mt-1">
-                                Quản lý danh mục màu sắc, kích cỡ và chất liệu cho toàn bộ sản phẩm.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
                 <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleReset(); }}>
                     <TabsList className="bg-[#f8f2e8] border border-[#e8dcc0] shadow-sm rounded-xl p-1.5">
                         {['color', 'size', 'material'].map(tab => {
@@ -670,65 +794,13 @@ const ProductAttributeHub = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* ── View Modal ── */}
-            <Dialog open={!!viewItem} onOpenChange={o => !o && setViewItem(null)}>
-                <DialogContent className="max-w-lg border border-slate-200 bg-white">
-                    <div className="border-b border-slate-200 bg-slate-50 px-6 py-4">
-                        <DialogTitle className="text-xl font-bold text-slate-900">Chi tiết <span className="text-violet-600">{TAB_LABELS[activeTab]}</span></DialogTitle>
-                        <DialogDescription className="mt-1 text-sm text-slate-500">Hồ sơ dữ liệu thuộc tính</DialogDescription>
-                    </div>
-                    {viewItem && (
-                        <div className="space-y-6 px-6 py-5">
-                            <div className="grid grid-cols-2 gap-12">
-                                <div className="space-y-1">
-                                    <p className="text-xs uppercase tracking-wide text-slate-500">Mã định danh</p>
-                                    <p className="text-xl font-mono font-bold text-violet-600">#{viewItem.maMau || viewItem.maSize || viewItem.maChatLieu}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-xs uppercase tracking-wide text-slate-500">Tên hiển thị</p>
-                                    <p className="text-xl font-bold text-slate-900">{viewItem.tenMau || viewItem.tenSize || viewItem.tenChatLieu}</p>
-                                </div>
-                            </div>
-
-                            {activeTab === 'color' && (
-                                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-6">
-                                    <div className="w-16 h-16 rounded-2xl border-4 border-white shadow-xl flex-shrink-0" style={{ background: viewItem.maMauHex }} />
-                                    <div>
-                                        <p className="text-xs uppercase tracking-wide text-violet-600">HEX CODE COLOR</p>
-                                        <p className="text-2xl font-mono font-black text-slate-800 uppercase tracking-tighter">{viewItem.maMauHex}</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {activeTab === 'size' && (
-                                <div className="grid grid-cols-2 gap-8">
-                                    <div className="space-y-1">
-                                        <p className="text-xs uppercase tracking-wide text-slate-500">Loại kích cỡ</p>
-                                        <p className="font-bold text-slate-700">{viewItem.loaiSize || '—'}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-xs uppercase tracking-wide text-slate-500">Thứ tự ưu tiên</p>
-                                        <p className="font-bold text-slate-700">{viewItem.thuTuSapXep ?? '—'}</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {(viewItem.moTa || activeTab === 'material') && (
-                                <div className="space-y-2 pt-4 border-t border-dashed border-slate-200">
-                                    <p className="text-xs uppercase tracking-wide text-slate-500">Mô tả dữ liệu</p>
-                                    <p className="text-sm text-slate-600 leading-relaxed italic">{viewItem.moTa || 'Không có mô tả chi tiết cho thuộc tính này.'}</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                    <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-6 py-4">
-                        <button className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-600 hover:bg-slate-100" onClick={() => setViewItem(null)}>Đóng</button>
-                        <button className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-900 bg-slate-900 px-4 text-sm font-medium text-white hover:bg-white hover:text-slate-900 transition-all" onClick={() => { handleOpenModal('edit', viewItem); setViewItem(null); }}>
-                            <Edit size={18} /> Chỉnh sửa
-                        </button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            {/* ── View Modal (Luxury Gold/Ivory) ── */}
+            <ViewModal
+                viewItem={viewItem}
+                activeTab={activeTab}
+                onClose={() => setViewItem(null)}
+                onEdit={(item) => handleOpenModal('edit', item)}
+            />
 
             {/* ── Delete Modal ── */}
             {deleteConfig.open && (

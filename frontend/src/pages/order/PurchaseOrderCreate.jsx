@@ -409,7 +409,7 @@ export default function PurchaseOrderCreate() {
 
     return (
         <div className="p-5 space-y-5 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync">
-            
+
             {/* ── Top Header and Navigation ── */}
             <div>
                 <button
@@ -641,11 +641,11 @@ export default function PurchaseOrderCreate() {
                         className="h-10 px-5 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-all shadow-md gap-2"
                     >
                         <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline">Tuyển chọn sản phẩm</span>
+                        <span className="hidden sm:inline">Thêm sản phẩm</span>
                         <span className="sm:hidden">Thêm</span>
                     </Button>
                 </div>
-                
+
                 <div className="overflow-x-auto min-h-[300px]">
                     {orderItems.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full py-20 px-4 text-center">
@@ -788,7 +788,7 @@ export default function PurchaseOrderCreate() {
                             </DialogTitle>
                         </div>
                     </div>
-                    
+
                     <div className="p-5 border-b border-slate-100 shrink-0 bg-slate-50/50">
                         <div className="relative">
                             <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
@@ -882,7 +882,7 @@ export default function PurchaseOrderCreate() {
                             Phát tín hiệu Y/C báo giá
                         </DialogTitle>
                     </div>
-                    
+
                     <div className="p-6">
                         <DialogDescription className="text-[15px] text-slate-600 mb-6">
                             Thông qua tính năng này, email yêu cầu báo giá sẽ gửi trực tiếp đến hộp thư của đối tác. Vui lòng rà soát cẩn trọng.
