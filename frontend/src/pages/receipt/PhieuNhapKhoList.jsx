@@ -1,20 +1,21 @@
 import { useEffect, useState, useMemo } from "react";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
-import { Link, useNavigate } from "react-router-dom";
-import { 
-    Loader2, Search, RefreshCcw, Package, Plus,
-    ChevronDown, ChevronLeft, ChevronRight, Check, Filter,
-    FileText, CheckCircle2, XCircle, ClipboardList,
-    ArrowUpRight, LayoutGrid, Warehouse
+import { useNavigate } from "react-router-dom";
+import {
+  Loader2, Search, RefreshCcw, Package, Plus,
+  ChevronDown, ChevronLeft, ChevronRight, Check, Filter,
+  FileText, CheckCircle2, XCircle, ClipboardList,
+  ArrowUpRight, Warehouse, PlusCircle
 } from "lucide-react";
+import { toast } from "sonner";
 
 /* ══════════════════════════════════════════════════════
-   STYLES — Light Ivory / Gold Luxury
-   (Sync with Warehouse / Homepage / Login / Detail)
+   STYLES — Light Ivory / Gold Luxury (đồng bộ với Warehouse)
 ══════════════════════════════════════════════════════ */
 const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
+/* Root & nền */
 .wh-root {
   min-height: 100vh;
   background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 55%, #ede9de 100%);
@@ -30,390 +31,375 @@ const STYLES = `
     linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
   background-size: 56px 56px;
+  animation: whGrid 40s linear infinite;
 }
+@keyframes whGrid { to { background-position: 56px 56px; } }
 
 .wh-orb-1 {
-  position: fixed; width: 600px; height: 600px; border-radius: 50%;
-  background: rgba(184,134,11,0.06); filter: blur(120px);
-  top: -200px; right: -150px; pointer-events: none; z-index: 0;
+  position: fixed; width: 580px; height: 580px; border-radius: 50%;
+  background: rgba(184,134,11,0.07); filter: blur(110px);
+  top: -180px; right: -130px; pointer-events: none; z-index: 0;
+}
+.wh-orb-2 {
+  position: fixed; width: 420px; height: 420px; border-radius: 50%;
+  background: rgba(201,150,12,0.05); filter: blur(100px);
+  bottom: -110px; left: -90px; pointer-events: none; z-index: 0;
 }
 
+/* Inner */
 .wh-inner {
   position: relative; z-index: 1;
-  max-width: 1400px; margin: 0 auto;
+  max-width: 1440px; margin: 0 auto;
   display: flex; flex-direction: column; gap: 24px;
 }
 
-/* ── Header ── */
+/* Nút thêm mới */
+.wh-btn-add {
+  height: 46px; padding: 0 24px; border-radius: 12px;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  border: none; color: #fff; font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  box-shadow: 0 5px 18px rgba(184,134,11,0.32);
+  transition: all 0.22s;
+}
+.wh-btn-add:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(184,134,11,0.48); }
+
+/* Header */
 .wh-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding-bottom: 20px;
-  border-bottom: 1.5px solid rgba(184,134,11,0.15);
-}
-.wh-title-wrap { display: flex; flex-direction: column; gap: 3px; }
-.wh-eyebrow {
-  font-family: 'DM Mono', monospace; font-size: 10px;
-  letter-spacing: 0.2em; color: rgba(184,134,11,0.65);
-  text-transform: uppercase;
+  padding-bottom: 20px; border-bottom: 1.5px solid rgba(184,134,11,0.15);
 }
 .wh-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px; font-weight: 900; color: #1a1612;
-  letter-spacing: -0.5px; line-height: 1.1;
+  font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900;
+  color: #1a1612; letter-spacing: -0.6px;
 }
 .wh-title span { color: #b8860b; }
 
-/* ── Stats ── */
+/* Stats */
 .stats-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;
 }
 .stat-card {
-  background: #fff; border: 1px solid rgba(184,134,11,0.12);
-  border-radius: 18px; padding: 22px;
-  box-shadow: 0 4px 15px rgba(100,80,30,0.05);
+  background: #fff; border: 1px solid rgba(184,134,11,0.14);
+  border-radius: 18px; padding: 24px;
+  box-shadow: 0 4px 16px rgba(100,80,30,0.06);
   display: flex; align-items: center; justify-content: space-between;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.28s;
 }
-.stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(100,80,30,0.1); border-color: #b8860b; }
-.stat-lbl { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; color: #a89f92; letter-spacing: 0.1em; }
-.stat-val { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 900; color: #1a1612; margin-top: 4px; }
-.stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(100,80,30,0.12); border-color: #b8860b; }
+.stat-icon-wrap { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.stat-label { font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; color: #a89f92; letter-spacing: 0.12em; }
+.stat-value { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: #1a1612; margin-top: 4px; }
 
-/* ── Filter Card ── */
-.filter-card {
-  background: #fff; border-radius: 20px; border: 1px solid rgba(184,134,11,0.15);
-  padding: 24px; box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+/* Table card */
+.wh-table-card {
+  background: #fff; border-radius: 20px; overflow: hidden;
+  box-shadow: 0 6px 24px rgba(100,80,30,0.08);
+  border: 1px solid rgba(184,134,11,0.12);
 }
-.filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
-.inp-wrap { display: flex; flex-direction: column; gap: 7px; }
-.inp-lbl { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600; text-transform: uppercase; color: #b8860b; }
-.inp-field {
-  height: 44px; padding: 0 16px; border-radius: 11px;
-  background: #faf8f3; border: 1.5px solid rgba(184,134,11,0.1);
-  font-size: 13px; color: #1a1612; transition: all 0.2s;
-}
-.inp-field:focus { outline: none; border-color: #b8860b; background: #fff; box-shadow: 0 0 0 3px rgba(184,134,11,0.1); }
-
-/* ── Table Container ── */
-.wh-tbl-card {
-  background: #fff; border: 1px solid rgba(184,134,11,0.15);
-  border-radius: 18px; overflow: hidden;
-  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
-}
-.wh-tbl-card::before {
-  content: ''; display: block; height: 2px;
-  background: linear-gradient(90deg, transparent, #b8860b, transparent);
-}
-.wh-tbl { width: 100%; border-collapse: collapse; text-align: left; }
-.wh-thead tr { background: #faf8f3; border-bottom: 2px solid rgba(184,134,11,0.12); }
 .wh-th {
-  height: 52px; padding: 0 20px;
-  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600;
-  letter-spacing: 0.12em; text-transform: uppercase; color: rgba(184,134,11,0.6);
+  background: #faf8f3; font-family: 'DM Mono', monospace; font-size: 11px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #b8860b; padding: 16px 20px; border-bottom: 2px solid rgba(184,134,11,0.15);
 }
-.wh-tbody tr { border-bottom: 1px solid rgba(184,134,11,0.07); transition: all 0.2s; cursor: pointer; }
-.wh-tbody tr:hover { background: rgba(184,134,11,0.045); }
-.wh-td { padding: 18px 20px; font-size: 14px; color: #3d3529; }
+.wh-td { padding: 16px 20px; color: #1a1612; font-size: 14px; }
+.wh-tr:hover { background: rgba(184,134,11,0.04); transition: background 0.18s; }
 
-.id-badge {
-  font-family: 'DM Mono', monospace; font-size: 11px; color: #b8860b; font-weight: 700;
-  background: rgba(184,134,11,0.08); padding: 4px 10px; border-radius: 8px;
+/* Pagination */
+.wh-pag-btn {
+  padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(184,134,11,0.2);
+  background: white; color: #b8860b; font-weight: 600; cursor: pointer;
+  transition: all 0.18s;
 }
-
-/* ── Pagination ── */
-.pag-card {
-  background: #fff; border: 1px solid rgba(184,134,11,0.15);
-  border-radius: 16px; padding: 14px 24px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.pag-btn {
-  height: 36px; padding: 0 14px; border-radius: 9px;
-  background: #fff; border: 1px solid rgba(184,134,11,0.15);
-  color: #7a6e5f; font-size: 12px; font-weight: 600; transition: all 0.2s;
-  display: flex; align-items: center; gap: 6px; cursor: pointer;
-}
-.pag-btn:hover:not(:disabled) { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
-.pag-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.pag-btn.active { background: #1a1612; color: #fff; border-color: #1a1612; }
-
-/* ── Badges ── */
-.badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 12px; border-radius: 99px; font-size: 11px; font-weight: 700;
-  font-family: 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.03em;
-}
-.badge.green { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2); }
-.badge.amber { background: rgba(184,134,11,0.1); color: #b8860b; border: 1px solid rgba(184,134,11,0.2); }
-.badge.blue  { background: rgba(37,99,235,0.08); color: #2563eb; border: 1px solid rgba(37,99,235,0.2); }
-.badge.red   { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
-.badge.slate { background: rgba(122,110,95,0.08); color: #7a6e5f; border: 1px solid rgba(122,110,95,0.2); }
-
-/* ── Buttons ── */
-.btn-gold {
-  height: 44px; padding: 0 22px; border-radius: 11px;
-  background: linear-gradient(135deg, #b8860b, #e8b923);
-  border: none; color: #fff;
-  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
-  display: flex; align-items: center; gap: 8px; cursor: pointer;
-  box-shadow: 0 4px 18px rgba(184,134,11,0.35); transition: all 0.2s;
-}
-.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(184,134,11,0.48); }
-
-.btn-white {
-  height: 44px; padding: 0 22px; border-radius: 11px;
-  background: #fff; border: 1.5px solid rgba(184,134,11,0.2);
-  color: #7a6e5f; font-size: 13px; font-weight: 600;
-  display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;
-}
-.btn-white:hover { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
+.wh-pag-btn:hover:not(:disabled) { background: #fef9c3; }
+.wh-pag-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
 const STATUS_UI = {
-    0: { label: "Nháp", cls: "slate" },
-    1: { label: "Chờ duyệt", cls: "amber" },
-    2: { label: "Đã duyệt", cls: "blue" },
-    3: { label: "Đã nhập kho", cls: "green" },
-    4: { label: "Đã hủy", cls: "red" },
+  0: { label: "Nháp", cls: "bg-amber-100 text-amber-800 border-amber-200" },
+  1: { label: "Đã nhập", cls: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+  2: { label: "Đã hủy", cls: "bg-red-100 text-red-800 border-red-200" },
+  // thêm trạng thái khác nếu có
 };
 
 export default function PhieuNhapKhoList() {
-    const navigate = useNavigate();
-    const [data, setData] = useState([]);
-    const [total, setTotal] = useState(0);
-    const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "all",
+    page: 0,
+    size: 10,
+  });
+  const [totalPages, setTotalPages] = useState(1);
+  const [stats, setStats] = useState({ total: 0, imported: 0, draft: 0 });
 
-    const [filters, setFilters] = useState({
-        keyword: "",
-        nhaCungCap: "",
-        trangThai: "",
-        ngayNhap: "",
-        page: 0,
-        size: 10,
-    });
+  useEffect(() => {
+    fetchData();
+  }, [filters.page, filters.size]);
 
-    function buildFilterPayload() {
-        const filterList = [];
-        if (filters.keyword?.trim()) {
-            const searchKeyword = filters.keyword.trim();
-            ["soPhieuNhap", "donMuaHang.soDonMua"].forEach((field) => {
-                filterList.push({ fieldName: field, operation: "LIKE", value: searchKeyword, logicType: "OR" });
-            });
-        }
-        if (filters.nhaCungCap?.trim()) {
-            filterList.push({ fieldName: "nhaCungCap.tenNhaCungCap", operation: "LIKE", value: filters.nhaCungCap.trim() });
-        }
-        if (filters.trangThai !== "") {
-            filterList.push({ fieldName: "trangThai", operation: "EQUALS", value: Number(filters.trangThai) });
-        }
-        return { page: filters.page, size: filters.size, filters: filterList, sorts: [{ fieldName: "id", direction: "DESC" }] };
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await phieuNhapKhoService.getAll(filters);
+      setData(res.content || []);
+      setTotalPages(res.totalPages || 1);
+
+      // Giả định API trả stats hoặc tính từ response
+      setStats({
+        total: res.totalElements || 0,
+        imported: res.content?.filter(i => i.trangThai === 1).length || 0,
+        draft: res.content?.filter(i => i.trangThai === 0).length || 0,
+      });
+    } catch (err) {
+      toast.error("Không tải được danh sách phiếu nhập kho");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    async function fetchData() {
-        setLoading(true);
-        try {
-            const payload = buildFilterPayload();
-            const res = await phieuNhapKhoService.filter(payload);
-            let list = res.content || [];
-            if (filters.ngayNhap) {
-                list = list.filter((item) => {
-                    if (!item.ngayNhap) return false;
-                    const date = new Date(item.ngayNhap);
-                    const y = date.getFullYear();
-                    const m = String(date.getMonth() + 1).padStart(2, "0");
-                    const d = String(date.getDate()).padStart(2, "0");
-                    return `${y}-${m}-${d}` === filters.ngayNhap;
-                });
-            }
-            setData(list);
-            setTotal(res.totalElements || 0);
-        } finally {
-            setLoading(false);
-        }
+  const handleSearch = (e) => {
+    setFilters(prev => ({ ...prev, search: e.target.value, page: 0 }));
+  };
+
+  const handleStatusFilter = (status) => {
+    setFilters(prev => ({ ...prev, status, page: 0 }));
+  };
+
+  const handleReset = () => {
+    setFilters({ search: "", status: "all", page: 0, size: 10 });
+  };
+
+  const filteredData = useMemo(() => {
+    let result = data;
+    if (filters.search) {
+      const term = filters.search.toLowerCase();
+      result = result.filter(item =>
+        item.soPhieuNhap?.toLowerCase().includes(term) ||
+        item.tenNhaCungCap?.toLowerCase().includes(term) ||
+        item.tenKho?.toLowerCase().includes(term)
+      );
     }
+    if (filters.status !== "all") {
+      result = result.filter(item => item.trangThai === Number(filters.status));
+    }
+    return result;
+  }, [data, filters.search, filters.status]);
 
-    useEffect(() => { fetchData(); }, [filters.keyword, filters.nhaCungCap, filters.trangThai, filters.ngayNhap, filters.page, filters.size]);
+  return (
+    <>
+      <style>{STYLES}</style>
+      <div className="wh-root">
+        <div className="wh-grid" />
+        <div className="wh-orb-1" />
+        <div className="wh-orb-2" />
 
-    const totalPages = Math.max(1, Math.ceil(total / filters.size));
-
-    const handleReset = () => {
-        setFilters({ keyword: "", nhaCungCap: "", trangThai: "", ngayNhap: "", page: 0, size: 10 });
-    };
-
-    const stats = useMemo(() => ({
-        nhap: data.filter((d) => d.trangThai === 0).length,
-        daHoanTat: data.filter((d) => d.trangThai === 3).length,
-        daHuy: data.filter((d) => d.trangThai === 4).length,
-    }), [data]);
-
-    return (
-        <>
-            <style>{STYLES}</style>
-            <div className="wh-root">
-                <div className="wh-grid" />
-                <div className="wh-orb-1" />
-
-                <div className="wh-inner">
-                    {/* ── Header ── */}
-                    <div className="wh-header">
-                        <div className="wh-title-wrap">
-                            <span className="wh-eyebrow">Inventory Management</span>
-                            <h1 className="wh-title">Danh sách <span>phiếu nhập</span></h1>
-                        </div>
-                        <button onClick={() => navigate("/goods-receipts/create")} className="btn-gold">
-                            <Plus size={16} strokeWidth={3} /> Tạo Phiếu Nhập Kho
-                        </button>
-                    </div>
-
-                    {/* ── Stats ── */}
-                    <div className="stats-grid">
-                        <StatCard icon={Package} label="Tổng phiếu" value={total} color="#b8860b" />
-                        <StatCard icon={FileText} label="Bản nháp" value={stats.nhap} color="#7a6e5f" />
-                        <StatCard icon={CheckCircle2} label="Đã nhập kho" value={stats.daHoanTat} color="#16a34a" />
-                        <StatCard icon={XCircle} label="Đã hủy" value={stats.daHuy} color="#dc2626" />
-                    </div>
-
-                    {/* ── Filters ── */}
-                    <div className="filter-card">
-                        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-[#faf8f3]">
-                            <Filter size={16} className="text-[#b8860b]" />
-                            <span className="wh-eyebrow font-bold text-[#1a1612]">Bộ lọc nâng cao</span>
-                        </div>
-                        <div className="filter-grid">
-                            <div className="inp-wrap">
-                                <label className="inp-lbl">Số phiếu / PO</label>
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-3.5 h-4 w-4 text-[#a89f92]" />
-                                    <input 
-                                        placeholder="Tìm mã phiếu..." 
-                                        className="inp-field w-full pl-10"
-                                        value={filters.keyword}
-                                        onChange={(e) => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
-                                    />
-                                </div>
-                            </div>
-                            <div className="inp-wrap">
-                                <label className="inp-lbl">Nhà cung cấp</label>
-                                <input 
-                                    placeholder="Tên đối tác..." 
-                                    className="inp-field"
-                                    value={filters.nhaCungCap}
-                                    onChange={(e) => setFilters(p => ({ ...p, nhaCungCap: e.target.value, page: 0 }))}
-                                />
-                            </div>
-                            <div className="inp-wrap">
-                                <label className="inp-lbl">Trạng thái</label>
-                                <select 
-                                    className="inp-field"
-                                    value={filters.trangThai}
-                                    onChange={(e) => setFilters(p => ({ ...p, trangThai: e.target.value, page: 0 }))}
-                                >
-                                    <option value="">Tất cả trạng thái</option>
-                                    <option value="0">Nháp</option>
-                                    <option value="1">Chờ duyệt</option>
-                                    <option value="3">Đã nhập kho</option>
-                                    <option value="4">Đã hủy</option>
-                                </select>
-                            </div>
-                            <div className="inp-wrap">
-                                <label className="inp-lbl">Ngày nhập</label>
-                                <input 
-                                    type="date"
-                                    className="inp-field"
-                                    value={filters.ngayNhap}
-                                    onChange={(e) => setFilters(p => ({ ...p, ngayNhap: e.target.value, page: 0 }))}
-                                />
-                            </div>
-                            <div className="flex items-end">
-                                <button onClick={handleReset} className="btn-white w-full">
-                                    <RefreshCcw size={14} /> Đặt lại
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ── Table ── */}
-                    <div className="wh-tbl-card">
-                        <div className="p-5 border-b border-[#faf8f3] bg-[#faf8f3]/50 flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <LayoutGrid size={14} className="text-[#b8860b]" />
-                                <span className="wh-eyebrow font-bold text-[#1a1612]">Dữ liệu phiếu nhập</span>
-                            </div>
-                            {loading && <Loader2 size={16} className="animate-spin text-[#b8860b]" />}
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="wh-tbl">
-                                <thead className="wh-thead">
-                                    <tr>
-                                        <th className="wh-th text-center w-20">No.</th>
-                                        <th className="wh-th">Mã Phiếu / Đơn Mua</th>
-                                        <th className="wh-th">Nhà Cung Cấp & Kho</th>
-                                        <th className="wh-th text-center">Ngày tạo</th>
-                                        <th className="wh-th text-center">Ngày nhập</th>
-                                        <th className="wh-th text-center">Trạng thái</th>
-                                        <th className="wh-th text-right">Chi tiết</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="wh-tbody">
-                                    {data.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={7} className="wh-td text-center py-20 bg-white">
-                                                <div className="flex flex-col items-center gap-3 opacity-30">
-                                                    <ClipboardList size={48} />
-                                                    <p className="font-mono text-xs uppercase tracking-widest">Không tìm thấy dữ liệu</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        data.map((item, index) => (
-                                            <tr key={item.id} onClick={() => navigate(`/goods-receipts/${item.id}`)} className="wh-tr">
-                                                <td className="wh-td text-center text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
-                                                <td className="wh-td">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-bold text-violet-600">#{item.soPhieuNhap}</span>
-                                                        <span className="text-[10px] text-slate-400 font-mono tracking-tighter">PO: {item.soDonMua || "N/A"}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="wh-td">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-semibold">{item.tenNhaCungCap}</span>
-                                                        <span className="text-[11px] text-[#b8860b] flex items-center gap-1"><Warehouse size={10} /> {item.tenKho}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="wh-td text-center text-slate-500">{new Date(item.ngayTao).toLocaleDateString("vi-VN")}</td>
-                                                <td className="wh-td text-center text-slate-500">{item.ngayNhap ? new Date(item.ngayNhap).toLocaleDateString("vi-VN") : "—"}</td>
-                                                <td className="wh-td text-center">
-                                                    <span className={`badge ${STATUS_UI[item.trangThai]?.cls || 'slate'}`}>
-                                                        {STATUS_UI[item.trangThai]?.label || "N/A"}
-                                                    </span>
-                                                </td>
-                                                <td className="wh-td text-right">
-                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-400 opacity-0 group-hover:opacity-100 transition-all">
-                                                        <ArrowUpRight size={16} />
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                </div>
+        <div className="wh-inner">
+          {/* Header */}
+          <div className="wh-header">
+            <div>
+              
             </div>
+            <button
+              className="wh-btn-add"
+              onClick={() => navigate("/goods-receipts/create")}
+            >
+              <PlusCircle size={18} /> Tạo phiếu nhập mới
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="stats-grid">
+            <StatCard
+              icon={Package}
+              label="Tổng phiếu nhập"
+              value={stats.total}
+              color="#b8860b"
+            />
+            <StatCard
+              icon={CheckCircle2}
+              label="Đã nhập kho"
+              value={stats.imported}
+              color="#10b981"
+            />
+            <StatCard
+              icon={FileText}
+              label="Nháp / Đang chờ"
+              value={stats.draft}
+              color="#f59e0b"
+            />
+          </div>
+
+          {/* Filter */}
+          <div className="filter-card">
+            <div className="filter-grid">
+              <div className="inp-wrap">
+                <label className="inp-lbl">Tìm kiếm</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-600/60" />
+                  <input
+                    type="text"
+                    placeholder="Số phiếu, nhà cung cấp, kho..."
+                    value={filters.search}
+                    onChange={handleSearch}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-amber-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="inp-wrap">
+                <label className="inp-lbl">Trạng thái</label>
+                <select
+                  value={filters.status}
+                  onChange={e => handleStatusFilter(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-lg border border-amber-200 focus:border-amber-500 bg-white"
+                >
+                  <option value="all">Tất cả trạng thái</option>
+                  <option value="0">Nháp</option>
+                  <option value="1">Đã nhập</option>
+                  <option value="2">Đã hủy</option>
+                </select>
+              </div>
+
+              <div className="flex items-end gap-3">
+                <button
+                  onClick={handleReset}
+                  className="px-5 py-2.5 rounded-lg border border-amber-200 text-amber-800 hover:bg-amber-50 flex items-center gap-2"
+                >
+                  <RefreshCcw size={16} /> Đặt lại
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="wh-table-card">
+            {loading ? (
+              <div className="py-24 flex justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-amber-600" />
+              </div>
+            ) : filteredData.length === 0 ? (
+              <div className="py-20 text-center">
+                <ClipboardList size={64} className="mx-auto text-amber-200" strokeWidth={1} />
+                <h3 className="mt-6 text-xl font-semibold text-slate-700">Chưa có phiếu nhập kho nào</h3>
+                <p className="mt-3 text-slate-500 max-w-md mx-auto">
+                  Tạo phiếu nhập mới hoặc thay đổi bộ lọc để xem dữ liệu.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr>
+                        <th className="wh-th text-center w-12">#</th>
+                        <th className="wh-th">Số phiếu / PO</th>
+                        <th className="wh-th">Nhà cung cấp / Kho</th>
+                        <th className="wh-th text-center">Ngày tạo</th>
+                        <th className="wh-th text-center">Ngày nhập</th>
+                        <th className="wh-th text-center">Trạng thái</th>
+                        <th className="wh-th text-right pr-8">Chi tiết</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredData.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          onClick={() => navigate(`/goods-receipts/${item.id}`)}
+                          className="wh-tr cursor-pointer group"
+                        >
+                          <td className="wh-td text-center text-slate-500 text-xs">
+                            {filters.page * filters.size + index + 1}
+                          </td>
+                          <td className="wh-td">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-amber-700">#{item.soPhieuNhap}</span>
+                              <span className="text-xs text-slate-500 font-mono">
+                                PO: {item.soDonMua || "N/A"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="wh-td">
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-slate-800">{item.tenNhaCungCap}</span>
+                              <span className="text-xs text-amber-700 flex items-center gap-1.5 mt-0.5">
+                                <Warehouse size={12} /> {item.tenKho}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="wh-td text-center text-slate-600 text-sm">
+                            {new Date(item.ngayTao).toLocaleDateString("vi-VN")}
+                          </td>
+                          <td className="wh-td text-center text-slate-600 text-sm">
+                            {item.ngayNhap
+                              ? new Date(item.ngayNhap).toLocaleDateString("vi-VN")
+                              : "—"}
+                          </td>
+                          <td className="wh-td text-center">
+                            <span
+                              className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${STATUS_UI[item.trangThai]?.cls || "bg-slate-100 text-slate-700 border-slate-200"}`}
+                            >
+                              {STATUS_UI[item.trangThai]?.label || "Không xác định"}
+                            </span>
+                          </td>
+                          <td className="wh-td text-right pr-8">
+                            <div className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-amber-50/50 text-amber-700 opacity-0 group-hover:opacity-100 transition-all">
+                              <ArrowUpRight size={18} />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="px-6 py-4 border-t border-amber-100 flex items-center justify-between text-sm text-slate-600">
+                  <div>
+                    Hiển thị <span className="font-medium">{filteredData.length}</span> / {stats.total} phiếu
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      className="wh-pag-btn"
+                      disabled={filters.page === 0}
+                      onClick={() => setFilters(p => ({ ...p, page: p.page - 1 }))}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+
+                    <span className="px-4 font-medium">
+                      {filters.page + 1} / {totalPages}
+                    </span>
+
+                    <button
+                      className="wh-pag-btn"
+                      disabled={filters.page >= totalPages - 1}
+                      onClick={() => setFilters(p => ({ ...p, page: p.page + 1 }))}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-        </>
-    );
+      </div>
+    </>
+  );
 }
 
 function StatCard({ icon: Icon, label, value, color }) {
-    return (
-        <div className="stat-card">
-            <div>
-                <p className="stat-lbl">{label}</p>
-                <p className="stat-val">{value}</p>
-            </div>
-            <div className="stat-icon" style={{ backgroundColor: `${color}12` }}>
-                <Icon size={20} style={{ color }} />
-            </div>
-        </div>
-    );
+  return (
+    <div className="stat-card">
+      <div>
+        <p className="stat-label">{label}</p>
+        <p className="stat-value">{value.toLocaleString("vi-VN")}</p>
+      </div>
+      <div className="stat-icon-wrap" style={{ backgroundColor: `${color}15` }}>
+        <Icon size={24} style={{ color }} />
+      </div>
+    </div>
+  );
 }

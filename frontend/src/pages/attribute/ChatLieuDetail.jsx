@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, Layers, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getChatLieuById, createChatLieu, updateChatLieu } from "@/services/chatLieuService";
@@ -20,35 +19,29 @@ const formSchema = z.object({
     moTa:        z.string().max(500, "Mô tả tối đa 500 ký tự").optional(),
 });
 
-// ── Status toggle — đồng nhất với SupplierDetail ─────────────────────────
 function StatusToggle({ value, onChange }) {
     return (
-        <div className="flex gap-2">
-            <button type="button" onClick={() => onChange(1)}
-                className={`flex items-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200
-                    ${value === 1 ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"}`}>
-                <CheckCircle2 className="h-4 w-4" />Hoạt động
+        <div className="flex gap-3">
+            <button
+                type="button"
+                onClick={() => onChange(1)}
+                className="flex items-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200"
+                style={value === 1
+                    ? { borderColor: "#10b981", background: "#f0fdf4", color: "#065f46" }
+                    : { borderColor: "#e5e7eb", background: "#fff", color: "#94a3b8" }}
+            >
+                <CheckCircle2 className="h-4 w-4" /> Hoạt động
             </button>
-            <button type="button" onClick={() => onChange(0)}
-                className={`flex items-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200
-                    ${value === 0 ? "border-slate-400 bg-slate-100 text-slate-700 shadow-sm" : "border-slate-200 bg-white text-slate-400 hover:border-slate-300"}`}>
-                <XCircle className="h-4 w-4" />Ngừng hoạt động
+            <button
+                type="button"
+                onClick={() => onChange(0)}
+                className="flex items-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200"
+                style={value === 0
+                    ? { borderColor: "#94a3b8", background: "#f8fafc", color: "#475569" }
+                    : { borderColor: "#e5e7eb", background: "#fff", color: "#94a3b8" }}
+            >
+                <XCircle className="h-4 w-4" /> Ngừng hoạt động
             </button>
-        </div>
-    );
-}
-
-// ── Section card ──────────────────────────────────────────────────────────
-function SectionCard({ icon: Icon, iconBg, iconColor, title, children }) {
-    return (
-        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-            <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
-                <div className={`flex h-9 w-9 items-center justify-center rounded-full ${iconBg}`}>
-                    <Icon className={`h-4 w-4 ${iconColor}`} />
-                </div>
-                <p className="font-semibold text-slate-900 text-sm">{title}</p>
-            </div>
-            <div className="p-6">{children}</div>
         </div>
     );
 }
@@ -108,101 +101,163 @@ export default function ChatLieuDetail() {
 
     if (loading && isEdit) {
         return (
-            <div className="p-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen flex items-center justify-center">
-                <div className="flex items-center gap-2">
-                    <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
-                    <span className="text-sm text-gray-600">Đang tải...</span>
+            <div className="p-6 min-h-screen flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #ca8a04 0%, #b45309 100%)" }}>
+                <div className="flex items-center gap-2 bg-white/95 rounded-2xl px-6 py-4 shadow-lg ring-1 ring-white/60">
+                    <Loader2 className="h-5 w-5 animate-spin text-yellow-600" />
+                    <span className="text-sm font-medium text-gray-700">Đang tải...</span>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+        <div className="p-6 space-y-6 min-h-screen"
+            style={{ background: "linear-gradient(135deg, #ca8a04 0%, #b45309 100%)" }}>
+
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto">
 
                     {/* ── Top bar ── */}
                     <div className="flex items-center justify-between">
-                        <button type="button" onClick={() => navigate("/material")}
-                            className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-800 transition-colors duration-150">
-                            <ArrowLeft className="h-4 w-4" />Quay lại danh sách
+                        <button
+                            type="button"
+                            onClick={() => navigate("/material")}
+                            className="inline-flex items-center gap-1.5 text-sm font-bold text-white/90 hover:text-white transition-colors duration-150"
+                        >
+                            <ArrowLeft className="h-4 w-4" /> Quay lại danh sách
                         </button>
                     </div>
 
                     {/* ── Page title ── */}
                     <div>
-                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+                        <h2 className="text-3xl font-bold text-white tracking-tight drop-shadow">
                             {isEdit ? "Chỉnh sửa chất liệu" : "Thêm chất liệu mới"}
                         </h2>
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="text-sm text-white/70 mt-1">
                             {isEdit ? "Cập nhật thông tin chất liệu hiện tại" : "Nhập thông tin để tạo chất liệu mới"}
                         </p>
                     </div>
 
-                    {/* ── Row 1: Thông tin cơ bản — full width ── */}
-                    <SectionCard icon={Layers} iconBg="bg-violet-100" iconColor="text-violet-600" title="Thông tin chất liệu">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <FormField control={form.control} name="maChatLieu" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-sm font-semibold text-slate-700">
-                                        Mã chất liệu <span className="text-red-500">*</span>
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="VD: COTTON, NYLON" className="border-gray-200 focus:border-violet-500 focus:ring-violet-500 font-mono" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
+                    {/* ── Thông tin chất liệu ── */}
+                    <div className="rounded-2xl bg-white/95 shadow-lg ring-1 ring-white/60 overflow-hidden">
+                        <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-100">
+                                <Layers className="h-4 w-4 text-yellow-600" />
+                            </div>
+                            <p className="font-semibold text-slate-900 text-sm">Thông tin chất liệu</p>
+                        </div>
 
-                            <FormField control={form.control} name="tenChatLieu" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-sm font-semibold text-slate-700">
-                                        Tên chất liệu <span className="text-red-500">*</span>
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="VD: Cotton 100%, Polyester" className="border-gray-200 focus:border-violet-500 focus:ring-violet-500" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-
-                            <div className="sm:col-span-2">
-                                <FormField control={form.control} name="moTa" render={({ field }) => (
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <FormField control={form.control} name="maChatLieu" render={({ field, fieldState }) => (
                                     <FormItem>
-                                        <FormLabel className="text-sm font-semibold text-slate-700">Mô tả</FormLabel>
+                                        <FormLabel className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748b" }}>
+                                            Mã chất liệu *
+                                        </FormLabel>
                                         <FormControl>
-                                            <Textarea rows={4} placeholder="Mô tả thêm về chất liệu (tùy chọn)" className="border-gray-200 focus:border-violet-500 focus:ring-violet-500 resize-none" {...field} />
+                                            <Input
+                                                placeholder="VD: COTTON, NYLON"
+                                                style={{
+                                                    background: "#ffffff",
+                                                    borderColor: fieldState.error ? "#ef4444" : "#e5e7eb",
+                                                    color: "#0f172a"
+                                                }}
+                                                className="h-10 font-mono focus:border-yellow-500 focus:ring-yellow-500"
+                                                {...field}
+                                            />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs text-red-500" />
                                     </FormItem>
                                 )} />
+
+                                <FormField control={form.control} name="tenChatLieu" render={({ field, fieldState }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748b" }}>
+                                            Tên chất liệu *
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="VD: Cotton 100%, Polyester"
+                                                style={{
+                                                    background: "#ffffff",
+                                                    borderColor: fieldState.error ? "#ef4444" : "#e5e7eb",
+                                                    color: "#0f172a"
+                                                }}
+                                                className="h-10 focus:border-yellow-500 focus:ring-yellow-500"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage className="text-xs text-red-500" />
+                                    </FormItem>
+                                )} />
+
+                                <div className="sm:col-span-2">
+                                    <FormField control={form.control} name="moTa" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748b" }}>
+                                                Mô tả
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    rows={4}
+                                                    placeholder="Mô tả thêm về chất liệu (tùy chọn)"
+                                                    style={{ background: "#ffffff", borderColor: "#e5e7eb", color: "#0f172a" }}
+                                                    className="focus:border-yellow-500 focus:ring-yellow-500 resize-none"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage className="text-xs text-red-500" />
+                                        </FormItem>
+                                    )} />
+                                </div>
                             </div>
                         </div>
-                    </SectionCard>
+                    </div>
 
-                    {/* ── Row 2: Trạng thái ── */}
-                    <SectionCard icon={CheckCircle2} iconBg="bg-emerald-100" iconColor="text-emerald-600" title="Trạng thái">
-                        <div className="space-y-3">
+                    {/* ── Trạng thái ── */}
+                    <div className="rounded-2xl bg-white/95 shadow-lg ring-1 ring-white/60 overflow-hidden">
+                        <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
+                                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                            </div>
+                            <p className="font-semibold text-slate-900 text-sm">Trạng thái</p>
+                        </div>
+                        <div className="p-6 space-y-3">
                             <StatusToggle value={trangThai} onChange={setTrangThai} />
                             <p className="text-xs text-slate-500">
                                 Bật để chất liệu này có thể sử dụng trong sản phẩm. Tắt để tạm ngừng.
                             </p>
                         </div>
-                    </SectionCard>
-
-                    {/* ── Footer actions ── */}
-                    <div className="flex justify-end gap-3 pt-2">
-                        <Button type="button" variant="outline" className="border-gray-300 text-slate-600 hover:bg-gray-50" onClick={() => navigate("/material")}>
-                            Hủy bỏ
-                        </Button>
-                        <Button type="submit" disabled={loading} className="bg-violet-600 hover:bg-violet-700 text-white shadow-sm transition-all duration-200 min-w-[120px]">
-                            {loading
-                                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang lưu...</>
-                                : <><Save className="mr-2 h-4 w-4" />{isEdit ? "Cập nhật" : "Thêm mới"}</>
-                            }
-                        </Button>
                     </div>
+
+                    {/* ── Footer ── */}
+                    <div className="flex justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => navigate("/material")}
+                            className="inline-flex h-9 items-center justify-center rounded-lg px-4 text-sm font-semibold transition-all duration-150"
+                            style={{ background: "#ffffff", color: "#374151", border: "1px solid #d1d5db" }}
+                            onMouseEnter={e => e.currentTarget.style.background = "#faf7f0"}
+                            onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
+                        >
+                            Hủy bỏ
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg px-5 text-sm font-bold transition-all duration-150 disabled:opacity-50"
+                            style={{ background: "#eab308", color: "#ffffff", border: "none" }}
+                            onMouseEnter={e => { if (!loading) e.currentTarget.style.background = "#ca8a04"; }}
+                            onMouseLeave={e => e.currentTarget.style.background = "#eab308"}
+                        >
+                            {loading
+                                ? <><Loader2 className="h-4 w-4 animate-spin" /> Đang lưu...</>
+                                : <><Save className="h-4 w-4" /> {isEdit ? "Cập nhật" : "Thêm mới"}</>
+                            }
+                        </button>
+                    </div>
+
                 </form>
             </Form>
         </div>
