@@ -260,7 +260,7 @@ function Hero({ navigate }) {
                         <h1 className="hero-title" style={{ fontFamily: 'Playfair Display, serif', fontSize: 58, fontWeight: 900, lineHeight: 1.05, letterSpacing: -1.5, marginBottom: 24, color: '#1a1612' }}>
                             Trung tâm<br />
                             <span style={{ color: '#b8860b' }}>vận hành kho</span><br />
-                            <span style={{ color: '#7a6e5f', fontWeight: 700 }}>FS Fashion Group</span>
+                            <span style={{ color: '#7a6e5f', fontWeight: 700 }}>FS Fashion Solution</span>
                         </h1>
                         <p style={{ fontSize: 16, color: '#7a6e5f', lineHeight: 1.8, marginBottom: 40, maxWidth: 460, fontFamily: 'DM Sans, sans-serif' }}>
                             Truy cập vào không gian làm việc số để quản lý toàn bộ chuỗi cung ứng nội bộ: kiểm soát tồn kho, phê duyệt đơn mua hàng và báo cáo hiệu suất tự động.
