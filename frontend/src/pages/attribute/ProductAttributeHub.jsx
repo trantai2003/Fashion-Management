@@ -30,7 +30,7 @@ const STYLES = `
 
 .lux-root {
   min-height: 100vh;
-  background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 55%, #ede9de 100%);
+  background: #faf8f3;
   padding: 32px;
   font-family: 'DM Sans', system-ui, sans-serif;
   position: relative;
@@ -117,7 +117,7 @@ const STYLES = `
 .wh-th {
   height: 52px; padding: 0 20px; background: #faf8f3;
   font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
-  color: rgba(184,134,11,0.6); text-transform: uppercase; letter-spacing: 0.1em;
+  color: #b8860b; text-transform: uppercase; letter-spacing: 0.1em;
   text-align: left; border-bottom: 2px solid rgba(184,134,11,0.12);
 }
 .wh-td { 
@@ -148,10 +148,12 @@ const STYLES = `
 .act-btn {
   width: 32px; height: 32px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s; color: rgba(184,134,11,0.6);
+  background: rgba(184,134,11,0.05); color: #b8860b;
+  transition: all 0.2s;
 }
-.act-btn:hover { background: rgba(184,134,11,0.1); color: #b8860b; transform: scale(1.1); }
-.act-btn.red:hover { background: rgba(220,38,38,0.1); color: #dc2626; }
+.act-btn:hover { background: #b8860b; color: #fff; transform: translateY(-2px); }
+.act-btn.red { color: #dc2626; background: rgba(220,38,38,0.05); }
+.act-btn.red:hover { background: #dc2626; color: #fff; }
 
 /* ── Dialogs ── */
 .lux-dialog-content {
@@ -170,6 +172,20 @@ const STYLES = `
   border-top: 1px solid rgba(184,134,11,0.12);
   display: flex; justify-content: flex-end; gap: 12px;
 }
+/* ── Pagination ── */
+.pag-card {
+  background: #fff; border-radius: 16px; padding: 14px 24px;
+  border: 1px solid rgba(184,134,11,0.15);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.pag-btn {
+  height: 36px; padding: 0 14px; border-radius: 9px;
+  background: #fff; border: 1.5px solid rgba(184,134,11,0.15);
+  color: #7a6e5f; font-size: 12px; font-weight: 600; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+}
+.pag-btn:hover:not(:disabled) { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
+.pag-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 `;
 
 const formSchema = z.object({
@@ -340,13 +356,13 @@ const ProductAttributeHub = () => {
 
                 {/* ── Action buttons ── */}
                 <div className="flex items-center justify-end">
-                    <Button onClick={() => handleOpenModal('add')} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200">
-                        <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
-                    </Button>
+                    <button onClick={() => handleOpenModal('add')} className="btn-gold">
+                        <Plus className="w-4 h-4" />Thêm {TAB_LABELS[activeTab]} mới
+                    </button>
                 </div>
 
                 {/* ── Table ── */}
-                <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                <div className="wh-tbl-card">
                     {loading ? (
                         <div className="flex items-center justify-center py-16 gap-2">
                             <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
@@ -354,32 +370,32 @@ const ProductAttributeHub = () => {
                         </div>
                     ) : data.length === 0 ? <EmptyState icon={TabIcon} label={TAB_LABELS[activeTab]} /> : (
                         <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
-                            <table className="w-full text-sm">
+                            <table className="wh-tbl">
                                 <thead>
-                                    <tr className="border-b border-slate-200 bg-slate-50">
-                                        <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase w-16">STT</th>
-                                        <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mã</th>
-                                        <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Tên hiển thị</th>
-                                        {activeTab === 'color' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Màu sắc</th>}
-                                        {activeTab === 'size' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Phân loại</th>}
-                                        {activeTab === 'material' && <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Mô tả</th>}
-                                        <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
+                                    <tr>
+                                        <th className="wh-th w-16">STT</th>
+                                        <th className="wh-th">Mã</th>
+                                        <th className="wh-th">Tên hiển thị</th>
+                                        {activeTab === 'color' && <th className="wh-th">Màu sắc</th>}
+                                        {activeTab === 'size' && <th className="wh-th">Phân loại</th>}
+                                        {activeTab === 'material' && <th className="wh-th">Mô tả</th>}
+                                        <th className="wh-th text-center">Thao tác</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="wh-tbody">
                                     {data.map((item, index) => (
-                                        <tr key={item.id} className="hover:bg-violet-50/50 transition-colors duration-150 cursor-pointer" onClick={() => handleOpenModal('edit', item)}>
-                                            <td className="px-4 py-3.5 align-middle text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
-                                            <td className="px-4 py-3.5 align-middle">
+                                        <tr key={item.id} className="wh-tr" onClick={() => handleOpenModal('edit', item)}>
+                                            <td className="wh-td text-xs font-mono text-slate-400">{filters.page * filters.size + index + 1}</td>
+                                            <td className="wh-td">
                                                 <span className="font-bold text-violet-600 tracking-wide font-mono">
                                                     {item.maMau || item.maSize || item.maChatLieu}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3.5 align-middle font-semibold text-slate-900">
+                                            <td className="wh-td font-semibold text-slate-900">
                                                 {item.tenMau || item.tenSize || item.tenChatLieu}
                                             </td>
                                             {activeTab === 'color' && (
-                                                <td className="px-4 py-3.5 align-middle">
+                                                <td className="wh-td">
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-6 h-6 rounded-md border border-slate-200 shadow-sm flex-shrink-0" style={{ backgroundColor: item.maMauHex }} />
                                                         <span className="font-mono text-xs text-slate-500">{item.maMauHex}</span>
@@ -387,18 +403,18 @@ const ProductAttributeHub = () => {
                                                 </td>
                                             )}
                                             {activeTab === 'size' && (
-                                                <td className="px-4 py-3.5 align-middle">
+                                                <td className="wh-td">
                                                     <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-tight">
                                                         {item.loaiSize || '—'}
                                                     </span>
                                                 </td>
                                             )}
                                             {activeTab === 'material' && (
-                                                <td className="px-4 py-3.5 align-middle text-slate-600 italic line-clamp-1 max-w-[200px]">
+                                                <td className="wh-td text-slate-600 italic line-clamp-1 max-w-[200px]">
                                                     {item.moTa || '—'}
                                                 </td>
                                             )}
-                                            <td className="px-4 py-3.5 align-middle">
+                                            <td className="wh-td">
                                                 <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
                                                     <button className="act-btn" onClick={() => handleOpenModal('view', item)}>
                                                         <Eye size={16} />
@@ -421,7 +437,7 @@ const ProductAttributeHub = () => {
 
                 {/* ── Pagination ── */}
                 {total > 0 && (
-                    <div className="flex items-center justify-between px-6 py-4 bg-white/50 backdrop-blur-sm rounded-2xl border border-[#b8860b]/10">
+                    <div className="pag-card">
                         <span className="text-xs font-mono text-slate-500 uppercase tracking-wider">
                             Showing {filters.page * filters.size + 1}-{Math.min((filters.page + 1) * filters.size, total)} of {total} items
                         </span>
@@ -429,17 +445,17 @@ const ProductAttributeHub = () => {
                             <button
                                 disabled={filters.page === 0}
                                 onClick={() => setFilters(p => ({ ...p, page: p - 1 }))}
-                                className="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-30 transition-all"
+                                className="pag-btn"
                             >
-                                <ChevronLeft size={16} />
+                                <ChevronLeft size={16} /> Previous
                             </button>
-                            <span className="font-mono text-xs font-bold px-4">{filters.page + 1} / {totalPages}</span>
+                            <span className="font-mono text-xs font-bold px-4">{filters.page + 1} / {Math.ceil(total / filters.size)}</span>
                             <button
-                                disabled={filters.page >= totalPages - 1}
+                                disabled={filters.page >= Math.ceil(total / filters.size) - 1}
                                 onClick={() => setFilters(p => ({ ...p, page: p + 1 }))}
-                                className="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-30 transition-all"
+                                className="pag-btn"
                             >
-                                <ChevronRight size={16} />
+                                Next <ChevronRight size={16} />
                             </button>
                         </div>
                     </div>
