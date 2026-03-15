@@ -19,7 +19,7 @@ export default function BackofficeLayout() {
         {
             key: "EDIT_USER_ROLE",
             match: (path) => path.endsWith("/edit-role"),
-            title: "Edit User Role",
+            title: "Chỉnh Sửa Quyền Người Dùng",
             subtitle: "Cập nhật quyền hạn cho người dùng dựa trên chức vụ",
         },
         {

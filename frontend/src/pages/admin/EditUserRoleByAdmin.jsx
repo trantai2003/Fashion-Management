@@ -3,15 +3,24 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ROLES } from "@/constants/backend/role";
 import { nguoiDungService } from "@/services/nguoiDungService";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  ShieldCheck, ChevronDown, RefreshCcw, UserCog, Lock, Unlock,
+  Warehouse, AlertCircle, Save, X,
+} from "lucide-react";
 import AssignWarehousePermissionModal from "@/components/admin/AssignWarehousePermissionModal";
 
 export default function UserPermissionEditByAdmin() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [loadingUserWarehouses, setLoadingUserWarehouses] = useState(true);
+
+  const [loading, setLoading] = useState(true);
   const [userWarehouses, setUserWarehouses] = useState([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
+
   const [form, setForm] = useState({
     role: "quan_ly_kho",
     status: 1,
@@ -19,275 +28,286 @@ export default function UserPermissionEditByAdmin() {
 
   const reloadUserWarehouses = async () => {
     if (!id) return;
+    setLoading(true);
     try {
-      setLoadingUserWarehouses(true);
       const res = await nguoiDungService.getById(id);
       const dto = res?.data;
       if (!dto) return;
 
-      setForm((prev) => ({
-        ...prev,
-        role: dto.vaiTro || prev.role,
-        status: dto.trangThai ?? prev.status,
-      }));
+      setForm({
+        role: dto.vaiTro || "quan_ly_kho",
+        status: dto.trangThai ?? 1,
+      });
       setUserWarehouses(dto.khoPhuTrach || []);
-    } catch (e) {
-      console.error("Lỗi load thông tin người dùng & kho phụ trách", e);
+    } catch (err) {
+      console.error("Lỗi tải thông tin người dùng:", err);
     } finally {
-      setLoadingUserWarehouses(false);
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    reloadUserWarehouses();
+  }, [id]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const payload = {
       userId: Number(id),
       role: form.role,
       status: form.status,
     };
-    console.log("Payload gửi BE:", payload);
+    // TODO: Gọi API update thực tế ở đây
+    console.log("Payload gửi backend:", payload);
+    // Ví dụ: await nguoiDungService.updatePermission(payload);
+    // Sau đó có thể navigate(-1) hoặc show toast
   };
 
-  useEffect(() => {
-    reloadUserWarehouses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  const handleRoleChange = (value) => {
+    setForm((prev) => ({ ...prev, role: value }));
+  };
 
   return (
-    <main className="flex-1 p-6 flex flex-col items-center min-h-screen bg-gray-50">
-      <div className="max-w-2xl w-full bg-white border rounded-xl shadow-lg overflow-hidden">
+    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+      <div className="max-w-4xl mx-auto space-y-6">
 
-        {/* ===== HEADER CARD ===== */}
-        <div className="p-6 border-b bg-white flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">
-              Thiết lập vai trò & Kho
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Cập nhật quyền hạn cho người dùng dựa trên chức vụ
-            </p>
-          </div>
-          <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
-            ID: {id}
-          </span>
-        </div>
-
-        {/* ===== FORM ===== */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-8">
-
-          {/* ===== ROLE ===== */}
-          <section>
-            <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider italic">
-              1. Vai trò hệ thống (Cột: vai_tro)
-            </label>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {ROLES.map((r) => (
-                <label
-                  key={r.value}
-                  className="relative flex items-center p-3 border rounded-lg cursor-pointer
-                             hover:bg-gray-50 transition-all
-                             has-checked:border-purple-600
-                             has-checked:bg-purple-50"
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value={r.value}
-                    checked={form.role === r.value}
-                    onChange={() =>
-                      setForm((prev) => ({
-                        ...prev,
-                        role: r.value,
-                        permissions: {}, // reset quyền
-                      }))
-                    }
-                    className="h-4 w-4 text-purple-600"
-                  />
-
-                  <div className="ml-3">
-                    <p className="text-sm font-semibold">{r.value}</p>
-                    <p className="text-[10px] text-gray-500">
-                      {r.label}
-                    </p>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </section>
-
-          <hr className="border-gray-100" />
-
-          {/* ===== PERMISSION ===== */}
-          <section>
-            <div className="mb-4">
-              <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider italic">
-                2. Phân quyền chức năng theo vai trò
-              </label>
-              <p className="text-xs text-gray-500 mt-1">
-                Chọn kho phụ trách trước, sau đó phân quyền chức năng trong cửa sổ bật lên.
-              </p>
-            </div>
-
+        {/* Header Card */}
+        <Card className="border-0 shadow-lg bg-white">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <p className="text-[11px] text-gray-500">
-                Bấm nút bên phải để thêm mới phân quyền kho cho người dùng.
-              </p>
-              <Button
-                type="button"
-                onClick={() => setShowAssignModal(true)}
-                className="text-xs font-semibold bg-linear-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg"
-              >
-                + Thêm mới phân quyền kho
-              </Button>
+              <div className="space-y-1">
+                <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <UserCog className="h-6 w-6 text-purple-600" />
+                  Thiết lập vai trò & quyền kho
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Quản lý vai trò hệ thống và kho phụ trách cho người dùng
+                </p>
+              </div>
+              <Badge variant="outline" className="text-purple-700 border-purple-200 bg-purple-50">
+                User ID: {id}
+              </Badge>
             </div>
-          </section>
+          </CardHeader>
+        </Card>
 
-          {/* ===== WAREHOUSE ===== */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <label className="block text-sm font-bold text-gray-700 uppercase tracking-wider italic">
-                3. Kho phụ trách hiện tại
-              </label>
-              <span className="text-[10px] text-gray-400">
-                * Tự động cập nhật sau khi thêm mới phân quyền kho
-              </span>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
 
-            {loadingUserWarehouses ? (
-              <p className="text-xs text-gray-500">Đang tải danh sách kho phụ trách...</p>
-            ) : userWarehouses.length === 0 ? (
-              <p className="text-xs text-gray-500 italic">
-                Chưa có kho phụ trách. Bấm &quot;Thêm mới phân quyền kho&quot; để bắt đầu.
+          {/* 1. Vai trò hệ thống */}
+          <Card className="border-0 shadow-md bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900">
+                <ShieldCheck className="h-5 w-5 text-purple-600" />
+                1. Vai trò hệ thống
+              </CardTitle>
+              <p className="text-sm text-gray-500">Quyền hạn tổng thể trên toàn hệ thống</p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {ROLES.map((r) => (
+                  <label
+                    key={r.value}
+                    className={`relative flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-200
+                      ${form.role === r.value 
+                        ? "border-purple-500 bg-purple-50/60 shadow-sm" 
+                        : "border-gray-200 hover:border-purple-200 hover:bg-purple-50/30"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value={r.value}
+                      checked={form.role === r.value}
+                      onChange={() => handleRoleChange(r.value)}
+                      className="h-5 w-5 text-purple-600 focus:ring-purple-500"
+                    />
+                    <div className="ml-3">
+                      <p className="font-semibold text-gray-900">{r.value}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{r.label}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 2. Phân quyền kho */}
+          <Card className="border-0 shadow-md bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900">
+                <Warehouse className="h-5 w-5 text-purple-600" />
+                2. Kho phụ trách & quyền chi tiết
+              </CardTitle>
+              <p className="text-sm text-gray-500">
+                Người dùng sẽ có quyền truy cập và thực hiện chức năng tại các kho được phân
               </p>
-            ) : (
-              <div className="space-y-3">
-                {userWarehouses.map((item) => {
-                  const kho = item.kho || {};
-                  const isManager = Number(item.laQuanLyKho) === 1;
-                  const active = Number(kho.trangThai) === 1;
-                  const permissions = item.chiTietQuyenKhos || [];
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">
+                  Thêm kho mới và thiết lập quyền chức năng cụ thể
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => setShowAssignModal(true)}
+                  className="bg-slate-900 text-white hover:bg-slate-800"
+                >
+                  + Thêm kho & phân quyền
+                </Button>
+              </div>
 
-                  return (
-                    <div
-                      key={item.id}
-                      className="p-4 rounded-lg border bg-white shadow-sm flex flex-col gap-3"
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">
-                            {kho.tenKho}
-                          </p>
-                          <p className="text-[11px] text-gray-500 font-mono uppercase">
-                            {kho.maKho} • ID: {kho.id}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-1">
-                            {kho.diaChi}
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <span
-                            className={`text-[10px] px-2 py-1 rounded-full border ${active
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-gray-50 text-gray-500 border-gray-200"
-                              }`}
-                          >
-                            {active ? "KHO HOẠT ĐỘNG" : "KHO TẠM KHÓA"}
-                          </span>
-                          {isManager && (
-                            <span className="text-[10px] px-2 py-1 rounded-full bg-purple-600 text-white font-bold">
-                              QUẢN LÝ CHÍNH
-                            </span>
-                          )}
-                        </div>
-                      </div>
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+                </div>
+              ) : userWarehouses.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50 rounded-xl border border-slate-200">
+                  <AlertCircle className="mx-auto h-10 w-10 text-slate-400" />
+                  <h3 className="mt-4 text-lg font-medium text-slate-900">Chưa có kho phụ trách</h3>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Nhấn nút "Thêm kho & phân quyền" để bắt đầu gán kho cho người dùng này.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {userWarehouses.map((item) => {
+                    const kho = item.kho || {};
+                    const isManager = Number(item.laQuanLyKho) === 1;
+                    const active = Number(kho.trangThai) === 1;
+                    const permissions = item.chiTietQuyenKhos || [];
 
-                      {permissions.length > 0 && (
-                        <div className="pt-2 border-t border-gray-100">
-                          <p className="text-[11px] font-semibold text-gray-700 mb-2 flex items-center gap-1">
-                            <ShieldCheck className="w-3 h-3 text-purple-500" />
-                            Quyền tại kho này
-                          </p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {permissions.map((p) => (
-                              <span
-                                key={p.id}
-                                className="text-[10px] px-2 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100"
-                              >
-                                {p.quyenHan?.tenQuyen || p.maQuyenHan}
-                              </span>
-                            ))}
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-5 rounded-xl border bg-white shadow-sm hover:shadow transition-shadow"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{kho.tenKho}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs font-mono text-slate-500">{kho.maKho}</span>
+                              <span className="text-xs text-slate-400">• ID: {kho.id}</span>
+                            </div>
+                            <p className="text-sm text-slate-600 mt-2 line-clamp-2">{kho.diaChi}</p>
+                          </div>
+
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge
+                              variant={active ? "default" : "secondary"}
+                              className={active ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                            >
+                              {active ? "Hoạt động" : "Tạm khóa"}
+                            </Badge>
+                            {isManager && (
+                              <Badge className="bg-purple-600 hover:bg-purple-700">
+                                Quản lý chính
+                              </Badge>
+                            )}
                           </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+
+                        {permissions.length > 0 && (
+                          <div className="mt-4 pt-4 border-t">
+                            <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                              <ShieldCheck className="h-4 w-4 text-purple-600" />
+                              Quyền tại kho này
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {permissions.map((p) => (
+                                <Badge
+                                  key={p.id}
+                                  variant="outline"
+                                  className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                                >
+                                  {p.quyenHan?.tenQuyen || p.maQuyenHan}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 3. Trạng thái tài khoản */}
+          <Card className="border-0 shadow-md bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900">
+                <Lock className="h-5 w-5 text-amber-600" />
+                3. Trạng thái tài khoản
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between bg-amber-50/60 p-5 rounded-xl border border-amber-200">
+                <div>
+                  <p className="font-medium text-amber-900">Trạng thái hoạt động</p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Khóa tài khoản nếu phát hiện vi phạm hoặc không còn sử dụng
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Label htmlFor="status" className="text-sm font-medium">
+                    {form.status === 1 ? (
+                      <span className="flex items-center gap-1.5 text-emerald-700">
+                        <Unlock className="h-4 w-4" /> Hoạt động
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-red-700">
+                        <Lock className="h-4 w-4" /> Tạm khóa
+                      </span>
+                    )}
+                  </Label>
+
+                  <select
+                    id="status"
+                    value={form.status}
+                    onChange={(e) => setForm((prev) => ({ ...prev, status: Number(e.target.value) }))}
+                    className="h-10 rounded-md border border-amber-300 bg-white px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  >
+                    <option value={1}>Hoạt động (Active)</option>
+                    <option value={0}>Tạm khóa (Banned)</option>
+                  </select>
+                </div>
               </div>
-            )}
-          </section>
+            </CardContent>
+          </Card>
 
-          {/* ===== STATUS ===== */}
-          <section className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-amber-900">
-                  Trạng thái hoạt động
-                </p>
-                <p className="text-xs text-amber-700">
-                  Khóa tài khoản nếu phát hiện vi phạm
-                </p>
-              </div>
-
-              <select
-                value={form.status}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    status: Number(e.target.value),
-                  }))
-                }
-                className="text-sm border-amber-300 rounded-md bg-white px-3 py-1.5 font-semibold
-                           text-amber-900 focus:ring-2 focus:ring-amber-500"
-              >
-                <option value={1}>Hoạt động (Active)</option>
-                <option value={0}>Tạm khóa (Banned)</option>
-              </select>
-            </div>
-          </section>
-
-          {/* ===== ACTION ===== */}
-          <div className="flex justify-end gap-3 pt-6 border-t">
-            <button
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-4 pt-4">
+            <Button
               type="button"
+              variant="outline"
               onClick={() => navigate("/users")}
-              className="px-6 py-2.5 text-sm font-semibold text-gray-600
-               hover:bg-gray-100 rounded-lg transition-colors"
+              className="border-slate-300 hover:bg-slate-100"
             >
-              Hủy Thay Đổi
-            </button>
-            <button
+              <X className="h-4 w-4 mr-2" />
+              Hủy
+            </Button>
+            <Button
               type="submit"
-              className="px-8 py-2.5 text-sm font-bold text-white bg-purple-600
-                         hover:bg-purple-700 rounded-lg shadow-md active:scale-95"
+              className="bg-slate-900 hover:bg-slate-800"
             >
-              Lưu Thiết Lập
-            </button>
+              <Save className="h-4 w-4 mr-2" />
+              Lưu thay đổi
+            </Button>
           </div>
         </form>
+
+        <p className="text-xs text-center text-slate-500 italic pt-4">
+          Dữ liệu được lưu vào bảng: nguoi_dung, phan_quyen_nguoi_dung_kho
+        </p>
+
+        <AssignWarehousePermissionModal
+          open={showAssignModal}
+          onClose={() => setShowAssignModal(false)}
+          userId={id}
+          onAssigned={reloadUserWarehouses}
+        />
       </div>
-
-      <p className="mt-6 text-xs text-gray-400 italic">
-        Dữ liệu được lưu vào các bảng: nguoi_dung, phan_quyen_nguoi_dung_kho
-      </p>
-
-      <AssignWarehousePermissionModal
-        open={showAssignModal}
-        onClose={() => setShowAssignModal(false)}
-        userId={id}
-        onAssigned={reloadUserWarehouses}
-      />
-    </main>
+    </div>
   );
 }
