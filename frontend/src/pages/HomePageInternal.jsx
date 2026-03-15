@@ -514,7 +514,7 @@ function Footer() {
                             </span>
                         </div>
                         <p style={{ fontSize: 13, color: '#a89f92', lineHeight: 1.8, maxWidth: 280, fontFamily: 'DM Sans, sans-serif' }}>
-                            Nền tảng quản trị nội bộ FS Fashion Group. Mọi dữ liệu trên hệ thống là tài sản của công ty và yêu cầu bảo mật.
+                            Nền tảng quản trị nội bộ FS Fashion Solution. Mọi dữ liệu trên hệ thống là tài sản của công ty và yêu cầu bảo mật.
                         </p>
                         <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                             {[Mail, Phone].map((Icon, i) => (
@@ -548,7 +548,7 @@ function Footer() {
                 </div>
 
                 <div style={{ borderTop: '1px solid rgba(184,134,11,0.1)', paddingTop: 26, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-                    <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#c9b99a', letterSpacing: '0.08em' }}>© 2026 FS FASHION GROUP · INTERNAL SYSTEM</p>
+                    <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#c9b99a', letterSpacing: '0.08em' }}>© 2026 FS FASHION SOLUTION · INTERNAL SYSTEM</p>
                     <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: '#c9b99a', letterSpacing: '0.1em' }}>v2.0.0 · BUILD 2026</div>
                 </div>
             </div>
@@ -735,7 +735,7 @@ function SplashScreen({ onDone }) {
 
                 <div className={`splash-welcome-block ${phase === 'hold' ? 'visible' : ''}`}>
                     <p className="splash-welcome-line">Hệ thống quản lý chuỗi cung ứng nội bộ</p>
-                    <p className="splash-welcome-main">FS Fashion Group Portal</p>
+                    <p className="splash-welcome-main">FS Fashion Solution Portal</p>
                     <p className="splash-welcome-sub">Secure Network Access · v2.0</p>
                 </div>
 
