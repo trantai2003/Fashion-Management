@@ -150,9 +150,9 @@ function Nav({ navigate }) {
     }, []);
 
     const navLinks = [
-        ['Tổng quan', 'overview'], 
-        ['Phân hệ', 'modules'], 
-        ['Tài liệu', 'docs'], 
+        ['Tổng quan', 'overview'],
+        ['Phân hệ', 'modules'],
+        ['Tài liệu', 'docs'],
         ['Hỗ trợ IT', 'it-support']
     ];
 
@@ -203,7 +203,7 @@ function Nav({ navigate }) {
                     }}
                         onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(184,134,11,0.45)'; }}
                         onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(184,134,11,0.35)'; }}
-                    >Đăng nhập hệ thống <ArrowRight size={14}/></button>
+                    >Đăng nhập hệ thống <ArrowRight size={14} /></button>
                 </div>
 
                 <button className="mobile-only mobile-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
@@ -227,7 +227,7 @@ function Nav({ navigate }) {
                             border: 'none', padding: '12px', borderRadius: 12, fontSize: 14, fontWeight: 700,
                             boxShadow: '0 4px 16px rgba(184,134,11,0.35)', fontFamily: 'DM Sans, sans-serif', width: '100%',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
-                        }}>Đăng nhập hệ thống <ArrowRight size={16}/></button>
+                        }}>Đăng nhập hệ thống <ArrowRight size={16} /></button>
                     </div>
                 </div>
             )}
@@ -257,10 +257,10 @@ function Hero({ navigate }) {
                             <Database size={11} />
                             Portal Dành Riêng Cho Nhân Sự
                         </div>
-                        <h1 className="hero-title" style={{ fontFamily: 'Playfair Display, serif', fontSize: 58, fontWeight: 900, lineHeight: 1.05, letterSpacing: -1.5, marginBottom: 24, color: '#1a1612' }}>
+                        <h1 className="hero-title" style={{ fontFamily: 'Playfair Display, serif', fontSize: 52, fontWeight: 900, lineHeight: 1.1, letterSpacing: -1.2, marginBottom: 24, color: '#1a1612' }}>
                             Trung tâm<br />
-                            <span style={{ color: '#b8860b' }}>vận hành kho</span><br />
-                            <span style={{ color: '#7a6e5f', fontWeight: 700 }}>FS Fashion Solution</span>
+                            <span style={{ color: '#7a6e5f' }}>vận hành kho</span><br />
+                            <span style={{ color: '#b8860b', fontWeight: 700, fontSize: 38, display: 'inline-block', marginTop: 10 }}>FS - Fashion Solution</span>
                         </h1>
                         <p style={{ fontSize: 16, color: '#7a6e5f', lineHeight: 1.8, marginBottom: 40, maxWidth: 460, fontFamily: 'DM Sans, sans-serif' }}>
                             Truy cập vào không gian làm việc số để quản lý toàn bộ chuỗi cung ứng nội bộ: kiểm soát tồn kho, phê duyệt đơn mua hàng và báo cáo hiệu suất tự động.
@@ -414,7 +414,7 @@ function FeaturesSection() {
                         <span style={{ color: '#b8860b' }}>vận hành chính</span>
                     </h2>
                     <p style={{ color: '#7a6e5f', fontSize: 16, maxWidth: 520, margin: '0 auto', fontFamily: 'DM Sans, sans-serif' }}>
-                        Dành riêng cho nhân sự FS Fashion, hệ thống được chia thành các phân hệ chuyên trách.
+                        Dành riêng cho nhân sự FS, hệ thống được chia thành các phân hệ chuyên trách.
                     </p>
                 </div>
 
@@ -514,7 +514,7 @@ function Footer() {
                             </span>
                         </div>
                         <p style={{ fontSize: 13, color: '#a89f92', lineHeight: 1.8, maxWidth: 280, fontFamily: 'DM Sans, sans-serif' }}>
-                            Nền tảng quản trị nội bộ FS Fashion Solution. Mọi dữ liệu trên hệ thống là tài sản của công ty và yêu cầu bảo mật.
+                            Nền tảng quản trị nội bộ FS. Mọi dữ liệu trên hệ thống là tài sản của công ty và yêu cầu bảo mật.
                         </p>
                         <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                             {[Mail, Phone].map((Icon, i) => (
@@ -529,7 +529,7 @@ function Footer() {
                     </div>
 
                     {[
-                        { title: 'Phân hệ', links: ['Kho Hàng', 'Đơn Mua (PO)', 'Nhân Sự', 'Báo Cáo'] },
+                        { title: 'Phân hệ', links: ['Kho Hàng', 'Đơn Mua', 'Nhân Sự', 'Báo Cáo'] },
                         { title: 'Tài nguyên', links: ['Quy trình chuẩn', 'Sổ tay hướng dẫn', 'Quy định bảo mật', 'Thông báo nội bộ'] },
                         { title: 'Hỗ trợ', links: ['Gửi yêu cầu IT', 'Lịch bảo trì', 'Cấp lại mật khẩu'] },
                     ].map(({ title, links }) => (
@@ -548,7 +548,7 @@ function Footer() {
                 </div>
 
                 <div style={{ borderTop: '1px solid rgba(184,134,11,0.1)', paddingTop: 26, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-                    <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#c9b99a', letterSpacing: '0.08em' }}>© 2026 FS FASHION SOLUTION · INTERNAL SYSTEM</p>
+                    <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#c9b99a', letterSpacing: '0.08em' }}>© 2026 FS FASHION SOLUTION · WAREHOUSE MANAGEMENT SYSTEM</p>
                     <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: '#c9b99a', letterSpacing: '0.1em' }}>v2.0.0 · BUILD 2026</div>
                 </div>
             </div>
@@ -735,7 +735,7 @@ function SplashScreen({ onDone }) {
 
                 <div className={`splash-welcome-block ${phase === 'hold' ? 'visible' : ''}`}>
                     <p className="splash-welcome-line">Hệ thống quản lý chuỗi cung ứng nội bộ</p>
-                    <p className="splash-welcome-main">FS Fashion Solution Portal</p>
+                    <p className="splash-welcome-main">FS - Fashion Solution</p>
                     <p className="splash-welcome-sub">Secure Network Access · v2.0</p>
                 </div>
 
