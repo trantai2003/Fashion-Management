@@ -338,7 +338,7 @@ export default function KhachHangPage() {
     const getLoaiKhachHangBadge = (loaiKhachHang) => {
         const loaiMap = {
             "le": { label: "Khách lẻ", className: "bg-blue-100 text-blue-700 border-blue-200" },
-            "doanh_nghiep": { label: "Doanh nghiệp", className: "bg-purple-100 text-purple-700 border-purple-200" },
+            "doanh_nghiep": { label: "Doanh nghiệp", className: "bg-yellow-100 text-yellow-700 border-yellow-200" },
             "si": { label: "Khách sỉ", className: "bg-green-100 text-green-700 border-green-200" }
         };
 
@@ -370,15 +370,15 @@ export default function KhachHangPage() {
     };
 
     return (
-        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+        <div className="lux-sync warehouse-unified p-6 space-y-6 min-h-screen" style={{background: "linear-gradient(135deg, #ca8a04 0%, #b45309 100%)"}}>
             <div className="space-y-6 w-full">
                 {/* Stats Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
+                    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 bg-white/95 ring-1 ring-white/60">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-gray-600">Tổng khách hàng</p>
+                                    <p className="text-sm font-medium text-gray-500">Tổng khách hàng</p>
                                     <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
                                 </div>
                                 <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
@@ -388,11 +388,11 @@ export default function KhachHangPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
+                    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 bg-white/95 ring-1 ring-white/60">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-gray-600">Khách lẻ</p>
+                                    <p className="text-sm font-medium text-gray-500">Khách lẻ</p>
                                     <p className="text-2xl font-bold text-gray-900 mt-1">{stats.le}</p>
                                 </div>
                                 <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
@@ -402,11 +402,11 @@ export default function KhachHangPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-orange-50 to-white">
+                    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 bg-white/95 ring-1 ring-white/60">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-gray-600">Khách sỉ</p>
+                                    <p className="text-sm font-medium text-gray-500">Khách sỉ</p>
                                     <p className="text-2xl font-bold text-gray-900 mt-1">{stats.si}</p>
                                 </div>
                                 <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
@@ -416,15 +416,15 @@ export default function KhachHangPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-white">
+                    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 bg-white/95 ring-1 ring-white/60">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-gray-600">Doanh nghiệp</p>
+                                    <p className="text-sm font-medium text-gray-500">Doanh nghiệp</p>
                                     <p className="text-2xl font-bold text-gray-900 mt-1">{stats.doanh_nghiep}</p>
                                 </div>
-                                <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                                    <Building2 className="h-6 w-6 text-purple-600" />
+                                <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                                    <Building2 className="h-6 w-6 text-yellow-600" />
                                 </div>
                             </div>
                         </CardContent>
@@ -432,10 +432,10 @@ export default function KhachHangPage() {
                 </div>
 
                 {/* Filters Section */}
-                <Card className="border-0 shadow-lg bg-white">
+                <Card className="border-0 shadow-lg bg-white/95 ring-1 ring-white/60">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                            <Filter className="h-5 w-5 text-purple-600" />
+                            <Filter className="h-5 w-5 text-yellow-600" />
                             Bộ lọc tìm kiếm
                         </CardTitle>
                     </CardHeader>
@@ -448,7 +448,7 @@ export default function KhachHangPage() {
                                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                     <Input
                                         placeholder="Tìm theo tên, mã, SĐT, email..."
-                                        className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                                        className="pl-9 border-gray-200 focus:border-yellow-500 focus:ring-yellow-500"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         onKeyPress={(e) => e.key === "Enter" && handleSearch()}
@@ -472,16 +472,16 @@ export default function KhachHangPage() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
-                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("all")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("all")} className="flex items-center justify-between cursor-pointer hover:bg-yellow-50">
                                             Tất cả loại {loaiKhachHang === "all" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("le")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("le")} className="flex items-center justify-between cursor-pointer hover:bg-yellow-50">
                                             Khách lẻ {loaiKhachHang === "le" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("si")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("si")} className="flex items-center justify-between cursor-pointer hover:bg-yellow-50">
                                             Khách sỉ {loaiKhachHang === "si" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("doanh_nghiep")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
+                                        <DropdownMenuItem onClick={() => setLoaiKhachHang("doanh_nghiep")} className="flex items-center justify-between cursor-pointer hover:bg-yellow-50">
                                             Doanh nghiệp {loaiKhachHang === "doanh_nghiep" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -503,13 +503,13 @@ export default function KhachHangPage() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-[200px] bg-white border border-gray-100 shadow-xl z-50">
-                                        <DropdownMenuItem onClick={() => setTrangThai("all")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
+                                        <DropdownMenuItem onClick={() => setTrangThai("all")} className="flex items-center justify-between cursor-pointer hover:bg-yellow-50">
                                             Tất cả trạng thái {trangThai === "all" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setTrangThai("1")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
+                                        <DropdownMenuItem onClick={() => setTrangThai("1")} className="flex items-center justify-between cursor-pointer hover:bg-yellow-50">
                                             Hoạt động {trangThai === "1" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setTrangThai("0")} className="flex items-center justify-between cursor-pointer hover:bg-violet-50">
+                                        <DropdownMenuItem onClick={() => setTrangThai("0")} className="flex items-center justify-between cursor-pointer hover:bg-yellow-50">
                                             Ngưng hoạt động {trangThai === "0" && <Check className="h-4 w-4" />}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -578,7 +578,7 @@ export default function KhachHangPage() {
                                     <tr>
                                         <td colSpan={7} className="text-center py-12 text-gray-500">
                                             <div className="flex items-center justify-center">
-                                                <Loader2 className="h-6 w-6 animate-spin text-violet-500 mr-2" />
+                                                <Loader2 className="h-6 w-6 animate-spin text-yellow-500 mr-2" />
                                                 Đang tải dữ liệu...
                                             </div>
                                         </td>
@@ -591,12 +591,12 @@ export default function KhachHangPage() {
                                     </tr>
                                 ) : (
                                     khachHangs.map((khachHang, index) => (
-                                        <tr key={khachHang.id} className="transition-colors duration-150 hover:bg-purple-50/50">
+                                        <tr key={khachHang.id} className="transition-colors duration-150 hover:bg-yellow-50/50">
                                             <td className="px-4 py-3.5 align-middle text-center text-slate-500 text-xs">
                                                 {currentPage * pageSize + index + 1}
                                             </td>
                                             <td className="px-4 py-3.5 align-middle">
-                                                <span className="font-bold text-purple-600 tracking-wide">{khachHang.maKhachHang}</span>
+                                                <span className="font-bold text-yellow-600 tracking-wide">{khachHang.maKhachHang}</span>
                                             </td>
                                             <td className="px-4 py-3.5 align-middle">
                                                 <div className="font-semibold text-slate-900">{khachHang.tenKhachHang}</div>
@@ -632,7 +632,7 @@ export default function KhachHangPage() {
                                                 <div className="flex items-center justify-center gap-1">
                                                     <button
                                                         onClick={() => navigate(`/customers/${khachHang.id}`)}
-                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-purple-600 hover:bg-violet-50 hover:border-purple-200"
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-yellow-600 hover:bg-yellow-50 hover:border-yellow-200"
                                                         title="Xem chi tiết"
                                                     >
                                                         <Eye className="w-4 h-4" />
@@ -691,7 +691,7 @@ export default function KhachHangPage() {
                                     {Math.min((currentPage + 1) * pageSize, totalItems)}
                                 </span>
                                 {' '}trong tổng số{' '}
-                                <span className="font-semibold text-violet-600">{totalItems}</span> kết quả
+                                <span className="font-semibold text-yellow-600">{totalItems}</span> kết quả
                             </div>
 
                             <div className="flex items-center gap-2">
@@ -741,174 +741,252 @@ export default function KhachHangPage() {
             </div>
 
             {/* Create Dialog */}
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                <DialogContent className="sm:max-w-[900px]
-    max-h-[90vh]
-    bg-white text-gray-900
-    border border-gray-200
-    rounded-xl shadow-sm
-    dark:bg-white dark:text-gray-900">
-                    <DialogHeader className="border-b pb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <Plus className="w-5 h-5 text-purple-600" />
-                            </div>
-                            <DialogTitle className="text-xl text-gray-900">Thêm khách hàng mới</DialogTitle>
-                        </div>
-                    </DialogHeader>
+<Dialog open={showCreateDialog} onOpenChange={(open) => { if (!open) setShowCreateDialog(false); }}>
+    <DialogContent
+        className="w-[95vw] max-w-2xl rounded-2xl border-none shadow-2xl p-0 overflow-hidden"
+        style={{ background: "#faf7f0", color: "#0f172a", outline: "none" }}
+    >
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4" style={{ background: "#faf7f0" }}>
+            <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-base font-semibold" style={{ color: "#0f172a" }}>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full flex-shrink-0" style={{ background: "#fef9c3" }}>
+                        <UserPlus className="w-4 h-4" style={{ color: "#ca8a04" }} />
+                    </div>
+                    Thêm khách hàng mới
+                </DialogTitle>
+                <p className="text-sm mt-1 ml-10" style={{ color: "#64748b" }}>
+                    Điền thông tin để tạo khách hàng mới
+                </p>
+            </DialogHeader>
+        </div>
 
-                    <div className="space-y-6 py-4">
-                        {/* Thông tin cơ bản */}
-                        <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide border-l-4 border-purple-600 pl-3">
-                                Thông tin cơ bản
-                            </h3>
+        {/* Body */}
+        <div className="px-6 pb-2 overflow-y-auto max-h-[65vh]" style={{ background: "#faf7f0" }}>
+            <div className="space-y-5">
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="maKhachHang" className="text-sm font-medium text-gray-700">
-                                        Mã khách hàng <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Input
-                                        id="maKhachHang"
-                                        value={formData.maKhachHang}
-                                        onChange={(e) => handleFormChange("maKhachHang", e.target.value)}
-                                        placeholder="VD: KH001"
-                                        className={formErrors.maKhachHang ? "border-red-500" : ""}
-                                    />
-                                    {formErrors.maKhachHang && (
-                                        <p className="text-xs text-red-500">{formErrors.maKhachHang}</p>
-                                    )}
-                                </div>
+                {/* Thông tin cơ bản */}
+                <div className="space-y-3">
+                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#ca8a04" }}>
+                        Thông tin cơ bản
+                    </p>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="tenKhachHang" className="text-sm font-medium text-gray-700">
-                                        Tên khách hàng <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Input
-                                        id="tenKhachHang"
-                                        value={formData.tenKhachHang}
-                                        onChange={(e) => handleFormChange("tenKhachHang", e.target.value)}
-                                        placeholder="VD: Nguyễn Văn A"
-                                        className={formErrors.tenKhachHang ? "border-red-500" : ""}
-                                    />
-                                    {formErrors.tenKhachHang && (
-                                        <p className="text-xs text-red-500">{formErrors.tenKhachHang}</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="nguoiLienHe" className="text-sm font-medium text-gray-700">
-                                        Người liên hệ
-                                    </Label>
-                                    <Input
-                                        id="nguoiLienHe"
-                                        value={formData.nguoiLienHe}
-                                        onChange={(e) => handleFormChange("nguoiLienHe", e.target.value)}
-                                        placeholder="VD: Trần Thị B"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="loaiKhachHang" className="text-sm font-medium text-gray-700">
-                                        Loại khách hàng
-                                    </Label>
-                                    <Select
-                                        value={formData.loaiKhachHang}
-                                        onValueChange={(value) => handleFormChange("loaiKhachHang", value)}
-                                    >
-                                        <SelectTrigger id="loaiKhachHang">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="le">Khách lẻ</SelectItem>
-                                            <SelectItem value="doanh_nghiep">Doanh nghiệp</SelectItem>
-                                            <SelectItem value="si">Khách sỉ</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Mã khách hàng */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="maKhachHang" className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748b" }}>
+                                Mã khách hàng *
+                            </Label>
+                            <Input
+                                id="maKhachHang"
+                                placeholder="VD: KH001"
+                                value={formData.maKhachHang}
+                                onChange={(e) => handleFormChange("maKhachHang", e.target.value)}
+                                style={{ background: "#ffffff", borderColor: formErrors.maKhachHang ? "#ef4444" : "#e5e7eb", color: "#0f172a" }}
+                                className="h-10 focus:border-yellow-500 focus:ring-yellow-500"
+                            />
+                            {formErrors.maKhachHang && (
+                                <p className="text-xs flex items-center gap-1" style={{ color: "#ef4444" }}>
+                                    <AlertCircle className="w-3 h-3" />{formErrors.maKhachHang}
+                                </p>
+                            )}
                         </div>
 
-                        {/* Thông tin liên hệ */}
-                        <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide border-l-4 border-purple-600 pl-3">
-                                Thông tin liên hệ
-                            </h3>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="soDienThoai" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                                        <Phone className="w-3 h-3" />
-                                        Số điện thoại
-                                    </Label>
-                                    <Input
-                                        id="soDienThoai"
-                                        value={formData.soDienThoai}
-                                        onChange={(e) => handleFormChange("soDienThoai", e.target.value)}
-                                        placeholder="VD: 0123456789"
-                                        className={formErrors.soDienThoai ? "border-red-500" : ""}
-                                    />
-                                    {formErrors.soDienThoai && (
-                                        <p className="text-xs text-red-500">{formErrors.soDienThoai}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                                        <Mail className="w-3 h-3" />
-                                        Email
-                                    </Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={(e) => handleFormChange("email", e.target.value)}
-                                        placeholder="VD: example@email.com"
-                                        className={formErrors.email ? "border-red-500" : ""}
-                                    />
-                                    {formErrors.email && (
-                                        <p className="text-xs text-red-500">{formErrors.email}</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="diaChi" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                                    <MapPin className="w-3 h-3" />
-                                    Địa chỉ
-                                </Label>
-                                <Input
-                                    id="diaChi"
-                                    value={formData.diaChi}
-                                    onChange={(e) => handleFormChange("diaChi", e.target.value)}
-                                    placeholder="VD: 123 Đường ABC, Quận XYZ, TP. HCM"
-                                />
-                            </div>
+                        {/* Tên khách hàng */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="tenKhachHang" className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748b" }}>
+                                Tên khách hàng *
+                            </Label>
+                            <Input
+                                id="tenKhachHang"
+                                placeholder="VD: Nguyễn Văn A"
+                                value={formData.tenKhachHang}
+                                onChange={(e) => handleFormChange("tenKhachHang", e.target.value)}
+                                style={{ background: "#ffffff", borderColor: formErrors.tenKhachHang ? "#ef4444" : "#e5e7eb", color: "#0f172a" }}
+                                className="h-10 focus:border-yellow-500 focus:ring-yellow-500"
+                            />
+                            {formErrors.tenKhachHang && (
+                                <p className="text-xs flex items-center gap-1" style={{ color: "#ef4444" }}>
+                                    <AlertCircle className="w-3 h-3" />{formErrors.tenKhachHang}
+                                </p>
+                            )}
                         </div>
                     </div>
 
-                    <DialogFooter className="border-t border-gray-200 pt-4 flex gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowCreateDialog(false)}
-                            disabled={isSubmitting}
-                            className="flex-1"
-                        >
-                            Hủy
-                        </Button>
-                        <Button
-                            onClick={handleCreateSubmit}
-                            disabled={isSubmitting}
-                            className="flex-1 bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900"
-                        >
-                            {isSubmitting ? "Đang xử lý..." : "Thêm khách hàng"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Người liên hệ */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="nguoiLienHe" className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748b" }}>
+                                Người liên hệ
+                            </Label>
+                            <Input
+                                id="nguoiLienHe"
+                                placeholder="VD: Trần Thị B"
+                                value={formData.nguoiLienHe}
+                                onChange={(e) => handleFormChange("nguoiLienHe", e.target.value)}
+                                style={{ background: "#ffffff", borderColor: "#e5e7eb", color: "#0f172a" }}
+                                className="h-10 focus:border-yellow-500 focus:ring-yellow-500"
+                            />
+                        </div>
+
+                        {/* Loại khách hàng */}
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748b" }}>
+                                Loại khách hàng
+                            </Label>
+                            <DropdownMenu modal={false}>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        type="button"
+                                        className="h-10 w-full rounded-md px-3 text-left text-sm flex items-center justify-between transition-colors duration-150"
+                                        style={{ background: "#ffffff", border: "1px solid #e5e7eb", color: "#0f172a" }}
+                                        onMouseEnter={e => e.currentTarget.style.background = "#faf7f0"}
+                                        onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
+                                    >
+                                        <span>
+                                            {formData.loaiKhachHang === "le" && "Khách lẻ"}
+                                            {formData.loaiKhachHang === "si" && "Khách sỉ"}
+                                            {formData.loaiKhachHang === "doanh_nghiep" && "Doanh nghiệp"}
+                                        </span>
+                                        <ChevronDown className="h-4 w-4" style={{ color: "#9ca3af" }} />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="start"
+                                    className="w-[--radix-dropdown-menu-trigger-width] rounded-xl shadow-xl border"
+                                    style={{ background: "#ffffff", borderColor: "#e5e7eb" }}
+                                >
+                                    {[
+                                        { value: "le", label: "Khách lẻ" },
+                                        { value: "si", label: "Khách sỉ" },
+                                        { value: "doanh_nghiep", label: "Doanh nghiệp" },
+                                    ].map(opt => (
+                                        <DropdownMenuItem
+                                            key={opt.value}
+                                            onClick={() => handleFormChange("loaiKhachHang", opt.value)}
+                                            className="flex items-center justify-between cursor-pointer"
+                                            style={{ color: "#0f172a" }}
+                                            onMouseEnter={e => e.currentTarget.style.background = "#fef9c3"}
+                                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                                        >
+                                            {opt.label}
+                                            {formData.loaiKhachHang === opt.value && <Check className="h-4 w-4" style={{ color: "#ca8a04" }} />}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Divider */}
+                <div style={{ borderTop: "1px solid #ede8db" }} />
+
+                {/* Thông tin liên hệ */}
+                <div className="space-y-3">
+                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#ca8a04" }}>
+                        Thông tin liên hệ
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Số điện thoại */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="soDienThoai" className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "#64748b" }}>
+                                <Phone className="w-3.5 h-3.5" /> Số điện thoại
+                            </Label>
+                            <Input
+                                id="soDienThoai"
+                                placeholder="VD: 0123456789"
+                                value={formData.soDienThoai}
+                                onChange={(e) => handleFormChange("soDienThoai", e.target.value)}
+                                style={{ background: "#ffffff", borderColor: formErrors.soDienThoai ? "#ef4444" : "#e5e7eb", color: "#0f172a" }}
+                                className="h-10 focus:border-yellow-500 focus:ring-yellow-500"
+                            />
+                            {formErrors.soDienThoai && (
+                                <p className="text-xs flex items-center gap-1" style={{ color: "#ef4444" }}>
+                                    <AlertCircle className="w-3 h-3" />{formErrors.soDienThoai}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Email */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "#64748b" }}>
+                                <Mail className="w-3.5 h-3.5" /> Email
+                            </Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="VD: example@email.com"
+                                value={formData.email}
+                                onChange={(e) => handleFormChange("email", e.target.value)}
+                                style={{ background: "#ffffff", borderColor: formErrors.email ? "#ef4444" : "#e5e7eb", color: "#0f172a" }}
+                                className="h-10 focus:border-yellow-500 focus:ring-yellow-500"
+                            />
+                            {formErrors.email && (
+                                <p className="text-xs flex items-center gap-1" style={{ color: "#ef4444" }}>
+                                    <AlertCircle className="w-3 h-3" />{formErrors.email}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Địa chỉ */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="diaChi" className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "#64748b" }}>
+                            <MapPin className="w-3.5 h-3.5" /> Địa chỉ
+                        </Label>
+                        <Input
+                            id="diaChi"
+                            placeholder="VD: 123 Đường ABC, Quận XYZ, TP. HCM"
+                            value={formData.diaChi}
+                            onChange={(e) => handleFormChange("diaChi", e.target.value)}
+                            style={{ background: "#ffffff", borderColor: "#e5e7eb", color: "#0f172a" }}
+                            className="h-10 focus:border-yellow-500 focus:ring-yellow-500"
+                        />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 px-6 py-4" style={{ background: "#f5efe0", borderTop: "1px solid #ede8db" }}>
+            <button
+                type="button"
+                disabled={isSubmitting}
+                className="inline-flex h-9 items-center justify-center rounded-lg px-4 text-sm font-semibold transition-all duration-150"
+                style={{ background: "#ffffff", color: "#374151", border: "1px solid #d1d5db" }}
+                onMouseEnter={e => e.currentTarget.style.background = "#faf7f0"}
+                onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
+                onClick={() => setShowCreateDialog(false)}
+            >
+                Hủy
+            </button>
+            <button
+                type="button"
+                disabled={isSubmitting}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg px-5 text-sm font-bold transition-all duration-150 disabled:opacity-50"
+                style={{ background: "#eab308", color: "#ffffff", border: "none" }}
+                onMouseEnter={e => { if (!isSubmitting) e.currentTarget.style.background = "#ca8a04"; }}
+                onMouseLeave={e => e.currentTarget.style.background = "#eab308"}
+                onClick={handleCreateSubmit}
+            >
+                {isSubmitting ? (
+                    <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Đang xử lý...
+                    </>
+                ) : (
+                    <>
+                        <UserPlus className="w-4 h-4" />
+                        Thêm khách hàng
+                    </>
+                )}
+            </button>
+        </div>
+    </DialogContent>
+</Dialog>
 
             {/* Delete Dialog */}
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
