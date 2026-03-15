@@ -114,7 +114,8 @@ export default function ViewUserDetailByAdmin() {
 
 
     return (
-        <div className="lux-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+        <div className="lux-sync warehouse-unified gold-text-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+            <div className="space-y-6 w-full">
 
             {/* HEADER */}
             <div className="rounded-2xl border border-[rgba(184,134,11,0.18)] bg-white p-5 shadow-sm">
@@ -392,6 +393,7 @@ export default function ViewUserDetailByAdmin() {
 
             )}
 
+            </div>
         </div>
     );
 }

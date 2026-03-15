@@ -319,6 +319,22 @@ const ProductAttributeHub = () => {
     return (
         <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
             <div className="space-y-6 w-full">
+                <div className="rounded-2xl border border-[rgba(184,134,11,0.18)] bg-white p-5 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/60 shrink-0">
+                            <Package className="h-6 w-6 text-[#b8860b]" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
+                                Quản lý thuộc tính sản phẩm
+                            </h1>
+                            <p className="text-sm text-slate-600 mt-1">
+                                Quản lý danh mục màu sắc, kích cỡ và chất liệu cho toàn bộ sản phẩm.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleReset(); }}>
                     <TabsList className="bg-[#f8f2e8] border border-[#e8dcc0] shadow-sm rounded-xl p-1.5">
                         {['color', 'size', 'material'].map(tab => {
@@ -588,7 +604,7 @@ const ProductAttributeHub = () => {
                                         <Input
                                             {...form.register("ma")}
                                             className="bg-[#fffdf8] font-mono font-bold text-[#b8860b] border-[#e5d4b2] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
-                                            placeholder="AUTO-GEN"
+                                            placeholder="VD: 42"
                                         />
                                         <button
                                             type="button"
