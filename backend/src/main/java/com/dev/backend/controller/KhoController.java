@@ -59,7 +59,6 @@ public class KhoController {
         );
     }
 
-    //them quyen
     @PostMapping("/filter")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}
