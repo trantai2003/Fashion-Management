@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
     Plus, Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight,
     Save, RotateCcw, Palette, Ruler, Layers, Loader2, AlertTriangle,
-    Filter, RefreshCcw, ChevronDown, Check, Package, AlertCircle
+    Filter, RefreshCcw, ChevronDown, Check, Package, X, AlertCircle
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +22,172 @@ import { toast } from "sonner";
 import { mauSacService, sizeService } from "@/services/attributeService";
 import { getAllChatLieu, deleteChatLieu, createChatLieu, updateChatLieu } from "@/services/chatLieuService";
 
+/* ══════════════════════════════════════════════════════
+   STYLES — Light Ivory / Gold Luxury
+══════════════════════════════════════════════════════ */
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+.lux-root {
+  min-height: 100vh;
+  background: #faf8f3;
+  padding: 32px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  position: relative;
+}
+
+.lux-grid {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.lux-inner {
+  position: relative; z-index: 1;
+  max-width: 1400px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+/* ── Header ── */
+.lux-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding-bottom: 24px;
+  border-bottom: 1.5px solid rgba(184,134,11,0.15);
+}
+.lux-title-wrap { display: flex; flex-direction: column; gap: 4px; }
+.lux-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  letter-spacing: 0.25em; color: rgba(184,134,11,0.6);
+  text-transform: uppercase; font-weight: 600;
+}
+.lux-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px; font-weight: 900; color: #1a1612;
+  letter-spacing: -0.5px;
+}
+.lux-title span { color: #b8860b; }
+
+/* ── Tabs ── */
+.lux-tabs-list {
+  background: rgba(184,134,11,0.05) !important;
+  border: 1px solid rgba(184,134,11,0.1) !important;
+  padding: 6px !important; border-radius: 16px !important;
+}
+.lux-tab-trigger {
+  font-family: 'DM Mono', monospace !important; font-size: 11px !important;
+  font-weight: 700 !important; text-transform: uppercase !important;
+  letter-spacing: 0.05em !important; padding: 10px 24px !important;
+  border-radius: 12px !important; transition: all 0.3s !important;
+  color: #7a6e5f !important;
+}
+.lux-tab-trigger[data-state='active'] {
+  background: #fff !important; color: #b8860b !important;
+  box-shadow: 0 4px 12px rgba(184,134,11,0.15) !important;
+}
+
+/* ── Filter Card ── */
+.lux-filter {
+  background: #fff; border-radius: 20px; border: 1px solid rgba(184,134,11,0.15);
+  padding: 24px; box-shadow: 0 4px 20px rgba(100,80,30,0.06);
+  display: flex; align-items: flex-end; gap: 20px;
+}
+.lux-input-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.lux-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; color: #b8860b; letter-spacing: 0.05em;
+}
+.lux-input {
+  height: 48px !important; border-radius: 12px !important;
+  background: #faf8f3 !important; border: 1.5px solid rgba(184,134,11,0.1) !important;
+  font-size: 14px !important; transition: all 0.2s !important;
+}
+.lux-input:focus {
+  outline: none !important; border-color: #b8860b !important; background: #fff !important;
+  box-shadow: 0 0 0 4px rgba(184,134,11,0.08) !important;
+}
+
+/* ── Table ── */
+.wh-tbl-card {
+  background: #fff; border-radius: 24px; border: 1px solid rgba(184,134,11,0.15);
+  overflow: hidden; box-shadow: 0 10px 40px rgba(100,80,30,0.08);
+}
+.wh-tbl { width: 100%; border-collapse: collapse; }
+.wh-th {
+  height: 52px; padding: 0 20px; background: #faf8f3;
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
+  color: #b8860b; text-transform: uppercase; letter-spacing: 0.1em;
+  text-align: left; border-bottom: 2px solid rgba(184,134,11,0.12);
+}
+.wh-td { 
+  padding: 16px 20px; border-bottom: 1px solid rgba(184,134,11,0.08);
+  font-size: 14px; color: #1a1612; transition: all 0.2s;
+}
+.wh-tr:hover .wh-td { background: rgba(184,134,11,0.03); }
+
+/* ── Buttons ── */
+.btn-gold {
+  height: 48px; padding: 0 24px; border-radius: 12px;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  border: none; color: #fff; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  box-shadow: 0 4px 15px rgba(184,134,11,0.3); transition: all 0.2s;
+}
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(184,134,11,0.45); }
+
+.btn-white {
+  height: 48px; padding: 0 24px; border-radius: 12px;
+  background: #fff; border: 1.5px solid rgba(184,134,11,0.2);
+  color: #7a6e5f; font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;
+}
+.btn-white:hover { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
+
+/* ── Action Buttons ── */
+.act-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(184,134,11,0.05); color: #b8860b;
+  transition: all 0.2s;
+}
+.act-btn:hover { background: #b8860b; color: #fff; transform: translateY(-2px); }
+.act-btn.red { color: #dc2626; background: rgba(220,38,38,0.05); }
+.act-btn.red:hover { background: #dc2626; color: #fff; }
+
+/* ── Dialogs ── */
+.lux-dialog-content {
+  background: #fff !important; border-radius: 24px !important;
+  border: 1px solid rgba(184,134,11,0.15) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12) !important;
+  padding: 0 !important; overflow: hidden !important;
+}
+.lux-dialog-head {
+  padding: 24px 32px; background: #faf8f3;
+  border-bottom: 1px solid rgba(184,134,11,0.12);
+}
+.lux-dialog-body { padding: 32px; display: flex; flex-direction: column; gap: 20px; }
+.lux-dialog-foot {
+  padding: 20px 32px; background: #faf8f3;
+  border-top: 1px solid rgba(184,134,11,0.12);
+  display: flex; justify-content: flex-end; gap: 12px;
+}
+/* ── Pagination ── */
+.pag-card {
+  background: #fff; border-radius: 16px; padding: 14px 24px;
+  border: 1px solid rgba(184,134,11,0.15);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.pag-btn {
+  height: 36px; padding: 0 14px; border-radius: 9px;
+  background: #fff; border: 1.5px solid rgba(184,134,11,0.15);
+  color: #7a6e5f; font-size: 12px; font-weight: 600; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+}
+.pag-btn:hover:not(:disabled) { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
+.pag-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+`;
+
 const formSchema = z.object({
     ten: z.string().min(1, "Tên không được để trống"),
     ma: z.string().min(1, "Mã không được để trống"),
@@ -31,119 +197,22 @@ const formSchema = z.object({
     moTa: z.string().optional(),
 });
 
-// ── Shared helpers ────────────────────────────────────────────────────────
-function ActionBtn({ title, onClick, color, children }) {
-    const colors = {
-        violet: "text-[#b8860b] hover:bg-[#f7edd3] hover:border-[#b8860b]/30",
-        blue: "text-blue-600   hover:bg-blue-50   hover:border-blue-200",
-        red: "text-red-500    hover:bg-red-50    hover:border-red-200",
-    };
-    return (
-        <button type="button" title={title} onClick={onClick}
-            className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 ${colors[color]}`}>
-            {children}
-        </button>
-    );
-}
-
-function EmptyState({ icon: Icon, label }) {
-    return (
-        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-                <Icon className="h-10 w-10 text-slate-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-800">Không tìm thấy dữ liệu</h3>
-            <p className="mt-2 text-sm text-slate-500">Chưa có {label} nào phù hợp. Hãy thêm mới hoặc thay đổi bộ lọc.</p>
-        </div>
-    );
-}
-
-function ConfirmDeleteModal({ target, label, isDeleting, onConfirm, onCancel }) {
-    if (!target) return null;
-    const name = target.tenMau || target.tenSize || target.tenChatLieu;
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={!isDeleting ? onCancel : undefined} />
-            <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200/80 overflow-hidden">
-                <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-red-50">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
-                        <AlertTriangle className="h-5 w-5 text-red-600" />
-                    </div>
-                    <div>
-                        <p className="font-bold text-red-700 text-base">Xác nhận xóa {label}</p>
-                        <p className="text-xs text-red-500 mt-0.5">Hành động này không thể hoàn tác</p>
-                    </div>
-                </div>
-                <div className="px-6 py-5">
-                    <p className="text-sm text-slate-600 leading-relaxed">
-                        Bạn có chắc chắn muốn xóa <span className="font-semibold text-slate-900">"{name}"</span>?
-                    </p>
-                </div>
-                <div className="flex justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-100">
-                    <Button variant="outline" onClick={onCancel} disabled={isDeleting}>Hủy bỏ</Button>
-                    <Button className="bg-red-600 hover:bg-red-700 text-white min-w-[90px]" onClick={onConfirm} disabled={isDeleting}>
-                        {isDeleting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xóa...</> : <><Trash2 className="mr-2 h-4 w-4" />Xóa</>}
-                    </Button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPageSizeChange }) {
-    const start = total === 0 ? 0 : page * pageSize + 1;
-    const end = Math.min((page + 1) * pageSize, total);
-    return (
-        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-[#b8860b]/20 p-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <Label className="text-sm text-[#7a6e5f] whitespace-nowrap">Hiển thị:</Label>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-[120px] justify-between font-normal bg-[#fffaf0] border-[#b8860b]/25 text-[#4a3f2f] hover:bg-[#f7edd3]">
-                                {pageSize} dòng <ChevronDown className="h-4 w-4 opacity-50" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[120px] bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] shadow-lg border border-[#b8860b]/25 z-50 rounded-xl p-1">
-                            {[5, 10, 20, 50].map(s => (
-                                <DropdownMenuItem key={s} onClick={() => onPageSizeChange(s)} className="cursor-pointer rounded-md text-[#4a3f2f] focus:bg-[#f2e4bc] focus:text-[#7a5700]">{s} dòng</DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-                <div className="text-sm text-[#7a6e5f]">
-                    Hiển thị <span className="font-semibold text-[#1a1612]">{start}</span> – <span className="font-semibold text-[#1a1612]">{end}</span> trong tổng số <span className="font-semibold text-[#b8860b]">{total}</span> kết quả
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => onPageChange(page - 1)} disabled={page === 0} className="gap-1 disabled:opacity-50">
-                        <ChevronLeft className="h-4 w-4" /> Trước
-                    </Button>
-                    <div className="hidden sm:flex gap-1">
-                        {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                            let p = totalPages <= 5 ? idx : page < 3 ? idx : page > totalPages - 4 ? totalPages - 5 + idx : page - 2 + idx;
-                            return (
-                                <Button key={idx} variant={page === p ? "default" : "outline"} size="sm" onClick={() => onPageChange(p)}
-                                    className={page === p ? "bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white border border-[#b8860b]/20 shadow-sm hover:from-[#c79616] hover:to-[#a97700]" : "border-[#b8860b]/25 text-[#7a6e5f] hover:bg-[#f7edd3] hover:text-[#7a5700]"}>
-                                    {p + 1}
-                                </Button>
-                            );
-                        })}
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => onPageChange(page + 1)} disabled={page >= totalPages - 1} className="gap-1 disabled:opacity-50">
-                        Sau <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// ── Tab icon map ──────────────────────────────────────────────────────────
 const TAB_ICONS = { color: Palette, size: Ruler, material: Layers };
 const TAB_LABELS = { color: 'màu sắc', size: 'kích cỡ', material: 'chất liệu' };
 const TAB_NAMES = { color: 'Màu sắc', size: 'Kích cỡ', material: 'Chất liệu' };
 
-// ── Main component ────────────────────────────────────────────────────────
+const EmptyState = ({ icon: Icon, label }) => (
+    <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6 border border-slate-100">
+            <Icon size={40} className="text-slate-300" />
+        </div>
+        <h3 className="lux-title text-xl mb-2">Chưa có <span>{label}</span></h3>
+        <p className="lux-eyebrow text-xs max-w-[240px] leading-relaxed">
+            Danh mục này hiện đang trống. <br /> Hãy bắt đầu bằng cách thêm mới một mục.
+        </p>
+    </div>
+);
+
 const ProductAttributeHub = () => {
     const [activeTab, setActiveTab] = useState('color');
     const [data, setData] = useState([]);
@@ -245,294 +314,329 @@ const ProductAttributeHub = () => {
     const totalPages = Math.max(1, Math.ceil(total / filters.size));
     const TabIcon = TAB_ICONS[activeTab];
 
-    const getTabIcon = () => {
-        if (activeTab === 'color') return <div className="h-4 w-4 rounded-full border border-gray-200 shadow-sm" style={{ background: 'linear-gradient(to br, #ff0000, #00ff00, #0000ff)' }} />;
-        if (activeTab === 'size') return <Ruler className="h-5 w-5 text-blue-600" />;
-        return <Layers className="h-5 w-5 text-purple-600" />;
-    };
-
     return (
-        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-            {deleteConfig.open && (
-                <ConfirmDeleteModal
-                    target={deleteConfig.item}
-                    label={TAB_LABELS[activeTab]}
-                    isDeleting={isDeleting}
-                    onConfirm={confirmDelete}
-                    onCancel={() => { if (!isDeleting) setDeleteConfig({ open: false, item: null }); }}
-                />
-            )}
+        <div className="lux-root">
+            <style>{STYLES}</style>
+            <div className="lux-grid" />
+            <div className="lux-inner">
 
-            {/* ── Header ── */}
-            <div className="flex items-center justify-between">
-            </div>
-            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleReset(); }}>
-                <TabsList className="bg-white border border-[#b8860b]/25 shadow-sm h-12 rounded-xl p-1">
-                    {['color', 'size', 'material'].map(tab => {
-                        const Icon = TAB_ICONS[tab];
-                        return (
-                            <TabsTrigger key={tab} value={tab}
-                                className="flex items-center gap-2 px-6 rounded-lg text-[#7a6e5f] data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#d4a72b] data-[state=active]:to-[#b8860b] data-[state=active]:text-white transition-all">
-                                <Icon className="h-4 w-4" />{TAB_NAMES[tab]}
-                            </TabsTrigger>
-                        );
-                    })}
-                </TabsList>
-            </Tabs>
-            <Card className="border-0 shadow-lg bg-white">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                        <Filter className="h-5 w-5 text-[#b8860b]" />
-                        Bộ lọc tìm kiếm
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                    <div className="flex flex-wrap items-end gap-4">
-                        <div className="flex-1 min-w-[300px] space-y-2">
-                            <Label className="text-[#7a6e5f] font-medium">Tìm kiếm mã hoặc tên</Label>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input value={filters.keyword} onChange={e => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
-                                    placeholder="Nhập từ khóa tìm kiếm..." className="h-11 pl-10 border-[#b8860b]/25 focus:border-[#b8860b] focus:ring-[#b8860b]/30" />
-                            </div>
+                {/* ── Tabs ── */}
+                <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleReset(); }}>
+                    <TabsList className="lux-tabs-list">
+                        {['color', 'size', 'material'].map(tab => {
+                            const Icon = TAB_ICONS[tab];
+                            return (
+                                <TabsTrigger key={tab} value={tab} className="lux-tab-trigger">
+                                    <Icon size={14} className="mr-2" />
+                                    {TAB_NAMES[tab]}
+                                </TabsTrigger>
+                            );
+                        })}
+                    </TabsList>
+                </Tabs>
+
+                {/* ── Filter ── */}
+                <section className="lux-filter">
+                    <div className="lux-input-group">
+                        <Label className="lux-label">Bộ lọc tìm kiếm</Label>
+                        <div className="relative">
+                            <Search size={16} className="absolute left-4 top-4 text-slate-400" />
+                            <Input
+                                value={filters.keyword}
+                                onChange={e => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
+                                placeholder="Tìm kiếm theo mã hoặc tên..."
+                                className="lux-input pl-12"
+                            />
                         </div>
-                        <Button variant="outline" onClick={handleReset} className="h-11 px-6 flex items-center gap-2 transition-all duration-300 border-[#b8860b]/30 text-[#7a6e5f] hover:bg-[#f7edd3] hover:text-[#7a5700]">
-                            <RefreshCcw className="h-4 w-4" />Đặt lại bộ lọc
-                        </Button>
                     </div>
-                </CardContent>
-            </Card>
+                    <button className="btn-white" onClick={handleReset}>
+                        <RotateCcw size={16} /> Đặt lại
+                    </button>
+                </section>
 
-            {/* ── Action buttons ── */}
-            <div className="flex items-center justify-end">
-                <Button onClick={() => handleOpenModal('add')} className="border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md transition-all duration-200 hover:from-[#c79616] hover:to-[#a97700]">
-                    <Plus className="w-4 h-4 mr-2" />Thêm {TAB_LABELS[activeTab]} mới
-                </Button>
-            </div>
+                {/* ── Action buttons ── */}
+                <div className="flex items-center justify-end">
+                    <button onClick={() => handleOpenModal('add')} className="btn-gold">
+                        <Plus className="w-4 h-4" />Thêm {TAB_LABELS[activeTab]} mới
+                    </button>
+                </div>
 
-            {/* ── Table ── */}
-            <div className="rounded-2xl bg-white shadow-sm ring-1 ring-[#b8860b]/20 overflow-hidden">
-                {loading ? (
-                    <div className="flex items-center justify-center py-16 gap-2">
-                        <Loader2 className="h-6 w-6 animate-spin text-[#b8860b]" />
-                        <span className="text-sm text-gray-600">Đang tải...</span>
-                    </div>
-                ) : data.length === 0 ? <EmptyState icon={TabIcon} label={TAB_LABELS[activeTab]} /> : (
-                    <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
-                        <table className="w-full text-sm">
-                            <thead className="sticky top-0 z-20">
-                                <tr className="border-b border-[#b8860b]/20 bg-[#faf8f3] shadow-sm">
-                                    <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase w-16">STT</th>
-                                    <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Mã</th>
-                                    <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Tên hiển thị</th>
-                                    {activeTab === 'color' && <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Màu sắc</th>}
-                                    {activeTab === 'size' && <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Phân loại</th>}
-                                    {activeTab === 'material' && <th className="h-12 px-4 text-left font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Mô tả</th>}
-                                    <th className="h-12 px-4 text-center font-semibold text-[#7a6e5f] tracking-wide text-xs uppercase">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {data.map((item, index) => (
-                                    <tr key={item.id} className="hover:bg-[#f7edd3]/60 transition-colors duration-150 cursor-pointer" onClick={() => handleOpenModal('edit', item)}>
-                                        <td className="px-4 py-3.5 align-middle text-slate-500 text-xs">{filters.page * filters.size + index + 1}</td>
-                                        <td className="px-4 py-3.5 align-middle">
-                                            <span className="font-bold text-[#b8860b] tracking-wide font-mono">
-                                                {item.maMau || item.maSize || item.maChatLieu}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3.5 align-middle font-semibold text-slate-900">
-                                            {item.tenMau || item.tenSize || item.tenChatLieu}
-                                        </td>
-                                        {activeTab === 'color' && (
-                                            <td className="px-4 py-3.5 align-middle">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-md border border-slate-200 shadow-sm flex-shrink-0" style={{ backgroundColor: item.maMauHex }} />
-                                                    <span className="font-mono text-xs text-slate-500">{item.maMauHex}</span>
+                {/* ── Table ── */}
+                <div className="wh-tbl-card">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-16 gap-2">
+                            <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                            <span className="text-sm text-gray-600">Đang tải...</span>
+                        </div>
+                    ) : data.length === 0 ? <EmptyState icon={TabIcon} label={TAB_LABELS[activeTab]} /> : (
+                        <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
+                            <table className="wh-tbl">
+                                <thead>
+                                    <tr>
+                                        <th className="wh-th w-16">STT</th>
+                                        <th className="wh-th">Mã</th>
+                                        <th className="wh-th">Tên hiển thị</th>
+                                        {activeTab === 'color' && <th className="wh-th">Màu sắc</th>}
+                                        {activeTab === 'size' && <th className="wh-th">Phân loại</th>}
+                                        {activeTab === 'material' && <th className="wh-th">Mô tả</th>}
+                                        <th className="wh-th text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="wh-tbody">
+                                    {data.map((item, index) => (
+                                        <tr key={item.id} className="wh-tr" onClick={() => handleOpenModal('edit', item)}>
+                                            <td className="wh-td text-xs font-mono text-slate-400">{filters.page * filters.size + index + 1}</td>
+                                            <td className="wh-td">
+                                                <span className="font-bold text-violet-600 tracking-wide font-mono">
+                                                    {item.maMau || item.maSize || item.maChatLieu}
+                                                </span>
+                                            </td>
+                                            <td className="wh-td font-semibold text-slate-900">
+                                                {item.tenMau || item.tenSize || item.tenChatLieu}
+                                            </td>
+                                            {activeTab === 'color' && (
+                                                <td className="wh-td">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 rounded-md border border-slate-200 shadow-sm flex-shrink-0" style={{ backgroundColor: item.maMauHex }} />
+                                                        <span className="font-mono text-xs text-slate-500">{item.maMauHex}</span>
+                                                    </div>
+                                                </td>
+                                            )}
+                                            {activeTab === 'size' && (
+                                                <td className="wh-td">
+                                                    <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-tight">
+                                                        {item.loaiSize || '—'}
+                                                    </span>
+                                                </td>
+                                            )}
+                                            {activeTab === 'material' && (
+                                                <td className="wh-td text-slate-600 italic line-clamp-1 max-w-[200px]">
+                                                    {item.moTa || '—'}
+                                                </td>
+                                            )}
+                                            <td className="wh-td">
+                                                <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                    <button className="act-btn" onClick={() => handleOpenModal('view', item)}>
+                                                        <Eye size={16} />
+                                                    </button>
+                                                    <button className="act-btn" onClick={() => handleOpenModal('edit', item)}>
+                                                        <Edit size={16} />
+                                                    </button>
+                                                    <button className="act-btn red" onClick={() => setDeleteConfig({ open: true, item })}>
+                                                        <Trash2 size={16} />
+                                                    </button>
                                                 </div>
                                             </td>
-                                        )}
-                                        {activeTab === 'size' && (
-                                            <td className="px-4 py-3.5 align-middle text-slate-600 text-xs">
-                                                Loại: {item.loaiSize || 'N/A'} · TT: {item.thuTuSapXep ?? '—'}
-                                            </td>
-                                        )}
-                                        {activeTab === 'material' && (
-                                            <td className="px-4 py-3.5 align-middle max-w-[200px]">
-                                                <span className="text-slate-500 text-xs line-clamp-1">{item.moTa || '—'}</span>
-                                            </td>
-                                        )}
-                                        <td className="px-4 py-3.5 align-middle">
-                                            <div className="flex items-center justify-center gap-1">
-                                                <ActionBtn title="Xem" onClick={(e) => { e.stopPropagation(); handleOpenModal('view', item); }} color="violet"><Eye className="h-4 w-4" /></ActionBtn>
-                                                <ActionBtn title="Sửa" onClick={(e) => { e.stopPropagation(); handleOpenModal('edit', item); }} color="blue"><Edit className="h-4 w-4" /></ActionBtn>
-                                                <ActionBtn title="Xóa" onClick={(e) => { e.stopPropagation(); setDeleteConfig({ open: true, item }); }} color="red"><Trash2 className="h-4 w-4" /></ActionBtn>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+
+                {/* ── Pagination ── */}
+                {total > 0 && (
+                    <div className="pag-card">
+                        <span className="text-xs font-mono text-slate-500 uppercase tracking-wider">
+                            Showing {filters.page * filters.size + 1}-{Math.min((filters.page + 1) * filters.size, total)} of {total} items
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                disabled={filters.page === 0}
+                                onClick={() => setFilters(p => ({ ...p, page: p - 1 }))}
+                                className="pag-btn"
+                            >
+                                <ChevronLeft size={16} /> Previous
+                            </button>
+                            <span className="font-mono text-xs font-bold px-4">{filters.page + 1} / {Math.ceil(total / filters.size)}</span>
+                            <button
+                                disabled={filters.page >= Math.ceil(total / filters.size) - 1}
+                                onClick={() => setFilters(p => ({ ...p, page: p + 1 }))}
+                                className="pag-btn"
+                            >
+                                Next <ChevronRight size={16} />
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
 
-            {/* ── Pagination ── */}
-            {total > 0 && (
-                <PaginationBar
-                    page={filters.page} totalPages={totalPages} total={total} pageSize={filters.size}
-                    onPageChange={(p) => setFilters(prev => ({ ...prev, page: p }))}
-                    onPageSizeChange={(s) => setFilters(prev => ({ ...prev, size: s, page: 0 }))}
-                />
-            )}
-
-            {/* ── Add/Edit Modal ── */}
+            {/* ── Form Modal ── */}
             <Dialog open={modalConfig.open} onOpenChange={o => setModalConfig({ ...modalConfig, open: o })}>
-                <DialogContent className="bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] rounded-2xl border border-[#b8860b]/25 shadow-2xl max-w-lg">
-                    <DialogHeader className="border-b border-slate-100 pb-4">
-                        <DialogTitle className="text-lg font-bold text-slate-900">
-                            {modalConfig.mode === 'add' ? 'Thêm mới' : 'Chỉnh sửa'} {TAB_LABELS[activeTab]}
+                <DialogContent className="lux-dialog-content max-w-lg">
+                    <div className="lux-dialog-head">
+                        <DialogTitle className="lux-title text-2xl">
+                            {modalConfig.mode === 'add' ? 'Thêm mới' : 'Chỉnh sửa'} <span>{TAB_LABELS[activeTab]}</span>
                         </DialogTitle>
-                        <DialogDescription className="text-slate-500 text-sm">
-                            {modalConfig.mode === 'add' ? 'Điền thông tin để tạo ' : 'Cập nhật thông tin '}{TAB_LABELS[activeTab]}
-                        </DialogDescription>
-                    </DialogHeader>
+                        <DialogDescription className="lux-eyebrow mt-1">Cập nhật danh mục thuộc tính sản phẩm</DialogDescription>
+                    </div>
 
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <Label className="text-sm font-semibold text-slate-700">Mã định danh *</Label>
-                                <div className="flex gap-2">
-                                    <Input {...form.register("ma")} placeholder={activeTab === 'color' ? 'MS-0000' : activeTab === 'material' ? 'CL-0000' : 'Nhập mã...'}
-                                        className="h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b] font-mono text-[#b8860b] font-semibold" />
-                                    {modalConfig.mode === 'add' && (activeTab === 'color' || activeTab === 'material') && (
-                                        <Button type="button" variant="outline" size="icon" onClick={() => form.setValue('ma', generateAutoCode())} title="Tạo mã tự động" className="h-10 w-10 border-[#b8860b]/25 text-[#7a6e5f] hover:bg-[#f7edd3] flex-shrink-0">
-                                            <RotateCcw className="h-4 w-4" />
-                                        </Button>
-                                    )}
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <div className="lux-dialog-body">
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="lux-label">Mã định danh *</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            {...form.register("ma")}
+                                            className="lux-input font-mono font-bold text-[#b8860b]"
+                                            placeholder="AUTO-GEN"
+                                        />
+                                        <button
+                                            type="button"
+                                            className="w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
+                                            onClick={() => form.setValue('ma', generateAutoCode())}
+                                        >
+                                            <RotateCcw size={16} className="text-slate-400" />
+                                        </button>
+                                    </div>
                                 </div>
-                                {form.formState.errors.ma && (
-                                    <Alert variant="destructive" className="py-2">
-                                        <AlertCircle className="h-4 w-4" />
-                                        <AlertDescription className="text-xs">{form.formState.errors.ma.message}</AlertDescription>
-                                    </Alert>
-                                )}
+                                <div className="space-y-2">
+                                    <Label className="lux-label">Tên hiển thị *</Label>
+                                    <Input {...form.register("ten")} className="lux-input font-bold" placeholder="Nhập tên..." />
+                                </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-sm font-semibold text-slate-700">Tên hiển thị *</Label>
-                                <Input {...form.register("ten")} placeholder="Nhập tên..." className="h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b]" />
-                                {form.formState.errors.ten && (
-                                    <Alert variant="destructive" className="py-2">
-                                        <AlertCircle className="h-4 w-4" />
-                                        <AlertDescription className="text-xs">{form.formState.errors.ten.message}</AlertDescription>
-                                    </Alert>
-                                )}
-                            </div>
+
+                            {activeTab === 'color' && (
+                                <div className="space-y-2">
+                                    <Label className="lux-label">Mã màu trực quan (Hex)</Label>
+                                    <div className="flex gap-3 items-center">
+                                        <input type="color" className="h-12 w-16 rounded-xl border-2 border-slate-200 p-1 cursor-pointer bg-white" {...form.register("maMauHex")} />
+                                        <Input {...form.register("maMauHex")} className="flex-1 lux-input font-mono uppercase" placeholder="#000000" />
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'size' && (
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="lux-label">Loại kích cỡ</Label>
+                                        <Input {...form.register("loaiSize")} className="lux-input" placeholder="VD: Text, Number..." />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="lux-label">Thứ tự ưu tiên</Label>
+                                        <Input type="number" {...form.register("thuTuSapXep")} className="lux-input font-mono" />
+                                    </div>
+                                </div>
+                            )}
+
+                            {(activeTab === 'material' || activeTab === 'size') && (
+                                <div className="space-y-2">
+                                    <Label className="lux-label">Mô tả chi tiết</Label>
+                                    <Textarea {...form.register("moTa")} rows={3} className="lux-input h-auto min-h-[100px] py-4 resize-none" placeholder="..." />
+                                </div>
+                            )}
                         </div>
 
-                        {activeTab === 'color' && (
-                            <div className="space-y-1.5">
-                                <Label className="text-sm font-semibold text-slate-700">Mã màu Hex</Label>
-                                <div className="flex gap-3 items-center">
-                                    <input type="color" className="h-10 w-14 rounded-lg border border-[#b8860b]/25 cursor-pointer p-1 bg-white flex-shrink-0" {...form.register("maMauHex")} />
-                                    <Input {...form.register("maMauHex")} className="flex-1 h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b] font-mono" placeholder="#000000" />
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'size' && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <Label className="text-sm font-semibold text-slate-700">Loại kích cỡ</Label>
-                                    <Input {...form.register("loaiSize")} placeholder="VD: Chữ/Số" className="h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b]" />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label className="text-sm font-semibold text-slate-700">Thứ tự ưu tiên</Label>
-                                    <Input type="number" {...form.register("thuTuSapXep")} className="h-10 border-[#b8860b]/25 bg-white focus:border-[#b8860b]" />
-                                </div>
-                            </div>
-                        )}
-
-                        {(activeTab === 'material' || activeTab === 'size') && (
-                            <div className="space-y-1.5">
-                                <Label className="text-sm font-semibold text-slate-700">Mô tả chi tiết</Label>
-                                <Textarea {...form.register("moTa")} rows={3} placeholder="Ghi chú thêm..." className="resize-none border-[#b8860b]/25 bg-white focus:border-[#b8860b]" />
-                            </div>
-                        )}
-
-                        <DialogFooter className="border-t border-slate-100 pt-4 gap-2">
-                            <Button type="button" variant="outline" className="bg-white text-[#7a6e5f] border-[#b8860b]/30 hover:bg-[#f7edd3] hover:text-[#7a5700] h-11 px-8 rounded-xl font-medium" onClick={() => setModalConfig({ ...modalConfig, open: false })}>Hủy bỏ</Button>
-                            <Button type="submit" className="border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md transition-all duration-200 hover:from-[#c79616] hover:to-[#a97700]">
-                                <Save className="mr-2 h-4 w-4" />{modalConfig.mode === 'add' ? 'Thêm mới' : 'Lưu thay đổi'}
-                            </Button>
-                        </DialogFooter>
+                        <div className="lux-dialog-foot">
+                            <button type="button" className="btn-white" onClick={() => setModalConfig({ ...modalConfig, open: false })}>Hủy bỏ</button>
+                            <button type="submit" className="btn-gold">
+                                <Save size={18} /> {modalConfig.mode === 'add' ? 'Khởi tạo ngay' : 'Lưu thay đổi'}
+                            </button>
+                        </div>
                     </form>
                 </DialogContent>
             </Dialog>
 
             {/* ── View Modal ── */}
             <Dialog open={!!viewItem} onOpenChange={o => !o && setViewItem(null)}>
-                <DialogContent className="bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] rounded-2xl border border-[#b8860b]/25 shadow-2xl max-w-lg">
-                    <DialogHeader className="border-b border-slate-100 pb-4">
-                        <DialogTitle className="text-lg font-bold text-slate-900">Chi tiết {TAB_LABELS[activeTab]}</DialogTitle>
-                        <DialogDescription className="text-slate-500 text-sm">Xem thông tin chi tiết</DialogDescription>
-                    </DialogHeader>
+                <DialogContent className="lux-dialog-content max-w-lg">
+                    <div className="lux-dialog-head">
+                        <DialogTitle className="lux-title text-2xl">Chi tiết <span>{TAB_LABELS[activeTab]}</span></DialogTitle>
+                        <DialogDescription className="lux-eyebrow mt-1">Hồ sơ dữ liệu thuộc tính</DialogDescription>
+                    </div>
                     {viewItem && (
-                        <div className="space-y-4 py-2">
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-1.5">
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Mã định danh</p>
-                                    <p className="font-bold text-[#b8860b] font-mono">{viewItem.maMau || viewItem.maSize || viewItem.maChatLieu}</p>
+                        <div className="lux-dialog-body gap-8">
+                            <div className="grid grid-cols-2 gap-12">
+                                <div className="space-y-1">
+                                    <p className="lux-label opacity-60">Mã định danh</p>
+                                    <p className="text-xl font-mono font-bold text-[#b8860b]">#{viewItem.maMau || viewItem.maSize || viewItem.maChatLieu}</p>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tên hiển thị</p>
-                                    <p className="font-semibold text-slate-900">{viewItem.tenMau || viewItem.tenSize || viewItem.tenChatLieu}</p>
+                                <div className="space-y-1">
+                                    <p className="lux-label opacity-60">Tên hiển thị</p>
+                                    <p className="text-xl font-bold text-slate-900">{viewItem.tenMau || viewItem.tenSize || viewItem.tenChatLieu}</p>
                                 </div>
                             </div>
+
                             {activeTab === 'color' && (
-                                <div className="space-y-1.5">
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Mã màu (Hex)</p>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-lg border-2 border-gray-200 shadow-sm" style={{ backgroundColor: viewItem.maMauHex }} />
-                                        <p className="font-mono font-semibold text-slate-900">{viewItem.maMauHex}</p>
+                                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-6">
+                                    <div className="w-16 h-16 rounded-2xl border-4 border-white shadow-xl flex-shrink-0" style={{ background: viewItem.maMauHex }} />
+                                    <div>
+                                        <p className="lux-label text-[#b8860b]">HEX CODE COLOR</p>
+                                        <p className="text-2xl font-mono font-black text-slate-800 uppercase tracking-tighter">{viewItem.maMauHex}</p>
                                     </div>
                                 </div>
                             )}
+
                             {activeTab === 'size' && (
-                                <>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-1.5">
-                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Loại kích cỡ</p>
-                                            <p className="font-semibold text-slate-900">{viewItem.loaiSize || '—'}</p>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Thứ tự ưu tiên</p>
-                                            <p className="font-semibold text-slate-900">{viewItem.thuTuSapXep ?? '—'}</p>
-                                        </div>
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="space-y-1">
+                                        <p className="lux-label opacity-60">Loại kích cỡ</p>
+                                        <p className="font-bold text-slate-700">{viewItem.loaiSize || '—'}</p>
                                     </div>
-                                    {viewItem.moTa && (
-                                        <div className="space-y-1.5">
-                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Mô tả</p>
-                                            <p className="text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">{viewItem.moTa}</p>
-                                        </div>
-                                    )}
-                                </>
+                                    <div className="space-y-1">
+                                        <p className="lux-label opacity-60">Thứ tự ưu tiên</p>
+                                        <p className="font-bold text-slate-700">{viewItem.thuTuSapXep ?? '—'}</p>
+                                    </div>
+                                </div>
                             )}
-                            {activeTab === 'material' && (
-                                <div className="space-y-1.5">
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Mô tả</p>
-                                    <p className="text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">{viewItem.moTa || '—'}</p>
+
+                            {(viewItem.moTa || activeTab === 'material') && (
+                                <div className="space-y-2 pt-4 border-t border-dashed border-slate-200">
+                                    <p className="lux-label">Mô tả dữ liệu</p>
+                                    <p className="text-sm text-slate-600 leading-relaxed italic">{viewItem.moTa || 'Không có mô tả chi tiết cho thuộc tính này.'}</p>
                                 </div>
                             )}
                         </div>
                     )}
-                    <DialogFooter className="border-t border-slate-100 pt-4 gap-2">
-                        <Button variant="outline" className="bg-white text-[#7a6e5f] border-[#b8860b]/30 hover:bg-[#f7edd3] hover:text-[#7a5700] h-11 px-8 rounded-xl font-medium" onClick={() => setViewItem(null)}>Đóng</Button>
-                        <Button className="border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md transition-all duration-200 hover:from-[#c79616] hover:to-[#a97700]" onClick={() => { handleOpenModal('edit', viewItem); setViewItem(null); }}>
-                            <Edit className="mr-2 h-4 w-4" />Chỉnh sửa
-                        </Button>
-                    </DialogFooter>
+                    <div className="lux-dialog-foot">
+                        <button className="btn-white" onClick={() => setViewItem(null)}>Đóng</button>
+                        <button className="btn-gold" onClick={() => { handleOpenModal('edit', viewItem); setViewItem(null); }}>
+                            <Edit size={18} /> Chỉnh sửa
+                        </button>
+                    </div>
                 </DialogContent>
             </Dialog>
+
+            {/* ── Delete Modal ── */}
+            {deleteConfig.open && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isDeleting && setDeleteConfig({ open: false, item: null })} />
+                    <div className="relative z-10 w-full max-w-sm rounded-[32px] bg-white shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+                        <div className="p-8 pb-4 text-center">
+                            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <AlertTriangle size={32} />
+                            </div>
+                            <h3 className="lux-title text-2xl mb-2">Xác nhận <span>xóa</span></h3>
+                            <p className="lux-eyebrow text-xs">Cẩn trọng: Thao tác này không thể hoàn tác</p>
+                        </div>
+                        <div className="px-8 py-4 text-center">
+                            <p className="text-sm text-slate-600">
+                                Bạn có chắc chắn muốn xóa vĩnh viễn {TAB_LABELS[activeTab]}
+                                <span className="block font-black text-slate-900 text-lg mt-1">"{deleteConfig.item.tenMau || deleteConfig.item.tenSize || deleteConfig.item.tenChatLieu}"</span>?
+                            </p>
+                        </div>
+                        <div className="p-8 pt-4 flex flex-col gap-2">
+                            <button
+                                className="h-12 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 flex items-center justify-center gap-2"
+                                onClick={confirmDelete}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
+                                Xóa dữ liệu
+                            </button>
+                            <button
+                                className="h-12 rounded-xl text-slate-500 font-bold hover:bg-slate-50 transition-all"
+                                onClick={() => setDeleteConfig({ open: false, item: null })}
+                                disabled={isDeleting}
+                            >
+                                Hủy bỏ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

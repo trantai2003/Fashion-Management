@@ -63,12 +63,14 @@ import NhatKyNhapXuat from "./pages/bao-cao/NhatKyNhapXuat";
 import PhieuNhapKhoPrint from "./pages/receipt/PhieuNhapKhoPrint";
 import PhieuXuatKhoPrint from "./pages/issue/PhieuXuatKhoPrint";
 import Dashboard from "@/pages/dashboard/Dashboard";
+import FashionFlowHomepage from "./pages/HomePageInternal";
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* ========== PUBLIC ROUTES ========== */}
-        <Route path="/" element={<HomePage />} />
+        {/* <Route path="/" element={<HomePage />} /> */}
+        <Route path="/" element={<FashionFlowHomepage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
