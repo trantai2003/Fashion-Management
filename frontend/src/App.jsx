@@ -64,6 +64,7 @@ import PhieuNhapKhoPrint from "./pages/receipt/PhieuNhapKhoPrint";
 import PhieuXuatKhoPrint from "./pages/issue/PhieuXuatKhoPrint";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import FashionFlowHomepage from "./pages/HomePageInternal";
+import NotFound404 from "./pages/page-error/NotFound404";
 export default function App() {
   return (
     <BrowserRouter>
@@ -179,11 +180,7 @@ export default function App() {
         {/* ========== 404 ========== */}
         <Route
           path="*"
-          element={
-            <div className="flex items-center justify-center h-screen text-xl font-bold">
-              404 - Page Not Found
-            </div>
-          }
+          element={<NotFound404 />}
         />
       </Routes>
     </BrowserRouter>

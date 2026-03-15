@@ -152,62 +152,24 @@ export default function SupplierDetail() {
     };
 
     return (
-        <div className="p-6 md:p-8 pb-24 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync">
-
+        <div className="lux-sync warehouse-unified gold-text-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
             {/* ── Top Header and Navigation ── */}
-            <div className="flex flex-col gap-4 mb-2">
-                <button
-                    type="button"
-                    onClick={() => navigate("/supplier")}
-                    className="inline-flex items-center gap-1.5 text-[14px] font-medium text-slate-500 hover:text-violet-600 transition-colors duration-200 w-fit"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Quay lại danh sách nhà cung cấp
-                </button>
-                
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/60 shrink-0">
-                            <Building2 className="h-6 w-6 text-violet-600" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
-                                {isEdit ? "Cập nhật nhà cung cấp" : "Thêm nhà cung cấp mới"}
-                            </h1>
-                            <p className="mt-1 text-[15px] text-slate-500">
-                                {isEdit ? "Chỉnh sửa thông tin chi tiết nhà cung cấp trên hệ thống" : "Nhập thông tin để tạo nhà cung cấp mới trên hệ thống"}
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div className="hidden md:flex items-center gap-3">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="h-11 px-6 rounded-xl border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 transition-all shadow-sm bg-white"
-                            onClick={() => navigate("/supplier")}
-                        >
-                            Hủy
-                        </Button>
-                        <Button
-                            type="submit"
-                            form="supplier-form"
-                            disabled={loading}
-                            className="h-11 px-8 rounded-xl bg-slate-900 text-white border border-slate-900 font-semibold hover:bg-white hover:text-slate-900 min-w-[140px] shadow-md transition-all duration-200"
-                        >
-                            {loading ? (
-                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang lưu...</>
-                            ) : (
-                                <><Save className="mr-2 h-4 w-4" />{isEdit ? "Lưu thay đổi" : "Thêm mới"}</>
-                            )}
-                        </Button>
-                    </div>
+            <div>
+                <div className="flex items-center justify-between">
+                    <button
+                        type="button"
+                        onClick={() => navigate("/supplier")}
+                        className="inline-flex w-fit items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Quay lại danh sách
+                    </button>
                 </div>
             </div>
 
             {loading && isEdit ? (
                 <div className="flex flex-col items-center justify-center py-32 gap-3 bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-                    <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+                    <Loader2 className="h-8 w-8 animate-spin text-[#b8860b]" />
                     <span className="text-[15px] font-medium text-slate-600">Đang tải dữ liệu...</span>
                 </div>
             ) : (
@@ -215,9 +177,9 @@ export default function SupplierDetail() {
                     <form id="supplier-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
                         {/* ── Row 1: Định danh ── */}
-                        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80">
+                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
                             <div className="flex items-center gap-3 mb-6">
-                                <FileText className="h-5 w-5 text-violet-600" />
+                                <FileText className="h-5 w-5 text-[#b8860b]" />
                                 <h2 className="text-lg font-bold text-slate-800">Thông tin cơ bản</h2>
                             </div>
                             
@@ -365,14 +327,14 @@ export default function SupplierDetail() {
                         </div>
 
                         {/* ── Mobile Footer actions ── */}
-                        <div className="md:hidden flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 pb-4">
+                        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 pb-4">
                             <Button
                                 type="button"
                                 variant="outline"
                                 className="w-full sm:w-auto h-12 rounded-xl border-slate-300 text-slate-700 font-semibold bg-white"
                                 onClick={() => navigate("/supplier")}
                             >
-                                Hủy bỏ
+                                Hủy
                             </Button>
                             <Button
                                 type="submit"

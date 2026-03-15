@@ -5,12 +5,12 @@ import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import purchaseOrderService from "@/services/purchaseOrderService";
 import { getMineKhoList } from "@/services/khoService";
 import { toast } from "sonner";
-import { 
-    ChevronDown, 
-    FileText, 
-    Warehouse, 
-    ArrowRightLeft, 
-    Package, 
+import {
+    ChevronDown,
+    FileText,
+    Warehouse,
+    ArrowRightLeft,
+    Package,
     ArrowLeft,
     CheckCircle2,
     Loader2,
@@ -309,10 +309,10 @@ export default function PhieuNhapKhoCreate() {
 
             try {
                 setActionLoading(true);
-                const res = await phieuNhapKhoService.create({ 
-                    donMuaHangId: selectedPO.id, 
-                    ghiChu: form.ghiChu, 
-                    chiTietPhieuNhapKhos: chiTiet 
+                const res = await phieuNhapKhoService.create({
+                    donMuaHangId: selectedPO.id,
+                    ghiChu: form.ghiChu,
+                    chiTietPhieuNhapKhos: chiTiet
                 });
                 setCreatedId(res.id);
                 toast.success("Tạo phiếu nhập từ PO thành công");
@@ -352,21 +352,13 @@ export default function PhieuNhapKhoCreate() {
                 <div className="wh-orb-1" />
 
                 <div className="wh-inner">
-                    {/* ── Header ── */}
-                    <header className="wh-header">
-                        <div className="wh-title-wrap">
-                            <Link to="/goods-receipts" className="back-link mb-2"><ArrowLeft size={12} /> Back to receipts</Link>
-                            <span className="wh-eyebrow">Inventory Creation</span>
-                            <h1 className="wh-title">Khởi tạo <span>phiếu nhập</span></h1>
-                        </div>
-                        <div className="flex gap-3">
-                            <button onClick={createPhieu} disabled={actionLoading || !form.khoId} className="btn-white">Lưu nháp</button>
-                            <button onClick={handleContinue} disabled={actionLoading || !form.khoId} className="btn-gold">
-                                {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRightLeft size={16} />} 
-                                {importSource === "PO" ? "Tiếp tục khai Lô" : "Nhập kho ngay"}
-                            </button>
-                        </div>
-                    </header>
+                    <Link
+                        to="/goods-receipts"
+                        className="inline-flex w-fit items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150 mb-4"
+                    >
+                        <ArrowLeft size={16} />
+                        Quay lại danh sách
+                    </Link>
 
                     {/* ── Source Toggle ── */}
                     <div className="flex justify-center sm:justify-start">
@@ -380,10 +372,10 @@ export default function PhieuNhapKhoCreate() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
                         {/* ── Settings ── */}
                         <aside className="lg:col-span-1 flex flex-col gap-6">
-                            <div className="sec-card">
+                            <div className="sec-card h-full">
                                 <div className="sec-head">
                                     <div className="sec-icon-wrap"><Package size={16} /></div>
                                     <span className="sec-title">Thông tin nguồn</span>
@@ -392,7 +384,7 @@ export default function PhieuNhapKhoCreate() {
                                     {importSource === "PO" ? (
                                         <div className="inp-group">
                                             <label className="inp-label">Đơn mua hàng liên kết</label>
-                                            <select 
+                                            <select
                                                 className="inp-select"
                                                 value={form.donMuaHangId}
                                                 onChange={(e) => handleSelectPO(e.target.value)}
@@ -404,7 +396,7 @@ export default function PhieuNhapKhoCreate() {
                                     ) : (
                                         <div className="inp-group">
                                             <label className="inp-label">Yêu cầu luân chuyển</label>
-                                            <select 
+                                            <select
                                                 className="inp-select"
                                                 value={form.transferId}
                                                 onChange={(e) => handleSelectTransfer(e.target.value)}
@@ -425,9 +417,9 @@ export default function PhieuNhapKhoCreate() {
 
                                     <div className="inp-group">
                                         <label className="inp-label">Ghi chú phiếu</label>
-                                        <textarea 
-                                            className="inp-area" 
-                                            placeholder="..." 
+                                        <textarea
+                                            className="inp-area"
+                                            placeholder="..."
                                             value={form.ghiChu}
                                             onChange={(e) => setForm(p => ({ ...p, ghiChu: e.target.value }))}
                                         />
@@ -499,6 +491,15 @@ export default function PhieuNhapKhoCreate() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* ── Footer Actions ── */}
+                    <div className="flex justify-end gap-3">
+                        <button onClick={createPhieu} disabled={actionLoading || !form.khoId} className="btn-white">Lưu nháp</button>
+                        <button onClick={handleContinue} disabled={actionLoading || !form.khoId} className="btn-gold">
+                            {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRightLeft size={16} />}
+                            {importSource === "PO" ? "Tiếp tục khai Lô" : "Nhập kho ngay"}
+                        </button>
                     </div>
                 </div>
             </div>

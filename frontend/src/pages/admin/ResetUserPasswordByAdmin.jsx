@@ -67,88 +67,75 @@ export default function ResetUserPasswordByAdmin() {
 
 
     return (
-
-        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-
-
-            {/* CARD */}
-            <div className="flex justify-center">
-
-                <Card className="w-full max-w-md border-0 shadow-md bg-white">
-
-                    <CardContent className="p-8 space-y-6">
-                        <div className="text-center">
-
-                            <div className="flex justify-center mb-3">
-
-                                <div className="inline-flex items-center justify-center w-14 h-14 bg-purple-100 text-purple-600 rounded-full">
-
-                                    <KeyRound className="w-6 h-6" />
-
-                                </div>
-                            </div>
-
-
-                            <h2 className="text-xl font-bold text-gray-900">
-                                Cấp lại mật khẩu
-                            </h2>
-
-                            <p className="text-sm text-gray-500 mt-1">
-                                Dành cho user{" "}
-                                <span className="font-semibold italic">
-                                    {loadingUser ? "..." : username}
-                                </span>
+        <div className="lux-sync warehouse-unified gold-text-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+            <div className="w-full max-w-3xl mx-auto space-y-6">
+                <div className="rounded-2xl border border-[rgba(184,134,11,0.18)] bg-white p-5 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <h1 className="text-2xl font-bold text-[#1a1612]">Cấp lại mật khẩu</h1>
+                            <p className="mt-1 text-sm text-[#7a6e5f]">
+                                Đặt mật khẩu mới cho người dùng <span className="font-semibold">{loadingUser ? "..." : username}</span>
                             </p>
                         </div>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="border-[rgba(184,134,11,0.28)] text-[#7a6e5f] hover:bg-[rgba(184,134,11,0.08)] hover:text-[#b8860b]"
+                            onClick={() => navigate("/users")}
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Quay lại
+                        </Button>
+                    </div>
+                </div>
 
+                <Card className="border border-[rgba(184,134,11,0.16)] shadow-sm bg-white overflow-hidden">
+                    <div className="h-1 bg-gradient-to-r from-transparent via-[#b8860b] to-transparent" />
+                    <CardContent className="p-6 space-y-6">
+                        <div className="flex items-center justify-center">
+                            <div className="inline-flex items-center justify-center w-12 h-12 bg-[rgba(184,134,11,0.1)] text-[#b8860b] rounded-full">
+                                <KeyRound className="w-5 h-5" />
+                            </div>
+                        </div>
 
-                        {/* FORM */}
                         <form onSubmit={handleSubmit} className="space-y-5">
-
                             <div className="space-y-2">
-                                <Label>Mật khẩu mới</Label>
-
+                                <Label className="text-[#7a6e5f] font-medium">Mật khẩu mới</Label>
                                 <Input
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Nhập mật khẩu mới"
+                                    className="border-[rgba(184,134,11,0.2)] focus-visible:ring-[rgba(184,134,11,0.25)]"
                                 />
                             </div>
 
-
                             <div className="space-y-2">
-                                <Label>Xác nhận mật khẩu</Label>
-
+                                <Label className="text-[#7a6e5f] font-medium">Xác nhận mật khẩu</Label>
                                 <Input
                                     type="password"
                                     value={confirmPassword}
-                                    onChange={(e) =>
-                                        setConfirmPassword(e.target.value)
-                                    }
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="Nhập lại mật khẩu"
+                                    className="border-[rgba(184,134,11,0.2)] focus-visible:ring-[rgba(184,134,11,0.25)]"
                                 />
                             </div>
 
-
-                            {/* ACTION */}
-                            <div className="pt-2 space-y-3">
-
-                                <Button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                                >
-                                    {loading ? "Đang xử lý..." : "Cập nhật mật khẩu"}
-                                </Button>
-
+                            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-end">
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="w-full"
+                                    className="border-[rgba(184,134,11,0.28)] text-[#7a6e5f] hover:bg-[rgba(184,134,11,0.08)] hover:text-[#b8860b]"
                                     onClick={() => navigate("/users")}
                                 >
                                     Hủy thao tác
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+                                >
+                                    {loading ? "Đang xử lý..." : "Cập nhật mật khẩu"}
                                 </Button>
                             </div>
                         </form>

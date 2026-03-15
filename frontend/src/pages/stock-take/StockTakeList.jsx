@@ -287,7 +287,7 @@ export default function StockTakeList() {
           ) : (
             <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
               <table className="w-full text-sm">
-                <thead>
+                <thead className="sticky top-0 z-10">
                   <tr className="border-b border-slate-200 bg-slate-50">
                     {["STT", "Mã đợt", "Tên đợt", "Kho", "Người chủ trì", "Ngày bắt đầu", "Trạng thái", "Thao tác"].map((h) => (
                       <th

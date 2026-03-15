@@ -879,7 +879,7 @@ export default function PurchaseOrderList() {
                     <div className="flex gap-2 mt-6">
                         <Button
                             onClick={handleSearch}
-                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm"
+                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm h-10 px-4 rounded-xl font-medium transition-all duration-200"
                         >
                             <Search className="h-4 w-4 mr-2" />
                             Tìm kiếm

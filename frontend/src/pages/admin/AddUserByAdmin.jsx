@@ -102,7 +102,7 @@ export default function AddUserByAdmin() {
                                             setForm({ ...form, vaiTro: v })
                                         }
                                     >
-                                        <SelectTrigger className="mt-2 h-10 border-[#b8860b]/20 focus-visible:border-[#b8860b] focus-visible:ring-[#b8860b]/30" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                                        <SelectTrigger className="mt-2 h-10 border-[#b8860b]/20 bg-[#fffaf0] text-[#4a3f2f] focus-visible:border-[#b8860b] focus-visible:ring-[#b8860b]/30" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent
@@ -110,24 +110,40 @@ export default function AddUserByAdmin() {
                                             side="bottom"
                                             align="start"
                                             sideOffset={4}
-                                            className="bg-white shadow-lg border border-[#b8860b]/20 z-50">
-                                            <SelectItem value="nhan_vien_kho">
+                                            className="z-50 rounded-xl border border-[#b8860b]/25 bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] p-1.5 shadow-[0_16px_40px_rgba(122,87,0,0.18)]"
+                                            style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                                            <SelectItem
+                                                value="nhan_vien_kho"
+                                                className="rounded-md text-[#4a3f2f] focus:bg-[#f2e4bc] focus:text-[#7a5700]"
+                                            >
                                                 Nhân viên kho
                                             </SelectItem>
 
-                                            <SelectItem value="quan_ly_kho">
+                                            <SelectItem
+                                                value="quan_ly_kho"
+                                                className="rounded-md text-[#4a3f2f] focus:bg-[#f2e4bc] focus:text-[#7a5700]"
+                                            >
                                                 Quản lý kho
                                             </SelectItem>
 
-                                            <SelectItem value="nhan_vien_ban_hang">
+                                            <SelectItem
+                                                value="nhan_vien_ban_hang"
+                                                className="rounded-md text-[#4a3f2f] focus:bg-[#f2e4bc] focus:text-[#7a5700]"
+                                            >
                                                 Nhân viên bán hàng
                                             </SelectItem>
 
-                                            <SelectItem value="nhan_vien_mua_hang">
+                                            <SelectItem
+                                                value="nhan_vien_mua_hang"
+                                                className="rounded-md text-[#4a3f2f] focus:bg-[#f2e4bc] focus:text-[#7a5700]"
+                                            >
                                                 Nhân viên mua hàng
                                             </SelectItem>
 
-                                            <SelectItem value="quan_tri_vien">
+                                            <SelectItem
+                                                value="quan_tri_vien"
+                                                className="rounded-md text-[#4a3f2f] focus:bg-[#f2e4bc] focus:text-[#7a5700]"
+                                            >
                                                 Quản trị viên
                                             </SelectItem>
                                         </SelectContent>

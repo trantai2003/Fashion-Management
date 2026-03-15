@@ -88,9 +88,9 @@ export default function SupplierDetailView() {
 
     if (loading) {
         return (
-            <div className="p-6 md:p-8 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync flex flex-col items-center justify-center">
+            <div className="lux-sync warehouse-unified gold-text-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen flex flex-col items-center justify-center">
                 <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm w-full max-w-sm">
-                    <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+                    <Loader2 className="h-8 w-8 animate-spin text-[#b8860b]" />
                     <span className="text-[15px] font-medium text-slate-600">Đang tải dữ liệu...</span>
                 </div>
             </div>
@@ -100,56 +100,42 @@ export default function SupplierDetailView() {
     if (!supplier) return null;
 
     return (
-        <div className="p-6 md:p-8 pb-24 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync">
+        <div className="lux-sync warehouse-unified gold-text-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
 
             {/* ── Top Header and Navigation ── */}
-            <div className="flex flex-col gap-4 mb-2">
+            <div className="rounded-2xl border border-[rgba(184,134,11,0.18)] bg-white p-5 shadow-sm">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <button
                     type="button"
                     onClick={() => navigate("/supplier")}
-                    className="inline-flex items-center gap-1.5 text-[14px] font-medium text-slate-500 hover:text-violet-600 transition-colors duration-200 w-fit"
+                    className="inline-flex w-fit items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
                 >
                     <ArrowLeft className="h-4 w-4" />
-                    Quay lại danh sách nhà cung cấp
+                    Quay lại danh sách
                 </button>
                 
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/60 shrink-0">
-                            <Building2 className="h-6 w-6 text-violet-600" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
-                                Chi tiết nhà cung cấp
-                            </h1>
-                            <p className="mt-1 text-[15px] text-slate-500">
-                                Xem thông tin chi tiết về nhà cung cấp trên hệ thống
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                        <Button
-                            onClick={() => navigate(`/supplier/${id}`)}
-                            className="h-11 px-6 rounded-xl bg-slate-900 text-white border border-slate-900 font-semibold hover:bg-white hover:text-slate-900 transition-all duration-200 shadow-md"
-                        >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Chỉnh sửa
-                        </Button>
-                    </div>
+                <div className="ml-auto flex items-center gap-3">
+                    <Button
+                        onClick={() => navigate(`/supplier/${id}`)}
+                        className="h-11 px-6 rounded-xl bg-slate-900 text-white border border-slate-900 font-semibold hover:bg-white hover:text-slate-900 transition-all duration-200 shadow-md"
+                    >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Chỉnh sửa
+                    </Button>
+                </div>
                 </div>
             </div>
 
             {/* ── Row 1: Định danh — full width ── */}
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200/80">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
                 <div className="flex items-center gap-3 mb-6">
-                    <FileText className="h-5 w-5 text-violet-600" />
+                    <FileText className="h-5 w-5 text-[#b8860b]" />
                     <h2 className="text-lg font-bold text-slate-800">Thông tin cơ bản</h2>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
                     <InfoField label="Mã định danh">
-                        <span className="font-semibold text-violet-600 font-mono text-[15px] bg-violet-50 px-2 py-1 rounded-md border border-violet-100">
+                        <span className="font-semibold text-[#8b6a21] font-mono text-[15px] bg-[#fff3d9] px-2 py-1 rounded-md border border-[#efd9ad]">
                             {supplier.maNhaCungCap || "—"}
                         </span>
                     </InfoField>
