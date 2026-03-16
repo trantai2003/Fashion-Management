@@ -279,6 +279,11 @@ export default function BackofficeLayout() {
             match: (path) => path === "/supplier/new",
             title: "Thêm nhà cung cấp mới",
             subtitle: "Nhập thông tin để tạo nhà cung cấp mới",
+        },
+        {
+            key: "INVENTORY_REPORT",
+            match: (path) => path === "/reports/inventory",
+            title: "Báo cáo tồn kho",
         }
     ];
 
