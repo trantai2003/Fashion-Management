@@ -3,15 +3,211 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { toast } from "sonner";
+import { 
+    Loader2, ArrowLeft, Printer, Check, X, 
+    ClipboardList, Package, Warehouse, Truck, 
+    Calendar, User, AlertCircle, Info as InfoIcon,
+    ArrowRight
+} from "lucide-react";
 
-// Giữ nguyên bộ STATUS_MAP từ snippet mới nhất của bạn
-const STATUS_MAP = {
-    0: { label: "Nháp", className: "bg-amber-50 text-amber-700" },
-    1: { label: "Chờ duyệt", className: "bg-blue-50 text-blue-700" },
-    2: { label: "Đã duyệt", className: "bg-indigo-50 text-indigo-700" },
-    3: { label: "Đã xuất", className: "bg-green-50 text-green-700" },
-    4: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
-    5: { label: "Đã xuất", className: "bg-green-50 text-green-700" },
+/* ══════════════════════════════════════════════════════
+   STYLES — Light Ivory / Gold Luxury
+   (Sync with Warehouse / Homepage / Login)
+══════════════════════════════════════════════════════ */
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+.wh-root {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 55%, #ede9de 100%);
+  padding: 28px 28px 56px;
+  position: relative;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.wh-grid {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.wh-orb-1 {
+  position: fixed; width: 500px; height: 500px; border-radius: 50%;
+  background: rgba(184,134,11,0.07); filter: blur(100px);
+  top: -180px; right: -120px; pointer-events: none; z-index: 0;
+}
+
+.wh-inner {
+  position: relative; z-index: 1;
+  max-width: 1400px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+/* ── Header ── */
+.wh-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid rgba(184,134,11,0.15);
+}
+.wh-title-wrap { display: flex; flex-direction: column; gap: 3px; }
+.wh-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; color: rgba(184,134,11,0.65);
+  text-transform: uppercase;
+}
+.wh-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px; font-weight: 900; color: #1a1612;
+  letter-spacing: -0.5px; line-height: 1;
+}
+.wh-title span { color: #b8860b; }
+
+.wh-header-actions { display: flex; align-items: center; gap: 12px; }
+
+/* ── Buttons ── */
+.btn-gold {
+  height: 42px; padding: 0 20px; border-radius: 11px;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  border: none; color: #fff;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 18px rgba(184,134,11,0.35);
+}
+.btn-gold:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(184,134,11,0.48); }
+.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-purple {
+  height: 42px; padding: 0 20px; border-radius: 11px;
+  background: linear-gradient(135deg, #7e22ce, #a855f7);
+  border: none; color: #fff;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 18px rgba(126,34,206,0.35);
+}
+.btn-purple:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(126,34,206,0.48); }
+.btn-purple:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-white {
+  height: 42px; padding: 0 20px; border-radius: 11px;
+  background: #fff;
+  border: 1.5px solid rgba(184,134,11,0.2);
+  color: #7a6e5f; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-white:hover:not(:disabled) { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
+
+.btn-danger {
+  height: 42px; padding: 0 20px; border-radius: 11px;
+  background: rgba(220,38,38,0.05);
+  border: 1.5px solid rgba(220,38,38,0.2);
+  color: #dc2626; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-danger:hover:not(:disabled) { background: rgba(220,38,38,0.1); border-color: #dc2626; }
+
+/* ── Info Cards ── */
+.info-card {
+  background: #fff;
+  border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; padding: 24px;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+  position: relative; overflow: hidden;
+}
+.info-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;
+}
+
+.info-item { display: flex; flex-direction: column; gap: 6px; }
+.info-lbl {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.15em; text-transform: uppercase; color: rgba(184,134,11,0.6);
+}
+.info-val {
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: #1a1612;
+}
+.info-val.highlight { color: #b8860b; }
+
+/* ── Table ── */
+.wh-tbl-card {
+  background: #fff;
+  border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+}
+.wh-tbl-card::before {
+  content: ''; display: block; height: 2px;
+  background: linear-gradient(90deg, transparent, #b8860b, transparent);
+}
+.wh-tbl { width: 100%; border-collapse: collapse; text-align: left; }
+.wh-thead tr { background: #faf8f3; border-bottom: 1px solid rgba(184,134,11,0.12); }
+.wh-th {
+  height: 48px; padding: 0 20px;
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: rgba(184,134,11,0.6);
+}
+.wh-tbody tr { border-bottom: 1px solid rgba(184,134,11,0.07); transition: all 0.2s; }
+.wh-tbody tr:hover { background: rgba(184,134,11,0.04); }
+.wh-td { padding: 16px 20px; font-size: 14px; color: #3d3529; }
+
+.sku-code {
+  font-family: 'DM Mono', monospace; font-size: 12px; color: #b8860b; font-weight: 600;
+  background: rgba(184,134,11,0.08); padding: 2px 8px; border-radius: 6px;
+}
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+}
+.badge-status { text-transform: uppercase; letter-spacing: 0.05em; }
+.badge.green { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2); }
+.badge.amber { background: rgba(184,134,11,0.1); color: #b8860b; border: 1px solid rgba(184,134,11,0.2); }
+.badge.blue  { background: rgba(37,99,235,0.08); color: #2563eb; border: 1px solid rgba(37,99,235,0.2); }
+.badge.red   { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
+.badge.purple { background: rgba(147,51,234,0.08); color: #9333ea; border: 1px solid rgba(147,51,234,0.2); }
+
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.badge.green .dot { background: #16a34a; }
+.badge.amber .dot { background: #b8860b; }
+.badge.blue  .dot { background: #2563eb; }
+.badge.red   .dot { background: #dc2626; }
+.badge.purple .dot { background: #9333ea; }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(26, 22, 18, 0.45);
+  backdrop-filter: blur(4px); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-card {
+  background: #fff; border-radius: 24px; width: 100%; max-width: 480px;
+  border: 1px solid rgba(184,134,11,0.25);
+  box-shadow: 0 25px 60px rgba(100,80,30,0.2);
+  overflow: hidden; animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: none; } }
+.modal-head { padding: 24px 28px 12px; }
+.modal-ttl { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; color: #1a1612; }
+.modal-body { padding: 0 28px 28px; color: #7a6e5f; font-size: 14px; line-height: 1.6; }
+.modal-foot { padding: 20px 28px; background: #faf8f3; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(184,134,11,0.1); }
+`;
+
+// Trạng thái phiếu xuất
+const STATUS_UI = {
+    0: { label: "Nháp", cls: "amber" },
+    1: { label: "Chờ duyệt", cls: "blue" },
+    2: { label: "Đã duyệt", cls: "blue" },
+    3: { label: "Đã xuất", cls: "green" },
+    4: { label: "Đã huỷ", cls: "red" },
+    5: { label: "Đã xuất", cls: "green" },
 };
 
 export default function PhieuXuatKhoDetail() {
@@ -24,14 +220,6 @@ export default function PhieuXuatKhoDetail() {
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Lấy thông tin từ localStorage
-    const role = localStorage.getItem("role");
-    const currentWarehouseId = Number(localStorage.getItem("warehouseId"));
-
-    // Xác định quyền đặc biệt
-    const isAdmin = role === "quan_tri_vien";
-    const isQuanLy = role === "quan_ly_kho" || isAdmin;
-
     useEffect(() => {
         fetchDetail();
     }, [id]);
@@ -40,7 +228,6 @@ export default function PhieuXuatKhoDetail() {
         setLoading(true);
         try {
             const res = await phieuXuatKhoService.getDetail(id);
-            // Bóc tách dữ liệu nếu bị bọc bởi ResponseData
             setData(res?.data || res);
         } catch (e) {
             console.error(e);
@@ -50,25 +237,11 @@ export default function PhieuXuatKhoDetail() {
         }
     }
 
-    // Hàm xử lý chung cho Gửi duyệt và Phê duyệt
-    async function handleStatusChange(actionFn, successMsg) {
-        setIsProcessing(true);
-        try {
-            await actionFn(id);
-            toast.success(successMsg);
-            fetchDetail(); // Load lại dữ liệu
-        } catch (e) {
-            toast.error(e?.response?.data?.message || "Thao tác thất bại");
-        } finally {
-            setIsProcessing(false);
-        }
-    }
-
     // Hàm xử lý khi xác nhận Hoàn thành/Vận chuyển
     const handleConfirmComplete = async () => {
         setIsProcessing(true);
         try {
-            await phieuXuatKhoService.complete(phieu.id);
+            await phieuXuatKhoService.complete(data.phieu.id);
             
             if (isChuyenKho) {
                 toast.success("Xác nhận xuất kho và bắt đầu vận chuyển thành công");
@@ -84,242 +257,272 @@ export default function PhieuXuatKhoDetail() {
         }
     };
 
+    const handleCancelExport = async () => {
+        setIsProcessing(true);
+        try {
+            if (isChuyenKho) {
+                await phieuChuyenKhoService.cancel(data.phieu.id);
+            } else {
+                await phieuXuatKhoService.cancel(data.phieu.id);
+            }
+            toast.success("Đã huỷ phiếu xuất thành công");
+            navigate("/goods-issues");
+        } catch (e) {
+            toast.error(e?.response?.data?.message || "Không thể huỷ phiếu");
+        } finally {
+            setIsProcessing(false);
+            setShowCancelConfirm(false);
+        }
+    };
+
     if (loading || !data) {
         return (
-            <div className="p-10 text-center text-sm text-gray-500">
-                Loading...
+            <div className="min-h-screen bg-[#faf8f3] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#b8860b]" />
+                    <p className="text-[#a89f92] font-mono text-xs uppercase tracking-widest">Đang tải dữ liệu...</p>
+                </div>
             </div>
         );
     }
 
     const { phieu, chiTiet } = data;
-
-    // Kiểm tra loại phiếu
     const isChuyenKho = phieu.loaiXuat === "chuyen_kho";
-
+    
     // Kiểm tra xem tất cả mặt hàng đã bốc đủ lô chưa
-    const isAllPicked = Array.isArray(chiTiet)
-        && chiTiet.length > 0
+    const isAllPicked = Array.isArray(chiTiet) 
+        && chiTiet.length > 0 
         && chiTiet.every(ct => ct.duSoLuong === true);
 
+    const statusInfo = STATUS_UI[phieu.trangThai] || { label: "Không xác định", cls: "blue" };
+
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            <main className="flex-1">
-                {/* ===== HEADER ===== */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between bg-white border-b sticky top-0 z-10">
-                    {/* LEFT */}
-                    <button
-                        onClick={() => navigate("/goods-issues")}
-                        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 font-medium"
-                    >
-                        ← Quay lại
-                    </button>
+        <>
+            <style>{STYLES}</style>
+            <div className="wh-root">
+                <div className="wh-grid" />
+                <div className="wh-orb-1" />
 
-                    {/* RIGHT ACTIONS */}
-                    <div className="flex items-center gap-2">
-                        <span
-                            className={`px-3 py-1 text-xs rounded font-medium ${STATUS_MAP[phieu.trangThai]?.className}`}
-                        >
-                            {STATUS_MAP[phieu.trangThai]?.label}
-                        </span>
-
-                        {/* Nút Hủy: Hiện cho các trạng thái chưa hoàn thành/hủy */}
-                        {[0, 1, 2].includes(phieu.trangThai) && (
-                            <button
-                                disabled={isProcessing}
-                                className="px-4 py-2 rounded-md text-sm border border-red-200 text-red-600 hover:bg-red-50 font-medium transition-colors"
-                                onClick={() => setShowCancelConfirm(true)}
+                <div className="wh-inner">
+                    {/* ── Header ── */}
+                    <div className="wh-header">
+                        <div className="wh-title-wrap">
+                            <button 
+                                onClick={() => navigate("/goods-issues")}
+                                className="wh-eyebrow flex items-center gap-1 hover:text-[#b8860b] transition-colors mb-2"
                             >
-                                Huỷ phiếu xuất
+                                <ArrowLeft size={10} /> FS WMS · Phiếu xuất kho
                             </button>
-                        )}
+                            <h1 className="wh-title">Chi tiết <span>phiếu xuất</span></h1>
+                        </div>
 
-                        {/* NÚT IN PHIẾU */}
-                        {phieu.trangThai !== 4 && (
-                            <button
-                                onClick={() => navigate(`/goods-issues/${phieu.id}/print`)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm transition-all active:scale-95"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                                    <rect x="6" y="14" width="12" height="8"></rect>
-                                </svg>
-                                In phiếu
-                            </button>
-                        )}
+                        <div className="wh-header-actions">
+                            <span className={`badge badge-status ${statusInfo.cls}`}>
+                                <span className="dot" />
+                                {statusInfo.label}
+                            </span>
 
-                        {/* Nút Hoàn thành/Vận chuyển: Luôn hiển thị ở trạng thái 0 (Nháp) */}
-                        {phieu.trangThai === 0 && (
-                            <button
-                                disabled={isProcessing || !isAllPicked}
-                                onClick={() => setShowConfirm(true)}
-                                className={`px-4 py-2 rounded-md text-sm font-semibold text-white shadow-sm
-                                    ${isAllPicked && !isProcessing
-                                        ? (isChuyenKho ? "bg-purple-600 hover:bg-purple-700" : "bg-green-600 hover:bg-green-700")
-                                        : "bg-gray-300 cursor-not-allowed"}`}
-                            >
-                                {isChuyenKho ? "Xác nhận vận chuyển →" : "Hoàn thành xuất kho"}
-                            </button>
-                        )}
+                            {/* Nút Hủy: Hiện cho các trạng thái chưa hoàn thành/hủy */}
+                            {[0, 1, 2].includes(phieu.trangThai) && (
+                                <button
+                                    disabled={isProcessing}
+                                    className="btn-danger"
+                                    onClick={() => setShowCancelConfirm(true)}
+                                >
+                                    <X size={15} /> Huỷ phiếu
+                                </button>
+                            )}
+
+                            {/* NÚT IN PHIẾU */}
+                            {phieu.trangThai !== 4 && (
+                                <button
+                                    onClick={() => navigate(`/goods-issues/${phieu.id}/print`)}
+                                    className="btn-white"
+                                >
+                                    <Printer size={15} /> In phiếu
+                                </button>
+                            )}
+
+                            {/* Nút Hoàn thành/Vận chuyển: Luôn hiển thị ở trạng thái 0 (Nháp) */}
+                            {phieu.trangThai === 0 && (
+                                <button
+                                    disabled={isProcessing || !isAllPicked}
+                                    onClick={() => setShowConfirm(true)}
+                                    className={isChuyenKho ? "btn-purple" : "btn-gold"}
+                                >
+                                    {isProcessing ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                                    {isChuyenKho ? "Xác nhận vận chuyển" : "Hoàn thành xuất kho"}
+                                </button>
+                            )}
+                        </div>
                     </div>
-                </div>
 
-                {/* ===== CONTENT ===== */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-                    {/* THÔNG TIN CHUNG */}
-                    <section className="bg-white border rounded-xl p-6 shadow-sm">
-                        <h2 className="text-sm font-semibold mb-4 text-gray-900 uppercase tracking-wider">
-                            Thông tin phiếu xuất
-                        </h2>
-                        <div className="grid md:grid-cols-3 gap-6 text-sm">
-                            <Info label="Số phiếu" value={phieu.soPhieuXuat} />
+                    {/* ── Info Section ── */}
+                    <div className="info-card">
+                        <div className="flex items-center gap-2 mb-6">
+                            <ClipboardList size={16} className="text-[#b8860b]" />
+                            <h2 className="wh-eyebrow font-bold text-[#1a1612]">Thông tin nghiệp vụ</h2>
+                        </div>
 
-                            <Info
-                                label="Loại xuất"
-                                value={isChuyenKho ? "Chuyển kho nội bộ" : "Xuất bán hàng"}
+                        <div className="info-grid">
+                            <InfoItem icon={Package} label="Số phiếu xuất" value={phieu.soPhieuXuat} highlight />
+
+                            <InfoItem 
+                                icon={InfoIcon} 
+                                label="Loại xuất" 
+                                value={isChuyenKho ? "Chuyển kho nội bộ" : "Xuất bán hàng"} 
                             />
 
                             {isChuyenKho ? (
-                                <Info label="Kho chuyển đến" value={phieu.khoChuyenDen?.tenKho} />
+                                <InfoItem icon={Warehouse} label="Kho chuyển đến" value={phieu.khoChuyenDen?.tenKho} />
                             ) : (
-                                <Info label="Đơn bán hàng" value={phieu.donBanHang?.soDonHang} />
+                                <InfoItem icon={ClipboardList} label="Đơn bán hàng" value={phieu.donBanHang?.soDonHang} />
                             )}
 
-                            <Info label="Kho xuất hàng" value={phieu.kho?.tenKho} />
+                            <InfoItem icon={Warehouse} label="Kho xuất hàng" value={phieu.kho?.tenKho} />
 
-                            <Info
-                                label="Ngày tạo phiếu"
-                                value={new Date(phieu.ngayTao).toLocaleDateString("vi-VN")}
+                            <InfoItem 
+                                icon={Calendar} 
+                                label="Ngày tạo phiếu" 
+                                value={new Date(phieu.ngayTao).toLocaleDateString("vi-VN")} 
                             />
 
-                            <Info
-                                label="Ngày xuất"
-                                value={phieu.ngayXuat ? new Date(phieu.ngayXuat).toLocaleDateString("vi-VN") : "Chưa xuất kho"}
+                            <InfoItem 
+                                icon={Calendar} 
+                                label="Ngày xuất" 
+                                value={phieu.ngayXuat ? new Date(phieu.ngayXuat).toLocaleDateString("vi-VN") : "Chưa xuất kho"} 
                             />
 
-                            <Info
-                                label="Người xuất"
-                                value={phieu.nguoiXuat?.hoTen || "---"}
+                            <InfoItem 
+                                icon={User} 
+                                label="Người xuất" 
+                                value={phieu.nguoiXuat?.hoTen || "---"} 
                             />
-
-                            {phieu.ghiChu && (
-                                <div className="md:col-span-3">
-                                    <Info label="Ghi chú" value={phieu.ghiChu} />
-                                </div>
-                            )}
                         </div>
-                    </section>
+                        
+                        {phieu.ghiChu && (
+                            <div className="mt-6 pt-4 border-t border-[#faf8f3]">
+                                <InfoItem icon={InfoIcon} label="Ghi chú" value={phieu.ghiChu} />
+                            </div>
+                        )}
 
-                    {/* DANH SÁCH SẢN PHẨM */}
-                    <section className="bg-white border rounded-xl shadow-sm overflow-hidden">
-                        <div className="p-4 border-b bg-gray-50/50 flex justify-between items-center">
-                            <h2 className="text-sm font-bold text-gray-800">Danh sách sản phẩm</h2>
-                            {isChuyenKho && phieu.trangThai === 0 && !isAllPicked && (
-                                <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded font-bold">
-                                    CẦN BỐC LÔ TRƯỚC KHI XUẤT HÀNG
-                                </span>
-                            )}
+                        {isChuyenKho && phieu.trangThai === 0 && !isAllPicked && (
+                            <div className="mt-6 p-3 bg-[#f3e8ff] border border-[#e9d5ff] rounded-xl flex items-center gap-3">
+                                <AlertCircle size={16} className="text-[#9333ea]" />
+                                <p className="text-[#7e22ce] text-xs font-medium">
+                                    CẦN BỐC LÔ TRƯỚC KHI XUẤT HÀNG. Hệ thống yêu cầu xác định lô sản phẩm trước khi đưa vào kho Trung chuyển.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ── Product List ── */}
+                    <div className="wh-tbl-card">
+                        <div className="p-5 border-b border-[#faf8f3] bg-[#faf8f3]/50 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Package size={14} className="text-[#b8860b]" />
+                                <span className="wh-eyebrow font-bold text-[#1a1612]">Danh sách sản phẩm</span>
+                            </div>
                         </div>
+                        <div className="overflow-x-auto">
+                            <table className="wh-tbl">
+                                <thead className="wh-thead">
+                                    <tr>
+                                        <th className="wh-th">SKU / Biến thể</th>
+                                        <th className="wh-th text-center">SL Yêu cầu</th>
+                                        <th className="wh-th text-center">SL Đã Pick</th>
+                                        <th className="wh-th text-center">Trạng thái</th>
+                                        <th className="wh-th text-right">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="wh-tbody">
+                                    {chiTiet.map((ct) => {
+                                        const canEditLot = phieu.trangThai === 0;
 
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-50 text-xs text-gray-500 font-medium">
-                                <tr>
-                                    <th className="px-4 py-3 text-left">SKU / Biến thể</th>
-                                    <th className="px-4 py-3 text-center">SL yêu cầu</th>
-                                    <th className="px-4 py-3 text-center">SL đã pick</th>
-                                    <th className="px-4 py-3 text-center">Trạng thái</th>
-                                    <th className="px-4 py-3 text-center">Hành động</th>
-                                </tr>
-                            </thead>
+                                        return (
+                                            <tr key={ct.id}>
+                                                <td className="wh-td">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="sku-code w-fit">{ct.sku}</span>
+                                                        <span className="font-semibold text-[#1a1612] line-clamp-1">{ct.tenBienThe}</span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <td className="wh-td text-center font-bold">
+                                                    {ct.soLuongCanXuat}
+                                                </td>
 
-                            <tbody className="divide-y divide-gray-100">
-                                {chiTiet.map((ct) => {
-                                    const canEditLot = phieu.trangThai === 0;
+                                                <td className="wh-td text-center">
+                                                    <span className={`font-mono font-bold ${ct.duSoLuong ? "text-[#16a34a]" : "text-[#b8860b]"}`}>
+                                                        {ct.soLuongDaPick}
+                                                        <span className="text-[#a89f92] font-normal mx-1">/</span>
+                                                        {ct.soLuongCanXuat}
+                                                    </span>
+                                                </td>
 
-                                    return (
-                                        <tr key={ct.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-4 py-3">
-                                                <div className="font-bold text-gray-800">{ct.sku}</div>
-                                                <div className="text-[11px] text-gray-500">{ct.tenBienThe}</div>
-                                            </td>
+                                                <td className="wh-td text-center">
+                                                    {ct.duSoLuong ? (
+                                                        <span className="badge green"><span className="dot" /> Đủ hàng</span>
+                                                    ) : (
+                                                        <span className="badge amber"><span className="dot" /> Chưa đủ</span>
+                                                    )}
+                                                </td>
 
-                                            <td className="px-4 py-3 text-center font-semibold text-gray-700">
-                                                {ct.soLuongCanXuat}
-                                            </td>
-
-                                            <td className="px-4 py-3 text-center">
-                                                <span className={ct.duSoLuong ? "text-green-600 font-bold" : "text-amber-600 font-bold"}>
-                                                    {ct.soLuongDaPick} / {ct.soLuongCanXuat}
-                                                </span>
-                                            </td>
-
-                                            <td className="px-4 py-3 text-center">
-                                                {ct.duSoLuong ? (
-                                                    <span className="px-2 py-1 text-[10px] rounded bg-green-50 text-green-700 font-bold">Đủ hàng</span>
-                                                ) : (
-                                                    <span className="px-2 py-1 text-[10px] rounded bg-red-50 text-red-700 font-bold">Chưa đủ</span>
-                                                )}
-                                            </td>
-
-                                            <td className="px-4 py-3 text-center">
-                                                <button
-                                                    onClick={() =>
-                                                        navigate(
-                                                            `/goods-issues/${phieu.id}/pick-lot/${ct.id}`,
-                                                            {
-                                                                state: {
-                                                                    bienTheSanPhamId: ct.bienTheSanPhamId,
-                                                                    sku: ct.sku,
-                                                                    tenBienThe: ct.tenBienThe,
-                                                                    soLuongXuat: ct.soLuongCanXuat,
-                                                                    soLuongDaPick: ct.soLuongDaPick,
-                                                                    phieuTrangThai: phieu.trangThai,
-                                                                    loaiXuat: phieu.loaiXuat
-                                                                },
-                                                            }
-                                                        )
-                                                    }
-                                                    className={`px-3 py-1.5 text-[11px] font-bold rounded-md shadow-sm transition-all
-                                                        ${canEditLot
-                                                            ? "bg-purple-600 text-white hover:bg-purple-700"
-                                                            : "bg-blue-600 text-white hover:bg-blue-700"}`}
-                                                >
-                                                    {canEditLot ? "Pick lot →" : "Xem lô →"}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </section>
+                                                <td className="wh-td text-right">
+                                                    <button
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/goods-issues/${phieu.id}/pick-lot/${ct.id}`,
+                                                                {
+                                                                    state: {
+                                                                        bienTheSanPhamId: ct.bienTheSanPhamId,
+                                                                        sku: ct.sku,
+                                                                        tenBienThe: ct.tenBienThe,
+                                                                        soLuongXuat: ct.soLuongCanXuat,
+                                                                        soLuongDaPick: ct.soLuongDaPick,
+                                                                        phieuTrangThai: phieu.trangThai,
+                                                                        loaiXuat: phieu.loaiXuat
+                                                                    },
+                                                                }
+                                                            )
+                                                        }
+                                                        className={`h-8 px-4 text-xs inline-flex items-center gap-2 justify-center rounded-lg font-bold transition-all border
+                                                            ${canEditLot 
+                                                                ? "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100" 
+                                                                : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"}`}
+                                                    >
+                                                        {canEditLot ? "Pick lot" : "Xem lô"} <ArrowRight size={12} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
-                {/* ===== MODAL: XÁC NHẬN HOÀN TẤT / VẬN CHUYỂN ===== */}
+                {/* ── Modals ── */}
                 {showConfirm && (
-                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[1px]">
-                        <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in duration-200">
-                            <h2 className="text-lg font-bold mb-2 text-gray-900">
-                                {isChuyenKho ? "Xác nhận vận chuyển" : "Xác nhận xuất kho"}
-                            </h2>
-                            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                    <div className="modal-overlay">
+                        <div className="modal-card">
+                            <div className="modal-head">
+                                <h2 className="modal-ttl">
+                                    {isChuyenKho ? "Xác nhận vận chuyển" : "Xác nhận xuất kho"}
+                                </h2>
+                            </div>
+                            <div className="modal-body">
                                 {isChuyenKho
                                     ? `Hàng hóa trong phiếu ${phieu.soPhieuXuat} sẽ được trừ tồn tại kho hiện tại và đưa vào kho Trung Chuyển để bắt đầu vận chuyển.`
                                     : `Phiếu xuất kho ${phieu.soPhieuXuat} sẽ được hoàn thành và trừ tồn kho thực tế của các lô đã chọn.`}
-                            </p>
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    onClick={() => setShowConfirm(false)}
-                                    className="px-4 py-2 rounded-md border text-sm hover:bg-gray-50 font-medium"
-                                >
-                                    Hủy
-                                </button>
-                                <button
+                            </div>
+                            <div className="modal-foot">
+                                <button className="btn-white" onClick={() => setShowConfirm(false)}>Hủy</button>
+                                <button 
+                                    className={isChuyenKho ? "btn-purple" : "btn-gold"} 
                                     disabled={isProcessing}
                                     onClick={handleConfirmComplete}
-                                    className={`px-4 py-2 rounded-md text-white text-sm font-bold shadow-md
-                                        ${isChuyenKho ? "bg-purple-600 hover:bg-purple-700" : "bg-green-600 hover:bg-green-700"}`}
                                 >
                                     {isProcessing ? "Đang xử lý..." : "Xác nhận thực hiện"}
                                 </button>
@@ -328,64 +531,37 @@ export default function PhieuXuatKhoDetail() {
                     </div>
                 )}
 
-                {/* ===== MODAL: XÁC NHẬN HỦY ===== */}
                 {showCancelConfirm && (
-                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[1px]">
-                        <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in duration-200">
-                            <h2 className="text-lg font-bold text-gray-900 mb-2">Xác nhận huỷ phiếu xuất</h2>
-                            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                    <div className="modal-overlay">
+                        <div className="modal-card">
+                            <div className="modal-head">
+                                <h2 className="modal-ttl">Hủy phiếu xuất kho</h2>
+                            </div>
+                            <div className="modal-body">
                                 Bạn chắc chắn muốn huỷ phiếu <strong>{phieu.soPhieuXuat}</strong>? Mọi số lượng đã bốc (giữ hàng) sẽ được hoàn tồn. Thao tác này không thể hoàn tác.
-                            </p>
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    onClick={() => setShowCancelConfirm(false)}
-                                    className="px-4 py-2 rounded-md border text-sm hover:bg-gray-50 font-medium"
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    disabled={isProcessing}
-                                    onClick={async () => {
-                                        setIsProcessing(true);
-                                        try {
-                                            if (isChuyenKho) {
-                                                await phieuChuyenKhoService.cancel(phieu.id);
-                                            } else {
-                                                await phieuXuatKhoService.cancel(phieu.id);
-                                            }
-
-                                            toast.success("Đã huỷ phiếu xuất thành công");
-                                            navigate("/goods-issues");
-                                        } catch (e) {
-                                            toast.error(e?.response?.data?.message || "Không thể huỷ phiếu");
-                                        } finally {
-                                            setIsProcessing(false);
-                                            setShowCancelConfirm(false);
-                                        }
-                                    }}
-                                    className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-bold hover:bg-red-700 shadow-md"
-                                >
-                                    {isProcessing ? "Đang xử lý..." : "Xác nhận huỷ"}
+                            </div>
+                            <div className="modal-foot">
+                                <button className="btn-white" onClick={() => setShowCancelConfirm(false)}>Quay lại</button>
+                                <button className="btn-danger" onClick={handleCancelExport} disabled={isProcessing}>
+                                    {isProcessing ? "Đang xử lý..." : "Xác nhận hủy"}
                                 </button>
                             </div>
                         </div>
                     </div>
                 )}
-            </main>
-        </div>
+            </div>
+        </>
     );
 }
 
-// Sub-component Helper
-function Info({ label, value }) {
+function InfoItem({ icon: Icon, label, value, highlight }) {
     return (
-        <div>
-            <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">
-                {label}
+        <div className="info-item">
+            <div className="flex items-center gap-1.5 mb-1 opacity-80">
+                <Icon size={12} className="text-[#b8860b]" />
+                <span className="info-lbl">{label}</span>
             </div>
-            <div className="font-semibold text-gray-900 leading-tight">
-                {value || "---"}
-            </div>
+            <div className={`info-val ${highlight ? 'highlight' : ''}`}>{value || "---"}</div>
         </div>
     );
 }
