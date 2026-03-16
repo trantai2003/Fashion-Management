@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,15 +16,15 @@ import { getKhoList } from "@/services/khoService";
 export default function SalesOrderCreate() {
   const navigate = useNavigate();
 
-  const [customers,             setCustomers]             = useState([]);
-  const [variants,              setVariants]              = useState([]);
-  const [warehouses,            setWarehouses]            = useState([]);
-  const [showProductDialog,     setShowProductDialog]     = useState(false);
-  const [searchTerm,            setSearchTerm]            = useState("");
-  const [loading,               setLoading]               = useState(false);
-  const [customerSearch,        setCustomerSearch]        = useState("");
-  const [showCustomerDropdown,  setShowCustomerDropdown]  = useState(false);
-  const [warehouseSearch,       setWarehouseSearch]       = useState("");
+  const [customers, setCustomers] = useState([]);
+  const [variants, setVariants] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
+  const [showProductDialog, setShowProductDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [warehouseSearch, setWarehouseSearch] = useState("");
   const [showWarehouseDropdown, setShowWarehouseDropdown] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -125,24 +125,35 @@ export default function SalesOrderCreate() {
   };
 
   const totalProductMoney = orderItems.reduce((sum, i) => sum + i.thanhTien, 0);
-  const totalOrderMoney   = totalProductMoney + Number(formData.phiVanChuyen || 0);
+  const totalOrderMoney = totalProductMoney + Number(formData.phiVanChuyen || 0);
 
   async function handleCreate() {
     if (!formData.khachHangId) return toast.error("Vui lòng chọn khách hàng");
-    if (!formData.khoXuatId)   return toast.error("Vui lòng chọn kho xuất hàng");
+    if (!formData.khoXuatId) return toast.error("Vui lòng chọn kho xuất hàng");
     if (orderItems.length === 0) return toast.error("Chưa có sản phẩm nào trong đơn hàng");
+    for (const item of orderItems) {
+      const minPrice = item.giaGoc * 0.9;
+      const maxPrice = item.giaGoc * 1.1;
+
+      if (item.donGia < minPrice) {
+        return toast.error(`Sản phẩm "${item.tenSanPham}" có giá bán quá thấp. Tối thiểu là ${minPrice.toLocaleString()}đ`);
+      }
+      if (item.donGia > maxPrice) {
+        return toast.error(`Sản phẩm "${item.tenSanPham}" có giá bán quá cao. Tối đa là ${maxPrice.toLocaleString()}đ`);
+      }
+    }
     try {
       setLoading(true);
       await donBanHangService.create({
-        khachHangId:     parseInt(formData.khachHangId),
-        khoXuatId:       parseInt(formData.khoXuatId),
-        phiVanChuyen:    formData.phiVanChuyen === "" ? 0 : Number(formData.phiVanChuyen),
-        diaChiGiaoHang:  formData.diaChiGiaoHang?.trim() || "",
-        ghiChu:          formData.ghiChu?.trim() || "",
+        khachHangId: parseInt(formData.khachHangId),
+        khoXuatId: parseInt(formData.khoXuatId),
+        phiVanChuyen: formData.phiVanChuyen === "" ? 0 : Number(formData.phiVanChuyen),
+        diaChiGiaoHang: formData.diaChiGiaoHang?.trim() || "",
+        ghiChu: formData.ghiChu?.trim() || "",
         chiTiet: orderItems.map(item => ({
           bienTheSanPhamId: parseInt(item.bienTheSanPhamId),
-          soLuongDat:       parseInt(item.soLuongDat),
-          donGia:           parseFloat(item.donGia),
+          soLuongDat: parseInt(item.soLuongDat),
+          donGia: parseFloat(item.donGia),
         })),
       });
       toast.success("Tạo đơn bán thành công");
@@ -346,6 +357,11 @@ export default function SalesOrderCreate() {
                               {item.donGia < item.giaGoc && (
                                 <span className="inline-flex items-center rounded bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-xs font-semibold text-amber-700 mt-1">
                                   Thấp hơn {Math.ceil(((item.giaGoc - item.donGia) / item.giaGoc) * 100)}% so với niêm yết
+                                </span>
+                              )}
+                              {item.donGia > item.giaGoc && (
+                                <span className="inline-flex items-center rounded bg-red-50 border border-red-200 px-1.5 py-0.5 text-xs font-semibold text-red-700 mt-1">
+                                  Cao hơn {Math.ceil(((item.donGia - item.giaGoc) / item.giaGoc) * 100)}% so với niêm yết
                                 </span>
                               )}
                             </td>
