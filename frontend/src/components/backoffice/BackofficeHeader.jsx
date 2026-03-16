@@ -46,6 +46,28 @@ export default function BackofficeHeader({
   };
 
   const isWarehouseHeader = routeKey === "WAREHOUSE";
+  const luxuryDetailHeaderKeys = new Set([
+    "LOT_INPUT",
+    "GOODS_RECEIPTS_DETAIL",
+    "GOODS_ISSUES_CREATE",
+    "GOODS_ISSUES_DETAIL",
+    "PICK_LOT",
+    "CREATE_TRANSFER_TICKET",
+    "TRANSFER_TICKET_DETAIL",
+    "STOCK_TAKE_DETAIL",
+    "STOCK_TAKE_CREATE",
+    "CUSTOMER_DETAIL",
+    "CUSTOMER_EDIT",
+    "CREATE_SALES_ORDER",
+    "SALES_ORDER_DETAIL",
+    "SUPPLIER_DETAIL",
+    "SUPPLIER_EDIT",
+    "PURCHASE_ORDER_CREATE",
+    "GOODS_RECEIPTS_CREATE",
+    "SUPPLIER_CREATE",
+    "CHI_TIET_SAN_PHAM",
+  ]);
+  const isLuxuryDetailHeader = routeKey ? luxuryDetailHeaderKeys.has(routeKey) : false;
   const mainHeaderKeys = new Set([
     "DASHBOARD",
     "USER_LIST",
@@ -111,6 +133,29 @@ export default function BackofficeHeader({
           </Button>
 
           {isMainScreenHeader ? (
+            <div className="flex flex-col gap-0.5">
+              <p
+                className="text-[9px] md:text-[10px] tracking-[0.18em] uppercase text-[#b8860b]/80"
+                style={{ fontFamily: "'DM Mono', monospace" }}
+              >
+                {headerEyebrow}
+              </p>
+              <h1
+                className="text-[20px] md:text-[24px] lg:text-[26px] leading-tight font-black text-[#1a1612]"
+                style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em" }}
+              >
+                <>
+                  {mainTitleBase}
+                  {mainTitleAccent ? (
+                    <>
+                      {" "}
+                      <span className="text-[#b8860b]">{mainTitleAccent}</span>
+                    </>
+                  ) : null}
+                </>
+              </h1>
+            </div>
+          ) : isLuxuryDetailHeader ? (
             <div className="flex flex-col gap-0.5">
               <p
                 className="text-[9px] md:text-[10px] tracking-[0.18em] uppercase text-[#b8860b]/80"

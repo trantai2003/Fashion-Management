@@ -98,7 +98,7 @@ export default function BackofficeLayout() {
             key: "GOODS_RECEIPTS_DETAIL",
             match: (path) => /^\/goods-receipts\/\d+$/.test(path),
             title: "Chi tiết phiếu nhập kho",
-            subtitle: "Xem chi tiết phiếu nhập kho",
+            subtitle: "",
         },
         {
             key: "LOT_INPUT",
@@ -272,7 +272,7 @@ export default function BackofficeLayout() {
             key: "SUPPLIER_DETAIL",
             match: (path) => /^\/supplier\/view\/\d+$/.test(path),
             title: "Chi tiết nhà cung cấp",
-            subtitle: "Xem thông tin chi tiết về nhà cung cấp",
+            subtitle: "",
         },
         {
             key: "SUPPLIER_CREATE",

@@ -419,15 +419,7 @@ export default function SalesOrderCreate() {
         </div>
 
         {/* ── Footer actions ── */}
-        <div className="flex items-center justify-between pt-2">
-          <button
-            type="button"
-            onClick={() => navigate("/sales-orders")}
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Quay lại danh sách
-          </button>
+        <div className="flex items-center justify-end pt-2">
           <Button
             onClick={handleCreate}
             disabled={loading}

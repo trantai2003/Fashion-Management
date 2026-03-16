@@ -777,37 +777,42 @@ export default function PurchaseOrderCreate() {
             {/* ── Dialogs ── */}
             {/* Product Selection Dialog */}
             <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
-                <DialogContent className="max-w-[1000px] w-[95vw] p-0 overflow-hidden border-0 shadow-2xl rounded-2xl bg-white flex flex-col max-h-[85vh]">
-                    <div className="bg-slate-900 p-5 flex items-center justify-between shrink-0">
+                <DialogContent className="!w-[calc(100vw-2rem)] !max-w-[1200px] sm:!max-w-[1200px] p-0 overflow-hidden border border-[#e5d4b2] shadow-2xl rounded-3xl bg-[#fffdf8] text-[#1a1612] flex flex-col max-h-[85vh] dark:!bg-[#fffdf8] dark:!text-[#1a1612] dark:!border-[#e5d4b2]">
+                    <div className="bg-gradient-to-r from-[#0f1f44] via-[#0c1a38] to-[#111f3f] p-5 flex items-center justify-between shrink-0 dark:!from-[#0f1f44] dark:!via-[#0c1a38] dark:!to-[#111f3f]">
                         <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 bg-white/10 rounded-xl flex items-center justify-center">
+                            <div className="h-10 w-10 bg-white/10 rounded-xl border border-white/20 flex items-center justify-center">
                                 <Search className="h-5 w-5 text-white" />
                             </div>
-                            <DialogTitle className="text-lg font-bold text-white m-0 tracking-wide">
-                                Tuyển chọn mặt hàng
-                            </DialogTitle>
+                            <div>
+                                <DialogTitle className="text-[30px] leading-none font-black text-white m-0 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                    Tuyển chọn mặt hàng
+                                </DialogTitle>
+                                <p className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#d8be7a] font-semibold" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                    Danh mục sản phẩm khả dụng
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="p-5 border-b border-slate-100 shrink-0 bg-slate-50/50">
+                    <div className="p-5 border-b border-[#eadfc8] shrink-0 bg-[#f8f3e8] dark:!bg-[#f8f3e8] dark:!border-[#eadfc8]">
                         <div className="relative">
-                            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-[#7a6e5f]" />
                             <Input
                                 placeholder="Gõ tên, mã vạch, mã SKU, màu sắc..."
-                                className="pl-10 h-11 bg-white border-slate-200 rounded-xl text-[14px] shadow-sm focus-visible:ring-slate-900 font-medium placeholder:font-normal"
+                                className="pl-10 h-11 bg-white border-2 border-[#d9c8a6] rounded-2xl text-[14px] text-[#1a1612] shadow-sm focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b] font-medium placeholder:text-[#a89f92] placeholder:font-normal dark:!bg-white dark:!text-[#1a1612] dark:!border-[#d9c8a6]"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto min-h-0 bg-slate-50/30">
+                    <div className="flex-1 overflow-y-auto min-h-0 bg-[#fffdf8] dark:!bg-[#fffdf8]">
                         <Table>
-                            <TableHeader className="sticky top-0 bg-slate-100/90 backdrop-blur-sm z-10 shadow-sm border-b-slate-200">
+                            <TableHeader className="sticky top-0 bg-[#f7efdf] z-10 shadow-sm border-b border-[#e8dcc8] dark:!bg-[#f7efdf] dark:!border-[#e8dcc8]">
                                 <TableRow>
-                                    <TableHead className="font-bold text-[13px] uppercase text-slate-500 h-12 w-[120px]">Kho</TableHead>
-                                    <TableHead className="font-bold text-[13px] uppercase text-slate-500 h-12">Thông tin sản phẩm</TableHead>
-                                    <TableHead className="font-bold text-[13px] uppercase text-slate-500 h-12 w-[100px] text-center">Thao tác</TableHead>
+                                    <TableHead className="font-bold text-[12px] uppercase tracking-wider text-[#8b7355] h-12 w-[150px]" style={{ fontFamily: "'DM Mono', monospace" }}>Mã SKU</TableHead>
+                                    <TableHead className="font-bold text-[12px] uppercase tracking-wider text-[#8b7355] h-12" style={{ fontFamily: "'DM Mono', monospace" }}>Thông tin sản phẩm</TableHead>
+                                    <TableHead className="font-bold text-[12px] uppercase tracking-wider text-[#8b7355] h-12 w-[110px] text-center" style={{ fontFamily: "'DM Mono', monospace" }}>Thao tác</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -815,9 +820,9 @@ export default function PurchaseOrderCreate() {
                                     <TableRow>
                                         <TableCell colSpan={3} className="text-center py-16">
                                             <div className="flex flex-col items-center justify-center gap-2">
-                                                <Search className="h-8 w-8 text-slate-300 mb-2" />
-                                                <p className="text-[15px] font-bold text-slate-600">Không tìm thấy sản phẩm</p>
-                                                <p className="text-[13px] text-slate-400">Thử thay đổi từ khóa tìm kiếm</p>
+                                                <Search className="h-8 w-8 text-[#d0c3ad] mb-2" />
+                                                <p className="text-[15px] font-bold text-[#2f2a23]">Không tìm thấy mặt hàng</p>
+                                                <p className="text-[13px] text-[#8b7f72]">Thử đổi từ khóa theo SKU, tên hoặc thuộc tính</p>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -825,37 +830,37 @@ export default function PurchaseOrderCreate() {
                                     filteredProducts.map((product) => {
                                         const isSelected = orderItems.some(item => item.bienTheSanPhamId === product.id);
                                         return (
-                                            <TableRow key={product.id} className={`hover:bg-slate-50 ${isSelected ? 'opacity-50 bg-slate-50/50' : ''}`}>
-                                                <TableCell className="font-mono text-[13px] text-[#8b6a21] font-bold whitespace-nowrap">
+                                            <TableRow key={product.id} className={`border-b border-[#f0e7d8] hover:bg-[#fff7ea] ${isSelected ? 'opacity-60 bg-[#f8f3e8]' : 'bg-[#fffdf8]'} dark:!bg-[#fffdf8]`}> 
+                                                <TableCell className="font-mono text-[13px] text-[#9c7414] font-bold whitespace-nowrap">
                                                     {product.maBienThe}
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
                                                         {product.anhBienThe?.tepTin?.duongDan ? (
-                                                            <div className="h-10 w-10 rounded-lg bg-white border border-slate-200 overflow-hidden shrink-0">
+                                                            <div className="h-10 w-10 rounded-xl bg-white border border-[#e8dcc8] overflow-hidden shrink-0 shadow-sm">
                                                                 <img src={product.anhBienThe.tepTin.duongDan} alt="" className="h-full w-full object-cover" />
                                                             </div>
                                                         ) : (
-                                                            <div className="h-10 w-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-                                                                <Package className="h-4 w-4 text-slate-300" />
+                                                            <div className="h-10 w-10 rounded-xl bg-[#f6f0e5] border border-[#e8dcc8] flex items-center justify-center shrink-0">
+                                                                <Package className="h-4 w-4 text-[#c7b79c]" />
                                                             </div>
                                                         )}
                                                         <div>
-                                                            <p className="font-bold text-[14px] text-slate-800 line-clamp-1">{product.tenSanPham}</p>
-                                                            <p className="text-[12px] text-slate-500 mt-0.5">{product.thuocTinh}</p>
+                                                            <p className="font-bold text-[14px] text-[#1e2c48] line-clamp-1">{product.tenSanPham}</p>
+                                                            <p className="text-[12px] text-[#6f7f99] mt-0.5">{product.thuocTinh}</p>
                                                         </div>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     {isSelected ? (
-                                                        <Button size="sm" variant="outline" disabled className="h-8 rounded-lg gap-1 border-slate-200 text-slate-400 font-medium">
+                                                        <Button size="sm" variant="outline" disabled className="h-8 rounded-xl gap-1 border-[#e2d5bd] text-[#a89f92] font-semibold bg-[#f7f3ea]">
                                                             <CheckCircle className="h-3.5 w-3.5" /> Thêm
                                                         </Button>
                                                     ) : (
                                                         <Button
                                                             size="sm"
                                                             onClick={() => handleAddProduct(product)}
-                                                            className="h-8 rounded-lg gap-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-sm"
+                                                            className="h-8 rounded-xl gap-1 bg-gradient-to-r from-[#b8860b] to-[#d4a017] hover:brightness-95 text-white font-semibold shadow-sm"
                                                         >
                                                             <Plus className="h-3.5 w-3.5" /> Lấy
                                                         </Button>
@@ -867,6 +872,15 @@ export default function PurchaseOrderCreate() {
                                 )}
                             </TableBody>
                         </Table>
+                    </div>
+
+                    <div className="shrink-0 border-t border-[#eadfc8] bg-[#f8f3e8] px-6 py-3 flex items-center justify-between text-xs text-[#7a6e5f] dark:!bg-[#f8f3e8] dark:!border-[#eadfc8]">
+                        <span style={{ fontFamily: "'DM Mono', monospace" }}>
+                            Tổng khả dụng: <span className="font-bold text-[#b8860b]">{filteredProducts.length}</span> mặt hàng
+                        </span>
+                        <span style={{ fontFamily: "'DM Mono', monospace" }}>
+                            Đã chọn: <span className="font-bold text-[#1a1612]">{orderItems.length}</span>
+                        </span>
                     </div>
                 </DialogContent>
             </Dialog>

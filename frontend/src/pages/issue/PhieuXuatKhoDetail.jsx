@@ -4,10 +4,10 @@ import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { toast } from "sonner";
 import { 
-    Loader2, ArrowLeft, Printer, Check, X, 
+    Loader2, Printer, Check, X, 
     ClipboardList, Package, Warehouse, Truck, 
     Calendar, User, AlertCircle, Info as InfoIcon,
-    ArrowRight
+    ArrowRight, ArrowLeft
 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════
@@ -304,17 +304,16 @@ export default function PhieuXuatKhoDetail() {
                 <div className="wh-orb-1" />
 
                 <div className="wh-inner">
-                    {/* ── Header ── */}
-                    <div className="wh-header">
-                        <div className="wh-title-wrap">
-                            <button 
-                                onClick={() => navigate("/goods-issues")}
-                                className="wh-eyebrow flex items-center gap-1 hover:text-[#b8860b] transition-colors mb-2"
-                            >
-                                <ArrowLeft size={10} /> FS WMS · Phiếu xuất kho
-                            </button>
-                            <h1 className="wh-title">Chi tiết <span>phiếu xuất</span></h1>
-                        </div>
+                    {/* ── Header actions only (title moved to global top header) ── */}
+                    <div className="wh-header" style={{ justifyContent: "space-between" }}>
+                        <button
+                            type="button"
+                            onClick={() => navigate("/goods-issues")}
+                            className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Quay lại danh sách
+                        </button>
 
                         <div className="wh-header-actions">
                             <span className={`badge badge-status ${statusInfo.cls}`}>

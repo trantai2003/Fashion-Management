@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { toast } from "sonner";
 import { 
@@ -285,17 +285,16 @@ export default function PhieuNhapKhoDetail() {
                 <div className="wh-orb-1" />
 
                 <div className="wh-inner">
-                    {/* ── Header ── */}
-                    <div className="wh-header">
-                        <div className="wh-title-wrap">
-                            <button 
-                                onClick={() => navigate("/goods-receipts")}
-                                className="wh-eyebrow flex items-center gap-1 hover:text-[#b8860b] transition-colors mb-2"
-                            >
-                                <ArrowLeft size={10} /> FS WMS · Phiếu nhập kho
-                            </button>
-                            <h1 className="wh-title">Chi tiết <span>phiếu nhập</span></h1>
-                        </div>
+                    {/* ── Header actions only (title moved to global top header) ── */}
+                    <div className="wh-header" style={{ justifyContent: "space-between" }}>
+                        <button
+                            type="button"
+                            onClick={() => navigate("/goods-receipts")}
+                            className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Quay lại danh sách
+                        </button>
 
                         <div className="wh-header-actions">
                             <span className={`badge badge-status ${statusInfo.cls}`}>
