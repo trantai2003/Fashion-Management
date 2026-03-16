@@ -130,6 +130,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         }
         donMuaHang.setTongTien(tongTien);
         donMuaHang.setChiTietDonMuaHangs(chiTietDonMuaHangs);
+        donMuaHang.setTrangThai(creating.getTrangThai());
         update(donMuaHang.getId(), donMuaHang);
         donMuaHang = getOne(donMuaHang.getId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy đơn mua hàng : " + creating.getSoDonMua())

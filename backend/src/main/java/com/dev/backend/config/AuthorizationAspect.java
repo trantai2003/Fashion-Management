@@ -3,7 +3,10 @@ package com.dev.backend.config;
 import com.dev.backend.constant.enums.RoleType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
+import com.dev.backend.dto.response.entities.ChiTietQuyenKhoDto;
 import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
+import com.dev.backend.dto.response.entities.PhanQuyenNguoiDungKhoDto;
+import com.dev.backend.entities.ChiTietQuyenKho;
 import com.dev.backend.services.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -71,6 +74,12 @@ public class AuthorizationAspect {
                         ? jwtService.hasAnyPermissionInWorkSpace(warehouseId, nguoiDungAuthInfo, requireAuth.permissions()) // Có ít nhất 1 permission
                         : jwtService.hasAllPermissionsInWorkSpace(warehouseId, nguoiDungAuthInfo, requireAuth.permissions()); // Có tất cả permissions
                 if (!hasAccess) {
+                    for (PhanQuyenNguoiDungKhoDto dto : nguoiDungAuthInfo.getPhanQuyenNguoiDungKhos()){
+                        System.out.println(dto.getKho().getTenKho());
+                      for (ChiTietQuyenKhoDto ctqk: dto.getChiTietQuyenKhos()){
+                          System.out.println(ctqk.getQuyenHan().getMaQuyen());
+                      }
+                    }
                     throw new AccessDeniedException("Quyền hạn không đủ");
                 }
             }
