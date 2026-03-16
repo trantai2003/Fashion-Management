@@ -125,4 +125,20 @@ public class SanPhamQuanAoController {
                         .message("Cập nhật giá thành công")
                         .build());
         }
+
+        //call api thứ 2 để lấy tất cả các sản phẩm theo khoID
+        @GetMapping("/theo-kho/{khoId}")
+        @RequireAuth(
+                roles = {
+                        IRoleType.quan_tri_vien,
+                        IRoleType.quan_ly_kho,
+                        IRoleType.nhan_vien_kho,
+                        IRoleType.nhan_vien_mua_hang,
+                        IRoleType.nhan_vien_ban_hang
+                },
+                rolesLogic = RequireAuth.LogicType.OR
+        )
+        public ResponseEntity<ResponseData<List<SanPhamQuanAoDto>>> getSanPhamByKho(@PathVariable Integer khoId) {
+                return sanPhamQuanAoService.getAllByKho(khoId);
+        }
 }

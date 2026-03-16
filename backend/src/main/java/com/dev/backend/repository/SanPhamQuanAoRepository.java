@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,4 +20,18 @@ public interface SanPhamQuanAoRepository extends JpaRepository<SanPhamQuanAo, In
             "WHERE s.id = :id")
     Optional<SanPhamQuanAo> findDetailById(@Param("id") Integer id);
     long countByMaSanPhamStartingWith(String prefix);
+
+    @Query("""
+            SELECT DISTINCT sp FROM SanPhamQuanAo sp
+            JOIN FETCH sp.danhMuc dm
+            JOIN sp.bienTheSanPhams bt
+            JOIN LoHang lh ON lh.bienTheSanPham = bt
+            JOIN TonKhoTheoLo tk ON tk.loHang = lh
+            WHERE tk.kho.id = :khoId
+              AND sp.trangThai = 1
+              AND bt.trangThai = 1
+              AND tk.soLuongKhaDung > 0
+            ORDER BY sp.tenSanPham
+            """)
+    List<SanPhamQuanAo> findSanPhamTrongKho(@Param("khoId") Integer khoId);
 }
