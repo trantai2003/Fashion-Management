@@ -146,6 +146,7 @@ public class DonBanHangController {
     @RequireAuth(
             roles = {
                     IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
                     IRoleType.nhan_vien_ban_hang
             },
             rolesLogic = RequireAuth.LogicType.OR
