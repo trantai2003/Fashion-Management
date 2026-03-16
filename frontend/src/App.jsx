@@ -66,6 +66,7 @@ import Dashboard from "@/pages/dashboard/Dashboard";
 import FashionFlowHomepage from "./pages/HomePageInternal";
 import NotFound404 from "./pages/page-error/NotFound404";
 import BaoCaoTonKho from "./pages/bao-cao/BaoCaoTonKho";
+import ApplicationRequestManagement from "./pages/purchase-oder-create-req/ApplicationRequestManagement";
 export default function App() {
   return (
     <BrowserRouter>
@@ -177,6 +178,9 @@ export default function App() {
           <Route path="/bao-cao/khach-hang" element={<KhachHangReport />} />
           <Route path="/bao-cao/xuat-nhap" element={<NhatKyNhapXuat />} />
           <Route path="/reports/inventory" element={<BaoCaoTonKho />} />
+
+          <Route path="/duyet-don-hang" element={<ApplicationRequestManagement />} />
+
         </Route>
 
         {/* ========== 404 ========== */}

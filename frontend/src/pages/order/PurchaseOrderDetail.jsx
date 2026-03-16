@@ -137,7 +137,7 @@ export default function PurchaseOrderDetail() {
             description: 'Đã gửi yêu cầu đến nhà cung cấp, chờ báo giá'
         },
         4: {
-            label: 'Đã báo giá',
+            label: 'Đã nhận báo giá',
             bannerBg: 'bg-emerald-50',
             bannerBorder: 'border-emerald-200',
             iconBg: 'bg-emerald-100',
@@ -316,7 +316,7 @@ export default function PurchaseOrderDetail() {
 
     return (
         <div className="p-6 md:p-8 pb-24 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync">
-            
+
             {/* ── Top Header and Navigation ── */}
             <div className="flex flex-col gap-4 mb-2">
                 <button
@@ -327,7 +327,7 @@ export default function PurchaseOrderDetail() {
                     <ArrowLeft className="h-4 w-4" />
                     Quay lại danh sách đơn hàng
                 </button>
-                
+
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                         <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/60 shrink-0">
@@ -342,7 +342,7 @@ export default function PurchaseOrderDetail() {
                             </p>
                         </div>
                     </div>
-                    
+
                     <div className="flex flex-wrap items-center gap-3">
                         <Button
                             variant="outline"
@@ -360,7 +360,7 @@ export default function PurchaseOrderDetail() {
                             <Download className="mr-2 h-4 w-4 text-slate-500" />
                             Xuất file
                         </Button>
-                        
+
                         {orderData.trangThai === 0 && (
                             <>
                                 <Button
@@ -397,7 +397,7 @@ export default function PurchaseOrderDetail() {
             <div className={`rounded-2xl p-6 md:p-8 shadow-sm border ${currentStatus.bannerBg} ${currentStatus.bannerBorder} flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden`}>
                 {/* Decorative background blur */}
                 <div className={`absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 rounded-full ${currentStatus.iconBg} blur-3xl opacity-50 pointer-events-none`}></div>
-                
+
                 <div className="flex items-center gap-5 relative z-10">
                     <div className={`flex h-16 w-16 items-center justify-center rounded-2xl ${currentStatus.iconBg} shadow-inner border border-white/40 shrink-0`}>
                         <StatusIcon className={`h-8 w-8 ${currentStatus.iconColor}`} />
@@ -411,7 +411,7 @@ export default function PurchaseOrderDetail() {
                         </p>
                     </div>
                 </div>
-                
+
                 <div className="relative z-10 bg-white/60 backdrop-blur-sm rounded-xl px-6 py-4 border border-white/60 shadow-sm ml-auto text-right">
                     <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-1">Tổng giá trị đơn hàng</p>
                     <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -479,7 +479,7 @@ export default function PurchaseOrderDetail() {
                         <div className="font-semibold text-slate-900">{orderData.nguoiTao?.hoTen}</div>
                         <div className="text-[13px] text-slate-500 mt-0.5" title={orderData.nguoiTao?.email}>{orderData.nguoiTao?.email}</div>
                     </InfoField>
-                    
+
                     {orderData.nguoiDuyet && (
                         <>
                             <Separator className="bg-slate-100" />
@@ -489,7 +489,7 @@ export default function PurchaseOrderDetail() {
                             </InfoField>
                         </>
                     )}
-                    
+
                     <Separator className="bg-slate-100" />
                     <InfoField label="Lịch sử gian" icon={Clock}>
                         <div className="space-y-2 mt-1">
@@ -514,7 +514,7 @@ export default function PurchaseOrderDetail() {
                     </div>
                     <h2 className="text-lg font-bold text-slate-800">Danh sách sản phẩm</h2>
                 </div>
-                
+
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
@@ -635,7 +635,7 @@ export default function PurchaseOrderDetail() {
                                 </span>
                             </div>
                         </div>
-                        
+
                         <div className="w-full sm:w-96 bg-white p-6 rounded-2xl border border-violet-100 shadow-[0_4px_20px_rgba(139,92,246,0.08)] flex flex-col justify-center">
                             <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-2">Thanh toán dự kiến</p>
                             <div className="flex justify-between items-end gap-4 overflow-hidden">
@@ -700,7 +700,7 @@ export default function PurchaseOrderDetail() {
                         <DialogDescription className="text-[15px] text-slate-600 leading-relaxed mb-4">
                             Đơn hàng <span className="font-bold text-slate-900 border-b border-slate-300 pb-0.5">{orderData.soDonMua}</span> sẽ bị hủy nội bộ. Bạn bắt buộc phải cung cấp lý do.
                         </DialogDescription>
-                        
+
                         <div className="mb-6">
                             <Label htmlFor="cancelReason" className="text-[14px] font-bold text-slate-700 mb-2 block">
                                 Lý do hủy <span className="text-rose-500">*</span>
@@ -713,7 +713,7 @@ export default function PurchaseOrderDetail() {
                                 className="min-h-[100px] resize-y rounded-xl border-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-[14px] p-4 shadow-sm"
                             />
                         </div>
-                        
+
                         <DialogFooter className="gap-2 sm:gap-0">
                             <Button
                                 variant="outline"
