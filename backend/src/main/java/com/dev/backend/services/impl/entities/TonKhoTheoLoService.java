@@ -63,4 +63,8 @@ public class TonKhoTheoLoService extends BaseServiceImpl<TonKhoTheoLo, Integer> 
                         .build()
         );
     }
+
+    public List<TonKhoChiTietDTO> findTonKhoChiTietByBienTheAndKho(Integer bienTheId, Integer khoId) {
+        return tonKhoTheoLoRepository.findTonKhoChiTietByBienTheAndKho(bienTheId, khoId);
+    }
 }

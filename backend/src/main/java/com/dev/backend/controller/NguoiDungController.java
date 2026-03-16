@@ -30,6 +30,7 @@ public class NguoiDungController {
     @Autowired
     private NguoiDungMapper nguoiDungMapper;
 
+    // call api này để lấy danh sách người dùng quản lý kho(lấy dc thông tin danh sách kho mà user đó quản lý)
     @GetMapping("/get-by-id/{id}")
     public ResponseEntity<ResponseData<NguoiDungDto>> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(

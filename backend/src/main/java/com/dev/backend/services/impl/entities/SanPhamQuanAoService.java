@@ -519,4 +519,15 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                         bienThe.setGiaVon(newCost);
                 bienTheSanPhamService.update(skuId, bienThe);
         }
+
+        public ResponseEntity<ResponseData<List<SanPhamQuanAoDto>>> getAllByKho(Integer khoId) {
+
+                return ResponseEntity.ok(
+                        ResponseData.<List<SanPhamQuanAoDto>>builder()
+                                .status(HttpStatus.OK.value())
+                                .message("Success")
+                                .data(sanPhamQuanAoMapper.toDtoList(repository.findSanPhamTrongKho(khoId)))
+                                .build()
+                );
+        }
 }

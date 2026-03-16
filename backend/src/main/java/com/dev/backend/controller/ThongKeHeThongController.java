@@ -79,4 +79,21 @@ public class ThongKeHeThongController {
         return tonKhoTheoLoService.sanPhamBanChay(top);
     }
 
+    //sau khi lấy được danh sách sản phẩm ở trong khoID thì xem được danh sách biến thể của từng sản phẩm
+    //sau đó gọi api này để lấy danh sách tồn kho chi tiết của biến thể đó trong kho
+    @GetMapping("/ton-kho-bien-the/{khoId}/{bienTheId}")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho,
+                    IRoleType.nhan_vien_mua_hang,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<List<TonKhoChiTietDTO>>> tonKhoBienThe(@PathVariable Integer khoId, @PathVariable Integer bienTheId) {
+        return thongKeHeThongService.findTonKhoChiTietByBienTheAndKho(bienTheId, khoId);
+    }
+
 }

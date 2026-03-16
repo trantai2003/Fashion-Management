@@ -45,9 +45,9 @@ public class KhoController {
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}
     )
-    public ResponseEntity<ResponseData<KhoDto>> getById(@PathVariable Integer id){
+    public ResponseEntity<ResponseData<KhoDto>> getById(@PathVariable Integer id) {
         Optional<Kho> findingKho = khoService.getOne(id);
-        if(findingKho.isEmpty()){
+        if (findingKho.isEmpty()) {
             throw new CommonException("Không tìm thấy kho id: " + id);
         }
         return ResponseEntity.ok(
@@ -63,7 +63,7 @@ public class KhoController {
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}
     )
-    public ResponseEntity<ResponseData<Page<KhoDto>>> filter(@RequestBody BaseFilterRequest filter){
+    public ResponseEntity<ResponseData<Page<KhoDto>>> filter(@RequestBody BaseFilterRequest filter) {
         return ResponseEntity.ok(
                 ResponseData.<Page<KhoDto>>builder()
                         .status(HttpStatus.OK.value())
@@ -73,11 +73,22 @@ public class KhoController {
         );
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<ResponseData<List<KhoDto>>> all() {
+        return ResponseEntity.ok(
+                ResponseData.<List<KhoDto>>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(khoMapper.toDtoList(khoService.getAll()))
+                        .message("Success")
+                        .build()
+        );
+    }
+
     @PostMapping("/create")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien}
     )
-    public ResponseEntity<ResponseData<KhoDto>> create(@RequestBody KhoCreating creating){
+    public ResponseEntity<ResponseData<KhoDto>> create(@RequestBody KhoCreating creating) {
         return khoService.create(creating);
     }
 
@@ -85,7 +96,7 @@ public class KhoController {
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien}
     )
-    public ResponseEntity<ResponseData<KhoDto>> update(@RequestBody KhoUpdating updating){
+    public ResponseEntity<ResponseData<KhoDto>> update(@RequestBody KhoUpdating updating) {
         return khoService.update(updating);
     }
 
@@ -93,9 +104,9 @@ public class KhoController {
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien}
     )
-    public ResponseEntity<ResponseData<String>> softDelete(@PathVariable Integer id){
+    public ResponseEntity<ResponseData<String>> softDelete(@PathVariable Integer id) {
         Optional<Kho> findingKho = khoService.getOne(id);
-        if(findingKho.isEmpty()){
+        if (findingKho.isEmpty()) {
             throw new CommonException("Không tìm thấy kho id: " + id);
         }
         Kho kho = findingKho.get();
@@ -109,13 +120,14 @@ public class KhoController {
                         .build()
         );
     }
+
     @PostMapping("/mine")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho, IRoleType.nhan_vien_ban_hang},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
     )
-    public ResponseEntity<ResponseData<Page<KhoDto>>> getMyWarehouses(@RequestBody BaseFilterRequest filter){
+    public ResponseEntity<ResponseData<Page<KhoDto>>> getMyWarehouses(@RequestBody BaseFilterRequest filter) {
         NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
         boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
         if (!isAdmin) {
