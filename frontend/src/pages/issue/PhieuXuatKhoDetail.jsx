@@ -1,419 +1,390 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
-import { donBanHangService } from "@/services/donBanHangService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
-import { getMineKhoList } from "@/services/khoService";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-    ChevronDown, FileText, Warehouse, ArrowRightLeft, Package,
-    ArrowLeft, Loader2, ClipboardList,
-} from "lucide-react";
 
-export default function PhieuXuatKhoCreate() {
+// Giữ nguyên bộ STATUS_MAP từ snippet mới nhất của bạn
+const STATUS_MAP = {
+    0: { label: "Nháp", className: "bg-amber-50 text-amber-700" },
+    1: { label: "Chờ duyệt", className: "bg-blue-50 text-blue-700" },
+    2: { label: "Đã duyệt", className: "bg-indigo-50 text-indigo-700" },
+    3: { label: "Đã xuất", className: "bg-green-50 text-green-700" },
+    4: { label: "Đã huỷ", className: "bg-red-50 text-red-700" },
+    5: { label: "Đã xuất", className: "bg-green-50 text-green-700" },
+};
+
+export default function PhieuXuatKhoDetail() {
+    const { id } = useParams();
     const navigate = useNavigate();
 
-    const [exportSource,     setExportSource]     = useState("SO");
-    const [soList,           setSoList]           = useState([]);
-    const [transferList,     setTransferList]     = useState([]);
-    const [warehouses,       setWarehouses]       = useState([]);
-    const [selectedSO,       setSelectedSO]       = useState(null);
-    const [selectedTransfer, setSelectedTransfer] = useState(null);
-    const [loading,          setLoading]          = useState(false);
-    const [createdId,        setCreatedId]        = useState(null);
-    const [form,             setForm]             = useState({
-        donBanHangId: "", transferId: "", khoId: "", ghiChu: "", chiTietXuat: [],
-    });
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    useEffect(() => { fetchInitialData(); }, []);
+    // Lấy thông tin từ localStorage
+    const role = localStorage.getItem("role");
+    const currentWarehouseId = Number(localStorage.getItem("warehouseId"));
 
-    async function fetchInitialData() {
+    // Xác định quyền đặc biệt
+    const isAdmin = role === "quan_tri_vien";
+    const isQuanLy = role === "quan_ly_kho" || isAdmin;
+
+    useEffect(() => {
+        fetchDetail();
+    }, [id]);
+
+    async function fetchDetail() {
         setLoading(true);
         try {
-            const myWarehousesRes = await getMineKhoList();
-            const warehouseList = myWarehousesRes.data || myWarehousesRes;
-            setWarehouses(warehouseList);
-
-            const soRes = await donBanHangService.filter({
-                page: 0, size: 1000,
-                filters: [{ fieldName: "trangThai", operation: "IN", value: [1, 2] }],
-                sorts: [{ fieldName: "ngayDatHang", direction: "DESC" }],
-            });
-            setSoList(soRes.content || soRes.data?.content || []);
-
-            const transferRes = await phieuChuyenKhoService.filter({
-                page: 0, size: 1000,
-                filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 2 }],
-                sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
-            });
-            setTransferList(transferRes.content || transferRes.data?.content || []);
-
-            if (warehouseList.length === 1)
-                setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
-        } catch {
-            toast.error("Không thể tải dữ liệu khởi tạo");
+            const res = await phieuXuatKhoService.getDetail(id);
+            // Bóc tách dữ liệu nếu bị bọc bởi ResponseData
+            setData(res?.data || res);
+        } catch (e) {
+            console.error(e);
+            toast.error("Không thể tải chi tiết phiếu xuất");
         } finally {
             setLoading(false);
         }
     }
 
-    async function handleSelectSO(soId) {
-        if (!soId) { setSelectedSO(null); setForm({ ...form, donBanHangId: "", chiTietXuat: [] }); return; }
+    // Hàm xử lý chung cho Gửi duyệt và Phê duyệt
+    async function handleStatusChange(actionFn, successMsg) {
+        setIsProcessing(true);
         try {
-            const res = await donBanHangService.getDetail(soId);
-            const data = res.data;
-            if (!data.chiTiet.some(ct => ct.soLuongDat > ct.soLuongDaGiao)) {
-                toast.error("Đơn hàng này đã giao đủ số lượng."); return;
-            }
-            setSelectedSO(data);
-            setForm(prev => ({
-                ...prev,
-                donBanHangId: data.donBanHang.id,
-                khoId: data.donBanHang?.khoXuat?.id || data.khoXuat?.id,
-                chiTietXuat: data.chiTiet
-                    .filter(ct => ct.soLuongDat > ct.soLuongDaGiao)
-                    .map(item => ({ bienTheSanPhamId: item.bienTheSanPhamId, soLuongXuat: item.soLuongDat - item.soLuongDaGiao })),
-            }));
-        } catch { toast.error("Không thể tải chi tiết đơn bán"); }
-    }
-
-    async function handleSelectTransfer(transferId) {
-        if (!transferId) { setSelectedTransfer(null); setForm({ ...form, transferId: "", chiTietXuat: [] }); return; }
-        try {
-            const res = await phieuChuyenKhoService.getDetail(transferId);
-            const data = res.data || res;
-            setSelectedTransfer(data);
-            setForm(prev => ({ ...prev, transferId: data.id, khoId: data.khoXuatId }));
-        } catch { toast.error("Không thể tải chi tiết yêu cầu chuyển kho"); }
-    }
-
-    async function createPhieu() {
-        if (exportSource === "SO") {
-            const validLines = form.chiTietXuat.filter(ct => ct.soLuongXuat > 0);
-            if (!form.donBanHangId) return toast.error("Vui lòng chọn đơn bán"), null;
-            if (!form.khoId) return toast.error("Vui lòng chọn kho xuất hàng"), null;
-            if (validLines.length === 0) return toast.error("Phải có ít nhất 1 sản phẩm xuất > 0"), null;
-            try {
-                setLoading(true);
-                const res = await phieuXuatKhoService.create({
-                    donBanHangId: parseInt(form.donBanHangId),
-                    khoId: parseInt(form.khoId),
-                    ghiChu: form.ghiChu,
-                    chiTietXuat: validLines,
-                });
-                setCreatedId(res.id);
-                toast.success("Tạo phiếu xuất bán hàng thành công");
-                return res.id;
-            } catch (e) { toast.error(e?.response?.data?.message || "Không thể tạo phiếu xuất"); return null; }
-            finally { setLoading(false); }
-        } else {
-            if (!form.transferId) return toast.error("Vui lòng chọn yêu cầu chuyển kho"), null;
-            try {
-                setLoading(true);
-                const res = await phieuChuyenKhoService.createExport(form.transferId);
-                const newId = res.data?.id || res.id;
-                setCreatedId(newId);
-                toast.success("Khởi tạo phiếu xuất chuyển kho thành công");
-                return newId;
-            } catch (e) { toast.error(e?.response?.data?.message || "Không thể tạo phiếu xuất chuyển kho"); return null; }
-            finally { setLoading(false); }
+            await actionFn(id);
+            toast.success(successMsg);
+            fetchDetail(); // Load lại dữ liệu
+        } catch (e) {
+            toast.error(e?.response?.data?.message || "Thao tác thất bại");
+        } finally {
+            setIsProcessing(false);
         }
     }
 
-    async function handleSaveDraft() { await createPhieu(); }
-    async function handleContinue() {
-        const id = createdId || await createPhieu();
-        if (id) navigate(`/goods-issues/${id}`);
-    }
-
-    const toggleSource = (source) => {
-        setExportSource(source);
-        setSelectedSO(null);
-        setSelectedTransfer(null);
-        setForm({ donBanHangId: "", transferId: "", khoId: warehouses.length === 1 ? warehouses[0].id : "", ghiChu: "", chiTietXuat: [] });
+    // Hàm xử lý khi xác nhận Hoàn thành/Vận chuyển
+    const handleConfirmComplete = async () => {
+        setIsProcessing(true);
+        try {
+            await phieuXuatKhoService.complete(phieu.id);
+            
+            if (isChuyenKho) {
+                toast.success("Xác nhận xuất kho và bắt đầu vận chuyển thành công");
+            } else {
+                toast.success("Hoàn thành phiếu xuất bán hàng thành công");
+            }
+            navigate("/goods-issues");
+        } catch (e) {
+            toast.error(e?.response?.data?.message || "Không thể thực hiện thao tác");
+        } finally {
+            setIsProcessing(false);
+            setShowConfirm(false);
+        }
     };
 
-    const soLabel       = form.donBanHangId ? soList.find(so => so.id === parseInt(form.donBanHangId))?.soDonHang : "Chọn đơn bán hàng";
-    const transferLabel = form.transferId   ? transferList.find(t => t.id === parseInt(form.transferId))?.soPhieuXuat : "Chọn yêu cầu chuyển kho";
-    const khoLabel      = form.khoId        ? warehouses.find(k => k.id === parseInt(form.khoId))?.tenKho : "Tự động trích xuất";
+    if (loading || !data) {
+        return (
+            <div className="p-10 text-center text-sm text-gray-500">
+                Loading...
+            </div>
+        );
+    }
+
+    const { phieu, chiTiet } = data;
+
+    // Kiểm tra loại phiếu
+    const isChuyenKho = phieu.loaiXuat === "chuyen_kho";
+
+    // Kiểm tra xem tất cả mặt hàng đã bốc đủ lô chưa
+    const isAllPicked = Array.isArray(chiTiet)
+        && chiTiet.length > 0
+        && chiTiet.every(ct => ct.duSoLuong === true);
 
     return (
-        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-            <div className="space-y-6 w-full">
-
-                {/* ── Header ── */}
-                <div className="flex items-center justify-between">
+        <div className="min-h-screen bg-gray-50 flex">
+            <main className="flex-1">
+                {/* ===== HEADER ===== */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between bg-white border-b sticky top-0 z-10">
+                    {/* LEFT */}
                     <button
-                        type="button"
                         onClick={() => navigate("/goods-issues")}
-                        className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
+                        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 font-medium"
                     >
-                        <ArrowLeft className="h-4 w-4" />
-                        Quay lại danh sách
+                        ← Quay lại
                     </button>
 
-                    {/* Tab toggle */}
-                    <div className="flex p-1 bg-white rounded-xl shadow-sm ring-1 ring-slate-200/80">
-                        <button
-                            onClick={() => toggleSource("SO")}
-                            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all duration-150 ${
-                                exportSource === "SO"
-                                    ? "bg-slate-900 text-white shadow-sm"
-                                    : "text-slate-500 hover:text-slate-700"
-                            }`}
+                    {/* RIGHT ACTIONS */}
+                    <div className="flex items-center gap-2">
+                        <span
+                            className={`px-3 py-1 text-xs rounded font-medium ${STATUS_MAP[phieu.trangThai]?.className}`}
                         >
-                            <FileText className="w-4 h-4" />
-                            Xuất theo Đơn Bán Hàng
-                        </button>
-                        <button
-                            onClick={() => toggleSource("TRANSFER")}
-                            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all duration-150 ${
-                                exportSource === "TRANSFER"
-                                    ? "bg-slate-900 text-white shadow-sm"
-                                    : "text-slate-500 hover:text-slate-700"
-                            }`}
-                        >
-                            <ArrowRightLeft className="w-4 h-4" />
-                            Xuất Chuyển Kho Nội Bộ
-                        </button>
+                            {STATUS_MAP[phieu.trangThai]?.label}
+                        </span>
+
+                        {/* Nút Hủy: Hiện cho các trạng thái chưa hoàn thành/hủy */}
+                        {[0, 1, 2].includes(phieu.trangThai) && (
+                            <button
+                                disabled={isProcessing}
+                                className="px-4 py-2 rounded-md text-sm border border-red-200 text-red-600 hover:bg-red-50 font-medium transition-colors"
+                                onClick={() => setShowCancelConfirm(true)}
+                            >
+                                Huỷ phiếu xuất
+                            </button>
+                        )}
+
+                        {/* NÚT IN PHIẾU */}
+                        {phieu.trangThai !== 4 && (
+                            <button
+                                onClick={() => navigate(`/goods-issues/${phieu.id}/print`)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm transition-all active:scale-95"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                In phiếu
+                            </button>
+                        )}
+
+                        {/* Nút Hoàn thành/Vận chuyển: Luôn hiển thị ở trạng thái 0 (Nháp) */}
+                        {phieu.trangThai === 0 && (
+                            <button
+                                disabled={isProcessing || !isAllPicked}
+                                onClick={() => setShowConfirm(true)}
+                                className={`px-4 py-2 rounded-md text-sm font-semibold text-white shadow-sm
+                                    ${isAllPicked && !isProcessing
+                                        ? (isChuyenKho ? "bg-purple-600 hover:bg-purple-700" : "bg-green-600 hover:bg-green-700")
+                                        : "bg-gray-300 cursor-not-allowed"}`}
+                            >
+                                {isChuyenKho ? "Xác nhận vận chuyển →" : "Hoàn thành xuất kho"}
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* ===== CONTENT ===== */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+                    {/* THÔNG TIN CHUNG */}
+                    <section className="bg-white border rounded-xl p-6 shadow-sm">
+                        <h2 className="text-sm font-semibold mb-4 text-gray-900 uppercase tracking-wider">
+                            Thông tin phiếu xuất
+                        </h2>
+                        <div className="grid md:grid-cols-3 gap-6 text-sm">
+                            <Info label="Số phiếu" value={phieu.soPhieuXuat} />
 
-                    {/* ── LEFT: Thông tin lộ trình ── */}
-                    <div className="lg:col-span-1">
-                        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                            <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100">
-                                    <ClipboardList className="h-4 w-4 text-violet-600" />
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-slate-900 leading-snug">Thông tin phiếu xuất</p>
-                                    <p className="text-xs text-slate-500 mt-0.5">
-                                        {exportSource === "SO" ? "Chọn đơn bán hàng và kho xuất" : "Chọn yêu cầu chuyển kho"}
-                                    </p>
-                                </div>
-                            </div>
+                            <Info
+                                label="Loại xuất"
+                                value={isChuyenKho ? "Chuyển kho nội bộ" : "Xuất bán hàng"}
+                            />
 
-                            <div className="p-5 space-y-5">
-                                {/* Nguồn */}
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                        {exportSource === "SO" ? "Đơn bán hàng (SO)" : "Yêu cầu chuyển kho"}
-                                    </label>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" className="w-full justify-between font-normal bg-white border-gray-200 h-10">
-                                                <div className="flex items-center overflow-hidden">
-                                                    {exportSource === "SO"
-                                                        ? <FileText className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                                        : <Package className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                            {isChuyenKho ? (
+                                <Info label="Kho chuyển đến" value={phieu.khoChuyenDen?.tenKho} />
+                            ) : (
+                                <Info label="Đơn bán hàng" value={phieu.donBanHang?.soDonHang} />
+                            )}
+
+                            <Info label="Kho xuất hàng" value={phieu.kho?.tenKho} />
+
+                            <Info
+                                label="Ngày tạo phiếu"
+                                value={new Date(phieu.ngayTao).toLocaleDateString("vi-VN")}
+                            />
+
+                            <Info
+                                label="Ngày xuất"
+                                value={phieu.ngayXuat ? new Date(phieu.ngayXuat).toLocaleDateString("vi-VN") : "Chưa xuất kho"}
+                            />
+
+                            <Info
+                                label="Người xuất"
+                                value={phieu.nguoiXuat?.hoTen || "---"}
+                            />
+
+                            {phieu.ghiChu && (
+                                <div className="md:col-span-3">
+                                    <Info label="Ghi chú" value={phieu.ghiChu} />
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* DANH SÁCH SẢN PHẨM */}
+                    <section className="bg-white border rounded-xl shadow-sm overflow-hidden">
+                        <div className="p-4 border-b bg-gray-50/50 flex justify-between items-center">
+                            <h2 className="text-sm font-bold text-gray-800">Danh sách sản phẩm</h2>
+                            {isChuyenKho && phieu.trangThai === 0 && !isAllPicked && (
+                                <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded font-bold">
+                                    CẦN BỐC LÔ TRƯỚC KHI XUẤT HÀNG
+                                </span>
+                            )}
+                        </div>
+
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50 text-xs text-gray-500 font-medium">
+                                <tr>
+                                    <th className="px-4 py-3 text-left">SKU / Biến thể</th>
+                                    <th className="px-4 py-3 text-center">SL yêu cầu</th>
+                                    <th className="px-4 py-3 text-center">SL đã pick</th>
+                                    <th className="px-4 py-3 text-center">Trạng thái</th>
+                                    <th className="px-4 py-3 text-center">Hành động</th>
+                                </tr>
+                            </thead>
+
+                            <tbody className="divide-y divide-gray-100">
+                                {chiTiet.map((ct) => {
+                                    const canEditLot = phieu.trangThai === 0;
+
+                                    return (
+                                        <tr key={ct.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-4 py-3">
+                                                <div className="font-bold text-gray-800">{ct.sku}</div>
+                                                <div className="text-[11px] text-gray-500">{ct.tenBienThe}</div>
+                                            </td>
+
+                                            <td className="px-4 py-3 text-center font-semibold text-gray-700">
+                                                {ct.soLuongCanXuat}
+                                            </td>
+
+                                            <td className="px-4 py-3 text-center">
+                                                <span className={ct.duSoLuong ? "text-green-600 font-bold" : "text-amber-600 font-bold"}>
+                                                    {ct.soLuongDaPick} / {ct.soLuongCanXuat}
+                                                </span>
+                                            </td>
+
+                                            <td className="px-4 py-3 text-center">
+                                                {ct.duSoLuong ? (
+                                                    <span className="px-2 py-1 text-[10px] rounded bg-green-50 text-green-700 font-bold">Đủ hàng</span>
+                                                ) : (
+                                                    <span className="px-2 py-1 text-[10px] rounded bg-red-50 text-red-700 font-bold">Chưa đủ</span>
+                                                )}
+                                            </td>
+
+                                            <td className="px-4 py-3 text-center">
+                                                <button
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/goods-issues/${phieu.id}/pick-lot/${ct.id}`,
+                                                            {
+                                                                state: {
+                                                                    bienTheSanPhamId: ct.bienTheSanPhamId,
+                                                                    sku: ct.sku,
+                                                                    tenBienThe: ct.tenBienThe,
+                                                                    soLuongXuat: ct.soLuongCanXuat,
+                                                                    soLuongDaPick: ct.soLuongDaPick,
+                                                                    phieuTrangThai: phieu.trangThai,
+                                                                    loaiXuat: phieu.loaiXuat
+                                                                },
+                                                            }
+                                                        )
                                                     }
-                                                    <span className="truncate text-sm">
-                                                        {exportSource === "SO" ? soLabel : transferLabel}
-                                                    </span>
-                                                </div>
-                                                <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-[280px] max-h-[300px] overflow-y-auto bg-white border border-gray-100 shadow-xl z-50">
-                                            {exportSource === "SO" ? (
-                                                soList.length === 0 ? (
-                                                    <DropdownMenuItem disabled className="text-gray-500 italic">Không có đơn bán nào khả dụng</DropdownMenuItem>
-                                                ) : soList.map(so => (
-                                                    <DropdownMenuItem key={so.id} onClick={() => handleSelectSO(so.id)} className="cursor-pointer hover:bg-violet-50 py-2 flex flex-col items-start">
-                                                        <span className="font-medium text-gray-900">{so.soDonHang}</span>
-                                                        <span className="text-xs text-gray-500">{so.trangThai === 2 ? "Đang xuất dở" : "Chờ xuất kho"}</span>
-                                                    </DropdownMenuItem>
-                                                ))
-                                            ) : (
-                                                transferList.length === 0 ? (
-                                                    <DropdownMenuItem disabled className="text-gray-500 italic">Không có yêu cầu nào khả dụng</DropdownMenuItem>
-                                                ) : transferList.map(t => (
-                                                    <DropdownMenuItem key={t.id} onClick={() => handleSelectTransfer(t.id)} className="cursor-pointer hover:bg-violet-50 py-2 flex flex-col items-start">
-                                                        <span className="font-medium text-gray-900">{t.soPhieuXuat}</span>
-                                                        <span className="text-xs text-gray-500">Đến: {t.khoChuyenDen?.tenKho}</span>
-                                                    </DropdownMenuItem>
-                                                ))
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-
-                                {/* Kho xuất */}
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Kho xuất hàng</label>
-                                    <Button variant="outline" disabled className="w-full justify-between font-semibold bg-slate-50 border-gray-200 h-10 text-slate-700 disabled:opacity-80">
-                                        <div className="flex items-center overflow-hidden">
-                                            <Warehouse className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                            <span className="truncate text-sm">{khoLabel}</span>
-                                        </div>
-                                    </Button>
-                                </div>
-
-                                {/* Ghi chú */}
-                                {exportSource === "SO" && (
-                                    <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                                        <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Ghi chú</label>
-                                        <textarea
-                                            value={form.ghiChu}
-                                            onChange={(e) => setForm({ ...form, ghiChu: e.target.value })}
-                                            rows={3}
-                                            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all resize-none text-sm"
-                                            placeholder="Ghi chú thêm (nếu có)..."
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ── RIGHT: Bảng sản phẩm ── */}
-                    <div className="lg:col-span-2">
-                        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden min-h-[360px]">
-                            <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
-                                    <Package className="h-4 w-4 text-emerald-600" />
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-slate-900 leading-snug">
-                                        {exportSource === "SO" ? "Sản phẩm xuất bán" : "Chi tiết yêu cầu điều chuyển"}
-                                    </p>
-                                    <p className="text-xs text-slate-500 mt-0.5">Danh sách hàng hóa cần xuất kho</p>
-                                </div>
-                                {(exportSource === "SO" ? selectedSO?.soDonHang : selectedTransfer?.soPhieuXuat) && (
-                                    <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">
-                                        {exportSource === "SO" ? selectedSO?.soDonHang : selectedTransfer?.soPhieuXuat}
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Empty state */}
-                            {((exportSource === "SO" && !selectedSO) || (exportSource === "TRANSFER" && !selectedTransfer)) && (
-                                <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                                    <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-                                        <Package className="h-10 w-10 text-slate-400" />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-slate-800">Chưa có dữ liệu</h3>
-                                    <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
-                                        Vui lòng chọn {exportSource === "SO" ? "đơn bán hàng" : "yêu cầu chuyển kho"} để xem danh sách sản phẩm.
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* SO table */}
-                            {exportSource === "SO" && selectedSO && (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="border-b border-slate-200 bg-slate-50">
-                                                <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Mặt hàng</th>
-                                                <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Đặt / Giao</th>
-                                                <th className="h-12 px-4 text-right font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">SL Xuất</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {selectedSO.chiTiet.map((item) => {
-                                                const conLai = item.soLuongDat - item.soLuongDaGiao;
-                                                const formItemIdx = form.chiTietXuat.findIndex(f => f.bienTheSanPhamId === item.bienTheSanPhamId);
-                                                return (
-                                                    <tr key={item.id} className="transition-colors duration-150 hover:bg-violet-50/50">
-                                                        <td className="px-4 py-3.5 align-middle">
-                                                            <span className="font-semibold text-slate-900">{item.tenSanPham}</span>
-                                                            <span className="block font-mono text-xs text-slate-400 mt-0.5">{item.sku}</span>
-                                                        </td>
-                                                        <td className="px-4 py-3.5 align-middle text-center">
-                                                            <span className="text-slate-700">{item.soLuongDat}</span>
-                                                            <span className="text-slate-300 mx-1">/</span>
-                                                            <span className="text-emerald-600 font-medium">{item.soLuongDaGiao}</span>
-                                                        </td>
-                                                        <td className="px-4 py-3.5 align-middle text-right">
-                                                            <input
-                                                                type="number" min={0} max={conLai} disabled={conLai <= 0}
-                                                                value={formItemIdx !== -1 ? form.chiTietXuat[formItemIdx]?.soLuongXuat : 0}
-                                                                onChange={(e) => {
-                                                                    const next = [...form.chiTietXuat];
-                                                                    if (formItemIdx !== -1) { next[formItemIdx].soLuongXuat = Number(e.target.value); setForm({ ...form, chiTietXuat: next }); }
-                                                                }}
-                                                                className="w-24 h-9 border border-gray-200 rounded-lg text-center font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all ml-auto disabled:bg-slate-50"
-                                                            />
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                            {/* Transfer table */}
-                            {exportSource === "TRANSFER" && selectedTransfer && (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="border-b border-slate-200 bg-slate-50">
-                                                <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Mặt hàng</th>
-                                                <th className="h-12 px-4 text-right font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">SL Yêu cầu</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {selectedTransfer.items?.map((item) => (
-                                                <tr key={item.bienTheId} className="transition-colors duration-150 hover:bg-violet-50/50">
-                                                    <td className="px-4 py-3.5 align-middle">
-                                                        <span className="font-semibold text-slate-900">{item.tenSanPham}</span>
-                                                        <span className="block font-mono text-xs text-slate-400 mt-0.5">{item.sku}</span>
-                                                    </td>
-                                                    <td className="px-4 py-3.5 align-middle text-right">
-                                                        <span className="inline-flex items-center justify-end rounded-lg bg-slate-100 px-2.5 py-1">
-                                                            <span className="font-semibold text-slate-800 text-xs">{item.soLuongYeuCau}</span>
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                            {/* Footer */}
-                            {((exportSource === "SO" && selectedSO) || (exportSource === "TRANSFER" && selectedTransfer)) && (
-                                <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-t border-slate-100">
-                                    <p className="text-sm text-slate-500">
-                                        Kho đích:{" "}
-                                        <span className="font-semibold text-slate-900">
-                                            {exportSource === "TRANSFER" ? selectedTransfer?.khoNhapTen : khoLabel}
-                                        </span>
-                                    </p>
-                                    <div className="flex gap-3">
-                                        <Button
-                                            variant="outline"
-                                            onClick={handleSaveDraft}
-                                            disabled={loading || (exportSource === "SO" && !form.donBanHangId) || (exportSource === "TRANSFER" && !form.transferId)}
-                                            className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium disabled:opacity-50"
-                                        >
-                                            {exportSource === "SO" ? "Lưu nháp" : "Tạo phiếu"}
-                                        </Button>
-                                        <Button
-                                            onClick={handleContinue}
-                                            disabled={loading || (exportSource === "SO" && !form.donBanHangId) || (exportSource === "TRANSFER" && !form.transferId)}
-                                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 font-bold min-w-[160px] disabled:opacity-50"
-                                        >
-                                            {loading
-                                                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
-                                                : "Tiếp tục bốc Lô →"
-                                            }
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                                                    className={`px-3 py-1.5 text-[11px] font-bold rounded-md shadow-sm transition-all
+                                                        ${canEditLot
+                                                            ? "bg-purple-600 text-white hover:bg-purple-700"
+                                                            : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                                                >
+                                                    {canEditLot ? "Pick lot →" : "Xem lô →"}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </section>
                 </div>
+
+                {/* ===== MODAL: XÁC NHẬN HOÀN TẤT / VẬN CHUYỂN ===== */}
+                {showConfirm && (
+                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[1px]">
+                        <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in duration-200">
+                            <h2 className="text-lg font-bold mb-2 text-gray-900">
+                                {isChuyenKho ? "Xác nhận vận chuyển" : "Xác nhận xuất kho"}
+                            </h2>
+                            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                                {isChuyenKho
+                                    ? `Hàng hóa trong phiếu ${phieu.soPhieuXuat} sẽ được trừ tồn tại kho hiện tại và đưa vào kho Trung Chuyển để bắt đầu vận chuyển.`
+                                    : `Phiếu xuất kho ${phieu.soPhieuXuat} sẽ được hoàn thành và trừ tồn kho thực tế của các lô đã chọn.`}
+                            </p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setShowConfirm(false)}
+                                    className="px-4 py-2 rounded-md border text-sm hover:bg-gray-50 font-medium"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    disabled={isProcessing}
+                                    onClick={handleConfirmComplete}
+                                    className={`px-4 py-2 rounded-md text-white text-sm font-bold shadow-md
+                                        ${isChuyenKho ? "bg-purple-600 hover:bg-purple-700" : "bg-green-600 hover:bg-green-700"}`}
+                                >
+                                    {isProcessing ? "Đang xử lý..." : "Xác nhận thực hiện"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ===== MODAL: XÁC NHẬN HỦY ===== */}
+                {showCancelConfirm && (
+                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[1px]">
+                        <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in duration-200">
+                            <h2 className="text-lg font-bold text-gray-900 mb-2">Xác nhận huỷ phiếu xuất</h2>
+                            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                                Bạn chắc chắn muốn huỷ phiếu <strong>{phieu.soPhieuXuat}</strong>? Mọi số lượng đã bốc (giữ hàng) sẽ được hoàn tồn. Thao tác này không thể hoàn tác.
+                            </p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setShowCancelConfirm(false)}
+                                    className="px-4 py-2 rounded-md border text-sm hover:bg-gray-50 font-medium"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    disabled={isProcessing}
+                                    onClick={async () => {
+                                        setIsProcessing(true);
+                                        try {
+                                            if (isChuyenKho) {
+                                                await phieuChuyenKhoService.cancel(phieu.id);
+                                            } else {
+                                                await phieuXuatKhoService.cancel(phieu.id);
+                                            }
+
+                                            toast.success("Đã huỷ phiếu xuất thành công");
+                                            navigate("/goods-issues");
+                                        } catch (e) {
+                                            toast.error(e?.response?.data?.message || "Không thể huỷ phiếu");
+                                        } finally {
+                                            setIsProcessing(false);
+                                            setShowCancelConfirm(false);
+                                        }
+                                    }}
+                                    className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-bold hover:bg-red-700 shadow-md"
+                                >
+                                    {isProcessing ? "Đang xử lý..." : "Xác nhận huỷ"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </main>
+        </div>
+    );
+}
+
+// Sub-component Helper
+function Info({ label, value }) {
+    return (
+        <div>
+            <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">
+                {label}
+            </div>
+            <div className="font-semibold text-gray-900 leading-tight">
+                {value || "---"}
             </div>
         </div>
     );
