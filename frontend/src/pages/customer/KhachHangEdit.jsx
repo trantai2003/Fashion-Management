@@ -15,7 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   ArrowLeft, Save, User, Phone, Mail, MapPin, Users, Building, Loader2,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { getKhachHangById, updateKhachHang } from "@/services/khachHangService";
 
 const formSchema = z.object({

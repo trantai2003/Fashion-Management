@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, ClipboardList, Building2, Package } from "lucide-react";
 
