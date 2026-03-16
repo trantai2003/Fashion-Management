@@ -51,7 +51,7 @@ export default function PhieuChuyenKhoDetail() {
     const role               = localStorage.getItem("role");
     const isAdmin            = role === "quan_tri_vien";
     const isQuanLy           = role === "quan_ly_kho" || isAdmin;
-    const currentWarehouseId = Number(localStorage.getItem("warehouseId"));
+    const currentWarehouseId = Number(localStorage.getItem("selected_kho_id"));
 
     useEffect(() => { fetchDetail(); }, [id]);
 
@@ -148,7 +148,7 @@ export default function PhieuChuyenKhoDetail() {
                         )}
 
                         {/* Nút Gửi duyệt */}
-                        {data.trangThai === 0 && isSourceStaff && (
+                        {data.trangThai === 0 && isDestinationManager && (
                             <Button
                                 disabled={isProcessing}
                                 onClick={() => handleStatusChange(phieuChuyenKhoService.submit, "Đã gửi yêu cầu tới kho đích")}
@@ -162,7 +162,7 @@ export default function PhieuChuyenKhoDetail() {
                         )}
 
                         {/* Nút Phê duyệt */}
-                        {data.trangThai === 1 && isDestinationManager && (
+                        {data.trangThai === 1 && isSourceStaff && (
                             <Button
                                 disabled={isProcessing}
                                 onClick={() => handleStatusChange(phieuChuyenKhoService.approve, "Phê duyệt nhận hàng thành công")}
