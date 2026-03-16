@@ -7,6 +7,7 @@ import {
     Boxes, ShieldCheck, TrendingUp, Package, CheckCircle,
     ChevronRight, Loader2, ArrowRight,
 } from "lucide-react";
+import { getMineKhoList } from '../services/khoService';
 
 /* ══════════════════════════════════════════
    STYLES — Light Ivory / Gold Luxury
@@ -462,8 +463,31 @@ export default function AuthPage() {
                     const decoded = jwtDecode(token);
                     const role = decoded.scope || decoded.vaiTro || decoded.role || decoded.authorities;
                     localStorage.setItem('role', role);
-                    const warehouseId = decoded.khoId || decoded.warehouseId;
-                    if (warehouseId) localStorage.setItem('selected_kho_id', warehouseId);
+                    if (decoded.warehousePermissions) {
+                        try {
+                            const permissions = typeof decoded.warehousePermissions === 'string' 
+                                ? JSON.parse(decoded.warehousePermissions) 
+                                : decoded.warehousePermissions;
+
+                            if (permissions.length > 0 && permissions[0].kho) {
+                                const autoSelectedId = permissions[0].kho.id;
+                                localStorage.setItem('selected_kho_id', autoSelectedId);
+                            }
+                        } catch (parseError) {
+                            console.error("Lỗi khi đọc warehousePermissions từ Token:", parseError);
+                        }
+                    }
+
+                    try {
+                        const myWarehouses = await getMineKhoList();
+                        if (myWarehouses && myWarehouses.length > 0) {
+                            if (!localStorage.getItem('selected_kho_id')) {
+                                localStorage.setItem('selected_kho_id', myWarehouses[0].id);
+                            }
+                        }
+                    } catch (khoError) {
+                        console.warn("API lấy kho bị chặn (403), nhưng đã có kho từ Token.");
+                    }
                     navigate('/dashboard');
                 } else navigate('/');
             } else setErrors({ general: response.message || 'Đăng nhập thất bại' });
