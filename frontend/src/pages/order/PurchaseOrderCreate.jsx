@@ -36,6 +36,7 @@ import {
     ArrowLeft,
     Building2,
     Package,
+    CheckCircle,
     Calendar,
     AlertCircle,
     Loader2,
@@ -57,13 +58,13 @@ import { khoService } from "@/services/khoService";
 function SectionCard({ icon: Icon, iconBg, iconColor, title, children }) {
     return (
         <div className="rounded-2xl bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-200/80 overflow-hidden flex flex-col h-full items-stretch">
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
+            <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
                 <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${iconBg}`}>
                     <Icon className={`h-4 w-4 ${iconColor}`} />
                 </div>
                 <p className="font-bold text-slate-800 text-[14px]">{title}</p>
             </div>
-            <div className="p-5 flex-1 flex flex-col gap-6 justify-start">{children}</div>
+            <div className="p-5 flex-1 flex flex-col gap-5 justify-start">{children}</div>
         </div>
     );
 }
@@ -397,9 +398,9 @@ export default function PurchaseOrderCreate() {
 
     if (isLoadingData) {
         return (
-            <div className="p-6 md:p-8 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync flex flex-col items-center justify-center">
+            <div className="p-5 space-y-5 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync flex flex-col items-center justify-center">
                 <div className="flex flex-col items-center justify-center py-20 gap-3 bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm w-full max-w-sm">
-                    <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+                    <Loader2 className="h-8 w-8 animate-spin text-[#b8860b]" />
                     <span className="text-[15px] font-medium text-slate-600">Đang khởi tạo biểu mẫu...</span>
                 </div>
             </div>
@@ -407,58 +408,24 @@ export default function PurchaseOrderCreate() {
     }
 
     return (
-        <div className="p-6 md:p-8 pb-32 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync">
-            
+        <div className="p-5 space-y-5 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync">
+
             {/* ── Top Header and Navigation ── */}
-            <div className="flex flex-col gap-4 mb-2">
+            <div>
                 <button
                     type="button"
                     onClick={() => navigate("/purchase-orders")}
-                    className="inline-flex items-center gap-1.5 text-[14px] font-medium text-slate-500 hover:text-violet-600 transition-colors duration-200 w-fit"
+                    className="inline-flex w-fit items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
                 >
                     <ArrowLeft className="h-4 w-4" />
-                    Quay lại danh sách đơn hàng
+                    Quay lại danh sách
                 </button>
-                
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm border border-slate-200/60 shrink-0">
-                            <Package className="h-6 w-6 text-violet-600" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight leading-tight flex items-center gap-3">
-                                Tạo đơn mua hàng mới
-                            </h1>
-                            <p className="mt-1 text-[15px] font-medium text-slate-500">
-                                Lập đơn đặt hàng và gửi thông báo chờ báo giá đến nhà cung cấp
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap items-center gap-3 shrink-0">
-                        <Button
-                            variant="outline"
-                            onClick={() => navigate('/purchase-orders')}
-                            className="h-11 px-6 rounded-xl border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-all shadow-sm"
-                        >
-                            Hủy bỏ
-                        </Button>
-                        <Button
-                            onClick={handleSendToSupplier}
-                            disabled={loading || orderItems.length === 0}
-                            className="h-11 px-6 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition-all duration-200 shadow-md shadow-violet-600/20 gap-2"
-                        >
-                            <Send className="h-4 w-4" />
-                            Gửi yêu cầu
-                        </Button>
-                    </div>
-                </div>
             </div>
 
             {/* ── Info Cards Grid ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
                 {/* Card Thông tin đơn */}
-                <SectionCard title="Thiết lập chứng từ" icon={FileText} iconBg="bg-violet-100" iconColor="text-violet-600">
+                <SectionCard title="Thiết lập chứng từ" icon={FileText} iconBg="bg-amber-100" iconColor="text-amber-600">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                         <div className="space-y-2">
                             <Label className="text-[13px] font-bold text-slate-700">
@@ -468,14 +435,14 @@ export default function PurchaseOrderCreate() {
                                 <Input
                                     value={formData.soDonMua}
                                     onChange={(e) => handleInputChange('soDonMua', e.target.value)}
-                                    className="h-11 font-mono font-bold text-violet-700 rounded-xl border-slate-200 shadow-sm pr-9 text-[15px] focus-visible:ring-violet-500 flex-1"
+                                    className="h-11 font-mono font-bold text-[#8b6a21] rounded-xl border-slate-200 shadow-sm pr-9 text-[15px] focus-visible:ring-slate-500 flex-1"
                                     placeholder="Mã đơn tự sinh"
                                 />
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => handleInputChange('soDonMua', generateOrderNumber())}
-                                    className="h-11 w-11 p-0 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-violet-600 shrink-0"
+                                    className="h-11 w-11 p-0 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-slate-700 shrink-0"
                                     title="Tái tạo mã"
                                 >
                                     <RotateCw className="h-4 w-4" />
@@ -512,7 +479,7 @@ export default function PurchaseOrderCreate() {
                                             <DropdownMenuItem
                                                 key={kho.id}
                                                 onClick={() => handleInputChange('khoId', kho.id)}
-                                                className="cursor-pointer hover:bg-violet-50 focus:bg-violet-50 p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5"
+                                                className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5"
                                             >
                                                 <span className="font-bold text-slate-800">
                                                     {kho.tenKho}
@@ -537,7 +504,7 @@ export default function PurchaseOrderCreate() {
                                 <Calendar className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                                 <Input
                                     type="date"
-                                    className="pl-10 h-11 rounded-xl border-slate-200 font-medium text-[15px] focus-visible:ring-violet-500 shadow-sm"
+                                    className="pl-10 h-11 rounded-xl border-slate-200 font-medium text-[15px] focus-visible:ring-slate-500 shadow-sm"
                                     value={formData.ngayDatHang}
                                     onChange={(e) => handleInputChange('ngayDatHang', e.target.value)}
                                 />
@@ -552,7 +519,7 @@ export default function PurchaseOrderCreate() {
                                 <Calendar className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                                 <Input
                                     type="date"
-                                    className="pl-10 h-11 rounded-xl border-slate-200 font-medium text-[15px] focus-visible:ring-violet-500 shadow-sm"
+                                    className="pl-10 h-11 rounded-xl border-slate-200 font-medium text-[15px] focus-visible:ring-slate-500 shadow-sm"
                                     value={formData.ngayGiaoDuKien}
                                     onChange={(e) => handleInputChange('ngayGiaoDuKien', e.target.value)}
                                     min={formData.ngayDatHang}
@@ -567,7 +534,7 @@ export default function PurchaseOrderCreate() {
                         </Label>
                         <Textarea
                             placeholder="Nhập yêu cầu đặc biệt hoặc ghi chú giao hàng (tuỳ chọn)..."
-                            className="min-h-[90px] rounded-xl border-slate-200 focus-visible:ring-violet-500 resize-none text-[14px] shadow-sm p-3.5"
+                            className="min-h-[90px] rounded-xl border-slate-200 focus-visible:ring-slate-500 resize-none text-[14px] shadow-sm p-3.5"
                             value={formData.ghiChu}
                             onChange={(e) => handleInputChange('ghiChu', e.target.value)}
                         />
@@ -657,9 +624,9 @@ export default function PurchaseOrderCreate() {
 
             {/* ── Main Product Table ── */}
             <div className="bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-200/80 overflow-hidden flex flex-col">
-                <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-slate-50">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
                             <ShoppingCart className="h-5 w-5" />
                         </div>
                         <div>
@@ -674,11 +641,11 @@ export default function PurchaseOrderCreate() {
                         className="h-10 px-5 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-all shadow-md gap-2"
                     >
                         <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline">Tuyển chọn sản phẩm</span>
+                        <span className="hidden sm:inline">Thêm sản phẩm</span>
                         <span className="sm:hidden">Thêm</span>
                     </Button>
                 </div>
-                
+
                 <div className="overflow-x-auto min-h-[300px]">
                     {orderItems.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full py-20 px-4 text-center">
@@ -692,7 +659,7 @@ export default function PurchaseOrderCreate() {
                             <Button
                                 onClick={() => setShowProductDialog(true)}
                                 variant="outline"
-                                className="h-11 rounded-xl border-dashed border-violet-300 text-violet-700 bg-violet-50 hover:bg-violet-100 font-bold px-8"
+                                className="h-11 rounded-xl border-dashed border-slate-300 text-slate-700 bg-slate-50 hover:bg-slate-100 font-bold px-8"
                             >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Mở danh mục
@@ -716,7 +683,7 @@ export default function PurchaseOrderCreate() {
                                         <TableCell className="text-center font-medium text-slate-400">
                                             {index + 1}
                                         </TableCell>
-                                        <TableCell className="py-4">
+                                        <TableCell className="py-3">
                                             <div className="flex items-center gap-4">
                                                 {item.anhBienThe?.tepTin?.duongDan ? (
                                                     <div className="h-12 w-12 rounded-xl bg-slate-100 border border-slate-200/60 overflow-hidden shadow-sm shrink-0">
@@ -736,7 +703,7 @@ export default function PurchaseOrderCreate() {
                                                         {item.tenSanPham}
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                                        <span className="font-mono text-xs font-bold text-violet-700 bg-violet-50 border border-violet-100 px-1.5 py-0.5 rounded">
+                                                        <span className="font-mono text-xs font-bold text-[#8b6a21] bg-[#fff3d9] border border-[#efd9ad] px-1.5 py-0.5 rounded">
                                                             {item.maBienThe}
                                                         </span>
                                                         <span className="text-[12px] text-slate-500 font-medium">
@@ -764,7 +731,7 @@ export default function PurchaseOrderCreate() {
                                             <Input
                                                 value={item.ghiChu}
                                                 onChange={(e) => handleUpdateItem(index, 'ghiChu', e.target.value)}
-                                                className="w-full text-[13px] border-slate-200 shadow-none hover:border-slate-300 focus-visible:ring-violet-500 h-10 rounded-xl placeholder:text-slate-400"
+                                                className="w-full text-[13px] border-slate-200 shadow-none hover:border-slate-300 focus-visible:ring-slate-500 h-10 rounded-xl placeholder:text-slate-400"
                                                 placeholder="Lưu ý về màu sắc, in ấn..."
                                             />
                                         </TableCell>
@@ -787,6 +754,26 @@ export default function PurchaseOrderCreate() {
                 </div>
             </div>
 
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2 pb-4">
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/purchase-orders')}
+                    className="w-full sm:w-auto h-11 px-6 rounded-xl border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 transition-all shadow-sm bg-white"
+                >
+                    Hủy
+                </Button>
+                <Button
+                    type="button"
+                    onClick={handleSendToSupplier}
+                    disabled={loading || orderItems.length === 0}
+                    className="w-full sm:w-auto h-11 px-8 rounded-xl bg-slate-900 text-white border border-slate-900 font-semibold hover:bg-white hover:text-slate-900 min-w-[140px] shadow-md transition-all duration-200"
+                >
+                    <Send className="mr-2 h-4 w-4" />
+                    Gửi yêu cầu
+                </Button>
+            </div>
+
             {/* ── Dialogs ── */}
             {/* Product Selection Dialog */}
             <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
@@ -801,7 +788,7 @@ export default function PurchaseOrderCreate() {
                             </DialogTitle>
                         </div>
                     </div>
-                    
+
                     <div className="p-5 border-b border-slate-100 shrink-0 bg-slate-50/50">
                         <div className="relative">
                             <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
@@ -839,7 +826,7 @@ export default function PurchaseOrderCreate() {
                                         const isSelected = orderItems.some(item => item.bienTheSanPhamId === product.id);
                                         return (
                                             <TableRow key={product.id} className={`hover:bg-slate-50 ${isSelected ? 'opacity-50 bg-slate-50/50' : ''}`}>
-                                                <TableCell className="font-mono text-[13px] text-violet-700 font-bold whitespace-nowrap">
+                                                <TableCell className="font-mono text-[13px] text-[#8b6a21] font-bold whitespace-nowrap">
                                                     {product.maBienThe}
                                                 </TableCell>
                                                 <TableCell>
@@ -868,7 +855,7 @@ export default function PurchaseOrderCreate() {
                                                         <Button
                                                             size="sm"
                                                             onClick={() => handleAddProduct(product)}
-                                                            className="h-8 rounded-lg gap-1 bg-violet-600 hover:bg-violet-700 text-white font-semibold shadow-sm"
+                                                            className="h-8 rounded-lg gap-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-sm"
                                                         >
                                                             <Plus className="h-3.5 w-3.5" /> Lấy
                                                         </Button>
@@ -887,7 +874,7 @@ export default function PurchaseOrderCreate() {
             {/* Send Confirmation Dialog */}
             <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
                 <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border-0 shadow-2xl">
-                    <div className="bg-violet-600 p-6 flex items-center gap-3">
+                    <div className="bg-slate-900 p-6 flex items-center gap-3">
                         <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
                             <Send className="h-5 w-5 text-white" />
                         </div>
@@ -895,7 +882,7 @@ export default function PurchaseOrderCreate() {
                             Phát tín hiệu Y/C báo giá
                         </DialogTitle>
                     </div>
-                    
+
                     <div className="p-6">
                         <DialogDescription className="text-[15px] text-slate-600 mb-6">
                             Thông qua tính năng này, email yêu cầu báo giá sẽ gửi trực tiếp đến hộp thư của đối tác. Vui lòng rà soát cẩn trọng.
@@ -915,7 +902,7 @@ export default function PurchaseOrderCreate() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
                                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mã đơn</p>
-                                        <p className="font-mono font-bold text-[14px] text-violet-700 truncate">{formData.soDonMua}</p>
+                                        <p className="font-mono font-bold text-[14px] text-[#8b6a21] truncate">{formData.soDonMua}</p>
                                     </div>
                                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
                                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mặt hàng</p>
@@ -937,7 +924,7 @@ export default function PurchaseOrderCreate() {
                             <Button
                                 onClick={confirmSendEmail}
                                 disabled={sendingEmail}
-                                className="h-11 rounded-xl font-semibold bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/20 w-full sm:w-auto relative overflow-hidden"
+                                className="h-11 rounded-xl font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-md w-full sm:w-auto relative overflow-hidden"
                             >
                                 {sendingEmail ? (
                                     <span className="flex items-center justify-center gap-2">

@@ -7,8 +7,10 @@ import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * DTO for {@link com.dev.backend.entities.PhanQuyenNguoiDungKho}
@@ -35,9 +37,14 @@ public class PhanQuyenNguoiDungKhoDto implements Serializable {
     Instant ngayTao;
     Instant ngayCapNhat;
     Set<ChiTietQuyenKhoDto> chiTietQuyenKhos;
+    @JsonProperty("stringListPermission")
     public List<String> getStringListPermission() {
-        return chiTietQuyenKhos.stream().map(
-                ChiTietQuyenKhoDto::getMaQuyenHan
-        ).toList();
+        if (chiTietQuyenKhos == null) {
+            return new ArrayList<>();
+        }
+
+        return chiTietQuyenKhos.stream()
+                .map(ChiTietQuyenKhoDto::getMaQuyenHan)
+                .collect(Collectors.toList());
     }
 }

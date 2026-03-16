@@ -1,420 +1,567 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
-import { donBanHangService } from "@/services/donBanHangService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
-import { getMineKhoList } from "@/services/khoService";
-import { toast } from "react-hot-toast";
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-    ChevronDown, FileText, Warehouse, ArrowRightLeft, Package,
-    ArrowLeft, Loader2, ClipboardList,
+import { toast } from "sonner";
+import { 
+    Loader2, ArrowLeft, Printer, Check, X, 
+    ClipboardList, Package, Warehouse, Truck, 
+    Calendar, User, AlertCircle, Info as InfoIcon,
+    ArrowRight
 } from "lucide-react";
 
-export default function PhieuXuatKhoCreate() {
+/* ══════════════════════════════════════════════════════
+   STYLES — Light Ivory / Gold Luxury
+   (Sync with Warehouse / Homepage / Login)
+══════════════════════════════════════════════════════ */
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+.wh-root {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 55%, #ede9de 100%);
+  padding: 28px 28px 56px;
+  position: relative;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.wh-grid {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.wh-orb-1 {
+  position: fixed; width: 500px; height: 500px; border-radius: 50%;
+  background: rgba(184,134,11,0.07); filter: blur(100px);
+  top: -180px; right: -120px; pointer-events: none; z-index: 0;
+}
+
+.wh-inner {
+  position: relative; z-index: 1;
+  max-width: 1400px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+/* ── Header ── */
+.wh-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid rgba(184,134,11,0.15);
+}
+.wh-title-wrap { display: flex; flex-direction: column; gap: 3px; }
+.wh-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; color: rgba(184,134,11,0.65);
+  text-transform: uppercase;
+}
+.wh-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px; font-weight: 900; color: #1a1612;
+  letter-spacing: -0.5px; line-height: 1;
+}
+.wh-title span { color: #b8860b; }
+
+.wh-header-actions { display: flex; align-items: center; gap: 12px; }
+
+/* ── Buttons ── */
+.btn-gold {
+  height: 42px; padding: 0 20px; border-radius: 11px;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  border: none; color: #fff;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 18px rgba(184,134,11,0.35);
+}
+.btn-gold:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(184,134,11,0.48); }
+.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-purple {
+  height: 42px; padding: 0 20px; border-radius: 11px;
+  background: linear-gradient(135deg, #7e22ce, #a855f7);
+  border: none; color: #fff;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 18px rgba(126,34,206,0.35);
+}
+.btn-purple:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(126,34,206,0.48); }
+.btn-purple:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-white {
+  height: 42px; padding: 0 20px; border-radius: 11px;
+  background: #fff;
+  border: 1.5px solid rgba(184,134,11,0.2);
+  color: #7a6e5f; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-white:hover:not(:disabled) { border-color: #b8860b; color: #b8860b; background: rgba(184,134,11,0.05); }
+
+.btn-danger {
+  height: 42px; padding: 0 20px; border-radius: 11px;
+  background: rgba(220,38,38,0.05);
+  border: 1.5px solid rgba(220,38,38,0.2);
+  color: #dc2626; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-danger:hover:not(:disabled) { background: rgba(220,38,38,0.1); border-color: #dc2626; }
+
+/* ── Info Cards ── */
+.info-card {
+  background: #fff;
+  border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; padding: 24px;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+  position: relative; overflow: hidden;
+}
+.info-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;
+}
+
+.info-item { display: flex; flex-direction: column; gap: 6px; }
+.info-lbl {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.15em; text-transform: uppercase; color: rgba(184,134,11,0.6);
+}
+.info-val {
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: #1a1612;
+}
+.info-val.highlight { color: #b8860b; }
+
+/* ── Table ── */
+.wh-tbl-card {
+  background: #fff;
+  border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+}
+.wh-tbl-card::before {
+  content: ''; display: block; height: 2px;
+  background: linear-gradient(90deg, transparent, #b8860b, transparent);
+}
+.wh-tbl { width: 100%; border-collapse: collapse; text-align: left; }
+.wh-thead tr { background: #faf8f3; border-bottom: 1px solid rgba(184,134,11,0.12); }
+.wh-th {
+  height: 48px; padding: 0 20px;
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: rgba(184,134,11,0.6);
+}
+.wh-tbody tr { border-bottom: 1px solid rgba(184,134,11,0.07); transition: all 0.2s; }
+.wh-tbody tr:hover { background: rgba(184,134,11,0.04); }
+.wh-td { padding: 16px 20px; font-size: 14px; color: #3d3529; }
+
+.sku-code {
+  font-family: 'DM Mono', monospace; font-size: 12px; color: #b8860b; font-weight: 600;
+  background: rgba(184,134,11,0.08); padding: 2px 8px; border-radius: 6px;
+}
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+}
+.badge-status { text-transform: uppercase; letter-spacing: 0.05em; }
+.badge.green { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2); }
+.badge.amber { background: rgba(184,134,11,0.1); color: #b8860b; border: 1px solid rgba(184,134,11,0.2); }
+.badge.blue  { background: rgba(37,99,235,0.08); color: #2563eb; border: 1px solid rgba(37,99,235,0.2); }
+.badge.red   { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
+.badge.purple { background: rgba(147,51,234,0.08); color: #9333ea; border: 1px solid rgba(147,51,234,0.2); }
+
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.badge.green .dot { background: #16a34a; }
+.badge.amber .dot { background: #b8860b; }
+.badge.blue  .dot { background: #2563eb; }
+.badge.red   .dot { background: #dc2626; }
+.badge.purple .dot { background: #9333ea; }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(26, 22, 18, 0.45);
+  backdrop-filter: blur(4px); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-card {
+  background: #fff; border-radius: 24px; width: 100%; max-width: 480px;
+  border: 1px solid rgba(184,134,11,0.25);
+  box-shadow: 0 25px 60px rgba(100,80,30,0.2);
+  overflow: hidden; animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: none; } }
+.modal-head { padding: 24px 28px 12px; }
+.modal-ttl { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; color: #1a1612; }
+.modal-body { padding: 0 28px 28px; color: #7a6e5f; font-size: 14px; line-height: 1.6; }
+.modal-foot { padding: 20px 28px; background: #faf8f3; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(184,134,11,0.1); }
+`;
+
+// Trạng thái phiếu xuất
+const STATUS_UI = {
+    0: { label: "Nháp", cls: "amber" },
+    1: { label: "Chờ duyệt", cls: "blue" },
+    2: { label: "Đã duyệt", cls: "blue" },
+    3: { label: "Đã xuất", cls: "green" },
+    4: { label: "Đã huỷ", cls: "red" },
+    5: { label: "Đã xuất", cls: "green" },
+};
+
+export default function PhieuXuatKhoDetail() {
+    const { id } = useParams();
     const navigate = useNavigate();
 
-    const [exportSource,     setExportSource]     = useState("SO");
-    const [soList,           setSoList]           = useState([]);
-    const [transferList,     setTransferList]     = useState([]);
-    const [warehouses,       setWarehouses]       = useState([]);
-    const [selectedSO,       setSelectedSO]       = useState(null);
-    const [selectedTransfer, setSelectedTransfer] = useState(null);
-    const [loading,          setLoading]          = useState(false);
-    const [createdId,        setCreatedId]        = useState(null);
-    const [form,             setForm]             = useState({
-        donBanHangId: "", transferId: "", khoId: "", ghiChu: "", chiTietXuat: [],
-    });
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    useEffect(() => { fetchInitialData(); }, []);
+    useEffect(() => {
+        fetchDetail();
+    }, [id]);
 
-    async function fetchInitialData() {
+    async function fetchDetail() {
         setLoading(true);
         try {
-            const myWarehousesRes = await getMineKhoList();
-            const warehouseList = myWarehousesRes.data || myWarehousesRes;
-            setWarehouses(warehouseList);
-
-            const soRes = await donBanHangService.filter({
-                page: 0, size: 1000,
-                filters: [{ fieldName: "trangThai", operation: "IN", value: [1, 2] }],
-                sorts: [{ fieldName: "ngayDatHang", direction: "DESC" }],
-            });
-            setSoList(soRes.content || soRes.data?.content || []);
-
-            const transferRes = await phieuChuyenKhoService.filter({
-                page: 0, size: 1000,
-                filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 2 }],
-                sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
-            });
-            setTransferList(transferRes.content || transferRes.data?.content || []);
-
-            if (warehouseList.length === 1)
-                setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
-        } catch {
-            toast.error("Không thể tải dữ liệu khởi tạo");
+            const res = await phieuXuatKhoService.getDetail(id);
+            setData(res?.data || res);
+        } catch (e) {
+            console.error(e);
+            toast.error("Không thể tải chi tiết phiếu xuất");
         } finally {
             setLoading(false);
         }
     }
 
-    async function handleSelectSO(soId) {
-        if (!soId) { setSelectedSO(null); setForm({ ...form, donBanHangId: "", chiTietXuat: [] }); return; }
+    // Hàm xử lý khi xác nhận Hoàn thành/Vận chuyển
+    const handleConfirmComplete = async () => {
+        setIsProcessing(true);
         try {
-            const res = await donBanHangService.getDetail(soId);
-            const data = res.data;
-            if (!data.chiTiet.some(ct => ct.soLuongDat > ct.soLuongDaGiao)) {
-                toast.error("Đơn hàng này đã giao đủ số lượng."); return;
+            await phieuXuatKhoService.complete(data.phieu.id);
+            
+            if (isChuyenKho) {
+                toast.success("Xác nhận xuất kho và bắt đầu vận chuyển thành công");
+            } else {
+                toast.success("Hoàn thành phiếu xuất bán hàng thành công");
             }
-            setSelectedSO(data);
-            setForm(prev => ({
-                ...prev,
-                donBanHangId: data.donBanHang.id,
-                khoId: data.donBanHang?.khoXuat?.id || data.khoXuat?.id,
-                chiTietXuat: data.chiTiet
-                    .filter(ct => ct.soLuongDat > ct.soLuongDaGiao)
-                    .map(item => ({ bienTheSanPhamId: item.bienTheSanPhamId, soLuongXuat: item.soLuongDat - item.soLuongDaGiao })),
-            }));
-        } catch { toast.error("Không thể tải chi tiết đơn bán"); }
-    }
-
-    async function handleSelectTransfer(transferId) {
-        if (!transferId) { setSelectedTransfer(null); setForm({ ...form, transferId: "", chiTietXuat: [] }); return; }
-        try {
-            const res = await phieuChuyenKhoService.getDetail(transferId);
-            const data = res.data || res;
-            setSelectedTransfer(data);
-            setForm(prev => ({ ...prev, transferId: data.id, khoId: data.khoXuatId }));
-        } catch { toast.error("Không thể tải chi tiết yêu cầu chuyển kho"); }
-    }
-
-    async function createPhieu() {
-        if (exportSource === "SO") {
-            const validLines = form.chiTietXuat.filter(ct => ct.soLuongXuat > 0);
-            if (!form.donBanHangId) return toast.error("Vui lòng chọn đơn bán"), null;
-            if (!form.khoId) return toast.error("Vui lòng chọn kho xuất hàng"), null;
-            if (validLines.length === 0) return toast.error("Phải có ít nhất 1 sản phẩm xuất > 0"), null;
-            try {
-                setLoading(true);
-                const res = await phieuXuatKhoService.create({
-                    donBanHangId: parseInt(form.donBanHangId),
-                    khoId: parseInt(form.khoId),
-                    ghiChu: form.ghiChu,
-                    chiTietXuat: validLines,
-                });
-                setCreatedId(res.id);
-                toast.success("Tạo phiếu xuất bán hàng thành công");
-                return res.id;
-            } catch (e) { toast.error(e?.response?.data?.message || "Không thể tạo phiếu xuất"); return null; }
-            finally { setLoading(false); }
-        } else {
-            if (!form.transferId) return toast.error("Vui lòng chọn yêu cầu chuyển kho"), null;
-            try {
-                setLoading(true);
-                const res = await phieuChuyenKhoService.createExport(form.transferId);
-                const newId = res.data?.id || res.id;
-                setCreatedId(newId);
-                toast.success("Khởi tạo phiếu xuất chuyển kho thành công");
-                return newId;
-            } catch (e) { toast.error(e?.response?.data?.message || "Không thể tạo phiếu xuất chuyển kho"); return null; }
-            finally { setLoading(false); }
+            navigate("/goods-issues");
+        } catch (e) {
+            toast.error(e?.response?.data?.message || "Không thể thực hiện thao tác");
+        } finally {
+            setIsProcessing(false);
+            setShowConfirm(false);
         }
-    }
-
-    async function handleSaveDraft() { await createPhieu(); }
-    async function handleContinue() {
-        const id = createdId || await createPhieu();
-        if (id) navigate(`/goods-issues/${id}`);
-    }
-
-    const toggleSource = (source) => {
-        setExportSource(source);
-        setSelectedSO(null);
-        setSelectedTransfer(null);
-        setForm({ donBanHangId: "", transferId: "", khoId: warehouses.length === 1 ? warehouses[0].id : "", ghiChu: "", chiTietXuat: [] });
     };
 
-    const soLabel       = form.donBanHangId ? soList.find(so => so.id === parseInt(form.donBanHangId))?.soDonHang : "Chọn đơn bán hàng";
-    const transferLabel = form.transferId   ? transferList.find(t => t.id === parseInt(form.transferId))?.soPhieuXuat : "Chọn yêu cầu chuyển kho";
-    const khoLabel      = form.khoId        ? warehouses.find(k => k.id === parseInt(form.khoId))?.tenKho : "Tự động trích xuất";
+    const handleCancelExport = async () => {
+        setIsProcessing(true);
+        try {
+            if (isChuyenKho) {
+                await phieuChuyenKhoService.cancel(data.phieu.id);
+            } else {
+                await phieuXuatKhoService.cancel(data.phieu.id);
+            }
+            toast.success("Đã huỷ phiếu xuất thành công");
+            navigate("/goods-issues");
+        } catch (e) {
+            toast.error(e?.response?.data?.message || "Không thể huỷ phiếu");
+        } finally {
+            setIsProcessing(false);
+            setShowCancelConfirm(false);
+        }
+    };
 
-    return (
-        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-            <div className="space-y-6 w-full">
-
-                {/* ── Header ── */}
-                <div className="flex items-center justify-between">
-                    <button
-                        type="button"
-                        onClick={() => navigate("/goods-issues")}
-                        className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        Quay lại danh sách
-                    </button>
-
-                    {/* Tab toggle */}
-                    <div className="flex p-1 bg-white rounded-xl shadow-sm ring-1 ring-slate-200/80">
-                        <button
-                            onClick={() => toggleSource("SO")}
-                            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all duration-150 ${
-                                exportSource === "SO"
-                                    ? "bg-slate-900 text-white shadow-sm"
-                                    : "text-slate-500 hover:text-slate-700"
-                            }`}
-                        >
-                            <FileText className="w-4 h-4" />
-                            Xuất theo Đơn Bán Hàng
-                        </button>
-                        <button
-                            onClick={() => toggleSource("TRANSFER")}
-                            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all duration-150 ${
-                                exportSource === "TRANSFER"
-                                    ? "bg-slate-900 text-white shadow-sm"
-                                    : "text-slate-500 hover:text-slate-700"
-                            }`}
-                        >
-                            <ArrowRightLeft className="w-4 h-4" />
-                            Xuất Chuyển Kho Nội Bộ
-                        </button>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                    {/* ── LEFT: Thông tin lộ trình ── */}
-                    <div className="lg:col-span-1">
-                        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                            <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100">
-                                    <ClipboardList className="h-4 w-4 text-violet-600" />
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-slate-900 leading-snug">Thông tin phiếu xuất</p>
-                                    <p className="text-xs text-slate-500 mt-0.5">
-                                        {exportSource === "SO" ? "Chọn đơn bán hàng và kho xuất" : "Chọn yêu cầu chuyển kho"}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="p-5 space-y-5">
-                                {/* Nguồn */}
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                        {exportSource === "SO" ? "Đơn bán hàng (SO)" : "Yêu cầu chuyển kho"}
-                                    </label>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" className="w-full justify-between font-normal bg-white border-gray-200 h-10">
-                                                <div className="flex items-center overflow-hidden">
-                                                    {exportSource === "SO"
-                                                        ? <FileText className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                                        : <Package className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                                    }
-                                                    <span className="truncate text-sm">
-                                                        {exportSource === "SO" ? soLabel : transferLabel}
-                                                    </span>
-                                                </div>
-                                                <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-[280px] max-h-[300px] overflow-y-auto bg-white border border-gray-100 shadow-xl z-50">
-                                            {exportSource === "SO" ? (
-                                                soList.length === 0 ? (
-                                                    <DropdownMenuItem disabled className="text-gray-500 italic">Không có đơn bán nào khả dụng</DropdownMenuItem>
-                                                ) : soList.map(so => (
-                                                    <DropdownMenuItem key={so.id} onClick={() => handleSelectSO(so.id)} className="cursor-pointer hover:bg-violet-50 py-2 flex flex-col items-start">
-                                                        <span className="font-medium text-gray-900">{so.soDonHang}</span>
-                                                        <span className="text-xs text-gray-500">{so.trangThai === 2 ? "Đang xuất dở" : "Chờ xuất kho"}</span>
-                                                    </DropdownMenuItem>
-                                                ))
-                                            ) : (
-                                                transferList.length === 0 ? (
-                                                    <DropdownMenuItem disabled className="text-gray-500 italic">Không có yêu cầu nào khả dụng</DropdownMenuItem>
-                                                ) : transferList.map(t => (
-                                                    <DropdownMenuItem key={t.id} onClick={() => handleSelectTransfer(t.id)} className="cursor-pointer hover:bg-violet-50 py-2 flex flex-col items-start">
-                                                        <span className="font-medium text-gray-900">{t.soPhieuXuat}</span>
-                                                        <span className="text-xs text-gray-500">Đến: {t.khoChuyenDen?.tenKho}</span>
-                                                    </DropdownMenuItem>
-                                                ))
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-
-                                {/* Kho xuất */}
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Kho xuất hàng</label>
-                                    <Button variant="outline" disabled className="w-full justify-between font-semibold bg-slate-50 border-gray-200 h-10 text-slate-700 disabled:opacity-80">
-                                        <div className="flex items-center overflow-hidden">
-                                            <Warehouse className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                                            <span className="truncate text-sm">{khoLabel}</span>
-                                        </div>
-                                    </Button>
-                                </div>
-
-                                {/* Ghi chú */}
-                                {exportSource === "SO" && (
-                                    <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                                        <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Ghi chú</label>
-                                        <textarea
-                                            value={form.ghiChu}
-                                            onChange={(e) => setForm({ ...form, ghiChu: e.target.value })}
-                                            rows={3}
-                                            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all resize-none text-sm"
-                                            placeholder="Ghi chú thêm (nếu có)..."
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ── RIGHT: Bảng sản phẩm ── */}
-                    <div className="lg:col-span-2">
-                        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden min-h-[360px]">
-                            <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
-                                    <Package className="h-4 w-4 text-emerald-600" />
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-slate-900 leading-snug">
-                                        {exportSource === "SO" ? "Sản phẩm xuất bán" : "Chi tiết yêu cầu điều chuyển"}
-                                    </p>
-                                    <p className="text-xs text-slate-500 mt-0.5">Danh sách hàng hóa cần xuất kho</p>
-                                </div>
-                                {(exportSource === "SO" ? selectedSO?.soDonHang : selectedTransfer?.soPhieuXuat) && (
-                                    <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">
-                                        {exportSource === "SO" ? selectedSO?.soDonHang : selectedTransfer?.soPhieuXuat}
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Empty state */}
-                            {((exportSource === "SO" && !selectedSO) || (exportSource === "TRANSFER" && !selectedTransfer)) && (
-                                <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                                    <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-                                        <Package className="h-10 w-10 text-slate-400" />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-slate-800">Chưa có dữ liệu</h3>
-                                    <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
-                                        Vui lòng chọn {exportSource === "SO" ? "đơn bán hàng" : "yêu cầu chuyển kho"} để xem danh sách sản phẩm.
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* SO table */}
-                            {exportSource === "SO" && selectedSO && (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="border-b border-slate-200 bg-slate-50">
-                                                <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Mặt hàng</th>
-                                                <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Đặt / Giao</th>
-                                                <th className="h-12 px-4 text-right font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">SL Xuất</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {selectedSO.chiTiet.map((item) => {
-                                                const conLai = item.soLuongDat - item.soLuongDaGiao;
-                                                const formItemIdx = form.chiTietXuat.findIndex(f => f.bienTheSanPhamId === item.bienTheSanPhamId);
-                                                return (
-                                                    <tr key={item.id} className="transition-colors duration-150 hover:bg-violet-50/50">
-                                                        <td className="px-4 py-3.5 align-middle">
-                                                            <span className="font-semibold text-slate-900">{item.tenSanPham}</span>
-                                                            <span className="block font-mono text-xs text-slate-400 mt-0.5">{item.sku}</span>
-                                                        </td>
-                                                        <td className="px-4 py-3.5 align-middle text-center">
-                                                            <span className="text-slate-700">{item.soLuongDat}</span>
-                                                            <span className="text-slate-300 mx-1">/</span>
-                                                            <span className="text-emerald-600 font-medium">{item.soLuongDaGiao}</span>
-                                                        </td>
-                                                        <td className="px-4 py-3.5 align-middle text-right">
-                                                            <input
-                                                                type="number" min={0} max={conLai} disabled={conLai <= 0}
-                                                                value={formItemIdx !== -1 ? form.chiTietXuat[formItemIdx]?.soLuongXuat : 0}
-                                                                onChange={(e) => {
-                                                                    const next = [...form.chiTietXuat];
-                                                                    if (formItemIdx !== -1) { next[formItemIdx].soLuongXuat = Number(e.target.value); setForm({ ...form, chiTietXuat: next }); }
-                                                                }}
-                                                                className="w-24 h-9 border border-gray-200 rounded-lg text-center font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all ml-auto disabled:bg-slate-50"
-                                                            />
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                            {/* Transfer table */}
-                            {exportSource === "TRANSFER" && selectedTransfer && (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="border-b border-slate-200 bg-slate-50">
-                                                <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Mặt hàng</th>
-                                                <th className="h-12 px-4 text-right font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">SL Yêu cầu</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {selectedTransfer.items?.map((item) => (
-                                                <tr key={item.bienTheId} className="transition-colors duration-150 hover:bg-violet-50/50">
-                                                    <td className="px-4 py-3.5 align-middle">
-                                                        <span className="font-semibold text-slate-900">{item.tenSanPham}</span>
-                                                        <span className="block font-mono text-xs text-slate-400 mt-0.5">{item.sku}</span>
-                                                    </td>
-                                                    <td className="px-4 py-3.5 align-middle text-right">
-                                                        <span className="inline-flex items-center justify-end rounded-lg bg-slate-100 px-2.5 py-1">
-                                                            <span className="font-semibold text-slate-800 text-xs">{item.soLuongYeuCau}</span>
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                            {/* Footer */}
-                            {((exportSource === "SO" && selectedSO) || (exportSource === "TRANSFER" && selectedTransfer)) && (
-                                <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-t border-slate-100">
-                                    <p className="text-sm text-slate-500">
-                                        Kho đích:{" "}
-                                        <span className="font-semibold text-slate-900">
-                                            {exportSource === "TRANSFER" ? selectedTransfer?.khoNhapTen : khoLabel}
-                                        </span>
-                                    </p>
-                                    <div className="flex gap-3">
-                                        <Button
-                                            variant="outline"
-                                            onClick={handleSaveDraft}
-                                            disabled={loading || (exportSource === "SO" && !form.donBanHangId) || (exportSource === "TRANSFER" && !form.transferId)}
-                                            className="bg-white text-slate-900 border border-slate-900 hover:bg-slate-50 shadow-sm transition-all duration-200 font-medium disabled:opacity-50"
-                                        >
-                                            {exportSource === "SO" ? "Lưu nháp" : "Tạo phiếu"}
-                                        </Button>
-                                        <Button
-                                            onClick={handleContinue}
-                                            disabled={loading || (exportSource === "SO" && !form.donBanHangId) || (exportSource === "TRANSFER" && !form.transferId)}
-                                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 font-bold min-w-[160px] disabled:opacity-50"
-                                        >
-                                            {loading
-                                                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang xử lý...</>
-                                                : "Tiếp tục bốc Lô →"
-                                            }
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+    if (loading || !data) {
+        return (
+            <div className="min-h-screen bg-[#faf8f3] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#b8860b]" />
+                    <p className="text-[#a89f92] font-mono text-xs uppercase tracking-widest">Đang tải dữ liệu...</p>
                 </div>
             </div>
+        );
+    }
+
+    const { phieu, chiTiet } = data;
+    const isChuyenKho = phieu.loaiXuat === "chuyen_kho";
+    
+    // Kiểm tra xem tất cả mặt hàng đã bốc đủ lô chưa
+    const isAllPicked = Array.isArray(chiTiet) 
+        && chiTiet.length > 0 
+        && chiTiet.every(ct => ct.duSoLuong === true);
+
+    const statusInfo = STATUS_UI[phieu.trangThai] || { label: "Không xác định", cls: "blue" };
+
+    return (
+        <>
+            <style>{STYLES}</style>
+            <div className="wh-root">
+                <div className="wh-grid" />
+                <div className="wh-orb-1" />
+
+                <div className="wh-inner">
+                    {/* ── Header ── */}
+                    <div className="wh-header">
+                        <div className="wh-title-wrap">
+                            <button 
+                                onClick={() => navigate("/goods-issues")}
+                                className="wh-eyebrow flex items-center gap-1 hover:text-[#b8860b] transition-colors mb-2"
+                            >
+                                <ArrowLeft size={10} /> FS WMS · Phiếu xuất kho
+                            </button>
+                            <h1 className="wh-title">Chi tiết <span>phiếu xuất</span></h1>
+                        </div>
+
+                        <div className="wh-header-actions">
+                            <span className={`badge badge-status ${statusInfo.cls}`}>
+                                <span className="dot" />
+                                {statusInfo.label}
+                            </span>
+
+                            {/* Nút Hủy: Hiện cho các trạng thái chưa hoàn thành/hủy */}
+                            {[0, 1, 2].includes(phieu.trangThai) && (
+                                <button
+                                    disabled={isProcessing}
+                                    className="btn-danger"
+                                    onClick={() => setShowCancelConfirm(true)}
+                                >
+                                    <X size={15} /> Huỷ phiếu
+                                </button>
+                            )}
+
+                            {/* NÚT IN PHIẾU */}
+                            {phieu.trangThai !== 4 && (
+                                <button
+                                    onClick={() => navigate(`/goods-issues/${phieu.id}/print`)}
+                                    className="btn-white"
+                                >
+                                    <Printer size={15} /> In phiếu
+                                </button>
+                            )}
+
+                            {/* Nút Hoàn thành/Vận chuyển: Luôn hiển thị ở trạng thái 0 (Nháp) */}
+                            {phieu.trangThai === 0 && (
+                                <button
+                                    disabled={isProcessing || !isAllPicked}
+                                    onClick={() => setShowConfirm(true)}
+                                    className={isChuyenKho ? "btn-purple" : "btn-gold"}
+                                >
+                                    {isProcessing ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                                    {isChuyenKho ? "Xác nhận vận chuyển" : "Hoàn thành xuất kho"}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* ── Info Section ── */}
+                    <div className="info-card">
+                        <div className="flex items-center gap-2 mb-6">
+                            <ClipboardList size={16} className="text-[#b8860b]" />
+                            <h2 className="wh-eyebrow font-bold text-[#1a1612]">Thông tin nghiệp vụ</h2>
+                        </div>
+
+                        <div className="info-grid">
+                            <InfoItem icon={Package} label="Số phiếu xuất" value={phieu.soPhieuXuat} highlight />
+
+                            <InfoItem 
+                                icon={InfoIcon} 
+                                label="Loại xuất" 
+                                value={isChuyenKho ? "Chuyển kho nội bộ" : "Xuất bán hàng"} 
+                            />
+
+                            {isChuyenKho ? (
+                                <InfoItem icon={Warehouse} label="Kho chuyển đến" value={phieu.khoChuyenDen?.tenKho} />
+                            ) : (
+                                <InfoItem icon={ClipboardList} label="Đơn bán hàng" value={phieu.donBanHang?.soDonHang} />
+                            )}
+
+                            <InfoItem icon={Warehouse} label="Kho xuất hàng" value={phieu.kho?.tenKho} />
+
+                            <InfoItem 
+                                icon={Calendar} 
+                                label="Ngày tạo phiếu" 
+                                value={new Date(phieu.ngayTao).toLocaleDateString("vi-VN")} 
+                            />
+
+                            <InfoItem 
+                                icon={Calendar} 
+                                label="Ngày xuất" 
+                                value={phieu.ngayXuat ? new Date(phieu.ngayXuat).toLocaleDateString("vi-VN") : "Chưa xuất kho"} 
+                            />
+
+                            <InfoItem 
+                                icon={User} 
+                                label="Người xuất" 
+                                value={phieu.nguoiXuat?.hoTen || "---"} 
+                            />
+                        </div>
+                        
+                        {phieu.ghiChu && (
+                            <div className="mt-6 pt-4 border-t border-[#faf8f3]">
+                                <InfoItem icon={InfoIcon} label="Ghi chú" value={phieu.ghiChu} />
+                            </div>
+                        )}
+
+                        {isChuyenKho && phieu.trangThai === 0 && !isAllPicked && (
+                            <div className="mt-6 p-3 bg-[#f3e8ff] border border-[#e9d5ff] rounded-xl flex items-center gap-3">
+                                <AlertCircle size={16} className="text-[#9333ea]" />
+                                <p className="text-[#7e22ce] text-xs font-medium">
+                                    CẦN BỐC LÔ TRƯỚC KHI XUẤT HÀNG. Hệ thống yêu cầu xác định lô sản phẩm trước khi đưa vào kho Trung chuyển.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ── Product List ── */}
+                    <div className="wh-tbl-card">
+                        <div className="p-5 border-b border-[#faf8f3] bg-[#faf8f3]/50 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Package size={14} className="text-[#b8860b]" />
+                                <span className="wh-eyebrow font-bold text-[#1a1612]">Danh sách sản phẩm</span>
+                            </div>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="wh-tbl">
+                                <thead className="wh-thead">
+                                    <tr>
+                                        <th className="wh-th">SKU / Biến thể</th>
+                                        <th className="wh-th text-center">SL Yêu cầu</th>
+                                        <th className="wh-th text-center">SL Đã Pick</th>
+                                        <th className="wh-th text-center">Trạng thái</th>
+                                        <th className="wh-th text-right">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="wh-tbody">
+                                    {chiTiet.map((ct) => {
+                                        const canEditLot = phieu.trangThai === 0;
+
+                                        return (
+                                            <tr key={ct.id}>
+                                                <td className="wh-td">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="sku-code w-fit">{ct.sku}</span>
+                                                        <span className="font-semibold text-[#1a1612] line-clamp-1">{ct.tenBienThe}</span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <td className="wh-td text-center font-bold">
+                                                    {ct.soLuongCanXuat}
+                                                </td>
+
+                                                <td className="wh-td text-center">
+                                                    <span className={`font-mono font-bold ${ct.duSoLuong ? "text-[#16a34a]" : "text-[#b8860b]"}`}>
+                                                        {ct.soLuongDaPick}
+                                                        <span className="text-[#a89f92] font-normal mx-1">/</span>
+                                                        {ct.soLuongCanXuat}
+                                                    </span>
+                                                </td>
+
+                                                <td className="wh-td text-center">
+                                                    {ct.duSoLuong ? (
+                                                        <span className="badge green"><span className="dot" /> Đủ hàng</span>
+                                                    ) : (
+                                                        <span className="badge amber"><span className="dot" /> Chưa đủ</span>
+                                                    )}
+                                                </td>
+
+                                                <td className="wh-td text-right">
+                                                    <button
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/goods-issues/${phieu.id}/pick-lot/${ct.id}`,
+                                                                {
+                                                                    state: {
+                                                                        bienTheSanPhamId: ct.bienTheSanPhamId,
+                                                                        sku: ct.sku,
+                                                                        tenBienThe: ct.tenBienThe,
+                                                                        soLuongXuat: ct.soLuongCanXuat,
+                                                                        soLuongDaPick: ct.soLuongDaPick,
+                                                                        phieuTrangThai: phieu.trangThai,
+                                                                        loaiXuat: phieu.loaiXuat
+                                                                    },
+                                                                }
+                                                            )
+                                                        }
+                                                        className={`h-8 px-4 text-xs inline-flex items-center gap-2 justify-center rounded-lg font-bold transition-all border
+                                                            ${canEditLot 
+                                                                ? "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100" 
+                                                                : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"}`}
+                                                    >
+                                                        {canEditLot ? "Pick lot" : "Xem lô"} <ArrowRight size={12} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Modals ── */}
+                {showConfirm && (
+                    <div className="modal-overlay">
+                        <div className="modal-card">
+                            <div className="modal-head">
+                                <h2 className="modal-ttl">
+                                    {isChuyenKho ? "Xác nhận vận chuyển" : "Xác nhận xuất kho"}
+                                </h2>
+                            </div>
+                            <div className="modal-body">
+                                {isChuyenKho
+                                    ? `Hàng hóa trong phiếu ${phieu.soPhieuXuat} sẽ được trừ tồn tại kho hiện tại và đưa vào kho Trung Chuyển để bắt đầu vận chuyển.`
+                                    : `Phiếu xuất kho ${phieu.soPhieuXuat} sẽ được hoàn thành và trừ tồn kho thực tế của các lô đã chọn.`}
+                            </div>
+                            <div className="modal-foot">
+                                <button className="btn-white" onClick={() => setShowConfirm(false)}>Hủy</button>
+                                <button 
+                                    className={isChuyenKho ? "btn-purple" : "btn-gold"} 
+                                    disabled={isProcessing}
+                                    onClick={handleConfirmComplete}
+                                >
+                                    {isProcessing ? "Đang xử lý..." : "Xác nhận thực hiện"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {showCancelConfirm && (
+                    <div className="modal-overlay">
+                        <div className="modal-card">
+                            <div className="modal-head">
+                                <h2 className="modal-ttl">Hủy phiếu xuất kho</h2>
+                            </div>
+                            <div className="modal-body">
+                                Bạn chắc chắn muốn huỷ phiếu <strong>{phieu.soPhieuXuat}</strong>? Mọi số lượng đã bốc (giữ hàng) sẽ được hoàn tồn. Thao tác này không thể hoàn tác.
+                            </div>
+                            <div className="modal-foot">
+                                <button className="btn-white" onClick={() => setShowCancelConfirm(false)}>Quay lại</button>
+                                <button className="btn-danger" onClick={handleCancelExport} disabled={isProcessing}>
+                                    {isProcessing ? "Đang xử lý..." : "Xác nhận hủy"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
+    );
+}
+
+function InfoItem({ icon: Icon, label, value, highlight }) {
+    return (
+        <div className="info-item">
+            <div className="flex items-center gap-1.5 mb-1 opacity-80">
+                <Icon size={12} className="text-[#b8860b]" />
+                <span className="info-lbl">{label}</span>
+            </div>
+            <div className={`info-val ${highlight ? 'highlight' : ''}`}>{value || "---"}</div>
         </div>
     );
 }

@@ -5,7 +5,7 @@ import {
   ArrowLeft, Edit, Loader2, User, Mail, Phone, MapPin,
   Calendar, Clock, Hash, Contact2, Users, Building2,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { getKhachHangById } from "@/services/khachHangService";
 
 const LOAI_MAP = {

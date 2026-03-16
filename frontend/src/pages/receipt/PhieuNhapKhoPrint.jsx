@@ -3,8 +3,241 @@ import { useParams, useNavigate } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { toast } from "sonner";
 
-export default function PhieuNhapKhoPrint() {
+const PRINT_STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;700&display=swap');
 
+.print-root {
+  font-family: 'DM Sans', sans-serif;
+  color: #1a1612;
+  background: white;
+  min-height: 100vh;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #faf8f3;
+  border-bottom: 1px solid #e5d9c0;
+  margin-bottom: 24px;
+}
+
+.top-left {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1612;
+}
+
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-back {
+  background: white;
+  border: 1px solid #b8860b;
+  color: #b8860b;
+}
+
+.btn-back:hover {
+  background: #faf8f3;
+}
+
+.btn-print {
+  background: linear-gradient(to right, #b8860b, #d4a017);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 8px rgba(184,134,11,0.3);
+}
+
+.btn-print:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(184,134,11,0.4);
+}
+
+.print-container {
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 0 18mm 25mm;
+  box-sizing: border-box;
+}
+
+.title-main {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 900;
+  text-align: center;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+  color: #1a1612;
+}
+
+.subtitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  text-align: center;
+  color: #7a6e5f;
+  margin: 0 0 20px;
+}
+
+.header-line {
+  border-bottom: 2px solid #b8860b;
+  margin: 0 0 28px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.info-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #b8860b;
+}
+
+.info-value {
+  font-weight: 600;
+}
+
+.table-container {
+  margin: 24px 0;
+}
+
+.table-header {
+  background: #faf8f3;
+  border-bottom: 2px solid #b8860b;
+}
+
+.table-header th {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #b8860b;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.table-row td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5d9c0;
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.lot-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 4px 0;
+  padding: 4px 8px;
+  background: rgba(184,134,11,0.04);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.lot-code {
+  font-family: 'DM Mono', monospace;
+  color: #b8860b;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.lot-date {
+  font-size: 12px;
+  color: #7a6e5f;
+}
+
+.lot-qty {
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.total-row {
+  background: #faf8f3;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.total-row td:last-child {
+  color: #b8860b;
+  font-size: 18px;
+  text-align: right;
+}
+
+.signatures {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 60px;
+  font-size: 14px;
+}
+
+.signature-block {
+  width: 45%;
+  text-align: center;
+}
+
+.signature-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b8860b;
+  margin-bottom: 50px;
+  text-transform: uppercase;
+}
+
+.signature-name {
+  border-top: 1px solid #b8860b;
+  padding-top: 8px;
+  margin-top: 40px;
+}
+
+.signature-note {
+  font-size: 11px;
+  color: #7a6e5f;
+  margin-top: 4px;
+}
+
+.page-number {
+  text-align: center;
+  font-size: 11px;
+  color: #a89f92;
+  margin-top: 40px;
+}
+
+/* Print rules */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 10mm 15mm 10mm;
+  }
+  body {
+    margin: 0;
+    background: white;
+  }
+  .top-bar {
+    display: none !important;
+  }
+}
+`;
+
+export default function PhieuNhapKhoPrint() {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -17,338 +250,200 @@ export default function PhieuNhapKhoPrint() {
   }, [id]);
 
   async function fetchFullData() {
-
     setLoading(true);
-
     try {
+      const res = await phieuNhapKhoService.getDetail(id);
+      setData(res);
 
-      const resDetail = await phieuNhapKhoService.getDetail(id);
-
-      setData(resDetail);
-
-      const lotPromises = resDetail.items.map(item =>
+      const lotPromises = res.items.map((item) =>
         phieuNhapKhoService.getLotInput(id, item.bienTheSanPhamId)
       );
 
       const lotResults = await Promise.all(lotPromises);
 
       const lotMap = {};
-
-      resDetail.items.forEach((item, index) => {
-        lotMap[item.bienTheSanPhamId] = lotResults[index].data || [];
+      res.items.forEach((item, index) => {
+        lotMap[item.bienTheSanPhamId] = lotResults[index]?.data || [];
       });
-
       setAllLots(lotMap);
-
     } catch (e) {
-
-      console.error(e);
-      toast.error("Không thể tải dữ liệu in");
-
+      console.error("Lỗi tải dữ liệu in:", e);
+      toast.error("Không thể tải dữ liệu để in phiếu");
     } finally {
-
       setLoading(false);
-
     }
   }
 
   if (loading || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500 text-lg font-semibold">
+      <div className="min-h-screen flex items-center justify-center text-[#b8860b] text-lg font-mono tracking-wider bg-gradient-to-br from-[#faf8f3] to-[#ede9de]">
         Đang chuẩn bị bản in...
       </div>
     );
   }
 
-  const isInternal = data.soPhieuNhap?.startsWith("PN-TRF-");
+  const isInternal = data.soPhieuNhap?.startsWith("PN-TRF-") ||
+                     (data.loaiNhap || "").toLowerCase().includes("chuyển kho");
 
-  const tongSoLuong = data.items.reduce(
-    (acc, item) => acc + (item.soLuongDaKhaiBao || 0),
+  const totalQty = data.items.reduce(
+    (acc, item) => acc + (Number(item.soLuongDaKhaiBao) || 0),
     0
   );
 
   return (
+    <>
+      <style>{PRINT_STYLES}</style>
 
-    <div className="min-h-screen bg-gray-100 py-8 print:bg-white print:py-0">
-
-      {/* NAVBAR */}
-
-      <div className="max-w-5xl mx-auto mb-6 flex justify-between items-center px-4 print:hidden">
-
-        <button
-          onClick={() => navigate(-1)}
-          className="text-sm text-gray-600 hover:text-black font-medium"
-        >
-          ← Quay lại chi tiết phiếu
-        </button>
-
-        <button
-          onClick={() => window.print()}
-          className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition"
-        >
-          In phiếu
-        </button>
-
-      </div>
-
-
-      {/* PRINT AREA */}
-
-      <div id="invoice-area" className="max-w-5xl mx-auto bg-white p-12 shadow border print:border-none print:shadow-none print:p-0">
-
-
-        {/* HEADER */}
-
-        <div className="flex justify-between items-start border-b-2 border-gray-900 pb-6 mb-8">
-
-          <div>
-
-            <h1 className="text-3xl font-black uppercase tracking-tight">
-              Phiếu Nhập Kho
-            </h1>
-
-            <p className="mt-2 text-sm">
-              Mã phiếu:
-              <span className="font-mono text-lg ml-2">
-                {data.soPhieuNhap}
-              </span>
-            </p>
-
-            <p className="text-xs text-gray-500 uppercase tracking-wider">
-              Ngày nhập: {new Date().toLocaleDateString("vi-VN")}
-            </p>
-
+      <div className="print-root">
+        {/* Top bar với nút */}
+        <div className="top-bar">
+          <div className="top-left">In phiếu nhập kho</div>
+          <div className="top-right">
+            <button onClick={() => navigate(-1)} className="btn btn-back">
+              ← Quay lại
+            </button>
+            <button onClick={() => window.print()} className="btn btn-print">
+              In phiếu
+            </button>
           </div>
-
-          <div className="text-right">
-
-            <h2 className="text-xl font-bold text-purple-700">
-              FASHIONFLOW
-            </h2>
-
-            <p className="text-sm text-gray-500">
-              Hệ thống quản lý kho
-            </p>
-
-          </div>
-
         </div>
 
-
-        {/* INFO */}
-
-        <div className="grid grid-cols-2 gap-12 mb-10 text-sm">
-
-          <div className="space-y-3">
-
-            <div>
-              <p className="text-xs text-gray-400 uppercase">Kho tiếp nhận</p>
-              <p className="font-bold text-lg">{data.tenKho}</p>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-400 uppercase">Loại nghiệp vụ</p>
-              <p className="font-semibold">
-                {isInternal
-                  ? "Chuyển kho nội bộ"
-                  : "Nhập hàng từ nhà cung cấp"}
-              </p>
-            </div>
-
+        <div className="print-container">
+          <h1 className="title-main">PHIẾU NHẬP KHO</h1>
+          <div className="subtitle">
+            Mã phiếu: {data.soPhieuNhap || "—"} • Ngày nhập: {data.ngayNhap
+              ? new Date(data.ngayNhap).toLocaleDateString("vi-VN")
+              : "—"}
           </div>
 
+          <div className="header-line" />
 
-          <div className="space-y-3 text-right">
-
+          <div className="info-row">
             <div>
-              <p className="text-xs text-gray-400 uppercase">Đối tác</p>
-              <p className="font-bold text-lg">
-                {isInternal ? "Kho nội bộ" : data.tenNhaCungCap}
-              </p>
+              <div className="info-label">KHO TIẾP NHẬN</div>
+              <div className="info-value">{data.tenKho || "—"}</div>
             </div>
-
-            {!isInternal && (
-              <div>
-                <p className="text-xs text-gray-400 uppercase">
-                  Đơn mua hàng
-                </p>
-                <p className="font-semibold">
-                  #{data.soDonMua}
-                </p>
+            <div style={{ textAlign: "right" }}>
+              <div className="info-label">ĐỐI TÁC / NGUỒN</div>
+              <div className="info-value">
+                {isInternal ? "Kho nội bộ" : (data.tenNhaCungCap || "—")}
               </div>
-            )}
-
+            </div>
           </div>
 
-        </div>
+          <div className="info-row">
+            <div>
+              <div className="info-label">LOẠI NGHIỆP VỤ</div>
+              <div className="info-value">
+                {isInternal ? "Chuyển kho nội bộ" : "Nhập từ nhà cung cấp"}
+              </div>
+            </div>
+          </div>
 
-
-        {/* TABLE */}
-
-        <div>
-
-          <h3 className="text-sm font-bold uppercase mb-4">
-            Chi tiết hàng hóa
-          </h3>
-
-          <table className="w-full text-sm">
-
-            <thead>
-
-              <tr className="bg-gray-900 text-white text-xs uppercase">
-
-                <th className="p-3 text-left w-12">STT</th>
-                <th className="p-3 text-left">Sản phẩm</th>
-                <th className="p-3 text-left">Lô hàng</th>
-                <th className="p-3 text-right w-24">SL</th>
-
-              </tr>
-
-            </thead>
-
-
-            <tbody className="divide-y">
-
-              {data.items.map((item, idx) => {
-
-                const lots = allLots[item.bienTheSanPhamId] || [];
-
-                return (
-
-                  <tr key={item.bienTheSanPhamId}>
-
-                    <td className="p-3 text-gray-500 font-bold">
-                      {idx + 1}
-                    </td>
-
-                    <td className="p-3">
-
-                      <div className="font-bold">{item.sku}</div>
-
-                      <div className="text-xs text-gray-500">
-                        {item.tenBienThe}
-                      </div>
-
-                    </td>
-
-
-                    <td className="p-3">
-
-                      {lots.length > 0 ? (
-
-                        <div className="space-y-1">
-
-                          {lots.map((lo, lIdx) => (
-
-                            <div
-                              key={lIdx}
-                              className="flex justify-between text-xs bg-gray-50 px-2 py-1 rounded"
-                            >
-
-                              <span className="font-semibold text-purple-600">
-                                {lo.maLo}
-                              </span>
-
-                              <span className="text-gray-500">
-                                {lo.ngaySanXuat
-                                  ? new Date(lo.ngaySanXuat)
-                                      .toLocaleDateString("vi-VN")
-                                  : "---"}
-                              </span>
-
-                              <span className="font-semibold">
-                                {lo.soLuongNhap}
-                              </span>
-
-                            </div>
-
-                          ))}
-
+          <div className="table-container">
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead className="table-header">
+                <tr>
+                  <th style={{ width: "40px" }}>STT</th>
+                  <th style={{ width: "220px" }}>SẢN PHẨM</th>
+                  <th style={{ width: "180px" }}>LÔ HÀNG</th>
+                  <th style={{ width: "120px" }}>Ngày sản xuất</th>
+                  <th style={{ width: "100px" }}>SL trong lô</th>
+                  <th style={{ width: "80px", textAlign: "right" }}>SL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.items.map((item, idx) => {
+                  const lots = allLots[item.bienTheSanPhamId] || [];
+                  return (
+                    <tr key={item.bienTheSanPhamId || idx} className="table-row">
+                      <td style={{ textAlign: "center", color: "#7a6e5f" }}>
+                        {idx + 1}
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{item.sku || item.maBienThe || "—"}</div>
+                        <div style={{ fontSize: "12px", color: "#7a6e5f", marginTop: "2px" }}>
+                          {item.tenBienThe || item.tenSanPham || "—"}
                         </div>
-
-                      ) : (
-
-                        <span className="text-red-500 text-xs italic">
-                          Chưa khai báo lô
-                        </span>
-
-                      )}
-
-                    </td>
-
-
-                    <td className="p-3 text-right font-bold">
-                      {item.soLuongDaKhaiBao || 0}
-                    </td>
-
-                  </tr>
-
-                );
-
-              })}
-
-            </tbody>
-
-
-            <tfoot>
-
-              <tr className="bg-gray-50 font-bold">
-
-                <td colSpan={3} className="p-4 text-right text-xs uppercase">
-                  Tổng cộng
-                </td>
-
-                <td className="p-4 text-right text-purple-700 text-lg">
-                  {tongSoLuong}
-                </td>
-
-              </tr>
-
-            </tfoot>
-
-          </table>
-
-        </div>
-
-
-        {/* SIGN */}
-
-        <div className="mt-16 grid grid-cols-2 gap-8 text-center text-sm">
-
-          <div>
-
-            <p className="font-semibold uppercase mb-16">
-              Người nhập
-            </p>
-
-            <p className="font-semibold">
-              {data.tenNguoiNhap || "Nhân viên"}
-            </p>
-
-            <p className="text-xs text-gray-400">
-              (Ký và ghi rõ họ tên)
-            </p>
-
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {lots.length > 0 ? (
+                          lots.map((lot, i) => (
+                            <div key={i} className="lot-item">
+                              <div className="lot-code">{lot.maLo || "—"}</div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="lot-item" style={{ color: "#c2410c", fontStyle: "italic" }}>
+                            Chưa khai báo
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {lots.length > 0 ? (
+                          lots.map((lot, i) => (
+                            <div key={i} className="lot-item">
+                              <div className="lot-date">
+                                {lot.ngaySanXuat
+                                  ? new Date(lot.ngaySanXuat).toLocaleDateString("vi-VN")
+                                  : "—"}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="lot-item">—</div>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {lots.length > 0 ? (
+                          lots.map((lot, i) => (
+                            <div key={i} className="lot-item">
+                              <div className="lot-qty">{lot.soLuongNhap || 0}</div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="lot-item">—</div>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "right", fontWeight: 700 }}>
+                        {item.soLuongDaKhaiBao || 0}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="total-row">
+                  <td colSpan={5} style={{ textAlign: "right", padding: "12px" }}>
+                    TỔNG CỘNG
+                  </td>
+                  <td style={{ textAlign: "right", padding: "12px", fontSize: "18px" }}>
+                    {totalQty}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
 
+          <div className="signatures">
+            <div className="signature-block">
+              <div className="signature-title">NGƯỜI NHẬP</div>
+              <div className="signature-name">
+                {data.tenNguoiNhap || "Trần Đức Tài"}
+              </div>
+              <div className="signature-note">(Ký và ghi rõ họ tên)</div>
+            </div>
 
-          <div>
-
-            <p className="font-semibold uppercase mb-16">
-              Người giao hàng
-            </p>
-
-            <p className="text-xs text-gray-400">
-              (Ký và ghi rõ họ tên)
-            </p>
-
+            <div className="signature-block">
+              <div className="signature-title">NGƯỜI GIAO</div>
+              <div className="signature-name">..............................</div>
+              <div className="signature-note">(Ký và ghi rõ họ tên)</div>
+            </div>
           </div>
 
+          <div className="page-number">1/1</div>
         </div>
-
       </div>
-
-    </div>
-
+    </>
   );
 }

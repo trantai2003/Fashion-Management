@@ -515,7 +515,7 @@ export default function AuthPage() {
 
                         {/* Brand text */}
                         <div>
-                            <div className="al-eyebrow">Fashion Warehouse System</div>
+                            <div className="al-eyebrow">Fashion Solution Warehouse Management System</div>
                             <h1 className="al-title">
                                 <span>FS</span> WMS
                             </h1>
@@ -551,12 +551,6 @@ export default function AuthPage() {
                                     </div>
                                 </div>
                             ))}
-                        </div>
-
-                        {/* Security badge */}
-                        <div className="al-badge">
-                            <ShieldCheck size={13} style={{ color: '#16a34a' }} />
-                            Bảo mật 256-bit TLS · ISO 27001
                         </div>
                     </div>
                 </div>

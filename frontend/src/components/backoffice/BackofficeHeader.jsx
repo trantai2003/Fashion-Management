@@ -70,7 +70,7 @@ export default function BackofficeHeader({
   ]);
   const isMainScreenHeader = routeKey ? mainHeaderKeys.has(routeKey) : false;
 
-  const headerEyebrow = isWarehouseHeader ? "FS WMS · INVENTORY" : "FS WMS · BACKOFFICE";
+  const headerEyebrow = isWarehouseHeader ? "FS WMS · INVENTORY" : "FS WMS - TECHNOLOGY SOLUTION";
   const mainTitle = isWarehouseHeader ? "Quản lý kho hàng" : title;
 
   const buildTwoToneTitle = (rawTitle, key) => {

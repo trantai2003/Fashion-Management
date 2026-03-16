@@ -1,26 +1,47 @@
+/* print.css */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm 15mm 10mm;
+  }
+
   body {
     margin: 0;
-    background: white;
+    padding: 0;
+    background: white !important;
   }
 
-  /* Ẩn tất cả */
-  body * {
-    visibility: hidden;
+  /* Ẩn các phần giao diện web */
+  .print-nav,
+  button,
+  .modal,
+  nav,
+  header:not(.print-header),
+  footer,
+  .no-print {
+    display: none !important;
   }
 
-  /* Chỉ in khu vực hóa đơn hoặc khu vực được đánh dấu */
-  #invoice-area,
-  #invoice-area *,
-  .print-area,
-  .print-area * {
-    visibility: visible;
+  /* Đảm bảo nội dung in hiển thị đầy đủ */
+  .print-root,
+  .print-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
   }
 
-  #invoice-area, .print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+  /* Giữ màu sắc và tránh nền xám khi in */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
   }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { donBanHangService } from "@/services/donBanHangService";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { ArrowLeft, Printer, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

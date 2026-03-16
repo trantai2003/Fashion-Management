@@ -4,7 +4,7 @@ import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { donBanHangService } from "@/services/donBanHangService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import { getMineKhoList } from "@/services/khoService";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,

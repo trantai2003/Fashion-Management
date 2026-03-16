@@ -7,6 +7,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 import {
@@ -18,18 +19,24 @@ import {
 import { NavLink, useLocation } from "react-router-dom";
 import { Boxes, ChevronDown } from "lucide-react";
 import { SIDEBAR_MENU } from "./sidebar.config";
-import { useSidebar } from "@/components/ui/sidebar";
 import { useState, useEffect } from "react";
+
 export default function BackofficeSidebar() {
   const [openMenus, setOpenMenus] = useState({});
   const location = useLocation();
   const role = localStorage.getItem("role");
-  const { open } = useSidebar();
+  
+  const { open, isMobile } = useSidebar(); 
+  
   const filteredMenu = SIDEBAR_MENU.filter(
     (item) => !item.roles || item.roles.includes(role)
   );
+
+  // Trên mobile, khi sidebar hiển thị thì nó luôn ở trạng thái mở rộng (drawer)
+  const isExpanded = open || isMobile;
+
   useEffect(() => {
-    if (!open) return;
+    if (!isExpanded) return;
 
     const autoOpen = {};
     SIDEBAR_MENU.forEach((item) => {
@@ -42,19 +49,20 @@ export default function BackofficeSidebar() {
     });
 
     setOpenMenus((prev) => ({ ...prev, ...autoOpen }));
-  }, [location.pathname, open]);
+  }, [location.pathname, isExpanded]);
 
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r border-[#b8860b]/20 bg-gradient-to-b from-[#fffaf0] to-[#f6f1e6] text-[#3d3529]"
+      // Xóa bg ở thẻ cha, chỉ để z-50 và viền
+      className="z-50 border-r border-[#b8860b]/20 text-[#3d3529]"
     >
-      <SidebarHeader className="border-b border-[#b8860b]/15">
-        {open ? (
-          // ===== SIDEBAR MỞ =====
+      {/* 1. HEADER: Màu nền sáng (đỉnh của gradient) */}
+      <SidebarHeader className="bg-[#fffaf0] border-b border-[#b8860b]/15">
+        {isExpanded ? (
           <div className="flex items-center gap-3 px-2 py-2">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#e0b22e] via-[#c99a17] to-[#b8860b] text-white shadow-[0_6px_14px_rgba(184,134,11,0.3)]">
-              <Boxes className="h-4.5 w-4.5" strokeWidth={2.2} />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#e0b22e] via-[#c99a17] to-[#b8860b] text-white shadow-[0_6px_14px_rgba(184,134,11,0.3)]">
+              <Boxes className="h-5 w-5" strokeWidth={2.2} />
             </div>
             <div className="flex items-end gap-2 leading-none">
               <span
@@ -72,16 +80,16 @@ export default function BackofficeSidebar() {
             </div>
           </div>
         ) : (
-          // ===== SIDEBAR THU GỌN =====
           <div className="flex items-center justify-center py-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#b8860b]/20 bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white shadow-md">
               <Boxes className="h-5 w-5" />
             </div>
           </div>
         )}
       </SidebarHeader>
 
-      <SidebarContent>
+      {/* 2. CONTENT: Dải gradient nối tiếp từ Header xuống Footer */}
+      <SidebarContent className="bg-gradient-to-b from-[#fffaf0] to-[#f6f1e6]">
         <SidebarGroup>
           <SidebarMenu>
             {filteredMenu.map((item) => {
@@ -92,11 +100,11 @@ export default function BackofficeSidebar() {
                 );
 
               if (item.children) {
-                const isOpen = open && openMenus[item.label];
+                const isOpen = isExpanded && openMenus[item.label];
 
                 return (
                   <Collapsible
-                    key={`${item.label}-${open}`}
+                    key={`${item.label}-${isExpanded}`}
                     open={isOpen}
                     onOpenChange={(value) =>
                       setOpenMenus((prev) => ({
@@ -109,6 +117,7 @@ export default function BackofficeSidebar() {
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
+                          tooltip={!isExpanded ? item.label : undefined}
                           className={isParentActive
                             ? "bg-[#f3e5bc] text-[#7a5700] font-semibold"
                             : "text-[#4a3f2f] hover:bg-[#f7edd3] hover:text-[#7a5700]"
@@ -117,14 +126,14 @@ export default function BackofficeSidebar() {
                           <Icon />
                           <span>{item.label}</span>
 
-                          {open && (
+                          {isExpanded && (
                             <ChevronDown className="ml-auto transition-transform group-data-[state=open]:rotate-180" />
                           )}
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                     </SidebarMenuItem>
 
-                    {open && (
+                    {isExpanded && (
                       <CollapsibleContent>
                         <div className="ml-8 mt-1 space-y-1">
                           {item.children
@@ -152,7 +161,7 @@ export default function BackofficeSidebar() {
 
               return (
                 <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild tooltip={!isExpanded ? item.label : undefined}>
                     <NavLink
                       to={item.to}
                       className={({ isActive }) =>
@@ -172,8 +181,9 @@ export default function BackofficeSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {open && (
-        <SidebarFooter className="border-t border-[#b8860b]/15 bg-[#f6f1e6]">
+      {/* 3. FOOTER: Màu nền đậm (đáy của gradient) */}
+      {isExpanded && (
+        <SidebarFooter className="bg-[#f6f1e6] border-t border-[#b8860b]/15">
           <div className="px-2 py-3">
             <p
               className="text-[9px] uppercase tracking-[0.32em] text-[#b8860b]/85"

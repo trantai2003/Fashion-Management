@@ -17,7 +17,7 @@ import {
   ArrowLeft, Loader2, PackageSearch, CheckCircle2, Warehouse,
   Package, ClipboardList,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { getKhoList } from "@/services/khoService";
 import {
   createStockTake,

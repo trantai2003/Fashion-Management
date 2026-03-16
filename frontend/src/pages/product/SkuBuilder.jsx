@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function SkuBuilder() {
+    const location = useLocation();
     const [skus, setSkus] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -80,7 +82,9 @@ export default function SkuBuilder() {
 
     useEffect(() => {
         fetchSkus();
-    }, [fetchSkus]);
+        // Force scroll to top on navigation
+        window.scrollTo(0, 0);
+    }, [fetchSkus, location.pathname, location.search]); 
 
     // Derived state using useMemo to ensure consistency
     const processedSkus = useMemo(() => {
@@ -138,7 +142,7 @@ export default function SkuBuilder() {
     const totalPages = Math.max(1, Math.ceil(processedSkus.length / pageSize));
 
     return (
-        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+        <div key={location.pathname} className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
 
             {/* ══ STATS ════════════════════════════════════════════════════════ */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -317,7 +321,7 @@ export default function SkuBuilder() {
                                                 </td>
 
                                                 <td className="px-4 py-3.5 align-middle">
-                                                    <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 rounded px-2 py-0.5">
+                                                    <span className="font-bold text-violet-600 tracking-wide font-mono text-xs">
                                                         {sku.maSku || sku.maBienThe || sku.skuCode || "N/A"}
                                                     </span>
                                                 </td>
@@ -326,12 +330,12 @@ export default function SkuBuilder() {
                                                     <Link
                                                         to={`/products/${sku.productId}`}
                                                         title={sku.productName}
-                                                        className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-violet-600 hover:underline cursor-pointer"
+                                                        className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-slate-900 hover:underline cursor-pointer"
                                                     >
                                                         {sku.productName}
                                                     </Link>
                                                     {sku.productCode && (
-                                                        <p className="mt-0.5 text-xs text-slate-500 line-clamp-1">{sku.productCode}</p>
+                                                        <p className="mt-0.5 text-xs font-semibold text-slate-700 font-mono line-clamp-1">{sku.productCode}</p>
                                                     )}
                                                 </td>
 
