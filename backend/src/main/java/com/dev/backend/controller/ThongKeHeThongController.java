@@ -93,6 +93,7 @@ public class ThongKeHeThongController {
             rolesLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<List<TonKhoChiTietDTO>>> tonKhoBienThe(@PathVariable Integer khoId, @PathVariable Integer bienTheId) {
+        System.out.println("đi qua đây");
         return thongKeHeThongService.findTonKhoChiTietByBienTheAndKho(bienTheId, khoId);
     }
 
