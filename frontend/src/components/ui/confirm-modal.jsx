@@ -33,6 +33,17 @@ const VARIANT_CONFIG = {
         iconColor: "text-green-500",
         confirmButtonClass: "bg-green-600 hover:bg-green-700 text-white",
         title: "Xác nhận"
+    },
+    gold: {
+        icon: AlertTriangle,
+        iconColor: "!text-amber-700 dark:!text-amber-700",
+        iconBgClass: "!bg-amber-100 dark:!bg-amber-100",
+        dialogClass: "!bg-[#fffdf8] !text-[#3d3529] dark:!bg-[#fffdf8] dark:!text-[#3d3529] !border-[#e6dcc9]",
+        titleClass: "!text-[#3d3529] dark:!text-[#3d3529]",
+        descriptionClass: "!text-[#7a6e5f] dark:!text-[#7a6e5f]",
+        cancelButtonClass: "!border-[#d7cab2] !text-[#6b5f4c] !bg-[#fffdf8] hover:!bg-[#f8f2e4] dark:!border-[#d7cab2] dark:!text-[#6b5f4c] dark:!bg-[#fffdf8] dark:hover:!bg-[#f8f2e4]",
+        confirmButtonClass: "!bg-[#b8860b] hover:!bg-[#9c7108] !text-white dark:!bg-[#b8860b] dark:hover:!bg-[#9c7108] dark:!text-white",
+        title: "Xác nhận"
     }
 };
 
@@ -49,7 +60,15 @@ export default function ConfirmModal({
     isLoading = false,
 }) {
     const config = VARIANT_CONFIG[variant] || VARIANT_CONFIG.danger;
-    const Icon = config.icon;
+    const mergedConfig = {
+        iconBgClass: "bg-gray-50",
+        dialogClass: "bg-white border border-gray-200",
+        titleClass: "text-gray-900",
+        descriptionClass: "text-gray-600",
+        cancelButtonClass: "border-gray-300 text-gray-700 hover:bg-gray-50",
+        ...config,
+    };
+    const Icon = mergedConfig.icon;
 
     const handleConfirm = async () => {
         await onConfirm?.();
@@ -57,28 +76,28 @@ export default function ConfirmModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px] bg-white border border-gray-200 rounded-xl shadow-lg">
+            <DialogContent className={`sm:max-w-[425px] rounded-xl shadow-lg ${mergedConfig.dialogClass}`}>
                 <DialogHeader>
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full bg-gray-50`}>
-                            <Icon className={`h-6 w-6 ${config.iconColor}`} />
+                        <div className={`p-2 rounded-full ${mergedConfig.iconBgClass}`}>
+                            <Icon className={`h-6 w-6 ${mergedConfig.iconColor}`} />
                         </div>
-                        <DialogTitle className="text-lg font-semibold text-gray-900">
-                            {title || config.title}
+                        <DialogTitle className={`text-lg font-semibold ${mergedConfig.titleClass}`}>
+                            {title || mergedConfig.title}
                         </DialogTitle>
                     </div>
-                    <DialogDescription className="text-sm text-gray-600 pt-2">
+                    <DialogDescription className={`text-sm pt-2 ${mergedConfig.descriptionClass}`}>
                         {description}
                     </DialogDescription>
                 </DialogHeader>
 
-                <DialogFooter className="gap-2 sm:gap-0">
+                <DialogFooter className="gap-2 sm:gap-3">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={onClose}
                         disabled={isLoading}
-                        className="border-gray-300"
+                        className={mergedConfig.cancelButtonClass}
                     >
                         {cancelText}
                     </Button>
@@ -86,7 +105,7 @@ export default function ConfirmModal({
                         type="button"
                         onClick={handleConfirm}
                         disabled={isLoading}
-                        className={config.confirmButtonClass}
+                        className={mergedConfig.confirmButtonClass}
                     >
                         {isLoading ? (
                             <>
