@@ -441,6 +441,7 @@ export default function WarehouseManagement() {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingManagers, setIsLoadingManagers] = useState(false);
 
+    const [searchInput, setSearchInput] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [pagination, setPagination] = useState({
@@ -458,6 +459,14 @@ export default function WarehouseManagement() {
         maKho: '', tenKho: '', diaChi: '', quanLyId: '', trangThai: 1,
     });
     const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setSearchTerm(searchInput);
+        }, 250);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchInput]);
 
     /* ── Fetch warehouses ── */
     const fetchWarehouses = useCallback(async (
@@ -685,9 +694,8 @@ export default function WarehouseManagement() {
                                     <Input
                                         placeholder="Tìm theo tên kho, mã kho, địa chỉ..."
                                         className="pl-9 bg-[#fffdf8] border-[#b8860b]/20 focus:border-[#b8860b] focus:ring-[#b8860b]"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        disabled={isLoading}
+                                        value={searchInput}
+                                        onChange={(e) => setSearchInput(e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -725,7 +733,7 @@ export default function WarehouseManagement() {
                             <div className="flex items-end">
                                 <Button
                                     variant="outline"
-                                    onClick={() => { setSearchTerm(''); setFilterStatus('all'); }}
+                                    onClick={() => { setSearchInput(''); setSearchTerm(''); setFilterStatus('all'); }}
                                     disabled={isLoading}
                                     className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-[#b8860b] hover:text-white border-[#b8860b]/25 text-[#7a6e5f]"
                                 >
@@ -919,7 +927,7 @@ export default function WarehouseManagement() {
                     }
                     confirmText="Xóa"
                     cancelText="Hủy"
-                    variant="danger"
+                    variant="gold"
                     isLoading={isDeleting}
                 />
             </div>
