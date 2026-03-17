@@ -82,6 +82,7 @@ export default function BackofficeHeader({
     "GOODS_RECEIPTS",
     "GOODS_ISSUES",
     "PURCHASE_ORDERS",
+    "PURCHASE_ORDER_REQUESTS",
     "TRANSFER_TICKETS",
     "STOCK_TAKE_LIST",
     "DANH_MUC_QUAN_AO",

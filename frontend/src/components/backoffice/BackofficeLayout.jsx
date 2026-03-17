@@ -131,6 +131,12 @@ export default function BackofficeLayout() {
             subtitle: "Theo dõi và quản lý các đơn đặt hàng từ nhà cung cấp",
         },
         {
+            key: "PURCHASE_ORDER_REQUESTS",
+            match: (path) => path === "/duyet-don-hang",
+            title: "Quản lý đơn mua hàng",
+            subtitle: "Xem xét và duyệt yêu cầu tạo đơn mua hàng",
+        },
+        {
             key: "TRANSFER_TICKETS",
             match: (path) => path === "/transfer-tickets",
             title: "Quản lý phiếu chuyển kho nội bộ",
