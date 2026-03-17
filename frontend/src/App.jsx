@@ -67,6 +67,7 @@ import FashionFlowHomepage from "./pages/HomePageInternal";
 import NotFound404 from "./pages/page-error/NotFound404";
 import BaoCaoTonKho from "./pages/bao-cao/BaoCaoTonKho";
 import ApplicationRequestManagement from "./pages/purchase-oder-create-req/ApplicationRequestManagement";
+import LichSuGiaoDichKhoList from "./pages/lich-su-giao-dich-kho/LichSuGiaoDichKhoList";
 export default function App() {
   return (
     <BrowserRouter>
@@ -180,6 +181,9 @@ export default function App() {
           <Route path="/reports/inventory" element={<BaoCaoTonKho />} />
 
           <Route path="/duyet-don-hang" element={<ApplicationRequestManagement />} />
+
+          {/*Lịch sử giao dịch kho */}
+          <Route path="/lich-su-giao-dich-kho" element={<LichSuGiaoDichKhoList />} />
 
         </Route>
 
