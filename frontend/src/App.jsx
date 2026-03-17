@@ -61,7 +61,7 @@ import BaoCaoDoanhThu from "./pages/bao-cao/BaoCaoDoanhThu";
 import KhachHangReport from "./pages/bao-cao/KhachHangReport";
 import NhatKyNhapXuat from "./pages/bao-cao/NhatKyNhapXuat";
 import PhieuNhapKhoPrint from "./pages/receipt/PhieuNhapKhoPrint";
-import PhieuXuatKhoPrint from "./pages/issue/PhieuXuatKhoPrint";
+import PhieuXuatKhoPrint from "./pages/issue/PhieuXuatKhoPrint.jsx";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import FashionFlowHomepage from "./pages/HomePageInternal";
 import NotFound404 from "./pages/page-error/NotFound404";
