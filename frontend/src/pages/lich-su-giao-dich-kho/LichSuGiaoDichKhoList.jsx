@@ -111,73 +111,105 @@ function DetailModal({ open, onClose, item, loading }) {
             hour: "2-digit", minute: "2-digit",
         }) : "—";
 
+    const soLuong = Number(item?.soLuong ?? 0);
+    const soLuongColor  = soLuong > 0 ? "text-emerald-600" : soLuong < 0 ? "text-red-600" : "text-slate-500";
+    const soLuongBg     = soLuong > 0 ? "bg-emerald-50 border-emerald-200" : soLuong < 0 ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200";
+    const soLuongPrefix = soLuong > 0 ? "+" : "";
+
+    /* Light field row — matches the list's Field component style */
+    function LightField({ icon: Icon, label, value, mono = false }) {
+        return (
+            <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{label}</span>
+                <div className="flex items-center gap-1.5">
+                    <Icon className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                    <span className={`text-sm font-medium text-slate-800 ${mono ? "font-mono" : ""}`}>
+                        {value || "—"}
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-slate-800">
-                        <History className="h-5 w-5 text-violet-600" />
-                        Chi tiết giao dịch {item ? `#${item.id}` : ""}
-                    </DialogTitle>
-                </DialogHeader>
+            <DialogContent style={{ background: "#ffffff" }} className="max-w-lg p-0 overflow-hidden border border-amber-100 shadow-2xl rounded-2xl bg-white [&>button]:text-slate-500 [&>button]:hover:text-slate-700">
 
-                {loading ? (
-                    <div className="flex items-center justify-center py-10 gap-2">
-                        <Loader2 className="h-5 w-5 animate-spin text-violet-500" />
-                        <span className="text-sm text-slate-500">Đang tải...</span>
+                {/* Single white shell — prevents any shadcn dark areas */}
+                <div className="bg-white rounded-2xl overflow-hidden">
+
+                    {/* ── Gold header bar ── */}
+                    <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-yellow-50">
+                        <DialogTitle className="flex items-center gap-2 text-base font-semibold text-slate-800">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
+                                <History className="h-4 w-4 text-amber-600" />
+                            </div>
+                            Chi tiết giao dịch {item ? (
+                                <span className="font-mono text-amber-600">#{item.id}</span>
+                            ) : ""}
+                        </DialogTitle>
+                        {item && <LoaiBadge loai={item.loaiGiaoDich} />}
                     </div>
-                ) : item ? (
-                    <div className="space-y-5 py-2">
-                        {/* Header */}
-                        <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                                <CalendarDays className="h-4 w-4 text-slate-400" />
-                                {formatDate(item.ngayGiaoDich)}
-                            </div>
-                            <LoaiBadge loai={item.loaiGiaoDich} />
-                        </div>
 
-                        {/* Fields */}
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <Field icon={Package}      label="Sản phẩm"          value={item.tenSanPham} />
-                            <Field icon={Hash}         label="SKU"               value={item.maSku} mono />
-                            <Field icon={FileText}     label="Lô hàng"           value={item.maLo} mono />
-                            <Field icon={Warehouse}    label="Kho"               value={item.tenKho} />
-                            {item.tenKhoChuyenDen && (
-                                <Field icon={ArrowLeftRight} label="Kho chuyển đến" value={item.tenKhoChuyenDen} />
-                            )}
-                            <Field icon={User2}        label="Người thực hiện"   value={item.nguoiDungTen} />
-                            {item.loaiThamChieu && (
-                                <Field icon={FileText} label="Loại tham chiếu"   value={item.loaiThamChieu} />
-                            )}
-                            {item.idThamChieu && (
-                                <Field icon={Hash}     label="ID tham chiếu"     value={`#${item.idThamChieu}`} mono />
-                            )}
+                    {loading ? (
+                        <div className="flex items-center justify-center py-14 gap-2 bg-white">
+                            <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
+                            <span className="text-sm text-slate-500">Đang tải...</span>
                         </div>
+                    ) : item ? (
+                        <div className="px-5 py-4 space-y-4 bg-white">
 
-                        {/* Số lượng */}
-                        <div className="rounded-xl border border-slate-200 overflow-hidden">
-                            <div className="grid grid-cols-3 divide-x divide-slate-200">
-                                <SoLuongCell label="Trước" value={item.soLuongTruoc ?? 0} color="text-slate-700" />
-                                <SoLuongCell
-                                    label="Thay đổi"
-                                    value={item.soLuong ?? 0}
-                                    color={Number(item.soLuong) > 0 ? "text-emerald-600" : Number(item.soLuong) < 0 ? "text-red-600" : "text-slate-700"}
-                                    prefix={Number(item.soLuong) > 0 ? "+" : ""}
-                                />
-                                <SoLuongCell label="Sau" value={item.soLuongSau ?? 0} color="text-slate-700" />
+                            {/* Ngày giao dịch */}
+                            <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-100 px-4 py-2.5 text-sm text-slate-700">
+                                <CalendarDays className="h-4 w-4 text-amber-500 shrink-0" />
+                                <span className="font-medium">{formatDate(item.ngayGiaoDich)}</span>
                             </div>
+
+                            {/* Grid fields */}
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-xl bg-slate-50 border border-slate-100 px-4 py-4">
+                                <LightField icon={Package}      label="Sản phẩm"        value={item.tenSanPham} />
+                                <LightField icon={Hash}         label="SKU"             value={item.maSku} mono />
+                                <LightField icon={FileText}     label="Lô hàng"         value={item.maLo} mono />
+                                <LightField icon={Warehouse}    label="Kho"             value={item.tenKho} />
+                                <LightField icon={User2}        label="Người thực hiện" value={item.nguoiDungTen} />
+                                <LightField icon={FileText}     label="Loại tham chiếu" value={item.loaiThamChieu} />
+                                {item.idThamChieu && (
+                                    <LightField icon={Hash}     label="ID tham chiếu"   value={`#${item.idThamChieu}`} mono />
+                                )}
+                                {item.tenKhoChuyenDen && (
+                                    <LightField icon={ArrowLeftRight} label="Kho chuyển đến" value={item.tenKhoChuyenDen} />
+                                )}
+                            </div>
+
+                            {/* Số lượng 3 ô */}
+                            <div className="grid grid-cols-3 divide-x divide-slate-200 rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+                                {[
+                                    { label: "TRƯỚC",    value: item.soLuongTruoc ?? 0, color: "text-slate-700", bg: "bg-white",    prefix: "" },
+                                    { label: "THAY ĐỔI", value: item.soLuong ?? 0,      color: soLuongColor,     bg: soLuongBg,     prefix: soLuongPrefix },
+                                    { label: "SAU",      value: item.soLuongSau ?? 0,   color: "text-slate-700", bg: "bg-white",    prefix: "" },
+                                ].map(({ label, value, color, bg, prefix }) => (
+                                    <div key={label} className={`flex flex-col items-center py-4 ${bg}`}>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{label}</span>
+                                        <span className={`text-xl font-bold ${color}`}>{prefix}{value}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Ghi chú */}
+                            {item.ghiChu && (
+                                <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+                                    <p className="text-xs font-bold uppercase tracking-widest text-amber-600 mb-1">Ghi chú</p>
+                                    <p className="text-sm text-slate-700">{item.ghiChu}</p>
+                                </div>
+                            )}
+
                         </div>
+                    ) : null}
 
-                        {/* Ghi chú */}
-                        {item.ghiChu && (
-                            <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
-                                <p className="font-semibold text-amber-600 mb-1">Ghi chú</p>
-                                <p>{item.ghiChu}</p>
-                            </div>
-                        )}
-                    </div>
-                ) : null}
+                    {/* Bottom padding */}
+                    <div className="h-4 bg-white" />
+
+                </div>{/* end white shell */}
             </DialogContent>
         </Dialog>
     );
@@ -357,7 +389,7 @@ export default function LichSuGiaoDichKhoList() {
                                     <Button
                                         variant="outline"
                                         onClick={handleReset}
-                                        className="w-full flex items-center gap-2 transition-all duration-300 hover:bg-purple-600 hover:text-white border-gray-300"
+                                        className="w-full flex items-center gap-2 transition-all duration-200 border-amber-400 text-amber-600 hover:bg-amber-400 hover:text-white hover:border-amber-400"
                                     >
                                         <RefreshCcw className="h-4 w-4" />
                                         Đặt lại
