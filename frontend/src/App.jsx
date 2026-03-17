@@ -65,6 +65,7 @@ import PhieuXuatKhoPrint from "./pages/issue/PhieuXuatKhoPrint";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import FashionFlowHomepage from "./pages/HomePageInternal";
 import NotFound404 from "./pages/page-error/NotFound404";
+import LichSuGiaoDichKhoList from "./pages/lich-su-giao-dich-kho/LichSuGiaoDichKhoList";
 export default function App() {
   return (
     <BrowserRouter>
@@ -175,6 +176,10 @@ export default function App() {
           <Route path="/bao-cao/doanh-thu" element={<BaoCaoDoanhThu />} />
           <Route path="/bao-cao/khach-hang" element={<KhachHangReport />} />
           <Route path="/bao-cao/xuat-nhap" element={<NhatKyNhapXuat />} />
+
+          {/*Lịch sử giao dịch kho */}
+          <Route path="/lich-su-giao-dich-kho" element={<LichSuGiaoDichKhoList />} />
+
         </Route>
 
         {/* ========== 404 ========== */}
