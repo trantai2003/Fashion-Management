@@ -175,17 +175,17 @@ public class NghiepVuSanPhamController {
     }
 
 
-    @PutMapping("/don-mua-hang/duyet-don/{trangThai}")
+    @PutMapping("/don-mua-hang/duyet-don/{id}/{trangThai}")
     @RequireAuth(
             roles = {
                     IRoleType.quan_tri_vien
             },
             inWarehouse = true
     )
-    public ResponseEntity<ResponseData<String>> duyetDon(@PathVariable Integer trangThai) {
+    public ResponseEntity<ResponseData<String>> duyetDon(@PathVariable Integer id,@PathVariable Integer trangThai) {
 
-        DonMuaHang donMuaHang = donMuaHangService.getOne(SecurityContextHolder.getKhoId()).orElseThrow(
-                () -> new CommonException("Không tìm thấy kho id: " + SecurityContextHolder.getKhoId())
+        DonMuaHang donMuaHang = donMuaHangService.getOne(id).orElseThrow(
+                () -> new CommonException("Không tìm thấy đơn mua hàng id: " + id)
         );
         donMuaHang.setTrangThai(trangThai);
         donMuaHangService.update(donMuaHang.getId(), donMuaHang);
