@@ -30,13 +30,13 @@ export default function DashboardPurchaseStaff() {
                 <Stat
                     icon={<Clock className="w-5 h-5 text-yellow-600" />}
                     label="Đơn chờ duyệt"
-                    value={data.pendingOrders}
+                    value={data.pendingPurchaseOrders}
                 />
 
                 <Stat
                     icon={<Truck className="w-5 h-5 text-emerald-600" />}
                     label="Nhà cung cấp"
-                    value={data.suppliers}
+                    value={data.totalSuppliers}
                 />
 
             </section>

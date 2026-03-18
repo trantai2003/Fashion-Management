@@ -4,7 +4,6 @@ import BackofficeHeader from "./BackofficeHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import "@/styles/print.css";
-import { sub } from "date-fns";
 
 export default function BackofficeLayout() {
     const { pathname } = useLocation();
@@ -81,6 +80,12 @@ export default function BackofficeLayout() {
             match: (path) => path === "/warehouse",
             title: "FS WMS · INVENTORY",
             subtitle: "Quản lý kho hàng",
+        },
+        {
+            key: "LICH_SU_GIAO_DICH_KHO",
+            match: (path) => path === "/lich-su-giao-dich-kho",
+            title: "Lịch sử giao dịch kho",
+            subtitle: "Xem lịch sử các giao dịch nhập xuất trong kho",
         },
         {
             key: "GOODS_RECEIPTS",
@@ -290,13 +295,22 @@ export default function BackofficeLayout() {
             key: "INVENTORY_REPORT",
             match: (path) => path === "/bao-cao/ton-kho",
             title: "Báo cáo tồn kho",
+        },
+        {
+            key: "SALES_INVOICE_PRINT",
+            match: (path) => /^\/sales-orders\/\d+\/invoice$/.test(path),
+            title: "In hóa đơn bán hàng",
+        },
+        {
+            key: "USER_DETAIL",
+            match: (path) => /^\/users\/\d+$/.test(path),
+            title: "Thông tin chi tiết người dùng",
         }
     ];
 
     const pageMeta = PAGE_META_CONFIG.find((item) =>
         item.match(pathname)
     );
-
 
     return (
         <SidebarProvider defaultOpen>

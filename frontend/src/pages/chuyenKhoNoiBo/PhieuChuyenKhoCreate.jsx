@@ -19,13 +19,13 @@ import { khoService } from "@/services/khoService";
 export default function PhieuChuyenKhoCreate() {
     const navigate = useNavigate();
 
-    const [warehouses,         setWarehouses]         = useState([]);
-    const [variants,           setVariants]           = useState([]);
-    const [showProductDialog,  setShowProductDialog]  = useState(false);
-    const [searchTerm,         setSearchTerm]         = useState("");
-    const [loading,            setLoading]            = useState(false);
-    const [formData,           setFormData]           = useState({ khoXuatId: "", khoNhapId: "", ghiChu: "" });
-    const [transferItems,      setTransferItems]      = useState([]);
+    const [warehouses, setWarehouses] = useState([]);
+    const [variants, setVariants] = useState([]);
+    const [showProductDialog, setShowProductDialog] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({ khoXuatId: "", khoNhapId: "", ghiChu: "" });
+    const [transferItems, setTransferItems] = useState([]);
 
     useEffect(() => { loadInitialData(); }, []);
 
@@ -59,12 +59,12 @@ export default function PhieuChuyenKhoCreate() {
         }
         setTransferItems(prev => [...prev, {
             variantId: product.id,
-            sku:       product.maBienThe,
-            name:      product.tenSanPham,
-            color:     product.tenMau,
-            size:      product.tenSize,
-            material:  product.tenChatLieu,
-            quantity:  1,
+            sku: product.maBienThe,
+            name: product.tenSanPham,
+            color: product.tenMau,
+            size: product.tenSize,
+            material: product.tenChatLieu,
+            quantity: 1,
         }]);
         setShowProductDialog(false);
         setSearchTerm("");
@@ -80,12 +80,12 @@ export default function PhieuChuyenKhoCreate() {
         try {
             setLoading(true);
             const payload = {
-                khoXuatId:   parseInt(formData.khoXuatId),
-                khoNhapId:   parseInt(formData.khoNhapId),
-                ghiChu:      formData.ghiChu?.trim() || "",
+                khoXuatId: parseInt(formData.khoXuatId),
+                khoNhapId: parseInt(formData.khoNhapId),
+                ghiChu: formData.ghiChu?.trim() || "",
                 chiTietXuat: transferItems.map(item => ({
                     bienTheSanPhamId: item.variantId,
-                    soLuongXuat:      item.quantity,
+                    soLuongXuat: item.quantity,
                 })),
             };
             const res = await phieuChuyenKhoService.create(payload);
@@ -326,7 +326,7 @@ export default function PhieuChuyenKhoCreate() {
                                         </thead>
                                         <tbody className="divide-y divide-slate-100">
                                             {transferItems.map((item, index) => (
-                                                <tr key={index} className="transition-colors duration-150 hover:bg-yellow-50/50">
+                                                <tr key={item.variantId} className="transition-colors duration-150 hover:bg-yellow-50/50">
                                                     <td className="px-4 py-3.5 align-middle">
                                                         <span className="font-semibold text-slate-900 leading-snug">
                                                             {item.name}
@@ -344,10 +344,19 @@ export default function PhieuChuyenKhoCreate() {
                                                             min={1}
                                                             value={item.quantity}
                                                             onChange={(e) => {
-                                                                const val = Math.max(1, parseInt(e.target.value) || 1);
-                                                                setTransferItems(prev =>
-                                                                    prev.map((it, i) => i === index ? { ...it, quantity: val } : it)
-                                                                );
+                                                                let val = e.target.value;
+                                                                // Chỉ parse khi có dữ liệu, nếu không để chuỗi rỗng để người dùng có thể xóa
+                                                                if (val !== "") {
+                                                                    val = parseInt(val);
+                                                                    if (isNaN(val) || val < 1) val = 1;
+                                                                }
+                                                                setTransferItems(prev => prev.map((it, i) => i === index ? { ...it, quantity: val } : it));
+                                                            }}
+                                                            onBlur={(e) => {
+                                                                // Khi click chuột ra ngoài, nếu để trống thì reset về 1
+                                                                if (e.target.value === "") {
+                                                                    setTransferItems(prev => prev.map((it, i) => i === index ? { ...it, quantity: 1 } : it));
+                                                                }
                                                             }}
                                                             className="w-24 h-9 border border-gray-200 rounded-lg text-center font-semibold focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
                                                         />

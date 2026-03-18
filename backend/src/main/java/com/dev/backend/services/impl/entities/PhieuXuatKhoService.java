@@ -280,11 +280,11 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             }
         }
         if (allFull) {
-            don.setTrangThai(3); // Hoàn thành
+            don.setTrangThai(3); // Toàn bộ hàng đã xuất kho -> Chuyển sang Đang giao hàng
         } else if (!allZero) {
-            don.setTrangThai(2); // Đang xuất kho
+            don.setTrangThai(2); // Có hàng đã xuất nhưng chưa đủ -> Đang xuất kho
         } else {
-            don.setTrangThai(1); // Chờ xuất kho
+            don.setTrangThai(1); // Chưa có hàng nào xuất -> Chờ xuất kho
         }
         entityManager.merge(don);
     }
@@ -682,11 +682,19 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     @Transactional
     public PhieuXuatKho createTransfer(PhieuChuyenKhoCreating request) {
         // Kiểm tra cơ bản
-        boolean isAdmin = isIsAdmin(request);
-        Integer userWarehouseId = SecurityContextHolder.getKhoId();
-        // Nếu không phải Admin, chỉ được tạo request cho chính kho của mình nhận
-        if (!isAdmin && !request.getKhoNhapId().equals(userWarehouseId)) {
-            throw new AccessDeniedException("Bạn chỉ có quyền tạo yêu cầu nhập hàng cho kho của mình");
+        NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
+        boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
+
+        if (!isAdmin) {
+            // Lấy danh sách ID các kho mà user này được quyền quản lý
+            List<Integer> assignedWarehouseIds = phanQuyenNguoiDungKhoRepository
+                    .findByNguoiDungIdAndActive(currentUser.getId())
+                    .stream()
+                    .map(pq -> pq.getKho().getId())
+                    .toList();
+            if (!assignedWarehouseIds.contains(request.getKhoNhapId())) {
+                throw new AccessDeniedException("Bạn chỉ có quyền tạo yêu cầu nhập hàng cho kho của mình");
+            }
         }
 
         //Tìm và kiểm tra thực thể (Nên ném lỗi nếu null)

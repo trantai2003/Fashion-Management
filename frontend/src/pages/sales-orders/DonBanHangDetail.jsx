@@ -11,18 +11,30 @@ import { Button } from "@/components/ui/button";
 
 // ── Trạng thái ────────────────────────────────────────────────────────────
 const STATUS_MAP = {
-  0: { label: "Nháp",          badge: "inline-flex items-center gap-1.5 rounded-full border border-yellow-200 bg-yellow-50 px-2.5 py-1 text-xs font-semibold text-yellow-700", dot: "h-1.5 w-1.5 rounded-full bg-yellow-500" },
-  1: { label: "Chờ xuất kho",  badge: "inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700",   dot: "h-1.5 w-1.5 rounded-full bg-blue-500" },
-  2: { label: "Đang xuất kho", badge: "inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700", dot: "h-1.5 w-1.5 rounded-full bg-indigo-500" },
-  3: { label: "Hoàn thành",    badge: "inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700", dot: "h-1.5 w-1.5 rounded-full bg-emerald-500" },
-  4: { label: "Đã hủy",        badge: "inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700",     dot: "h-1.5 w-1.5 rounded-full bg-red-500" },
+  0: { label: "Nháp", badge: "inline-flex items-center gap-1.5 rounded-full border border-yellow-200 bg-yellow-50 px-2.5 py-1 text-xs font-semibold text-yellow-700", dot: "h-1.5 w-1.5 rounded-full bg-yellow-500" },
+  1: { label: "Chờ xuất kho", badge: "inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700", dot: "h-1.5 w-1.5 rounded-full bg-blue-500" },
+  2: { label: "Đã xuất kho 1 phần", badge: "inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700", dot: "h-1.5 w-1.5 rounded-full bg-indigo-500" },
+  3: { label: "Đã xuất kho", badge: "inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700", dot: "h-1.5 w-1.5 rounded-full bg-orange-500" },
+  4: { label: "Đã hủy", badge: "inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700", dot: "h-1.5 w-1.5 rounded-full bg-red-500" },
+  5: { label: "Hoàn thành", badge: "inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700", dot: "h-1.5 w-1.5 rounded-full bg-emerald-500" }
 };
 
 export default function DonBanHangDetail() {
-  const { id }     = useParams();
-  const navigate   = useNavigate();
-  const [data,    setData]    = useState(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  async function handleMarkAsDelivered() {
+    try {
+      setLoading(true);
+      await donBanHangService.markAsDelivered(id); // Nhớ khai báo API này trong donBanHangService
+      toast.success("Đã xác nhận giao hàng thành công!");
+      fetchDetail();
+    }
+    catch { toast.error("Không thể xác nhận giao hàng"); }
+    finally { setLoading(false); }
+  }
 
   async function fetchDetail() {
     setLoading(true);
@@ -89,7 +101,7 @@ export default function DonBanHangDetail() {
               </Button>
             )}
 
-            {donBanHang.trangThai !== 3 && donBanHang.trangThai !== 4 && (
+            {donBanHang.trangThai < 3 && (
               <Button
                 variant="outline"
                 onClick={handleCancel}
@@ -101,6 +113,16 @@ export default function DonBanHangDetail() {
             )}
 
             {donBanHang.trangThai === 3 && (
+              <Button
+                onClick={handleMarkAsDelivered}
+                disabled={loading}
+                className="bg-emerald-600 text-white border border-emerald-600 hover:bg-emerald-700 shadow-sm transition-all duration-200 font-bold"
+              >
+                <CheckCircle2 className="mr-2 h-4 w-4" /> Xác nhận đã giao
+              </Button>
+            )}
+
+            {donBanHang.trangThai >= 0 && (
               <Button
                 onClick={() => navigate(`/sales-orders/${id}/invoice`)}
                 className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 font-bold"

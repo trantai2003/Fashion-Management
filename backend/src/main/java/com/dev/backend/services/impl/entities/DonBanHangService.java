@@ -342,4 +342,15 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
         }
         return false;
     }
+    @Transactional
+    public void markAsDelivered(Integer id) {
+        DonBanHang don = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn bán"));
+        // Chỉ cho phép xác nhận Giao thành công khi toàn bộ hàng đã được kho xuất đi
+        if (don.getTrangThai() != 3) {
+            throw new RuntimeException("Đơn hàng chưa được xuất kho đầy đủ, không thể đánh dấu hoàn thành");
+        }
+        don.setTrangThai(5); // 5 = Hoàn thành / Đã giao thành công
+        repository.save(don);
+    }
 }

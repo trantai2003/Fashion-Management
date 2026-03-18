@@ -34,9 +34,10 @@ import {
 const STATUS_MAP = {
   0: { label: "Nháp", className: "bg-amber-50 text-amber-700 border border-amber-200" },
   1: { label: "Chờ xuất kho", className: "bg-blue-50 text-blue-700 border border-blue-200" },
-  2: { label: "Đã xuất kho", className: "bg-indigo-50 text-indigo-700 border border-indigo-200" },
-  3: { label: "Hoàn thành", className: "bg-green-50 text-green-700 border border-green-200" },
+  2: { label: "Đã xuất kho 1 phần", className: "bg-indigo-50 text-indigo-700 border border-indigo-200" },
+  3: { label: "Đã xuất kho toàn bộ", className: "bg-orange-50 text-orange-700 border border-orange-200" },
   4: { label: "Đã hủy", className: "bg-red-50 text-red-700 border border-red-200" },
+  5: { label: "Hoàn thành", className: "bg-emerald-50 text-emerald-700 border border-emerald-200" }
 };
 
 export default function DonBanHangList() {
@@ -242,9 +243,10 @@ export default function DonBanHangList() {
                         {filters.trangThai === "" && "Tất cả trạng thái"}
                         {filters.trangThai === "0" && "Nháp"}
                         {filters.trangThai === "1" && "Chờ xuất kho"}
-                        {filters.trangThai === "2" && "Đã xuất kho"}
-                        {filters.trangThai === "3" && "Hoàn thành"}
+                        {filters.trangThai === "2" && "Đã xuất kho 1 phần"}
+                        {filters.trangThai === "3" && "Đã xuất kho toàn bộ"}
                         {filters.trangThai === "4" && "Đã hủy"}
+                        {filters.trangThai === "5" && "Hoàn thành"}
                       </span>
                       <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
                     </Button>
