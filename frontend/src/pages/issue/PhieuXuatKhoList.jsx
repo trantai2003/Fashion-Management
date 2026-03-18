@@ -229,7 +229,6 @@ export default function PhieuXuatKhoList() {
                                             // XÁC ĐỊNH MÃ THAM CHIẾU ĐỂ HIỂN THỊ
                                             const isChuyenKho = item.loaiXuat === "chuyen_kho" || item.loaiXuat === "CHUYEN_KHO";
                                             
-                                            // Fallback lấy mã phiếu gốc (Tùy backend trả về là gì: phieuChuyenKhoGoc.soPhieuXuat hoặc soPhieuChuyenGoc,...)
                                             const maThamChieu = isChuyenKho 
                                                 ? (item.phieuChuyenKhoGoc?.soPhieuXuat || item.soPhieuChuyenKhoGoc || `PCK ID: ${item.phieuChuyenKhoGocId || item.parentId}`)
                                                 : (item.donBanHang?.soDonHang || "-");

@@ -32,7 +32,7 @@ WHERE DATE(p.ngayXuat) = CURRENT_DATE
     Long countExportToday();
     @Query("SELECT p FROM PhieuXuatKho p LEFT JOIN p.donBanHang d " +
             "WHERE (:khoId IS NULL OR p.kho.id = :khoId) " +
-            "AND NOT (LOWER(p.loaiXuat) = 'chuyen_kho' AND p.phieuChuyenKhoGoc IS NULL) " +
+            "AND NOT (LOWER(p.loaiXuat) = 'khac' AND p.phieuChuyenKhoGoc IS NULL) " +
             "AND (:keyword IS NULL OR LOWER(p.soPhieuXuat) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(d.soDonHang) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:trangThai IS NULL OR p.trangThai = :trangThai) " +
             "AND (:tenKho IS NULL OR LOWER(p.kho.tenKho) LIKE LOWER(CONCAT('%', :tenKho, '%')))")
@@ -45,7 +45,7 @@ WHERE DATE(p.ngayXuat) = CURRENT_DATE
     );
     @Query("SELECT p FROM PhieuXuatKho p " +
             "WHERE (:khoId IS NULL OR (p.kho.id = :khoId OR p.khoChuyenDen.id = :khoId)) " +
-            "AND p.loaiXuat = 'chuyen_kho' AND p.phieuChuyenKhoGoc IS NULL " +
+            "AND p.loaiXuat = 'khac' AND p.phieuChuyenKhoGoc IS NULL " +
             "AND (:keyword IS NULL OR LOWER(p.soPhieuXuat) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:trangThai IS NULL OR p.trangThai = :trangThai) " +
             "AND (:khoNhapTen IS NULL OR LOWER(p.khoChuyenDen.tenKho) LIKE LOWER(CONCAT('%', :khoNhapTen, '%')))")

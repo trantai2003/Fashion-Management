@@ -539,7 +539,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         PhieuXuatKho pck = phieuXuatKhoRepository.findById(pckId)
                 .orElseThrow(() -> new CommonException("Không tìm thấy yêu cầu chuyển kho"));
 
-        if (!"chuyen_kho".equals(pck.getLoaiXuat()) || pck.getPhieuChuyenKhoGoc() != null) {
+        if (!"khac".equals(pck.getLoaiXuat()) || pck.getPhieuChuyenKhoGoc() != null) {
             throw new CommonException("Đây không phải là phiếu yêu cầu chuyển kho gốc");
         }
 

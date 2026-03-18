@@ -551,7 +551,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuXuatKho phieu = repository.findById(id)
                 .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho id: " + id));
 
-        if (!"chuyen_kho".equals(phieu.getLoaiXuat())) {
+        if (!"khac".equals(phieu.getLoaiXuat())) {
             throw new RuntimeException("Đây không phải là phiếu chuyển kho");
         }
 
@@ -592,7 +592,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuXuatKho phieu = repository.findById(id)
                 .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho id: " + id));
         //Kiểm tra loại phiếu và trạng thái hợp lệ
-        if (!"chuyen_kho".equals(phieu.getLoaiXuat())) {
+        if (!"khac".equals(phieu.getLoaiXuat())) {
             throw new RuntimeException("Đây không phải là phiếu chuyển kho nội bộ");
         }
         if (phieu.getTrangThai() != 0) { // 0 là Nháp
@@ -613,7 +613,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuXuatKho phieu = repository.findById(id)
                 .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho id: " + id));
         //Kiểm tra loại phiếu và trạng thái (Phải là Chờ duyệt - 1)
-        if (!"chuyen_kho".equals(phieu.getLoaiXuat())) {
+        if (!"khac".equals(phieu.getLoaiXuat())) {
             throw new RuntimeException("Đây không phải là phiếu chuyển kho nội bộ");
         }
         if (phieu.getTrangThai() != 1) {
@@ -711,7 +711,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                         .soPhieuXuat(generateSoPhieuTransfer())
                         .kho(khoA)
                         .khoChuyenDen(khoB)
-                        .loaiXuat("chuyen_kho")
+                        .loaiXuat("khac")
                         .trangThai(0) // Nháp
                         .ngayTao(Instant.now())
                         .ghiChu(request.getGhiChu())
@@ -765,7 +765,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuXuatKho pck = repository.findById(transferId)
                 .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho gốc id: " + transferId));
 
-        if (!"chuyen_kho".equals(pck.getLoaiXuat()) || pck.getPhieuChuyenKhoGoc() != null) {
+        if (!"khac".equals(pck.getLoaiXuat()) || pck.getPhieuChuyenKhoGoc() != null) {
             throw new CommonException("Đây không phải là phiếu yêu cầu chuyển kho");
         }
         if (pck.getTrangThai() != 2) {
