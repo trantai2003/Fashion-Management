@@ -218,6 +218,7 @@ public class JwtServiceImpl implements JwtService {
     public boolean inWorkspace(Integer workspaceId, NguoiDungAuthInfo nguoiDungAuthInfo) {
 
         for (PhanQuyenNguoiDungKhoDto phanQuyenNguoiDungKhoDto : nguoiDungAuthInfo.getPhanQuyenNguoiDungKhos()) {
+            System.out.println(phanQuyenNguoiDungKhoDto.getKho().getId());
             if (phanQuyenNguoiDungKhoDto.getKho().getId().equals(workspaceId)) {
                 return true;
             }
