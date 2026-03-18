@@ -97,6 +97,10 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                         donMuaHangRepository.countPendingPurchaseOrders().intValue()
                 )
 
+                .purchaseToday(
+                        donMuaHangRepository.countPurchaseToday().intValue()
+                )
+
                 /* WAREHOUSE */
 
                 .lowStockCount(
