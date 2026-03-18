@@ -437,15 +437,17 @@ export default function PurchaseOrderList() {
         }
     };
 
-    // Handle cancel order
+    // Handle cancel order — Trạng thái 3 (Chờ báo giá) -> Trạng thái 6 (Đã hủy)
     const handleCancelOrder = async (order, event) => {
         event.stopPropagation();
+        if (order.trangThai !== 3 && order.trangThai !== 4) {
+            showNotification('error', 'Chỉ có thể hủy đơn hàng đang chờ báo giá hoặc đã nhận báo giá!');
+            return;
+        }
 
         setActionLoading(true);
         try {
-            // TODO: Implement cancel API
-            // await purchaseOrderService.cancel(order.id);
-
+            await purchaseOrderService.duyetDon(order.id, 6);
             showNotification('success', `Đã hủy đơn hàng ${order.soDonMua} thành công!`);
             fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
         } catch (error) {
@@ -560,16 +562,20 @@ export default function PurchaseOrderList() {
                     </>
                 )}
 
-                {/* Trạng thái đang xử lý */}
-                {(order.trangThai === 1 || order.trangThai === 2) && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => handleCancelOrder(order, e)}
-                    >
-                        <XCircle className="h-4 w-4 text-red-600" />
-                    </Button>
-                )}
+                {/* Nút hủy đơn: Cho phép ở trạng thái 3, 4; còn lại disable */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    title={
+                        order.trangThai === 3 || order.trangThai === 4
+                            ? "Hủy đơn hàng"
+                            : (order.trangThai === 6 ? "Đơn hàng đã hủy" : "Không thể hủy đơn hàng ở bộ trạng thái này")
+                    }
+                    disabled={order.trangThai !== 3 && order.trangThai !== 4}
+                    onClick={(e) => handleCancelOrder(order, e)}
+                >
+                    <XCircle className={`h-4 w-4 ${order.trangThai === 3 || order.trangThai === 4 ? 'text-red-600' : 'text-gray-300'}`} />
+                </Button>
             </div>
         );
     };

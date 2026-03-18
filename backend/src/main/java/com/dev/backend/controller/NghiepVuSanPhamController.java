@@ -18,6 +18,7 @@ import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
 import com.dev.backend.dto.response.entities.PhanQuyenNguoiDungKhoDto;
 import com.dev.backend.entities.DonMuaHang;
 import com.dev.backend.exception.customize.CommonException;
+import com.dev.backend.services.EmailService;
 import com.dev.backend.services.impl.entities.DonMuaHangService;
 import com.dev.backend.services.impl.entities.PhieuXuatKhoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/nghiep-vu")
@@ -38,6 +38,9 @@ public class NghiepVuSanPhamController {
 
     @Autowired
     private PhieuXuatKhoService phieuXuatKhoService;
+
+    @Autowired
+    private EmailService emailService;
 
     @GetMapping("/danh-sach-yeu-cau-tao-don-mua-hang")
     @RequireAuth(
@@ -178,17 +181,39 @@ public class NghiepVuSanPhamController {
     @PutMapping("/don-mua-hang/duyet-don/{id}/{trangThai}")
     @RequireAuth(
             roles = {
-                    IRoleType.quan_tri_vien
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_mua_hang
             },
             inWarehouse = true
     )
-    public ResponseEntity<ResponseData<String>> duyetDon(@PathVariable Integer id,@PathVariable Integer trangThai) {
+    public ResponseEntity<ResponseData<String>> duyetDon(@PathVariable Integer id, @PathVariable Integer trangThai) {
 
         DonMuaHang donMuaHang = donMuaHangService.getOne(id).orElseThrow(
                 () -> new CommonException("Không tìm thấy đơn mua hàng id: " + id)
         );
+        if (trangThai == 6) {
+            Date now = new Date();
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("ngay", now.getDate());
+            params.put("thang", now.getMonth() + 1);
+            params.put("year", now.getYear() + 1900);
+            params.put("soDonHang", donMuaHang.getSoDonMua());
+            params.put("tenNhaCungCap", donMuaHang.getNhaCungCap().getTenNhaCungCap());
+            params.put("ngayGui", now);
+            params.put("nguoiPhuTrach", donMuaHang.getNguoiTao().getHoTen());
+            params.put("ngayDatHang", donMuaHang.getNgayDatHang());
+            params.put("lyDoHuy", "Cần chỉnh sửa thông tin");
+            emailService.sendHtmlEmailFromTemplate(
+                    donMuaHang.getNhaCungCap().getEmail(),
+                    "Phiếu huỷ hàng",
+                    "don_huy_mua.html",
+                    params
+            );
+        }
+
         donMuaHang.setTrangThai(trangThai);
         donMuaHangService.update(donMuaHang.getId(), donMuaHang);
+
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())

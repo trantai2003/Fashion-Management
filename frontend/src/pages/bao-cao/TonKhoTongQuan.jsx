@@ -629,18 +629,6 @@ export default function TonKhoTongQuan() {
                                         {/* Thao tác */}
                                         <TableCell>
                                             <div className="flex items-center gap-1.5 justify-center">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-7 gap-1 text-xs border-slate-200 hover:bg-slate-50"
-                                                    onClick={() => {
-                                                        navigate(`/lich-su-giao-dich?bienTheId=${item.bienTheId}&khoId=${item.khoId}`);
-                                                    }}
-                                                >
-                                                    <History className="h-3 w-3" />
-                                                    Lịch sử
-                                                </Button>
-
                                                 {showNhapKho && (
                                                     <Button
                                                         size="sm"

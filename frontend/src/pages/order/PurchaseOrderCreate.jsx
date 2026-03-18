@@ -70,14 +70,6 @@ function RequestStatusBanner({ myRequest, onGoCreateRequest }) {
                     <span>
                         Bạn chưa có yêu cầu tạo đơn mua hàng. Vui lòng gửi yêu cầu và chờ admin duyệt trước khi tạo đơn.
                     </span>
-                    <Button
-                        size="sm"
-                        onClick={onGoCreateRequest}
-                        className="bg-orange-600 hover:bg-orange-700 text-white rounded-lg h-8 gap-1.5 font-semibold shrink-0"
-                    >
-                        <Plus className="h-3.5 w-3.5" />
-                        Gửi yêu cầu
-                    </Button>
                 </AlertDescription>
             </Alert>
         );
@@ -732,8 +724,8 @@ export default function PurchaseOrderCreate() {
                             <TableRow className="bg-slate-50">
                                 <TableHead className="font-bold text-slate-700">Sản phẩm</TableHead>
                                 <TableHead className="font-bold text-slate-700 text-center w-32">Số lượng</TableHead>
-                                <TableHead className="font-bold text-slate-700 text-right w-40">Đơn giá</TableHead>
-                                <TableHead className="font-bold text-slate-700 text-right">Thành tiền</TableHead>
+                                <TableHead className="font-bold text-slate-700 text-right w-40" hidden>Đơn giá</TableHead>
+                                <TableHead className="font-bold text-slate-700 text-right" hidden>Thành tiền</TableHead>
                                 <TableHead className="w-10"></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -766,7 +758,7 @@ export default function PurchaseOrderCreate() {
                                             className="h-9 w-24 text-center rounded-lg font-bold border-slate-200 mx-auto"
                                         />
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right" hidden>
                                         <Input
                                             type="number"
                                             min="0"
@@ -775,7 +767,7 @@ export default function PurchaseOrderCreate() {
                                             className="h-9 w-36 text-right rounded-lg border-slate-200 ml-auto font-mono"
                                         />
                                     </TableCell>
-                                    <TableCell className="text-right font-bold font-mono text-slate-800">
+                                    <TableCell className="text-right font-bold font-mono text-slate-800" hidden>
                                         {formatCurrency(Number(item.soLuongDat) * Number(item.donGia))}
                                     </TableCell>
                                     <TableCell>
@@ -885,8 +877,8 @@ export default function PurchaseOrderCreate() {
                                         <TableRow
                                             key={product.id}
                                             className={`border-b border-[#f0e7d8] transition-colors ${isSelected ? 'opacity-60 bg-[#f8f3e8]'
-                                                    : !isAllowed ? 'opacity-40 bg-[#fafafa]'
-                                                        : 'bg-[#fffdf8] hover:bg-[#fff7ea]'
+                                                : !isAllowed ? 'opacity-40 bg-[#fafafa]'
+                                                    : 'bg-[#fffdf8] hover:bg-[#fff7ea]'
                                                 }`}
                                         >
                                             <TableCell className="font-mono text-[13px] text-[#9c7414] font-bold whitespace-nowrap pl-6">

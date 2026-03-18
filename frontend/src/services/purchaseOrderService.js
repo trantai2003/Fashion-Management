@@ -107,6 +107,22 @@ const purchaseOrderService = {
             console.error('Error fetching unique warehouses:', error);
             throw error;
         }
+    },
+
+    /**
+     * Cập nhật trạng thái đơn mua hàng
+     * @param {number} id 
+     * @param {number} trangThai 
+     * @returns Promise<ResponseData<string>>
+     */
+    duyetDon: async (id, trangThai) => {
+        try {
+            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/${trangThai}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating purchase order status ${id}:`, error);
+            throw error;
+        }
     }
 };
 
