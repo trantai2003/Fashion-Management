@@ -110,7 +110,7 @@ public class ThongKeHeThongController {
     )
     public ResponseEntity<ResponseData<List<TonKhoProjection>>> tonKhoTongHop(@RequestParam(required = false) Integer khoId, @RequestParam(required = false) String keyword) {
         NguoiDungAuthInfo authInfo = SecurityContextHolder.getUser();
-        if(authInfo.getVaiTro().contains(IRoleType.nhan_vien_ban_hang)){
+        if(authInfo.getVaiTro().contains(IRoleType.nhan_vien_kho)){
             if(khoId == null) throw new CommonException("Phải có trường khoId");
             if(!jwtService.inWorkspace(khoId,authInfo)){
                 throw new CommonException("Bạn không quản lý kho này");
