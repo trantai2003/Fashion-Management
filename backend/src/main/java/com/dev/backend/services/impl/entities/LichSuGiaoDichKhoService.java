@@ -25,30 +25,28 @@ public class LichSuGiaoDichKhoService {
     /**
      * Lấy danh sách lịch sử giao dịch theo phân quyền:
      *  - quan_tri_vien  → xem tất cả
-     *  - quan_ly_kho    → chỉ xem kho mình phụ trách (kho.quanLy = currentUser)
-     *  - nhan_vien_kho  → chỉ xem giao dịch mình thực hiện
+     *  - quan_ly_kho    → chỉ xem kho mình được phân quyền (phan_quyen_nguoi_dung_kho, trangThai=1)
+     *  - nhan_vien_kho  → chỉ xem kho mình được phân công (phan_quyen_nguoi_dung_kho, trangThai=1)
      */
     @Transactional(readOnly = true)
     public List<LichSuGiaoDichKhoDto> getAll() {
-        // Dùng đúng pattern của KhoController
         NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
 
-        boolean isAdmin   = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
-        boolean isQuanLy  = currentUser.getVaiTro().contains(IRoleType.quan_ly_kho);
+        boolean isAdmin    = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
+        boolean isQuanLy   = currentUser.getVaiTro().contains(IRoleType.quan_ly_kho);
         boolean isNhanVien = currentUser.getVaiTro().contains(IRoleType.nhan_vien_kho);
 
         List<LichSuGiaoDichKho> result;
 
         if (isAdmin) {
-            // Admin xem toàn bộ
             result = repository.findAllWithDetails();
 
         } else if (isQuanLy) {
-            // Quản lý: xem lịch sử các kho mình phụ trách
+            // Lấy theo bảng phan_quyen_nguoi_dung_kho, trangThai=1
             result = repository.findAllByQuanLyId(currentUser.getId());
 
         } else if (isNhanVien) {
-            // Nhân viên: xem lịch sử giao dịch mình thực hiện
+            // Lấy theo bảng phan_quyen_nguoi_dung_kho, trangThai=1
             result = repository.findAllByNhanVienId(currentUser.getId());
 
         } else {

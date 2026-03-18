@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getLichSuGiaoDichKho, getChiTietLichSu } from "@/services/lichSuGiaoDichKhoService";
+import { getMineKhoList } from "@/services/khoService";
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const LOAI_GIAO_DICH_CONFIG = {
@@ -219,18 +220,24 @@ function DetailModal({ open, onClose, item, loading }) {
 
 // ── Main Component ────────────────────────────────────────────────────────
 export default function LichSuGiaoDichKhoList() {
-    const [data,          setData]          = useState([]);
-    const [loading,       setLoading]       = useState(true);
-    const [search,        setSearch]        = useState("");
-    const [filterLoai,    setFilterLoai]    = useState("all");
-    const [pageNumber,    setPageNumber]    = useState(0);
-    const [pageSize,      setPageSize]      = useState(10);
-    const [selectedId,    setSelectedId]    = useState(null);
-    const [chiTiet,       setChiTiet]       = useState(null);
-    const [loadingDetail, setLoadingDetail] = useState(false);
+    const [data,           setData]           = useState([]);
+    const [loading,        setLoading]        = useState(true);
+    const [search,         setSearch]         = useState("");
+    const [filterLoai,     setFilterLoai]     = useState("all");
+    const [pageNumber,     setPageNumber]      = useState(0);
+    const [pageSize,       setPageSize]       = useState(10);
+    const [selectedId,     setSelectedId]     = useState(null);
+    const [chiTiet,        setChiTiet]        = useState(null);
+    const [loadingDetail,  setLoadingDetail]  = useState(false);
+    const [myWarehouseIds, setMyWarehouseIds] = useState([]);
+
+    // Phân quyền — giống PhieuChuyenKhoDetail
+    const role     = localStorage.getItem("role");
+    const isAdmin  = role === "quan_tri_vien";
+    const isQuanLy = role === "quan_ly_kho" || isAdmin;
 
     // ── Fetch ──────────────────────────────────────────────────────────
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => { fetchData(); fetchMyWarehouses(); }, []);
 
     const fetchData = async () => {
         setLoading(true);
@@ -245,11 +252,27 @@ export default function LichSuGiaoDichKhoList() {
         }
     };
 
+    // Lấy danh sách kho mình có quyền — cùng pattern PhieuChuyenKhoDetail
+    const fetchMyWarehouses = async () => {
+        try {
+            const listKho = await getMineKhoList();
+            setMyWarehouseIds(listKho.map((k) => k.id));
+        } catch (err) {
+            console.error("Lỗi khi tải danh sách kho phân quyền:", err);
+        }
+    };
+
     useEffect(() => { setPageNumber(0); }, [filterLoai, search]);
 
     // ── Filter ─────────────────────────────────────────────────────────
+    // Phân quyền lọc danh sách: admin thấy tất, còn lại chỉ thấy kho mình có quyền
+    const visibleData = useMemo(() => {
+        if (isAdmin) return data;
+        return data.filter((item) => myWarehouseIds.includes(item.khoId));
+    }, [data, myWarehouseIds, isAdmin]);
+
     const filtered = useMemo(() => {
-        return data.filter((item) => {
+        return visibleData.filter((item) => {
             const q = search.toLowerCase().trim();
             const matchSearch = !q ||
                 item.tenSanPham?.toLowerCase().includes(q) ||
@@ -260,15 +283,15 @@ export default function LichSuGiaoDichKhoList() {
             const matchLoai = filterLoai === "all" || item.loaiGiaoDich === filterLoai;
             return matchSearch && matchLoai;
         });
-    }, [data, search, filterLoai]);
+    }, [visibleData, search, filterLoai]);
 
     // ── Stats ──────────────────────────────────────────────────────────
     const stats = useMemo(() => ({
-        nhap_kho:   data.filter(i => i.loaiGiaoDich === "nhap_kho").length,
-        xuat_kho:   data.filter(i => i.loaiGiaoDich === "xuat_kho").length,
-        chuyen_kho: data.filter(i => i.loaiGiaoDich === "chuyen_kho").length,
-        dieu_chinh: data.filter(i => i.loaiGiaoDich === "dieu_chinh").length,
-    }), [data]);
+        nhap_kho:   visibleData.filter(i => i.loaiGiaoDich === "nhap_kho").length,
+        xuat_kho:   visibleData.filter(i => i.loaiGiaoDich === "xuat_kho").length,
+        chuyen_kho: visibleData.filter(i => i.loaiGiaoDich === "chuyen_kho").length,
+        dieu_chinh: visibleData.filter(i => i.loaiGiaoDich === "dieu_chinh").length,
+    }), [visibleData]);
 
     // ── Pagination ─────────────────────────────────────────────────────
     const totalElements = filtered.length;
@@ -279,12 +302,18 @@ export default function LichSuGiaoDichKhoList() {
     const handleReset = () => { setSearch(""); setFilterLoai("all"); };
 
     // ── Detail ─────────────────────────────────────────────────────────
-    const handleViewDetail = async (id) => {
-        setSelectedId(id);
+    const handleViewDetail = async (item) => {
+        // Phân quyền: admin luôn xem được; còn lại phải thuộc kho đó
+        const hasPermission = isAdmin || myWarehouseIds.includes(item.khoId);
+        if (!hasPermission) {
+            toast.error("Bạn không có quyền xem chi tiết giao dịch này");
+            return;
+        }
+        setSelectedId(item.id);
         setChiTiet(null);
         setLoadingDetail(true);
         try {
-            const detail = await getChiTietLichSu(id);
+            const detail = await getChiTietLichSu(item.id);
             setChiTiet(detail);
         } catch {
             toast.error("Không thể tải chi tiết");
@@ -337,9 +366,14 @@ export default function LichSuGiaoDichKhoList() {
                     {/* ── Filter bar ── */}
                     <Card className="border-0 shadow-lg bg-white">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                                <Filter className="h-5 w-5 text-purple-600" />
-                                Bộ lọc tìm kiếm
+                            <CardTitle className="flex items-center justify-between gap-2 text-lg font-semibold text-gray-900">
+                                <span className="flex items-center gap-2">
+                                    <Filter className="h-5 w-5 text-purple-600" />
+                                    Bộ lọc tìm kiếm
+                                </span>
+                                <span className="text-xs font-normal text-slate-400">
+                                    {isAdmin ? "Hiển thị toàn bộ giao dịch" : isQuanLy ? "Kho bạn phụ trách" : "Giao dịch bạn thực hiện"}
+                                </span>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-0">
@@ -480,7 +514,7 @@ export default function LichSuGiaoDichKhoList() {
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-3.5 align-middle text-center">
-                                                        <ActionBtn title="Xem chi tiết" onClick={() => handleViewDetail(item.id)}>
+                                                        <ActionBtn title="Xem chi tiết" onClick={() => handleViewDetail(item)}>
                                                             <Eye className="h-4 w-4" />
                                                         </ActionBtn>
                                                     </td>
