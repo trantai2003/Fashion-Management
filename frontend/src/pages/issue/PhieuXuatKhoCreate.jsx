@@ -17,15 +17,15 @@ import {
 export default function PhieuXuatKhoCreate() {
     const navigate = useNavigate();
 
-    const [exportSource,     setExportSource]     = useState("SO");
-    const [soList,           setSoList]           = useState([]);
-    const [transferList,     setTransferList]     = useState([]);
-    const [warehouses,       setWarehouses]       = useState([]);
-    const [selectedSO,       setSelectedSO]       = useState(null);
+    const [exportSource, setExportSource] = useState("SO");
+    const [soList, setSoList] = useState([]);
+    const [transferList, setTransferList] = useState([]);
+    const [warehouses, setWarehouses] = useState([]);
+    const [selectedSO, setSelectedSO] = useState(null);
     const [selectedTransfer, setSelectedTransfer] = useState(null);
-    const [loading,          setLoading]          = useState(false);
-    const [createdId,        setCreatedId]        = useState(null);
-    const [form,             setForm]             = useState({
+    const [loading, setLoading] = useState(false);
+    const [createdId, setCreatedId] = useState(null);
+    const [form, setForm] = useState({
         donBanHangId: "", transferId: "", khoId: "", ghiChu: "", chiTietXuat: [],
     });
 
@@ -37,7 +37,9 @@ export default function PhieuXuatKhoCreate() {
             const myWarehousesRes = await getMineKhoList();
             const warehouseList = myWarehousesRes.data || myWarehousesRes;
             setWarehouses(warehouseList);
+            const myWarehouseIds = warehouseList.map(w => w.id);
 
+            // 1. Tải danh sách Đơn Bán Hàng
             const soRes = await donBanHangService.filter({
                 page: 0, size: 1000,
                 filters: [{ fieldName: "trangThai", operation: "IN", value: [1, 2] }],
@@ -45,12 +47,46 @@ export default function PhieuXuatKhoCreate() {
             });
             setSoList(soRes.content || soRes.data?.content || []);
 
+            // 2. Tải danh sách Phiếu Chuyển Kho
             const transferRes = await phieuChuyenKhoService.filter({
                 page: 0, size: 1000,
                 filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 2 }],
                 sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
             });
-            setTransferList(transferRes.content || transferRes.data?.content || []);
+
+            // 3. Tải danh sách Phiếu Xuất Kho (Bỏ filter NOT_IN để tránh lỗi Backend)
+            const exportsRes = await phieuXuatKhoService.filter({
+                page: 0, size: 10000
+                // Không truyền filter trạng thái từ Frontend nữa
+            });
+            
+            const allExportsRaw = exportsRes.content || exportsRes.data?.content || [];
+            
+            // Lọc bỏ các phiếu đã hủy (trạng thái = 4) bằng JavaScript
+            const allExports = allExportsRaw.filter(pxk => pxk.trangThai !== 4);
+
+            // Trích xuất ra mảng ID của các phiếu chuyển đã được tạo phiếu xuất
+            // LƯU Ý: Đảm bảo 'phieuChuyenKhoGocId' là đúng tên trường từ API trả về
+            const usedTransferIds = allExports
+                .map(pxk => pxk.phieuChuyenKhoGocId || pxk.phieuChuyenId || pxk.transferId)
+                .filter(Boolean); // Lọc bỏ null/undefined
+
+            // 4. Lọc phiếu chuyển kho
+            const allTransfers = transferRes.content || transferRes.data?.content || [];
+            const validTransfers = allTransfers.filter(t => {
+                const idKhoXuat = t.kho?.id;
+                if (!idKhoXuat) return false;
+
+                // Điều kiện 1: Thuộc kho của tôi
+                const isMyWarehouse = myWarehouseIds.map(Number).includes(Number(idKhoXuat));
+
+                // Điều kiện 2: Chưa bị tạo phiếu xuất trước đó (ID không nằm trong mảng usedTransferIds)
+                const isNotDuplicated = !usedTransferIds.includes(t.id);
+
+                return isMyWarehouse && isNotDuplicated;
+            });
+
+            setTransferList(validTransfers);
 
             if (warehouseList.length === 1)
                 setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
@@ -137,9 +173,9 @@ export default function PhieuXuatKhoCreate() {
         setForm({ donBanHangId: "", transferId: "", khoId: warehouses.length === 1 ? warehouses[0].id : "", ghiChu: "", chiTietXuat: [] });
     };
 
-    const soLabel       = form.donBanHangId ? soList.find(so => so.id === parseInt(form.donBanHangId))?.soDonHang : "Chọn đơn bán hàng";
-    const transferLabel = form.transferId   ? transferList.find(t => t.id === parseInt(form.transferId))?.soPhieuXuat : "Chọn yêu cầu chuyển kho";
-    const khoLabel      = form.khoId        ? warehouses.find(k => k.id === parseInt(form.khoId))?.tenKho : "Tự động trích xuất";
+    const soLabel = form.donBanHangId ? soList.find(so => so.id === parseInt(form.donBanHangId))?.soDonHang : "Chọn đơn bán hàng";
+    const transferLabel = form.transferId ? transferList.find(t => t.id === parseInt(form.transferId))?.soPhieuXuat : "Chọn yêu cầu chuyển kho";
+    const khoLabel = form.khoId ? warehouses.find(k => k.id === parseInt(form.khoId))?.tenKho : "Tự động trích xuất";
 
     return (
         <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
@@ -160,22 +196,20 @@ export default function PhieuXuatKhoCreate() {
                     <div className="flex p-1 bg-white rounded-xl shadow-sm ring-1 ring-slate-200/80">
                         <button
                             onClick={() => toggleSource("SO")}
-                            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all duration-150 ${
-                                exportSource === "SO"
-                                    ? "bg-slate-900 text-white shadow-sm"
-                                    : "text-slate-500 hover:text-slate-700"
-                            }`}
+                            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all duration-150 ${exportSource === "SO"
+                                ? "bg-slate-900 text-white shadow-sm"
+                                : "text-slate-500 hover:text-slate-700"
+                                }`}
                         >
                             <FileText className="w-4 h-4" />
                             Xuất theo Đơn Bán Hàng
                         </button>
                         <button
                             onClick={() => toggleSource("TRANSFER")}
-                            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all duration-150 ${
-                                exportSource === "TRANSFER"
-                                    ? "bg-slate-900 text-white shadow-sm"
-                                    : "text-slate-500 hover:text-slate-700"
-                            }`}
+                            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all duration-150 ${exportSource === "TRANSFER"
+                                ? "bg-slate-900 text-white shadow-sm"
+                                : "text-slate-500 hover:text-slate-700"
+                                }`}
                         >
                             <ArrowRightLeft className="w-4 h-4" />
                             Xuất Chuyển Kho Nội Bộ
