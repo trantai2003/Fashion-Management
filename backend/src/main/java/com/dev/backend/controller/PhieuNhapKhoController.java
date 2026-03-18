@@ -85,7 +85,7 @@ public class PhieuNhapKhoController {
 
     @PutMapping("/{id}/cancel")
     @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
             permissions = {IPermissionType.huy_phieu_nhap},
             inWarehouse = true,
             rolesLogic = RequireAuth.LogicType.OR
