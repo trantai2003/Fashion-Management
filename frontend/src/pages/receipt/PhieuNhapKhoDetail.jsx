@@ -368,7 +368,7 @@ export default function PhieuNhapKhoDetail() {
                             )}
 
                             <InfoItem icon={Calendar} label="Ngày nhập" value={data.ngayNhap ? new Date(data.ngayNhap).toLocaleDateString("vi-VN") : "---"} />
-                            <InfoItem icon={User} label="Người lập" value={data.tenNguoiNhap || "---"} />
+                            <InfoItem icon={User} label="Người nhập" value={data.tenNguoiNhap || "---"} />
                         </div>
 
                         {!canComplete && data.trangThai === 0 && (

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import purchaseOrderService from "@/services/purchaseOrderService";
+import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { getMineKhoList } from "@/services/khoService";
 import { toast } from "sonner";
 import {
@@ -208,24 +209,32 @@ export default function PhieuNhapKhoCreate() {
             const myWarehousesRes = await getMineKhoList().catch(() => ({ data: [] }));
             const warehouseList = myWarehousesRes.data || myWarehousesRes || [];
             setWarehouses(warehouseList);
+            const myWarehouseIds = warehouseList.map(w => w.id);
 
-            const [poRes, transferRes3, transferRes4, allReceiptsRes] = await Promise.all([
+            // Thêm API phieuXuatKhoService vào Promise.all
+            const [poRes, transferRes3, transferRes4, allReceiptsRes, allIssuesRes] = await Promise.all([
                 purchaseOrderService.filter({
                     page: 0, size: 1000,
                     filters: [{ fieldName: "trangThai", operator: "EQUALS", value: 4 }],
                     sorts: [{ fieldName: "id", direction: "DESC" }]
                 }).catch(() => ({ content: [] })),
+
                 phieuChuyenKhoService.filter({
                     page: 0, size: 1000,
                     filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 3 }],
                     sorts: [{ fieldName: "ngayCapNhat", direction: "DESC" }]
                 }).catch(() => ({ content: [] })),
+
                 phieuChuyenKhoService.filter({
                     page: 0, size: 1000,
                     filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 4 }],
                     sorts: [{ fieldName: "ngayCapNhat", direction: "DESC" }]
                 }).catch(() => ({ content: [] })),
-                phieuNhapKhoService.filter({ page: 0, size: 2000 }).catch(() => ({ content: [] }))
+
+                phieuNhapKhoService.filter({ page: 0, size: 2000 }).catch(() => ({ content: [] })),
+
+                // Gọi thêm API Phiếu Xuất Kho để check điều kiện cho Phiếu Chuyển bị hủy
+                phieuXuatKhoService.filter({ page: 0, size: 2000 }).catch(() => ({ content: [] }))
             ]);
 
             const rawPoList = poRes.data?.content || poRes.content || [];
@@ -238,30 +247,59 @@ export default function PhieuNhapKhoCreate() {
             });
             setPoList(validPoList);
 
+            // 1. Trích xuất ID các phiếu chuyển đã LẬP PHIẾU NHẬP (Chống duplicate)
+            const allReceipts = allReceiptsRes.content || allReceiptsRes.data?.content || [];
+            const usedTransferIds = new Set(
+                allReceipts
+                    .filter(r => r.trangThai === 3)
+                    // Lưu ý: Đảm bảo trường này là ID của Phiếu Chuyển (không phải Phiếu Xuất)
+                    .map(r => Number(r.phieuXuatGocId || r.phieuChuyenId || r.transferId))
+                    .filter(id => id > 0)
+            );
+
+            // 2. Trích xuất ID các phiếu chuyển ĐÃ CÓ PHIẾU XUẤT thành công (Trạng thái 3)
+            const allIssues = allIssuesRes.content || allIssuesRes.data?.content || [];
+            const validIssueTransferIds = new Set(
+                allIssues
+                    .filter(pxk => pxk.trangThai === 3) // Chỉ lấy Phiếu xuất có trạng thái 3 (Đã xuất)
+                    // Bổ sung thêm các tên trường dự phòng đề phòng API trả về tên khác
+                    .map(pxk => Number(pxk.phieuChuyenKhoGocId || pxk.phieuChuyenId || pxk.transferId))
+                    .filter(id => id > 0)
+            );
+
+            // 3. Xử lý gộp và lọc Phiếu Chuyển Kho
             const rawTransfers = [
                 ...(transferRes3.content || transferRes3.data?.content || []),
                 ...(transferRes4.content || transferRes4.data?.content || [])
             ];
-            const allReceipts = allReceiptsRes.content || allReceiptsRes.data?.content || [];
-            const usedTransferIds = new Set(allReceipts.map(r => r.phieuXuatGocId).filter(Boolean));
 
-            // 1. Lấy danh sách ID các kho mà user đang phụ trách
-            const myWarehouseIds = warehouseList.map(w => w.id);
-
-            // 2. Lọc danh sách phiếu chuyển kho
             const availableTransfers = rawTransfers.filter(t => {
-                // Loại bỏ các phiếu đã được lập phiếu nhập kho trước đó
-                if (usedTransferIds.has(t.id)) return false;
+                // Ép kiểu ID hiện tại về Number để check trong Set
+                const currentTransferId = Number(t.id);
 
-                // Xác định ID kho sẽ làm nhiệm vụ "nhận hàng"
-                // - Trạng thái 4 (Đã hủy): Kho xuất nhận lại hàng (khoXuatId hoặc kho.id tùy API backend)
-                // - Trạng thái 3 (Đang vận chuyển): Kho đích nhận hàng (khoNhapId hoặc khoChuyenDen.id)
-                const targetKhoId = t.trangThai === 4
-                    ? (t.khoXuatId || t.kho?.id)
-                    : (t.khoNhapId || t.khoChuyenDen?.id);
+                // Nếu đã nhập kho rồi -> Loại bỏ
+                if (usedTransferIds.has(currentTransferId)) return false;
 
-                // Chỉ hiển thị nếu kho nhận nằm trong danh sách kho mà user quản lý
-                return myWarehouseIds.includes(targetKhoId);
+                if (t.trangThai === 3) {
+                    // PHIẾU ĐANG VẬN CHUYỂN: Chỉ kho NHẬN (đích) mới được thấy
+                    const targetKhoId = t.khoNhapId || t.khoChuyenDen?.id;
+                    if (!targetKhoId) return false;
+                    return myWarehouseIds.map(Number).includes(Number(targetKhoId));
+                }
+                else if (t.trangThai === 4) {
+                    // PHIẾU ĐÃ HỦY: Chỉ kho XUẤT (nguồn) mới được thấy
+                    const sourceKhoId = t.khoXuatId || t.kho?.id;
+                    if (!sourceKhoId) return false;
+
+                    const isMyWarehouse = myWarehouseIds.map(Number).includes(Number(sourceKhoId));
+
+                    // PHẢI tồn tại phiếu xuất từ phiếu chuyển này và phiếu xuất đó phải ở trạng thái 3
+                    const hasValidIssue = validIssueTransferIds.has(currentTransferId);
+
+                    return isMyWarehouse && hasValidIssue;
+                }
+
+                return false;
             });
 
             setTransferList(availableTransfers);
@@ -421,7 +459,7 @@ export default function PhieuNhapKhoCreate() {
                                                 onChange={(e) => handleSelectTransfer(e.target.value)}
                                             >
                                                 <option value="">-- Chọn chứng từ vận chuyển --</option>
-                                                {transferList.map(t => <option key={t.id} value={t.id}>{t.soPhieuXuat} ({t.khoXuatTen} → {t.khoNhapTen})</option>)}
+                                                {transferList.map(t => <option key={t.id} value={t.id}>{t.soPhieuXuat} ({t.kho?.tenKho} → {t.khoChuyenDen?.tenKho})</option>)}
                                             </select>
                                         </div>
                                     )}
