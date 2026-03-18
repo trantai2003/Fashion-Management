@@ -288,7 +288,7 @@ export default function BackofficeLayout() {
         },
         {
             key: "INVENTORY_REPORT",
-            match: (path) => path === "/reports/inventory",
+            match: (path) => path === "/bao-cao/ton-kho",
             title: "Báo cáo tồn kho",
         }
     ];

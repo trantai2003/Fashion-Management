@@ -11,6 +11,7 @@ import {
   ShieldCheck, ChevronDown, RefreshCcw, UserCog, Lock, Unlock,
   Warehouse, AlertCircle, Save, X,
 } from "lucide-react";
+import { toast } from "sonner";
 import AssignWarehousePermissionModal from "@/components/admin/AssignWarehousePermissionModal";
 
 export default function UserPermissionEditByAdmin() {
@@ -50,17 +51,28 @@ export default function UserPermissionEditByAdmin() {
     reloadUserWarehouses();
   }, [id]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
-      userId: Number(id),
-      role: form.role,
-      status: form.status,
+      id: Number(id),
+      vaiTro: form.role,
     };
-    // TODO: Gọi API update thực tế ở đây
-    console.log("Payload gửi backend:", payload);
-    // Ví dụ: await nguoiDungService.updatePermission(payload);
-    // Sau đó có thể navigate(-1) hoặc show toast
+
+    try {
+      setLoading(true);
+      await nguoiDungService.updatePermission(payload);
+      toast.success("Cập nhật vai trò người dùng thành công!");
+      
+      // Nếu có thay đổi trạng thái, xử lý tiếp (nếu cần)
+      // Tạm thời chỉ xử lý vai trò như yêu cầu
+      
+      setTimeout(() => navigate("/users"), 1000);
+    } catch (err) {
+      console.error("Lỗi cập nhật:", err);
+      toast.error(err.response?.data?.message || "Không thể cập nhật vai trò");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRoleChange = (value) => {
@@ -289,9 +301,14 @@ export default function UserPermissionEditByAdmin() {
             </Button>
             <Button
               type="submit"
+              disabled={loading}
               className="bg-slate-900 hover:bg-slate-800"
             >
-              <Save className="h-4 w-4 mr-2" />
+              {loading ? (
+                <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
               Lưu thay đổi
             </Button>
           </div>

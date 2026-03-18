@@ -145,7 +145,7 @@ export const SIDEBAR_MENU = [
     children: [
       {
         label: "Báo cáo tồn kho",
-        to: "/reports/inventory",
+        to: "/bao-cao/ton-kho",
         roles: [
           "quan_tri_vien",
           "quan_ly_kho",
