@@ -244,7 +244,26 @@ export default function PhieuNhapKhoCreate() {
             ];
             const allReceipts = allReceiptsRes.content || allReceiptsRes.data?.content || [];
             const usedTransferIds = new Set(allReceipts.map(r => r.phieuChuyenKhoGocId).filter(Boolean));
-            const availableTransfers = rawTransfers.filter(t => !usedTransferIds.has(t.id));
+
+            // 1. Lấy danh sách ID các kho mà user đang phụ trách
+            const myWarehouseIds = warehouseList.map(w => w.id);
+
+            // 2. Lọc danh sách phiếu chuyển kho
+            const availableTransfers = rawTransfers.filter(t => {
+                // Loại bỏ các phiếu đã được lập phiếu nhập kho trước đó
+                if (usedTransferIds.has(t.id)) return false;
+
+                // Xác định ID kho sẽ làm nhiệm vụ "nhận hàng"
+                // - Trạng thái 4 (Đã hủy): Kho xuất nhận lại hàng (khoXuatId hoặc kho.id tùy API backend)
+                // - Trạng thái 3 (Đang vận chuyển): Kho đích nhận hàng (khoNhapId hoặc khoChuyenDen.id)
+                const targetKhoId = t.trangThai === 4
+                    ? (t.khoXuatId || t.kho?.id)
+                    : (t.khoNhapId || t.khoChuyenDen?.id);
+
+                // Chỉ hiển thị nếu kho nhận nằm trong danh sách kho mà user quản lý
+                return myWarehouseIds.includes(targetKhoId);
+            });
+
             setTransferList(availableTransfers);
 
             if (warehouseList.length === 1) {

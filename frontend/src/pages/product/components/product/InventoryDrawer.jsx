@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { X, ChevronRight, ChevronDown, Warehouse, Package, Layers, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { thongKeHeThongService } from "@/services/thongKeHeThongService";
@@ -322,15 +323,16 @@ export default function InventoryDrawer({ isOpen, onClose, product }) {
     const tonKhoHienTaiDisplay = tongTonBienThe ?? fallbackTonKhoSanPham;
 
     if (!isOpen) return null;
+    if (typeof document === "undefined") return null;
 
-    return (
+    return createPortal(
         <>
             {/* Overlay */}
             <div className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-40 transition-opacity" onClick={onClose} />
 
             {/* Popup panel */}
-            <div className="fixed inset-0 z-50 p-4 sm:p-6">
-                <div className="absolute left-1/2 top-1/2 w-[min(1100px,calc(100vw-2rem))] sm:w-[min(1100px,calc(100vw-3rem))] max-h-[92vh] -translate-x-1/2 -translate-y-1/2 bg-[#fffdf8] shadow-2xl flex flex-col border border-[#eadfce] rounded-2xl overflow-hidden">
+            <div className="fixed inset-0 z-50 p-4 sm:p-6 flex items-center justify-center">
+                <div className="w-full max-w-[1100px] max-h-[92vh] bg-[#fffdf8] shadow-2xl flex flex-col border border-[#eadfce] rounded-2xl overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-[#eadfce] bg-gradient-to-r from-[#fdf7ea] to-[#fff2dd]">
                     <div className="flex items-center gap-3">
@@ -415,6 +417,7 @@ export default function InventoryDrawer({ isOpen, onClose, product }) {
                 </div>
                 </div>
             </div>
-        </>
+        </>,
+        document.body
     );
 }

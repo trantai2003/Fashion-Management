@@ -44,7 +44,7 @@ WHERE DATE(p.ngayXuat) = CURRENT_DATE
             Pageable pageable
     );
     @Query("SELECT p FROM PhieuXuatKho p " +
-            "WHERE (:khoId IS NULL OR p.kho.id = :khoId) " +
+            "WHERE (:khoId IS NULL OR (p.kho.id = :khoId OR p.khoChuyenDen.id = :khoId)) " +
             "AND p.loaiXuat = 'chuyen_kho' AND p.phieuChuyenKhoGoc IS NULL " +
             "AND (:keyword IS NULL OR LOWER(p.soPhieuXuat) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:trangThai IS NULL OR p.trangThai = :trangThai) " +

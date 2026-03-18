@@ -98,7 +98,7 @@ export default function BackofficeLayout() {
             key: "GOODS_RECEIPTS_DETAIL",
             match: (path) => /^\/goods-receipts\/\d+$/.test(path),
             title: "Chi tiết phiếu nhập kho",
-            subtitle: "Xem chi tiết phiếu nhập kho",
+            subtitle: "",
         },
         {
             key: "LOT_INPUT",
@@ -129,6 +129,12 @@ export default function BackofficeLayout() {
             match: (path) => path === "/purchase-orders",
             title: "Quản lý đơn mua hàng",
             subtitle: "Theo dõi và quản lý các đơn đặt hàng từ nhà cung cấp",
+        },
+        {
+            key: "PURCHASE_ORDER_REQUESTS",
+            match: (path) => path === "/duyet-don-hang",
+            title: "Quản lý đơn mua hàng",
+            subtitle: "Xem xét và duyệt yêu cầu tạo đơn mua hàng",
         },
         {
             key: "TRANSFER_TICKETS",
@@ -272,13 +278,18 @@ export default function BackofficeLayout() {
             key: "SUPPLIER_DETAIL",
             match: (path) => /^\/supplier\/view\/\d+$/.test(path),
             title: "Chi tiết nhà cung cấp",
-            subtitle: "Xem thông tin chi tiết về nhà cung cấp",
+            subtitle: "",
         },
         {
             key: "SUPPLIER_CREATE",
             match: (path) => path === "/supplier/new",
             title: "Thêm nhà cung cấp mới",
             subtitle: "Nhập thông tin để tạo nhà cung cấp mới",
+        },
+        {
+            key: "INVENTORY_REPORT",
+            match: (path) => path === "/reports/inventory",
+            title: "Báo cáo tồn kho",
         }
     ];
 

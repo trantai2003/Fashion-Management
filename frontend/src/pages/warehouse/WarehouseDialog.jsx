@@ -14,7 +14,6 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -72,11 +71,6 @@ export default function WarehouseDialog({
                             {dialogMode === 'edit' && 'Chỉnh sửa thông tin kho'}
                             {dialogMode === 'view' && 'Thông tin chi tiết kho'}
                         </DialogTitle>
-                        <DialogDescription className="text-sm mt-1 ml-10" style={{ color: "#64748b" }}>
-                            {dialogMode === 'create' && 'Điền thông tin để tạo kho hàng mới'}
-                            {dialogMode === 'edit' && 'Cập nhật thông tin kho hàng'}
-                            {dialogMode === 'view' && 'Xem chi tiết thông tin và hoạt động của kho'}
-                        </DialogDescription>
                     </DialogHeader>
                 </div>
 

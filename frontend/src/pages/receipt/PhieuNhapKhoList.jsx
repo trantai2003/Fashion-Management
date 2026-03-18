@@ -195,7 +195,6 @@ export default function PhieuNhapKhoList() {
                     className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                     value={filters.keyword}
                     onChange={e => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))}
-                    disabled={loading}
                   />
                 </div>
               </div>
@@ -207,7 +206,6 @@ export default function PhieuNhapKhoList() {
                   className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                   value={filters.nhaCungCap}
                   onChange={e => setFilters(p => ({ ...p, nhaCungCap: e.target.value, page: 0 }))}
-                  disabled={loading}
                 />
               </div>
 

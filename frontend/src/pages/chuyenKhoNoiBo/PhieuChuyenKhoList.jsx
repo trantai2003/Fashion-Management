@@ -133,11 +133,11 @@ export default function PhieuChuyenKhoList() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-gray-700 font-medium">Số phiếu</Label>
-                                <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" /><Input placeholder="Nhập số phiếu..." className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.keyword} onChange={(e) => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))} disabled={loading} /></div>
+                                <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" /><Input placeholder="Nhập số phiếu..." className="pl-9 border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.keyword} onChange={(e) => setFilters(p => ({ ...p, keyword: e.target.value, page: 0 }))} /></div>
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-gray-700 font-medium">Kho nhập (Đích)</Label>
-                                <Input placeholder="Tên kho nhận hàng" className="border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.tenKhoNhap} onChange={(e) => setFilters(p => ({ ...p, tenKhoNhap: e.target.value, page: 0 }))} disabled={loading} />
+                                <Input placeholder="Tên kho nhận hàng" className="border-gray-200 focus:border-purple-500 focus:ring-purple-500" value={filters.tenKhoNhap} onChange={(e) => setFilters(p => ({ ...p, tenKhoNhap: e.target.value, page: 0 }))} />
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-gray-700 font-medium">Trạng thái</Label>

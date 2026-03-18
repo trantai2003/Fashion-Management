@@ -248,11 +248,11 @@ const ViewModal = ({ viewItem, activeTab, onClose, onEdit }) => {
                                         background: 'linear-gradient(135deg, #fdf3d8, #fff0cc)',
                                         border: '1px solid rgba(184,134,11,0.2)',
                                         fontSize: 13, fontWeight: 700,
-                                        color: '#b8860b', textTransform: 'uppercase',
+                                        color: '#111111', textTransform: 'uppercase',
                                         letterSpacing: '0.06em',
                                     }}>{viewItem.loaiSize}</span>
                                 ) : (
-                                    <p style={{ fontSize: 14, color: '#a09080', fontStyle: 'italic' }}>—</p>
+                                    <p style={{ fontSize: 14, color: '#111111', fontStyle: 'italic' }}>—</p>
                                 )}
                             </div>
                             <div style={{
@@ -296,12 +296,12 @@ const ViewModal = ({ viewItem, activeTab, onClose, onEdit }) => {
                             </div>
                             {viewItem.moTa ? (
                                 <p style={{
-                                    fontSize: 13, color: '#4a3f30', lineHeight: 1.7,
+                                    fontSize: 13, color: '#111111', lineHeight: 1.7,
                                     fontStyle: 'italic', margin: 0,
                                 }}>{viewItem.moTa}</p>
                             ) : (
                                 <p style={{
-                                    fontSize: 13, color: '#b0a090', fontStyle: 'italic',
+                                    fontSize: 13, color: '#111111', fontStyle: 'italic',
                                     borderLeft: '2px solid rgba(184,134,11,0.15)',
                                     paddingLeft: 10, margin: 0,
                                 }}>Không có mô tả chi tiết cho thuộc tính này.</p>
@@ -322,11 +322,11 @@ const ViewModal = ({ viewItem, activeTab, onClose, onEdit }) => {
                         style={{
                             height: 40, padding: '0 18px', borderRadius: 10,
                             background: '#fff', border: '1.5px solid rgba(184,134,11,0.2)',
-                            color: '#7a6e5f', fontSize: 13, fontWeight: 600,
+                            color: '#111111', fontSize: 13, fontWeight: 600,
                             cursor: 'pointer', transition: 'all 0.18s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#b8860b'; e.currentTarget.style.color = '#b8860b'; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(184,134,11,0.2)'; e.currentTarget.style.color = '#7a6e5f'; }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#111111'; e.currentTarget.style.color = '#111111'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(184,134,11,0.2)'; e.currentTarget.style.color = '#111111'; }}
                     >
                         Đóng
                     </button>
@@ -711,52 +711,117 @@ const ProductAttributeHub = () => {
 
             {/* ── Form Modal ── */}
             <Dialog open={modalConfig.open} onOpenChange={o => setModalConfig({ ...modalConfig, open: o })}>
-                <DialogContent className="attr-light-modal max-w-lg border border-[#e5d4b2] bg-[#fffdf8] text-[#2f2a23] shadow-2xl dark:!bg-[#fffdf8] dark:!text-[#2f2a23]">
-                    <div className="border-b border-[#e5d4b2] bg-gradient-to-r from-[#fff7ea] to-[#fff3df] px-6 py-4">
-                        <DialogTitle className="text-xl font-bold text-[#2f2a23]">
-                            {modalConfig.mode === 'add' ? 'Thêm mới' : 'Chỉnh sửa'} <span className="text-[#b8860b]">{TAB_LABELS[activeTab]}</span>
-                        </DialogTitle>
-                        <DialogDescription className="mt-1 text-sm text-[#8b7355]">Cập nhật danh mục thuộc tính sản phẩm</DialogDescription>
+                <DialogContent
+                    className="max-w-xl p-0 overflow-hidden border-0 shadow-2xl"
+                    style={{
+                        background: '#fffdf8',
+                        borderRadius: '24px',
+                        border: '1px solid rgba(184,134,11,0.18)',
+                        boxShadow: '0 24px 64px rgba(100,80,20,0.16), 0 0 0 1px rgba(184,134,11,0.1)',
+                    }}
+                >
+                    <div style={{
+                        background: 'linear-gradient(135deg, #fdf3d8 0%, #fff8e8 60%, #fdf0cc 100%)',
+                        borderBottom: '1.5px solid rgba(184,134,11,0.15)',
+                        padding: '22px 28px 18px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                    }}>
+                        <div style={{
+                            position: 'absolute', top: -20, right: -20,
+                            width: 100, height: 100, borderRadius: '50%',
+                            background: 'rgba(184,134,11,0.07)',
+                            pointerEvents: 'none',
+                        }} />
+                        <div style={{
+                            position: 'absolute', bottom: -30, right: 40,
+                            width: 60, height: 60, borderRadius: '50%',
+                            background: 'rgba(184,134,11,0.05)',
+                            pointerEvents: 'none',
+                        }} />
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
+                            <div style={{
+                                width: 42, height: 42, borderRadius: 12,
+                                background: 'linear-gradient(135deg, #b8860b, #d4a017)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                boxShadow: '0 4px 12px rgba(184,134,11,0.35)',
+                                flexShrink: 0,
+                            }}>
+                                <Edit size={18} color="#fff" />
+                            </div>
+                            <div>
+                                <p style={{
+                                    fontFamily: "'DM Mono', monospace",
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    letterSpacing: '0.18em',
+                                    textTransform: 'uppercase',
+                                    color: 'rgba(184,134,11,0.65)',
+                                    marginBottom: 2,
+                                }}>
+                                    {modalConfig.mode === 'add' ? 'Khởi tạo thuộc tính' : 'Chỉnh sửa thuộc tính'}
+                                </p>
+                                <DialogTitle style={{
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontSize: 20,
+                                    fontWeight: 800,
+                                    color: '#1a1612',
+                                    margin: 0,
+                                }}>
+                                    {modalConfig.mode === 'add' ? 'Thêm mới' : 'Chỉnh sửa'} {TAB_NAMES[activeTab]}
+                                </DialogTitle>
+                            </div>
+                        </div>
+                        <DialogDescription className="sr-only">Biểu mẫu cập nhật thuộc tính</DialogDescription>
                     </div>
 
                     <form onSubmit={form.handleSubmit(onSubmit)}>
-                        <div className="space-y-5 px-6 py-5">
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#8b7355]">Mã định danh *</Label>
-                                    <div className="flex gap-2">
+                        <div style={{ background: '#f5f5f5', padding: '22px 28px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                                <div style={{ background: '#fff', border: '1.5px solid rgba(184,134,11,0.12)', borderRadius: 14, padding: '14px 16px' }}>
+                                    <Label className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#b8860b]/70">Mã định danh *</Label>
+                                    <div className="mt-2 flex gap-2">
                                         <Input
                                             {...form.register("ma")}
-                                            className="bg-[#fffdf8] font-mono font-bold text-[#b8860b] border-[#e5d4b2] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
+                                            className="h-10 bg-[#fffdf8] font-mono font-bold text-[#b8860b] border-[#eadcc4] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
                                             placeholder="VD: 42"
                                         />
-                                        <button
-                                            type="button"
-                                            className="h-10 w-10 inline-flex items-center justify-center rounded-lg border border-[#e5d4b2] bg-[#fffaf1] hover:bg-[#fff2db] transition-all"
-                                            onClick={() => form.setValue('ma', generateAutoCode())}
-                                        >
-                                            <RotateCcw size={16} className="text-[#b8860b]" />
-                                        </button>
+                                        {(activeTab === 'color' || activeTab === 'material') && (
+                                            <button
+                                                type="button"
+                                                className="h-10 w-10 inline-flex items-center justify-center rounded-lg border border-[#e5d4b2] bg-[#fffaf1] hover:bg-[#fff2db] transition-all"
+                                                onClick={() => form.setValue('ma', generateAutoCode())}
+                                                title="Tạo mã tự động"
+                                            >
+                                                <RotateCcw size={15} className="text-[#b8860b]" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#8b7355]">Tên hiển thị *</Label>
+
+                                <div style={{ background: '#fff', border: '1.5px solid rgba(184,134,11,0.12)', borderRadius: 14, padding: '14px 16px' }}>
+                                    <Label className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#b8860b]/70">Tên hiển thị *</Label>
                                     <Input
                                         {...form.register("ten")}
-                                        className="bg-[#fffdf8] font-semibold border-[#e5d4b2] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
-                                        placeholder="Nhập tên..."
+                                        className="mt-2 h-10 bg-[#fffdf8] text-black font-semibold border-[#eadcc4] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
+                                        placeholder="Nhập tên hiển thị"
                                     />
                                 </div>
                             </div>
 
                             {activeTab === 'color' && (
-                                <div className="space-y-2">
-                                    <Label className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#8b7355]">Mã màu trực quan (Hex)</Label>
-                                    <div className="flex gap-3 items-center">
-                                        <input type="color" className="h-10 w-14 rounded-lg border border-[#e5d4b2] p-1 cursor-pointer bg-[#fffdf8]" {...form.register("maMauHex")} />
+                                <div style={{ background: '#fff', border: '1.5px solid rgba(184,134,11,0.12)', borderRadius: 14, padding: '14px 16px' }}>
+                                    <Label className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#b8860b]/70">Mã màu Hex</Label>
+                                    <div className="mt-2 flex items-center gap-3">
+                                        <input
+                                            type="color"
+                                            className="h-10 w-16 rounded-lg border border-[#e5d4b2] p-1 cursor-pointer bg-[#fffdf8]"
+                                            {...form.register("maMauHex")}
+                                        />
                                         <Input
                                             {...form.register("maMauHex")}
-                                            className="flex-1 bg-[#fffdf8] font-mono uppercase border-[#e5d4b2] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
+                                            className="h-10 bg-[#fffdf8] text-black font-mono uppercase border-[#eadcc4] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
                                             placeholder="#000000"
                                         />
                                     </div>
@@ -764,30 +829,73 @@ const ProductAttributeHub = () => {
                             )}
 
                             {activeTab === 'size' && (
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <Label className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#8b7355]">Loại kích cỡ</Label>
-                                        <Input {...form.register("loaiSize")} className="bg-[#fffdf8] border-[#e5d4b2] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]" placeholder="VD: Text, Number..." />
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                                    <div style={{ background: '#fff', border: '1.5px solid rgba(184,134,11,0.12)', borderRadius: 14, padding: '14px 16px' }}>
+                                        <Label className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#b8860b]/70">Loại kích cỡ</Label>
+                                        <Input
+                                            {...form.register("loaiSize")}
+                                            className="mt-2 h-10 bg-[#fffdf8] text-black border-[#eadcc4] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
+                                            placeholder="VD: Số, Chữ"
+                                        />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#8b7355]">Thứ tự ưu tiên</Label>
-                                        <Input type="number" {...form.register("thuTuSapXep")} className="bg-[#fffdf8] font-mono border-[#e5d4b2] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]" />
+                                    <div style={{ background: '#fff', border: '1.5px solid rgba(184,134,11,0.12)', borderRadius: 14, padding: '14px 16px' }}>
+                                        <Label className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#b8860b]/70">Thứ tự ưu tiên</Label>
+                                        <Input
+                                            type="number"
+                                            {...form.register("thuTuSapXep")}
+                                            className="mt-2 h-10 bg-[#fffdf8] text-black font-mono border-[#eadcc4] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
+                                        />
                                     </div>
                                 </div>
                             )}
 
                             {(activeTab === 'material' || activeTab === 'size') && (
-                                <div className="space-y-2">
-                                    <Label className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#8b7355]">Mô tả chi tiết</Label>
-                                    <Textarea {...form.register("moTa")} rows={3} className="min-h-[100px] resize-none bg-[#fffdf8] border-[#e5d4b2] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]" placeholder="..." />
+                                <div style={{ background: '#fff', border: '1.5px solid rgba(184,134,11,0.12)', borderRadius: 14, padding: '14px 16px' }}>
+                                    <Label className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#b8860b]/70">Mô tả chi tiết</Label>
+                                    <Textarea
+                                        {...form.register("moTa")}
+                                        rows={3}
+                                        className="mt-2 min-h-[88px] resize-none bg-[#fffdf8] text-black border-[#eadcc4] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
+                                        placeholder="Nhập mô tả ngắn"
+                                    />
                                 </div>
                             )}
                         </div>
 
-                        <div className="flex justify-end gap-2 border-t border-[#e5d4b2] bg-[#fff8ed] px-6 py-4">
-                            <button type="button" className="inline-flex h-10 items-center rounded-lg border border-[#d9c18f] px-4 text-sm font-medium text-[#7a6e5f] bg-white hover:bg-[#fff3db]" onClick={() => setModalConfig({ ...modalConfig, open: false })}>Hủy bỏ</button>
-                            <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#b8860b] bg-[#b8860b] px-4 text-sm font-medium text-white hover:bg-white hover:text-[#b8860b] transition-all">
-                                <Save size={16} /> {modalConfig.mode === 'add' ? 'Khởi tạo ngay' : 'Lưu thay đổi'}
+                        <div style={{
+                            padding: '16px 28px',
+                            background: 'linear-gradient(135deg, #fdf3d8 0%, #fff8e8 100%)',
+                            borderTop: '1.5px solid rgba(184,134,11,0.12)',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 10,
+                        }}>
+                            <button
+                                type="button"
+                                onClick={() => setModalConfig({ ...modalConfig, open: false })}
+                                style={{
+                                    height: 40, padding: '0 18px', borderRadius: 12,
+                                    background: '#fff', border: '2px solid #1f2937',
+                                    color: '#111111', fontSize: 13, fontWeight: 700,
+                                    cursor: 'pointer', transition: 'all 0.18s',
+                                }}
+                            >
+                                Đóng
+                            </button>
+                            <button
+                                type="submit"
+                                style={{
+                                    height: 40, padding: '0 20px', borderRadius: 12,
+                                    background: 'linear-gradient(135deg, #b8860b, #d4a017)',
+                                    border: '1.5px solid #b8860b',
+                                    color: '#fff', fontSize: 14, fontWeight: 700,
+                                    cursor: 'pointer', transition: 'all 0.18s',
+                                    display: 'flex', alignItems: 'center', gap: 7,
+                                    boxShadow: '0 4px 14px rgba(184,134,11,0.3)',
+                                }}
+                            >
+                                <Save size={15} />
+                                {modalConfig.mode === 'add' ? 'Khởi tạo' : 'Chỉnh sửa'}
                             </button>
                         </div>
                     </form>

@@ -4,6 +4,7 @@ import com.dev.backend.config.SecurityContextHolder;
 import com.dev.backend.constant.GlobalCache;
 import com.dev.backend.constant.enums.OtpType;
 import com.dev.backend.constant.variables.IRoleType;
+import com.dev.backend.dto.ApplicationRequestObj;
 import com.dev.backend.dto.OtpScheduleObj;
 import com.dev.backend.dto.request.*;
 import com.dev.backend.dto.response.CassoResponse;
@@ -129,6 +130,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         }
         donMuaHang.setTongTien(tongTien);
         donMuaHang.setChiTietDonMuaHangs(chiTietDonMuaHangs);
+        donMuaHang.setTrangThai(creating.getTrangThai());
         update(donMuaHang.getId(), donMuaHang);
         donMuaHang = getOne(donMuaHang.getId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy đơn mua hàng : " + creating.getSoDonMua())
@@ -169,6 +171,13 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                     params
             );
 
+        }
+        for (ChiTietDonMuaHang chiTietDonMuaHang : donMuaHang.getChiTietDonMuaHangs()) {
+            for (ApplicationRequestObj appReq : GlobalCache.APPLICATION_REQUEST_OBJS) {
+                appReq.getBienTheSanPhamIds().removeIf(
+                        (tempId) -> tempId.equals(chiTietDonMuaHang.getBienTheSanPham().getId())
+                );
+            }
         }
 
         return ResponseEntity.ok(

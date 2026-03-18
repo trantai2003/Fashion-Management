@@ -240,16 +240,24 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public boolean hasAllPermissionsInWorkSpace(Integer workspaceId, NguoiDungAuthInfo nguoiDungAuthInfo, String... permissions) {
-        for (String permission : permissions) {
-            for (PhanQuyenNguoiDungKhoDto phanQuyenNguoiDungKhoDto : nguoiDungAuthInfo.getPhanQuyenNguoiDungKhos()) {
-                if (phanQuyenNguoiDungKhoDto.getKho().getId().equals(workspaceId)) {
-                    return phanQuyenNguoiDungKhoDto.getChiTietQuyenKhos().stream().allMatch(
-                            chiTietQuyenKho ->
-                                    chiTietQuyenKho.getQuyenHan().getMaQuyen().equals(permission));
-                }
-            }
-        }
-        return false;
+    public boolean hasAllPermissionsInWorkSpace(
+            Integer workspaceId,
+            NguoiDungAuthInfo nguoiDungAuthInfo,
+            String... permissions) {
+
+        return nguoiDungAuthInfo.getPhanQuyenNguoiDungKhos()
+                .stream()
+                .filter(dto -> dto.getKho().getId().equals(workspaceId))
+                .findFirst()
+                .map(dto -> {
+                    Set<String> userPermissions = dto.getChiTietQuyenKhos()
+                            .stream()
+                            .map(p -> p.getQuyenHan().getMaQuyen())
+                            .collect(java.util.stream.Collectors.toSet());
+
+                    return java.util.Arrays.stream(permissions)
+                            .allMatch(userPermissions::contains);
+                })
+                .orElse(false);
     }
 }

@@ -24,19 +24,25 @@ public class SchedulingJob {
 
     @Transactional
     @Scheduled(fixedDelay = 60000)
-    public void cleanOutOfDateOtp(){
+    public void cleanOutOfDateOtp() {
         Instant now = Instant.now();
-        for(OtpScheduleObj otpScheduleObj : GlobalCache.OTP_SCHEDULE_OBJS) {
-            if(now.isAfter(otpScheduleObj.getCreatedAt().plusSeconds(300))){
+        for (OtpScheduleObj otpScheduleObj : GlobalCache.OTP_SCHEDULE_OBJS) {
+            if (now.isAfter(otpScheduleObj.getCreatedAt().plusSeconds(300))) {
                 Optional<NguoiDung> findingNguoiDung = nguoiDungService.findByEmail(otpScheduleObj.getEmail());
-                if(findingNguoiDung.isPresent()){
-                    if(findingNguoiDung.get().getTrangThai().equals(0)){
+                if (findingNguoiDung.isPresent()) {
+                    if (findingNguoiDung.get().getTrangThai().equals(0)) {
                         nguoiDungService.delete(findingNguoiDung.get().getId());
                     }
                 }
                 GlobalCache.OTP_SCHEDULE_OBJS.remove(otpScheduleObj);
             }
         }
+    }
+
+    // 30 phút một lần
+    @Scheduled(fixedDelay = 60000 * 30)
+    public void cleanOutOfDateApplication() {
+        GlobalCache.APPLICATION_REQUEST_OBJS.removeIf(applicationRequestObj -> applicationRequestObj.getTaoLuc().isBefore(Instant.now().minusSeconds(60000 * 60 * 24)));
     }
 
 

@@ -123,7 +123,7 @@ export default function PurchaseOrderList() {
             description: 'Đã gửi yêu cầu đến nhà cung cấp, chờ báo giá'
         },
         4: {
-            label: 'Đã báo giá',
+            label: 'Đã nhận báo giá',
             color: 'bg-green-100 text-green-800 border-green-200',
             icon: FileText,
             description: 'Nhà cung cấp đã gửi báo giá chi tiết'
