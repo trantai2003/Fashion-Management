@@ -160,11 +160,6 @@ export const SIDEBAR_MENU = [
         roles: ["quan_tri_vien", "quan_ly_kho"],
       },
       {
-        label: "Báo cáo doanh thu",
-        to: "/bao-cao/doanh-thu",
-        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_ban_hang"],
-      },
-      {
         label: "Cảnh báo sắp hết hàng",
         to: "/warnings/low-stock",
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
@@ -172,7 +167,7 @@ export const SIDEBAR_MENU = [
       {
         label: "Lịch sử giao dịch kho",
         to: "/lich-su-giao-dich-kho",
-        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_ban_hang"],
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],
       },
     ],
   },
