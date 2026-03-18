@@ -46,7 +46,8 @@ const ROLE = {
 const ROLES_ALL_KHO = [
     ROLE.QUAN_TRI_VIEN,
     ROLE.QUAN_LY_KHO,
-    ROLE.NHAN_VIEN_MUA_HANG
+    ROLE.NHAN_VIEN_MUA_HANG,
+    ROLE.NHAN_VIEN_BAN_HANG,
 ];
 
 const ALLOWED_ROLES = Object.values(ROLE);
@@ -649,7 +650,7 @@ export default function TonKhoTongQuan() {
                                                         }}
                                                     >
                                                         <PackagePlus className="h-3 w-3" />
-                                                        Nhập kho
+                                                        Nhập hàng
                                                     </Button>
                                                 )}
                                             </div>
