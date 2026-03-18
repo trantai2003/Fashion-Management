@@ -25,7 +25,7 @@ public interface LichSuGiaoDichKhoRepository extends JpaRepository<LichSuGiaoDic
         """)
     List<LichSuGiaoDichKho> findAllWithDetails();
 
-    // ── Quản lý kho: lấy theo kho mình phụ trách (quanLy = currentUser) ───────
+    // ── Quản lý kho: lấy theo kho được phân quyền (phan_quyen_nguoi_dung_kho, trangThai=1) ──
     @Query("""
         SELECT ls FROM LichSuGiaoDichKho ls
         LEFT JOIN FETCH ls.bienTheSanPham bts
@@ -34,12 +34,16 @@ public interface LichSuGiaoDichKhoRepository extends JpaRepository<LichSuGiaoDic
         LEFT JOIN FETCH ls.kho k
         LEFT JOIN FETCH ls.khoChuyenDen
         LEFT JOIN FETCH ls.nguoiDung
-        WHERE k.quanLy.id = :nguoiDungId
+        WHERE k.id IN (
+            SELECT pq.kho.id FROM PhanQuyenNguoiDungKho pq
+            WHERE pq.nguoiDung.id = :nguoiDungId
+            AND pq.trangThai = 1
+        )
         ORDER BY ls.ngayGiaoDich DESC
         """)
     List<LichSuGiaoDichKho> findAllByQuanLyId(@Param("nguoiDungId") Integer nguoiDungId);
 
-    // ── Nhân viên kho: lấy theo kho mình được phân công ───────────────────────
+    // ── Nhân viên kho: lấy theo kho được phân công (phan_quyen_nguoi_dung_kho, trangThai=1) ──
     @Query("""
         SELECT ls FROM LichSuGiaoDichKho ls
         LEFT JOIN FETCH ls.bienTheSanPham bts
@@ -48,7 +52,11 @@ public interface LichSuGiaoDichKhoRepository extends JpaRepository<LichSuGiaoDic
         LEFT JOIN FETCH ls.kho k
         LEFT JOIN FETCH ls.khoChuyenDen
         LEFT JOIN FETCH ls.nguoiDung
-        WHERE ls.nguoiDung.id = :nguoiDungId
+        WHERE k.id IN (
+            SELECT pq.kho.id FROM PhanQuyenNguoiDungKho pq
+            WHERE pq.nguoiDung.id = :nguoiDungId
+            AND pq.trangThai = 1
+        )
         ORDER BY ls.ngayGiaoDich DESC
         """)
     List<LichSuGiaoDichKho> findAllByNhanVienId(@Param("nguoiDungId") Integer nguoiDungId);
