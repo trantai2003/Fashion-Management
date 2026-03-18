@@ -243,7 +243,7 @@ export default function PhieuNhapKhoCreate() {
                 ...(transferRes4.content || transferRes4.data?.content || [])
             ];
             const allReceipts = allReceiptsRes.content || allReceiptsRes.data?.content || [];
-            const usedTransferIds = new Set(allReceipts.map(r => r.phieuChuyenKhoGocId).filter(Boolean));
+            const usedTransferIds = new Set(allReceipts.map(r => r.phieuXuatGocId).filter(Boolean));
 
             // 1. Lấy danh sách ID các kho mà user đang phụ trách
             const myWarehouseIds = warehouseList.map(w => w.id);

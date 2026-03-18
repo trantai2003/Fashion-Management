@@ -28,6 +28,7 @@ public class AdminDashboardResponse implements Serializable {
     /* ================= PURCHASE ================= */
 
     Integer pendingPurchaseOrders;
+    Integer purchaseToday;
 
     /* ================= WAREHOUSE ================= */
 

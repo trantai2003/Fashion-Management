@@ -1,291 +1,235 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, Package, CheckCircle2, ClipboardList } from "lucide-react";
+import { 
+    Loader2, 
+    ClipboardList, 
+    Package, 
+    Warehouse, 
+    Calendar, 
+    User, 
+    Info as InfoIcon,
+    ArrowLeft
+} from "lucide-react";
 
-export default function PickLot() {
+/* ══════════════════════════════════════════════════════
+   STYLES — Light Ivory / Gold Luxury
+   (Sync with Warehouse / Homepage / Login)
+══════════════════════════════════════════════════════ */
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+.wh-root {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #faf8f3 0%, #f5f0e4 55%, #ede9de 100%);
+  padding: 28px 28px 56px;
+  position: relative;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.wh-grid {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.wh-orb-1 {
+  position: fixed; width: 500px; height: 500px; border-radius: 50%;
+  background: rgba(184,134,11,0.07); filter: blur(100px);
+  top: -180px; right: -120px; pointer-events: none; z-index: 0;
+}
+
+.wh-inner {
+  position: relative; z-index: 1;
+  max-width: 1400px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+/* ── Header ── */
+.wh-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid rgba(184,134,11,0.15);
+}
+.wh-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.2em; color: rgba(184,134,11,0.65);
+  text-transform: uppercase;
+}
+.wh-header-actions { display: flex; align-items: center; gap: 12px; }
+
+/* ── Info Cards ── */
+.info-card {
+  background: #fff;
+  border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 18px; padding: 24px;
+  box-shadow: 0 2px 12px rgba(100,80,30,0.07);
+  position: relative; overflow: hidden;
+}
+.info-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;
+}
+
+.info-item { display: flex; flex-direction: column; gap: 6px; }
+.info-lbl {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  letter-spacing: 0.15em; text-transform: uppercase; color: rgba(184,134,11,0.6);
+}
+.info-val {
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: #1a1612;
+}
+.info-val.highlight { color: #b8860b; }
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+}
+.badge-status { text-transform: uppercase; letter-spacing: 0.05em; }
+.badge.green { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2); }
+.badge.amber { background: rgba(184,134,11,0.1); color: #b8860b; border: 1px solid rgba(184,134,11,0.2); }
+.badge.blue  { background: rgba(37,99,235,0.08); color: #2563eb; border: 1px solid rgba(37,99,235,0.2); }
+.badge.red   { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
+.badge.purple { background: rgba(147,51,234,0.08); color: #9333ea; border: 1px solid rgba(147,51,234,0.2); }
+
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.badge.green .dot { background: #16a34a; }
+.badge.amber .dot { background: #b8860b; }
+.badge.blue  .dot { background: #2563eb; }
+.badge.red   .dot { background: #dc2626; }
+.badge.purple .dot { background: #9333ea; }
+`;
+
+const STATUS_UI = {
+    0: { label: "Nháp", cls: "amber" },
+    1: { label: "Chờ duyệt", cls: "blue" },
+    2: { label: "Đã duyệt", cls: "blue" },
+    3: { label: "Đã xuất", cls: "green" },
+    4: { label: "Đã huỷ", cls: "red" },
+};
+
+export default function PhieuXuatKhoView() {
+    const { id } = useParams();
     const navigate = useNavigate();
-    const { phieuXuatKhoId, chiTietPhieuXuatKhoId } = useParams();
-    const { state } = useLocation();
-
-    const bienTheSanPhamId = state?.bienTheSanPhamId;
-    const sku              = state?.sku || "-";
-    const tenBienThe       = state?.tenBienThe || "-";
-    const soLuongCanXuat   = Number(state?.soLuongXuat ?? 0);
-    const phieuTrangThai   = state?.phieuTrangThai;
-    const isReadOnly       = phieuTrangThai !== 0;
-
-    const [loading,  setLoading]  = useState(false);
-    const [lots,     setLots]     = useState([]);
-    const [pickMap,  setPickMap]  = useState({});
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!bienTheSanPhamId || !phieuXuatKhoId) {
-            toast.error("Thiếu thông tin biến thể");
-            navigate(-1);
-            return;
-        }
-        async function loadInitialData() {
-            setLoading(true);
-            try {
-                const [lotsRes, pickedRes] = await Promise.all([
-                    phieuXuatKhoService.getAvailableLots(phieuXuatKhoId, bienTheSanPhamId),
-                    phieuXuatKhoService.getPickedLots(phieuXuatKhoId, chiTietPhieuXuatKhoId).catch(() => []),
-                ]);
-                setLots(Array.isArray(lotsRes) ? lotsRes : []);
-                if (Array.isArray(pickedRes)) {
-                    const map = {};
-                    pickedRes.forEach(item => { map[item.loHangId] = String(item.soLuongDaPick); });
-                    setPickMap(map);
-                }
-            } catch { toast.error("Không tải được dữ liệu lô"); }
-            finally { setLoading(false); }
-        }
-        loadInitialData();
-    }, [phieuXuatKhoId, bienTheSanPhamId, chiTietPhieuXuatKhoId, navigate]);
+        fetchDetail();
+    }, [id]);
 
-    const tongPickMoi = useMemo(() =>
-        Object.values(pickMap).reduce((sum, v) => sum + (Number(v) || 0), 0),
-    [pickMap]);
-
-    function handleChange(loHangId, rawValue) {
-        if (isReadOnly) return;
-        if (rawValue === "") { setPickMap(prev => ({ ...prev, [loHangId]: "" })); return; }
-        if (!/^\d+$/.test(rawValue)) return;
-        setPickMap(prev => ({ ...prev, [loHangId]: rawValue }));
-    }
-
-    async function handleSave() {
-        if (isReadOnly) return;
-        const entries = Object.entries(pickMap).filter(([, v]) => Number(v) > 0);
-        if (entries.length === 0) { toast.error("Vui lòng nhập số lượng pick"); return; }
-        for (const [id, val] of entries) {
-            const lot = lots.find(l => l.loHangId === Number(id));
-            if (Number(val) > (lot?.soLuongKhaDung || 0)) { toast.error(`Lô ${lot?.maLo} không đủ tồn kho`); return; }
-        }
-        if (tongPickMoi > soLuongCanXuat) { toast.error("Tổng số lượng pick vượt quá số lượng cần xuất"); return; }
-
+    async function fetchDetail() {
         setLoading(true);
         try {
-            await phieuXuatKhoService.pickLo(phieuXuatKhoId, {
-                chiTietPhieuXuatKhoId: Number(chiTietPhieuXuatKhoId),
-                loHangPicks: entries.map(([loHangId, soLuongXuat]) => ({ loHangId: Number(loHangId), soLuongXuat: Number(soLuongXuat) })),
-            });
-            toast.success("Pick lô thành công");
-            navigate(-1);
-        } catch (e) { toast.error(e?.response?.data?.message || "Pick lô thất bại"); }
-        finally { setLoading(false); }
+            const res = await phieuXuatKhoService.view(id);
+            setData(res);
+        } catch (e) {
+            toast.error("Không thể tải chi tiết phiếu xuất");
+        } finally {
+            setLoading(false);
+        }
     }
 
-    // Badge trạng thái lô
-    function LotStatusBadge({ numValue, tonKhaDung }) {
-        if (numValue <= 0) return <span className="text-xs text-slate-400">Không dùng</span>;
-        if (numValue > tonKhaDung) return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />Vượt mức
-            </span>
-        );
-        if (numValue === tonKhaDung) return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Hết lô
-            </span>
-        );
+    if (loading || !data) {
         return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-200 bg-yellow-50 px-2.5 py-1 text-xs font-semibold text-yellow-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />Một phần
-            </span>
-        );
-    }
-
-    return (
-        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-            <div className="space-y-6 w-full">
-
-                {/* ── Header ── */}
-                <div className="flex items-center justify-between">
-                    <button
-                        type="button"
-                        onClick={() => navigate(`/goods-issues/${phieuXuatKhoId}`)}
-                        className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        Quay lại chi tiết phiếu
-                    </button>
-
-                    {isReadOnly && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />Chế độ xem
-                        </span>
-                    )}
-                </div>
-
-                {/* ── Stats cards ── */}
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">SKU</p>
-                                <p className="text-sm font-bold text-gray-900 mt-1 font-mono">{sku}</p>
-                            </div>
-                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-6 w-6 text-blue-600" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-white p-6 md:col-span-1 lg:col-span-1">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Biến thể</p>
-                                <p className="text-sm font-bold text-gray-900 mt-1 leading-snug">{tenBienThe}</p>
-                            </div>
-                            <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                <ClipboardList className="h-6 w-6 text-purple-600" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-amber-50 to-white p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Cần xuất</p>
-                                <p className="text-2xl font-bold text-gray-900 mt-1">{soLuongCanXuat}</p>
-                            </div>
-                            <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-6 w-6 text-amber-600" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className={`rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 p-6 ${tongPickMoi >= soLuongCanXuat ? "bg-gradient-to-br from-green-50 to-white" : "bg-gradient-to-br from-slate-50 to-white"}`}>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Đã pick</p>
-                                <p className={`text-2xl font-bold mt-1 ${tongPickMoi >= soLuongCanXuat ? "text-emerald-600" : "text-gray-900"}`}>
-                                    {tongPickMoi}<span className="text-sm font-normal text-gray-400">/{soLuongCanXuat}</span>
-                                </p>
-                            </div>
-                            <div className={`h-12 w-12 rounded-full flex items-center justify-center flex-shrink-0 ${tongPickMoi >= soLuongCanXuat ? "bg-green-100" : "bg-slate-100"}`}>
-                                <CheckCircle2 className={`h-6 w-6 ${tongPickMoi >= soLuongCanXuat ? "text-green-600" : "text-slate-400"}`} />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* ── Bảng lô hàng ── */}
-                <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                    <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100">
-                            <ClipboardList className="h-4 w-4 text-violet-600" />
-                        </div>
-                        <div>
-                            <p className="font-semibold text-slate-900 leading-snug">Danh sách lô khả dụng</p>
-                            <p className="text-xs text-slate-500 mt-0.5">
-                                {isReadOnly ? "Xem số lượng đã pick cho từng lô" : "Nhập số lượng cần xuất cho từng lô"}
-                            </p>
-                        </div>
-                    </div>
-
-                    {loading ? (
-                        <div className="flex items-center justify-center py-16 gap-2">
-                            <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
-                            <span className="text-sm text-gray-600">Đang tải danh sách lô...</span>
-                        </div>
-                    ) : lots.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-                                <Package className="h-10 w-10 text-slate-400" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-slate-800">Không có lô khả dụng</h3>
-                            <p className="mt-2 text-sm leading-6 text-slate-500">Sản phẩm này hiện không có lô hàng nào khả dụng.</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-slate-200 bg-slate-50">
-                                        <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Mã lô</th>
-                                        <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Ngày nhập</th>
-                                        {!isReadOnly && <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Tồn khả dụng</th>}
-                                        <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Số lượng xuất</th>
-                                        {!isReadOnly && <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Trạng thái</th>}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {lots.map((lot) => {
-                                        const displayValue = pickMap[lot.loHangId] ?? "";
-                                        const numValue     = Number(displayValue) || 0;
-                                        const tonKhaDung   = Number(lot.soLuongKhaDung) || 0;
-                                        return (
-                                            <tr key={lot.loHangId} className="transition-colors duration-150 hover:bg-violet-50/50">
-                                                <td className="px-4 py-3.5 align-middle">
-                                                    <span className="font-bold text-violet-600 tracking-wide font-mono">{lot.maLo}</span>
-                                                </td>
-                                                <td className="px-4 py-3.5 align-middle text-center">
-                                                    <span className="text-sm text-slate-600">
-                                                        {lot.ngayNhapGanNhat ? new Date(lot.ngayNhapGanNhat).toLocaleDateString("vi-VN") : "—"}
-                                                    </span>
-                                                </td>
-                                                {!isReadOnly && (
-                                                    <td className="px-4 py-3.5 align-middle text-center">
-                                                        <span className="inline-flex items-center justify-center rounded-lg bg-slate-100 px-2.5 py-1">
-                                                            <span className="font-semibold text-slate-800 text-xs">{tonKhaDung}</span>
-                                                        </span>
-                                                    </td>
-                                                )}
-                                                <td className="px-4 py-3.5 align-middle text-center">
-                                                    <input
-                                                        type="text"
-                                                        inputMode="numeric"
-                                                        readOnly={isReadOnly}
-                                                        value={displayValue}
-                                                        onChange={(e) => handleChange(lot.loHangId, e.target.value)}
-                                                        placeholder="0"
-                                                        className={`w-24 h-9 border rounded-lg text-center font-semibold focus:outline-none transition-all ${
-                                                            isReadOnly
-                                                                ? "bg-slate-50 text-slate-500 border-slate-200 cursor-not-allowed"
-                                                                : "border-gray-200 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 bg-white"
-                                                        }`}
-                                                    />
-                                                </td>
-                                                {!isReadOnly && (
-                                                    <td className="px-4 py-3.5 align-middle text-center">
-                                                        <LotStatusBadge numValue={numValue} tonKhaDung={tonKhaDung} />
-                                                    </td>
-                                                )}
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-
-                    {lots.length > 0 && (
-                        <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-t border-slate-100">
-                            <p className="text-sm text-slate-500">
-                                Tổng <span className="font-semibold text-violet-600">{lots.length}</span> lô — Đã pick{" "}
-                                <span className={`font-semibold ${tongPickMoi >= soLuongCanXuat ? "text-emerald-600" : "text-amber-600"}`}>{tongPickMoi}</span>
-                                /{soLuongCanXuat}
-                            </p>
-                            {!isReadOnly && (
-                                <Button
-                                    disabled={loading || tongPickMoi <= 0}
-                                    onClick={handleSave}
-                                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 font-bold min-w-[140px] disabled:opacity-50"
-                                >
-                                    {loading
-                                        ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang lưu...</>
-                                        : <><CheckCircle2 className="mr-2 h-4 w-4" />Xác nhận Lô</>
-                                    }
-                                </Button>
-                            )}
-                        </div>
-                    )}
+            <div className="min-h-screen bg-[#faf8f3] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#b8860b]" />
+                    <p className="text-[#a89f92] font-mono text-xs uppercase tracking-widest">Đang tải dữ liệu...</p>
                 </div>
             </div>
+        );
+    }
+
+    const statusInfo = STATUS_UI[data.trangThai] || { label: "Không xác định", cls: "blue" };
+
+    return (
+        <>
+            <style>{STYLES}</style>
+            <div className="wh-root">
+                <div className="wh-grid" />
+                <div className="wh-orb-1" />
+
+                <div className="wh-inner">
+                    {/* ── Header ── */}
+                    <div className="wh-header" style={{ justifyContent: "space-between" }}>
+                        <button
+                            type="button"
+                            onClick={() => navigate(-1)}
+                            className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Quay lại
+                        </button>
+
+                        <div className="wh-header-actions">
+                            <span className={`badge badge-status ${statusInfo.cls}`}>
+                                <span className="dot" />
+                                {statusInfo.label}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* ── Info Section ── */}
+                    <div className="info-card">
+                        <div className="flex items-center gap-2 mb-6">
+                            <ClipboardList size={16} className="text-[#b8860b]" />
+                            <h2 className="wh-eyebrow font-bold text-[#1a1612]">Thông tin phiếu xuất</h2>
+                        </div>
+
+                        <div className="info-grid">
+                            <InfoItem icon={Package} label="Số phiếu xuất" value={data.soPhieuXuat} highlight />
+                            
+                            <InfoItem 
+                                icon={ClipboardList} 
+                                label="Sales Order" 
+                                value={data.soDonHang} 
+                            />
+
+                            <InfoItem 
+                                icon={Warehouse} 
+                                label="Kho xuất" 
+                                value={data.tenKho} 
+                            />
+
+                            <InfoItem 
+                                icon={Calendar} 
+                                label="Ngày xuất" 
+                                value={data.ngayXuat ? new Date(data.ngayXuat).toLocaleDateString("vi-VN") : "---"} 
+                            />
+
+                            <InfoItem 
+                                icon={User} 
+                                label="Người xuất" 
+                                value={data.nguoiXuat} 
+                            />
+                        </div>
+                        
+                        {data.ghiChu && (
+                            <div className="mt-6 pt-4 border-t border-[#faf8f3]">
+                                <InfoItem icon={InfoIcon} label="Ghi chú" value={data.ghiChu} />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
+
+function InfoItem({ icon: Icon, label, value, highlight }) {
+    return (
+        <div className="info-item">
+            <div className="flex items-center gap-1.5 mb-1 opacity-80">
+                <Icon size={12} className="text-[#b8860b]" />
+                <span className="info-lbl">{label}</span>
+            </div>
+            <div className={`info-val ${highlight ? 'highlight' : ''}`}>{value || "---"}</div>
         </div>
     );
 }

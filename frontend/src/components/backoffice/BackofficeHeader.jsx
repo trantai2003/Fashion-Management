@@ -69,6 +69,8 @@ export default function BackofficeHeader({
     "SUPPLIER_CREATE",
     "CHI_TIET_SAN_PHAM",
     "INVENTORY_REPORT",
+    "SALES_INVOICE_PRINT",
+    "USER_DETAIL",
   ]);
 
   const isLuxuryDetailHeader = routeKey ? luxuryDetailHeaderKeys.has(routeKey) : false;

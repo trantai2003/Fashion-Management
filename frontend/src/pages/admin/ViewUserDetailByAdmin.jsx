@@ -129,7 +129,6 @@ export default function ViewUserDetailByAdmin() {
                             Quay lại danh sách
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-bold text-[#1a1612]">Chi tiết người dùng</h1>
                             <p className="mt-1 text-sm text-[#7a6e5f]">
                                 Hồ sơ, trạng thái và quyền phụ trách kho của tài khoản
                             </p>

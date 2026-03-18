@@ -73,5 +73,10 @@ export const nguoiDungService = {
         return res.data;
     },
 
+    async updatePermission(payload) {
+        // payload: { id, vaiTro }
+        const res = await apiClient.put("/api/v1/dieu-hanh-he-thong/vai-tro/gan-vai-tro", payload);
+        return res.data;
+    },
 
 };

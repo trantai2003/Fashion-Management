@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import {
     ChevronDown, Plus, Trash2, Send, ArrowLeft, Building2, Package,
     CheckCircle, AlertCircle, Loader2, Search, Mail,
     FileText, RotateCw, MapPin, Phone, User, ShoppingCart,
-    Clock, XCircle, LockKeyhole, Info,
+    Clock, XCircle, LockKeyhole, Info, Zap,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -27,7 +27,7 @@ import { khoService } from "@/services/khoService";
 import applicationRequestService from '@/services/applicationRequestService';
 import SendRequestDialog from '@/pages/order/SendRequestDialog';
 
-/* ─── Shared layout components ──────────────────────────────────────── */
+/* ─── Shared layout components ──────────────────────────────────── */
 function SectionCard({ icon: Icon, iconBg, iconColor, title, children }) {
     return (
         <div className="rounded-2xl bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-200/80 overflow-hidden flex flex-col h-full items-stretch">
@@ -60,7 +60,7 @@ function InfoField({ label, value, mono = false, icon: Icon, children }) {
     );
 }
 
-/* ─── Request status banner ─────────────────────────────────────────── */
+/* ─── Request status banner ─────────────────────────────────────── */
 function RequestStatusBanner({ myRequest, onGoCreateRequest }) {
     if (!myRequest) {
         return (
@@ -130,6 +130,16 @@ function RequestStatusBanner({ myRequest, onGoCreateRequest }) {
 ═══════════════════════════════════════════════════════════════════ */
 export default function PurchaseOrderCreate() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    // ── Query-string params: bienTheId và khoId từ URL ──────────────────
+    // Ví dụ: /purchase-orders/create?bienTheId=81&khoId=1
+    const urlBienTheId = searchParams.get("bienTheId")
+        ? parseInt(searchParams.get("bienTheId"), 10)
+        : null;
+    const urlKhoId = searchParams.get("khoId")
+        ? parseInt(searchParams.get("khoId"), 10)
+        : null;
 
     /* ── Data State ── */
     const [suppliers, setSuppliers] = useState([]);
@@ -137,8 +147,13 @@ export default function PurchaseOrderCreate() {
     const [productVariants, setProductVariants] = useState([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
 
+    /* ── Prefill state ─────────────────────────────────────────────────
+       prefillDone: tránh inject item nhiều lần khi productVariants load xong
+    */
+    const [prefillDone, setPrefillDone] = useState(false);
+
     /* ── Application request state ── */
-    const [myRequest, setMyRequest] = useState(undefined); // undefined = loading, null = không có
+    const [myRequest, setMyRequest] = useState(undefined);
     const [loadingRequest, setLoadingRequest] = useState(true);
     const [showSendRequestDialog, setShowSendRequestDialog] = useState(false);
     const [submittingRequest, setSubmittingRequest] = useState(false);
@@ -152,7 +167,7 @@ export default function PurchaseOrderCreate() {
     const [formData, setFormData] = useState({
         soDonMua: '',
         nhaCungCapId: '',
-        khoId: '',
+        khoId: urlKhoId ? String(urlKhoId) : '',   // ← prefill từ URL nếu có
         ngayDatHang: new Date().toISOString().split('T')[0],
         ngayGiaoDuKien: '',
         ghiChu: '',
@@ -167,7 +182,7 @@ export default function PurchaseOrderCreate() {
         if (myRequest?.trangThai === 2 && Array.isArray(myRequest.bienTheSanPhamIds)) {
             return new Set(myRequest.bienTheSanPhamIds);
         }
-        return null; // null = không giới hạn (fallback khi không có request logic)
+        return null;
     }, [myRequest]);
 
     const isCreateAllowed = myRequest?.trangThai === 2;
@@ -192,8 +207,9 @@ export default function PurchaseOrderCreate() {
             try {
                 const req = await applicationRequestService.getMyRequest();
                 setMyRequest(req);
-                // Tự động cố định kho từ yêu cầu đã được duyệt
-                if (req?.trangThai === 2 && req?.khoId) {
+
+                // Kho từ yêu cầu đã duyệt — nhưng nếu URL đã có khoId thì URL được ưu tiên
+                if (req?.trangThai === 2 && req?.khoId && !urlKhoId) {
                     setFormData(prev => ({ ...prev, khoId: req.khoId }));
                 }
             } catch {
@@ -202,6 +218,7 @@ export default function PurchaseOrderCreate() {
                 setLoadingRequest(false);
             }
         })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     /* ── Load master data ── */
@@ -234,6 +251,52 @@ export default function PurchaseOrderCreate() {
         loadData();
     }, []);
 
+    /* ─────────────────────────────────────────────────────────────────
+       PREFILL: khi productVariants đã có và URL có bienTheId
+       → tự động thêm biến thể đó vào orderItems một lần duy nhất
+    ───────────────────────────────────────────────────────────────── */
+    useEffect(() => {
+        // Điều kiện: có urlBienTheId, danh sách biến thể đã load, chưa inject
+        if (!urlBienTheId || productVariants.length === 0 || prefillDone) return;
+
+        const variant = productVariants.find(p => p.id === urlBienTheId);
+
+        if (!variant) {
+            // Biến thể không tìm thấy trong danh sách — không báo lỗi ngay, bỏ qua
+            console.warn(`[PrefillOrder] bienTheId=${urlBienTheId} không tìm thấy trong danh sách biến thể.`);
+            setPrefillDone(true);
+            return;
+        }
+
+        // Kiểm tra quyền: nếu allowedVariantIds đã được khởi tạo và không chứa variant này
+        // thì vẫn thêm vào (allowedVariantIds được tính sau khi myRequest load xong,
+        // useEffect này chạy song song — sẽ validate lại khi submit)
+        setOrderItems(prev => {
+            // Tránh duplicate nếu effect chạy lại
+            if (prev.some(item => item.bienTheSanPhamId === variant.id)) return prev;
+            return [...prev, {
+                bienTheSanPhamId: variant.id,
+                maBienThe: variant.maBienThe,
+                tenSanPham: variant.tenSanPham,
+                thuocTinh: variant.thuocTinh,
+                donViTinh: variant.donViTinh || '',
+                soLuongDat: 1,
+                donGia: 0,
+                ghiChu: '',
+                anhBienThe: variant.anhBienThe || null,
+            }];
+        });
+
+        setPrefillDone(true);
+
+        // Toast thông báo prefill thành công
+        toast.success(
+            `Đã tự động thêm "${variant.tenSanPham}" từ màn hình tồn kho`,
+            { description: `SKU: ${variant.maBienThe}` }
+        );
+    }, [urlBienTheId, productVariants, prefillDone]);
+    // allowedVariantIds KHÔNG phải dependency vì validate sẽ làm lại khi submit
+
     /* ── Filter products in dialog ── */
     useEffect(() => {
         if (!productVariants.length) return;
@@ -253,7 +316,6 @@ export default function PurchaseOrderCreate() {
             await applicationRequestService.createRequest(payload);
             toast.success('Đã gửi yêu cầu tạo đơn mua hàng. Vui lòng chờ admin duyệt.');
             setShowSendRequestDialog(false);
-            // Reload my request
             const req = await applicationRequestService.getMyRequest();
             setMyRequest(req);
         } catch (e) {
@@ -272,7 +334,6 @@ export default function PurchaseOrderCreate() {
             toast.error('Sản phẩm đã có trong đơn hàng!');
             return;
         }
-        // Guard: product must be in allowedVariantIds
         if (allowedVariantIds && !allowedVariantIds.has(product.id)) {
             toast.error('Sản phẩm này không có trong danh sách yêu cầu của bạn!');
             return;
@@ -321,6 +382,14 @@ export default function PurchaseOrderCreate() {
         for (const item of orderItems) {
             if (!item.soLuongDat || item.soLuongDat <= 0) {
                 toast.error(`Số lượng sản phẩm "${item.tenSanPham}" phải lớn hơn 0`);
+                return false;
+            }
+        }
+        // Validate allowedVariantIds lần cuối trước khi submit
+        if (allowedVariantIds) {
+            const invalid = orderItems.filter(item => !allowedVariantIds.has(item.bienTheSanPhamId));
+            if (invalid.length > 0) {
+                toast.error(`${invalid.map(i => i.maBienThe).join(', ')} không có trong yêu cầu đã duyệt.`);
                 return false;
             }
         }
@@ -385,7 +454,9 @@ export default function PurchaseOrderCreate() {
             <div className="p-5 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-3 bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm p-12">
                     <Loader2 className="h-8 w-8 animate-spin text-[#b8860b]" />
-                    <span className="text-[15px] font-medium text-slate-600">Đang khởi tạo biểu mẫu...</span>
+                    <span className="text-[15px] font-medium text-slate-600">
+                        {urlBienTheId ? 'Đang khởi tạo đơn hàng nhanh...' : 'Đang khởi tạo biểu mẫu...'}
+                    </span>
                 </div>
             </div>
         );
@@ -409,7 +480,6 @@ export default function PurchaseOrderCreate() {
                     onGoCreateRequest={() => setShowSendRequestDialog(true)}
                 />
 
-                {/* Placeholder blocked card */}
                 <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm p-12 flex flex-col items-center justify-center gap-4 text-center">
                     <div className="h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center">
                         <LockKeyhole className="h-8 w-8 text-slate-400" />
@@ -436,7 +506,6 @@ export default function PurchaseOrderCreate() {
                     )}
                 </div>
 
-                {/* Send Request Dialog */}
                 <SendRequestDialog
                     open={showSendRequestDialog}
                     onClose={() => setShowSendRequestDialog(false)}
@@ -449,7 +518,7 @@ export default function PurchaseOrderCreate() {
     }
 
     /* ══════════════════════════════════════════════════════════════════
-       MAIN FORM (only rendered when request is approved)
+       MAIN FORM
     ══════════════════════════════════════════════════════════════════ */
     return (
         <div className="p-5 space-y-5 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync">
@@ -464,6 +533,17 @@ export default function PurchaseOrderCreate() {
                     <ArrowLeft className="h-4 w-4" />
                     Quay lại danh sách
                 </button>
+
+                {/* Badge thông báo nếu đây là đơn được tạo nhanh từ màn hình tồn kho */}
+                {urlBienTheId && prefillDone && (
+                    <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-full px-3 py-1 text-xs font-semibold">
+                        <Zap className="h-3 w-3 text-amber-600" />
+                        Khởi tạo nhanh từ tồn kho
+                        {urlKhoId && (
+                            <span className="ml-1 text-amber-600">· Kho #{urlKhoId}</span>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* ── Approved request banner ── */}
@@ -499,19 +579,24 @@ export default function PurchaseOrderCreate() {
                             </div>
                         </div>
 
-                        {/* Kho tiếp nhận — cố định từ yêu cầu đã duyệt */}
+                        {/* Kho tiếp nhận */}
                         <div className="space-y-2">
                             <Label className="text-[13px] font-bold text-slate-700 flex items-center gap-1.5">
                                 Kho Tiếp Nhận
                                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
                                     <LockKeyhole className="h-2.5 w-2.5" />
-                                    Cố định
+                                    {urlKhoId ? 'Từ tồn kho' : 'Cố định'}
                                 </span>
                             </Label>
                             <div className="h-11 w-full flex items-center gap-2.5 px-4 rounded-xl border border-slate-200 bg-slate-50 cursor-not-allowed select-none">
                                 <Package className="h-4 w-4 text-slate-400 shrink-0" />
                                 <span className="flex-1 truncate text-[14px] font-semibold text-slate-700">
-                                    {selectedWarehouse ? selectedWarehouse.tenKho : `Kho #${myRequest?.khoId}`}
+                                    {selectedWarehouse
+                                        ? selectedWarehouse.tenKho
+                                        : formData.khoId
+                                            ? `Kho #${formData.khoId}`
+                                            : 'Chưa xác định kho'
+                                    }
                                 </span>
                                 <LockKeyhole className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                             </div>
@@ -583,7 +668,11 @@ export default function PurchaseOrderCreate() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-[340px] max-h-[320px] overflow-y-auto bg-white rounded-xl shadow-lg" align="start">
                                 {suppliers.map((s) => (
-                                    <DropdownMenuItem key={s.id} onClick={() => handleInputChange('nhaCungCapId', s.id)} className="cursor-pointer p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5">
+                                    <DropdownMenuItem
+                                        key={s.id}
+                                        onClick={() => handleInputChange('nhaCungCapId', s.id)}
+                                        className="cursor-pointer p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5"
+                                    >
                                         <span className="font-bold text-slate-800">{s.tenNhaCungCap}</span>
                                         <span className="text-[12px] text-slate-500">{s.email}</span>
                                     </DropdownMenuItem>
@@ -606,13 +695,11 @@ export default function PurchaseOrderCreate() {
             {/* ── Order Items Table ── */}
             <SectionCard title="Danh sách Sản phẩm" icon={ShoppingCart} iconBg="bg-emerald-100" iconColor="text-emerald-600">
 
-                {/* Allowed variants info */}
                 {allowedVariantIds && (
                     <Alert className="border-blue-200 bg-blue-50 rounded-xl py-3">
                         <Info className="h-4 w-4 text-blue-600" />
                         <AlertDescription className="text-blue-800 text-sm font-medium">
                             Chỉ có thể thêm sản phẩm nằm trong yêu cầu đã duyệt ({allowedVariantIds.size} biến thể được phép).
-                            Các sản phẩm khác sẽ bị vô hiệu hóa.
                         </AlertDescription>
                     </Alert>
                 )}
@@ -645,7 +732,9 @@ export default function PurchaseOrderCreate() {
                             <TableRow className="bg-slate-50">
                                 <TableHead className="font-bold text-slate-700">Sản phẩm</TableHead>
                                 <TableHead className="font-bold text-slate-700 text-center w-32">Số lượng</TableHead>
-                                <TableHead className="w-12"></TableHead>
+                                <TableHead className="font-bold text-slate-700 text-right w-40">Đơn giá</TableHead>
+                                <TableHead className="font-bold text-slate-700 text-right">Thành tiền</TableHead>
+                                <TableHead className="w-10"></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -654,7 +743,8 @@ export default function PurchaseOrderCreate() {
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             {item.anhBienThe?.tepTin?.duongDan ? (
-                                                <img src={item.anhBienThe.tepTin.duongDan} alt="" className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0" />
+                                                <img src={item.anhBienThe.tepTin.duongDan} alt=""
+                                                    className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0" />
                                             ) : (
                                                 <div className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
                                                     <Package className="h-4 w-4 text-slate-400" />
@@ -740,12 +830,9 @@ export default function PurchaseOrderCreate() {
                 </div>
             </SectionCard>
 
-            {/* ══════════════════════════════════════════════════════════
-                PRODUCT PICKER DIALOG — with allowedVariantIds gate
-            ══════════════════════════════════════════════════════════ */}
+            {/* ── Product Picker Dialog ── */}
             <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
                 <DialogContent className="sm:max-w-2xl rounded-2xl overflow-hidden p-0 border-0 shadow-2xl flex flex-col max-h-[80vh]">
-                    {/* Header */}
                     <div className="bg-[#1a1612] p-6 flex items-center gap-3 shrink-0">
                         <div className="h-10 w-10 bg-white/10 rounded-full flex items-center justify-center shrink-0">
                             <Package className="h-5 w-5 text-[#d4a017]" />
@@ -760,7 +847,6 @@ export default function PurchaseOrderCreate() {
                         </div>
                     </div>
 
-                    {/* Search */}
                     <div className="px-6 pt-4 pb-3 bg-[#fffdf8] border-b border-[#eadfc8] shrink-0">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#b8a98a]" />
@@ -774,7 +860,6 @@ export default function PurchaseOrderCreate() {
                         </div>
                     </div>
 
-                    {/* Table */}
                     <div className="overflow-y-auto flex-1 bg-[#fffdf8]">
                         <Table>
                             <TableHeader>
@@ -792,85 +877,75 @@ export default function PurchaseOrderCreate() {
                                             <p className="text-[15px] font-bold text-[#2f2a23]">Không tìm thấy mặt hàng</p>
                                         </TableCell>
                                     </TableRow>
-                                ) : (
-                                    filteredProducts.map((product) => {
-                                        const isSelected = orderItems.some(item => item.bienTheSanPhamId === product.id);
-                                        const isAllowed = !allowedVariantIds || allowedVariantIds.has(product.id);
-                                        const isDisabled = isSelected || !isAllowed;
+                                ) : filteredProducts.map((product) => {
+                                    const isSelected = orderItems.some(item => item.bienTheSanPhamId === product.id);
+                                    const isAllowed = !allowedVariantIds || allowedVariantIds.has(product.id);
 
-                                        return (
-                                            <TableRow
-                                                key={product.id}
-                                                className={`border-b border-[#f0e7d8] transition-colors ${isSelected
-                                                    ? 'opacity-60 bg-[#f8f3e8]'
-                                                    : !isAllowed
-                                                        ? 'opacity-40 bg-[#fafafa]'
+                                    return (
+                                        <TableRow
+                                            key={product.id}
+                                            className={`border-b border-[#f0e7d8] transition-colors ${isSelected ? 'opacity-60 bg-[#f8f3e8]'
+                                                    : !isAllowed ? 'opacity-40 bg-[#fafafa]'
                                                         : 'bg-[#fffdf8] hover:bg-[#fff7ea]'
-                                                    }`}
-                                            >
-                                                <TableCell className="font-mono text-[13px] text-[#9c7414] font-bold whitespace-nowrap pl-6">
-                                                    {product.maBienThe}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-3">
-                                                        {product.anhBienThe?.tepTin?.duongDan ? (
-                                                            <img src={product.anhBienThe.tepTin.duongDan} alt="" className="h-10 w-10 rounded-xl object-cover border border-[#e8dcc8] shrink-0" />
-                                                        ) : (
-                                                            <div className="h-10 w-10 rounded-xl bg-[#f6f0e5] border border-[#e8dcc8] flex items-center justify-center shrink-0">
-                                                                <Package className="h-4 w-4 text-[#c7b79c]" />
-                                                            </div>
-                                                        )}
-                                                        <div>
-                                                            <p className="font-bold text-[14px] text-[#1e2c48] line-clamp-1">{product.tenSanPham}</p>
-                                                            <p className="text-[12px] text-[#6f7f99] mt-0.5">{product.thuocTinh}</p>
-                                                            {/* Not-allowed tooltip */}
-                                                            {!isAllowed && (
-                                                                <p className="text-[11px] text-red-500 font-semibold mt-0.5 flex items-center gap-1">
-                                                                    <LockKeyhole className="h-3 w-3" />
-                                                                    Không có trong yêu cầu của bạn
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    {isSelected ? (
-                                                        <Button size="sm" variant="outline" disabled className="h-8 rounded-xl gap-1 border-[#e2d5bd] text-[#a89f92] font-semibold bg-[#f7f3ea]">
-                                                            <CheckCircle className="h-3.5 w-3.5" /> Đã thêm
-                                                        </Button>
-                                                    ) : !isAllowed ? (
-                                                        <Button
-                                                            size="sm"
-                                                            disabled
-                                                            className="h-8 rounded-xl gap-1 bg-gray-100 text-gray-400 font-semibold cursor-not-allowed"
-                                                            title="Sản phẩm này không có trong yêu cầu của bạn"
-                                                        >
-                                                            <LockKeyhole className="h-3.5 w-3.5" /> Không khả dụng
-                                                        </Button>
+                                                }`}
+                                        >
+                                            <TableCell className="font-mono text-[13px] text-[#9c7414] font-bold whitespace-nowrap pl-6">
+                                                {product.maBienThe}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    {product.anhBienThe?.tepTin?.duongDan ? (
+                                                        <img src={product.anhBienThe.tepTin.duongDan} alt=""
+                                                            className="h-10 w-10 rounded-xl object-cover border border-[#e8dcc8] shrink-0" />
                                                     ) : (
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => handleAddProduct(product)}
-                                                            className="h-8 rounded-xl gap-1 bg-gradient-to-r from-[#b8860b] to-[#d4a017] hover:brightness-95 text-white font-semibold shadow-sm"
-                                                        >
-                                                            <Plus className="h-3.5 w-3.5" /> Lấy
-                                                        </Button>
+                                                        <div className="h-10 w-10 rounded-xl bg-[#f6f0e5] border border-[#e8dcc8] flex items-center justify-center shrink-0">
+                                                            <Package className="h-4 w-4 text-[#c7b79c]" />
+                                                        </div>
                                                     )}
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })
-                                )}
+                                                    <div>
+                                                        <p className="font-bold text-[14px] text-[#1e2c48] line-clamp-1">{product.tenSanPham}</p>
+                                                        <p className="text-[12px] text-[#6f7f99] mt-0.5">{product.thuocTinh}</p>
+                                                        {!isAllowed && (
+                                                            <p className="text-[11px] text-red-500 font-semibold mt-0.5 flex items-center gap-1">
+                                                                <LockKeyhole className="h-3 w-3" />
+                                                                Không có trong yêu cầu của bạn
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                {isSelected ? (
+                                                    <Button size="sm" variant="outline" disabled
+                                                        className="h-8 rounded-xl gap-1 border-[#e2d5bd] text-[#a89f92] font-semibold bg-[#f7f3ea]">
+                                                        <CheckCircle className="h-3.5 w-3.5" /> Đã thêm
+                                                    </Button>
+                                                ) : !isAllowed ? (
+                                                    <Button size="sm" disabled
+                                                        className="h-8 rounded-xl gap-1 bg-gray-100 text-gray-400 font-semibold cursor-not-allowed">
+                                                        <LockKeyhole className="h-3.5 w-3.5" /> Không khả dụng
+                                                    </Button>
+                                                ) : (
+                                                    <Button size="sm" onClick={() => handleAddProduct(product)}
+                                                        className="h-8 rounded-xl gap-1 bg-gradient-to-r from-[#b8860b] to-[#d4a017] hover:brightness-95 text-white font-semibold shadow-sm">
+                                                        <Plus className="h-3.5 w-3.5" /> Lấy
+                                                    </Button>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </div>
 
-                    {/* Footer */}
                     <div className="shrink-0 border-t border-[#eadfc8] bg-[#f8f3e8] px-6 py-3 flex items-center justify-between text-xs text-[#7a6e5f]">
                         <span>
                             Hiển thị <span className="font-bold text-[#b8860b]">{filteredProducts.length}</span> mặt hàng
                             {allowedVariantIds && (
-                                <> · <span className="font-bold text-green-700">{filteredProducts.filter(p => allowedVariantIds.has(p.id)).length}</span> khả dụng</>
+                                <> · <span className="font-bold text-green-700">
+                                    {filteredProducts.filter(p => allowedVariantIds.has(p.id)).length}
+                                </span> khả dụng</>
                             )}
                         </span>
                         <span>Đã chọn: <span className="font-bold text-[#1a1612]">{orderItems.length}</span></span>
@@ -905,14 +980,18 @@ export default function PurchaseOrderCreate() {
                                     </div>
                                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
                                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mặt hàng</p>
-                                        <p className="font-black text-[15px] text-emerald-600">{orderItems.length} <span className="text-[12px] font-medium text-slate-500">sp</span></p>
+                                        <p className="font-black text-[15px] text-emerald-600">
+                                            {orderItems.length} <span className="text-[12px] font-medium text-slate-500">sp</span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         )}
                         <DialogFooter className="gap-2 mt-4">
-                            <Button variant="outline" onClick={() => setShowSendDialog(false)} disabled={sendingEmail} className="h-11 rounded-xl font-semibold w-full sm:w-auto">Hủy bỏ</Button>
-                            <Button onClick={confirmSendEmail} disabled={sendingEmail} className="h-11 rounded-xl font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-md w-full sm:w-auto">
+                            <Button variant="outline" onClick={() => setShowSendDialog(false)} disabled={sendingEmail}
+                                className="h-11 rounded-xl font-semibold w-full sm:w-auto">Hủy bỏ</Button>
+                            <Button onClick={confirmSendEmail} disabled={sendingEmail}
+                                className="h-11 rounded-xl font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-md w-full sm:w-auto">
                                 {sendingEmail
                                     ? <><Loader2 className="h-5 w-5 animate-spin mr-2" />Đang gửi thư...</>
                                     : <><Send className="h-4 w-4 mr-2" />Phát lệnh gửi</>
@@ -923,7 +1002,7 @@ export default function PurchaseOrderCreate() {
                 </DialogContent>
             </Dialog>
 
-            {/* Send Request Dialog (khi cần gửi lại từ trong form) */}
+            {/* Send Request Dialog */}
             <SendRequestDialog
                 open={showSendRequestDialog}
                 onClose={() => setShowSendRequestDialog(false)}

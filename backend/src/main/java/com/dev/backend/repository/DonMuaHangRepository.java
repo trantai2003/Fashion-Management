@@ -15,4 +15,10 @@ public interface DonMuaHangRepository extends JpaRepository<DonMuaHang, Integer>
 """)
     Long countPendingPurchaseOrders();
 
+    @Query("""
+    select count(d)
+    from DonMuaHang d
+    where DATE(d.ngayTao) = CURRENT_DATE
+    """)
+    Long countPurchaseToday();
 }

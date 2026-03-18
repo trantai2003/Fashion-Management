@@ -293,9 +293,19 @@ export default function BackofficeLayout() {
         },
         {
             key: "INVENTORY_REPORT",
-            match: (path) => path === "/reports/inventory",
+            match: (path) => path === "/bao-cao/ton-kho",
             title: "Báo cáo tồn kho",
         },
+        {
+            key: "SALES_INVOICE_PRINT",
+            match: (path) => /^\/sales-orders\/\d+\/invoice$/.test(path),
+            title: "In hóa đơn bán hàng",
+        },
+        {
+            key: "USER_DETAIL",
+            match: (path) => /^\/users\/\d+$/.test(path),
+            title: "Thông tin chi tiết người dùng",
+        }
     ];
 
     const pageMeta = PAGE_META_CONFIG.find((item) =>

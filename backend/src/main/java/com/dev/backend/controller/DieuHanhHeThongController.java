@@ -3,10 +3,14 @@ package com.dev.backend.controller;
 import com.dev.backend.constant.variables.IPermissionType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
+import com.dev.backend.dto.request.GanVaiTro;
 import com.dev.backend.dto.request.PhanQuyenNguoiDungKhoCreating;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.QuyenHanDto;
+import com.dev.backend.entities.NguoiDung;
+import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.QuyenHanMapper;
+import com.dev.backend.services.impl.entities.NguoiDungService;
 import com.dev.backend.services.impl.entities.QuyenHanService;
 import com.dev.backend.services.multitable.DieuHanhHeThongService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +31,9 @@ class DieuHanhHeThongController {
 
     @Autowired
     private QuyenHanMapper quyenHanMapper;
+
+    @Autowired
+    private NguoiDungService nguoiDungService;
 
 
     //Lấy danh sách quyền hạn trong hệ thống
@@ -53,6 +60,25 @@ class DieuHanhHeThongController {
             @RequestBody PhanQuyenNguoiDungKhoCreating pqndkCreating) {
 
         return dieuHanhHeThongService.ganQuyenNhanVienKho(pqndkCreating);
+    }
+
+    @PutMapping("/vai-tro/gan-vai-tro")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}
+    )
+    public ResponseEntity<ResponseData<String>> ganVaiTro(
+            @RequestBody GanVaiTro ganVaiTro) {
+        NguoiDung nguoiDung  = nguoiDungService.getOne(ganVaiTro.getId()).orElseThrow(
+                () -> new CommonException("Không tìm thấy người dùng id: " + ganVaiTro.getId())
+        );
+        nguoiDung.setVaiTro(ganVaiTro.getVaiTro());
+        nguoiDungService.update(ganVaiTro.getId(), nguoiDung);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Success")
+                        .build()
+        );
     }
 
 

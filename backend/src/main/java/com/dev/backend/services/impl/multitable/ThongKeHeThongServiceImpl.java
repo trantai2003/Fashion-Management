@@ -1,7 +1,9 @@
 package com.dev.backend.services.impl.multitable;
 
+import com.dev.backend.dto.TonKhoProjection;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.customize.TonKhoChiTietDTO;
+import com.dev.backend.repository.TonKhoTongHopRepository;
 import com.dev.backend.services.impl.entities.TonKhoTheoLoService;
 import com.dev.backend.services.multitable.ThongKeHeThongService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,8 @@ public class ThongKeHeThongServiceImpl implements ThongKeHeThongService {
 
     @Autowired
     private TonKhoTheoLoService tonKhoTheoLoService;
+    @Autowired
+    private TonKhoTongHopRepository tonKhoTongHopRepository;
 
 
     @Override
@@ -47,6 +51,18 @@ public class ThongKeHeThongServiceImpl implements ThongKeHeThongService {
                         .status(HttpStatus.OK.value())
                         .data(tonKhoTheoLoService.findTonKhoChiTietByBienTheAndKho(bienTheId, khoId))
                         .message("Success")
+                        .build()
+        );
+    }
+
+    @Override
+    public ResponseEntity<ResponseData<List<TonKhoProjection>>> tonKhoTongHop(Integer khoId, String keyword) {
+        return ResponseEntity.ok(
+                ResponseData.<List<TonKhoProjection>>builder()
+                        .status(HttpStatus.OK.value())
+                        .data(tonKhoTongHopRepository.findTonKhoTongHop(khoId, keyword))
+                        .message("Success")
+                        .error(null)
                         .build()
         );
     }

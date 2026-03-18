@@ -21,6 +21,15 @@ export const khoService = {
   delete: (id) => {
     return apiClient.delete(`/api/v1/kho/soft-delete/${id}`);
   },
+  getAllKho: async () => {
+    const res = await apiClient.post("/api/v1/kho/filter", {
+      filters: [],
+      sorts: [],
+      page: 0,
+      size: 1000,
+    });
+    return res.data;
+  },
   getManagers: () => {
     return apiClient.post("/api/v1/admin/filter", {
       page: 0,
