@@ -27,4 +27,8 @@ export const donBanHangService = {
   getCustomersForCreate() {
     return apiClient.get("/api/v1/khach-hang/for-sales-order");
   },
+  async markAsDelivered(id) {
+    const res = await apiClient.put(`/api/v1/don-ban-hang/${id}/mark-delivered`);
+    return res.data;
+  }
 };

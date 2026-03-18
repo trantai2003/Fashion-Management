@@ -162,4 +162,26 @@ public class DonBanHangController {
                         .build()
         );
     }
+    @PutMapping("/{id}/mark-delivered")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> markAsDelivered(
+            @PathVariable Integer id
+    ) {
+        donBanHangService.markAsDelivered(id);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(200)
+                        .data("Success")
+                        .message("Đã xác nhận giao hàng thành công")
+                        .error(null)
+                        .build()
+        );
+    }
 }

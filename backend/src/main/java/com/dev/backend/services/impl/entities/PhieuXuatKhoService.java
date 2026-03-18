@@ -280,11 +280,11 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             }
         }
         if (allFull) {
-            don.setTrangThai(3); // Hoàn thành
+            don.setTrangThai(3); // Toàn bộ hàng đã xuất kho -> Chuyển sang Đang giao hàng
         } else if (!allZero) {
-            don.setTrangThai(2); // Đang xuất kho
+            don.setTrangThai(2); // Có hàng đã xuất nhưng chưa đủ -> Đang xuất kho
         } else {
-            don.setTrangThai(1); // Chờ xuất kho
+            don.setTrangThai(1); // Chưa có hàng nào xuất -> Chờ xuất kho
         }
         entityManager.merge(don);
     }
