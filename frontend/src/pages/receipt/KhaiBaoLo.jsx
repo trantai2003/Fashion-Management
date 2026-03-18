@@ -244,11 +244,11 @@ export default function KhaiBaoLo() {
                     <div>
                         <button
                             type="button"
-                            onClick={() => navigate("/goods-receipts")}
+                            onClick={() => navigate(`/goods-receipts/${phieuNhapKhoId}`)}
                             className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
                         >
                             <ArrowLeft className="h-4 w-4" />
-                            Quay lại danh sách
+                            Quay lại chi tiết phiếu nhập
                         </button>
                     </div>
 
