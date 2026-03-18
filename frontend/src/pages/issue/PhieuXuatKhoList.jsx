@@ -73,7 +73,6 @@ export default function PhieuXuatKhoList() {
             const res = await phieuXuatKhoService.filter(buildFilterPayload());
             let finalData = res.content || [];
             
-            // XÓA BỎ LỌC LOẠI PHIẾU, CHỈ CÒN GIỮ LẠI LỌC NGÀY XUẤT
             if (filters.ngayXuat) {
                 finalData = finalData.filter((item) => {
                     const dateValue = item.ngayXuat || item.ngayTao;

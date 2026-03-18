@@ -336,7 +336,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
 
         // 1. KIỂM TRA TRẠNG THÁI PHÙ HỢP
         boolean isXuatChuyenKho = "chuyen_kho".equals(phieu.getLoaiXuat()) && phieu.getPhieuChuyenKhoGoc() != null;
-        boolean isYeuCauChuyenKho = "chuyen_kho".equals(phieu.getLoaiXuat()) && phieu.getPhieuChuyenKhoGoc() == null;
+        boolean isYeuCauChuyenKho = "khac".equals(phieu.getLoaiXuat()) && phieu.getPhieuChuyenKhoGoc() == null;
         if (isXuatChuyenKho) {
             if (phieu.getTrangThai() != 0) throw new RuntimeException("Chỉ được pick lô cho phiếu xuất chuyển kho ở trạng thái Nháp (0)");
         } else if ("ban_hang".equals(phieu.getLoaiXuat())) {
@@ -621,12 +621,23 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         }
 
         // KIỂM TRA QUYỀN: Phải là Quản lý Kho A (Kho xuất) mới được duyệt cho đi
-        boolean isAdmin = SecurityContextHolder.getUser().getVaiTro().contains(IRoleType.quan_tri_vien);
-        Integer userWarehouseId = SecurityContextHolder.getKhoId();
+        NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
+        boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
+        Integer khoXuatId = phieu.getKho().getId();
 
-        if (!isAdmin && !phieu.getKho().getId().equals(userWarehouseId)) {
-            throw new AccessDeniedException("Bạn không có quyền duyệt phiếu này. Chỉ quản lý tại kho xuất ("
-                    + phieu.getKho().getTenKho() + ") mới có quyền cho phép xuất hàng.");
+        if (!isAdmin) {
+            // Lấy danh sách ID các kho mà user hiện tại được phân quyền quản lý
+            List<Integer> assignedWarehouseIds = phanQuyenNguoiDungKhoRepository
+                    .findByNguoiDungIdAndActive(currentUser.getId())
+                    .stream()
+                    .map(pq -> pq.getKho().getId())
+                    .toList();
+
+            // Kiểm tra xem kho xuất của phiếu có nằm trong danh sách được cấp quyền không
+            if (!assignedWarehouseIds.contains(khoXuatId)) {
+                throw new AccessDeniedException("Bạn không có quyền duyệt phiếu này. Chỉ quản lý tại kho xuất ("
+                        + phieu.getKho().getTenKho() + ") mới có quyền cho phép xuất hàng.");
+            }
         }
 
         NguoiDung nguoiDuyet = nguoiDungRepository.findById(nguoiDuyetId).orElseThrow();
@@ -660,7 +671,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         PhieuXuatKho phieu = repository.findById(id)
                 .orElseThrow(() -> new CommonException("Không tìm thấy phiếu chuyển kho id: " + id));
 
-        if (!"chuyen_kho".equals(phieu.getLoaiXuat())) {
+        if (!"khac".equals(phieu.getLoaiXuat())) {
             throw new RuntimeException("Đây không phải là phiếu chuyển kho nội bộ");
         }
 
