@@ -271,7 +271,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                         bienTheSanPham.setMauSac(mauSac);
                         bienTheSanPham.setSize(size);
                         bienTheSanPham.setChatLieu(chatLieu);
-                        bienTheSanPham.setTrangThai(btspCreating.getTrangThai());
+                        bienTheSanPham.setTrangThai(1);
                         bienTheSanPham.setNgayTao(instantNow);
 
                         bienTheSanPhamService.create(bienTheSanPham);
