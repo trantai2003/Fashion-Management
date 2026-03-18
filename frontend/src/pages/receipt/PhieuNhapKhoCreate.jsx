@@ -215,7 +215,7 @@ export default function PhieuNhapKhoCreate() {
             const [poRes, transferRes3, transferRes4, allReceiptsRes, allIssuesRes] = await Promise.all([
                 purchaseOrderService.filter({
                     page: 0, size: 1000,
-                    filters: [{ fieldName: "trangThai", operator: "EQUALS", value: 4 }],
+                    filters: [{ fieldName: "trangThai", operator: "IN", value: [4, 5] }],
                     sorts: [{ fieldName: "id", direction: "DESC" }]
                 }).catch(() => ({ content: [] })),
 
@@ -239,10 +239,16 @@ export default function PhieuNhapKhoCreate() {
 
             const rawPoList = poRes.data?.content || poRes.content || [];
             const validPoList = rawPoList.filter(po => {
-                if (po.trangThai !== 4) return false;
+                if (po.trangThai !== 4 && po.trangThai !== 5) return false;
+                const targetKhoId = po.khoNhap?.id || po.khoNhapId;
+                if (!targetKhoId) return false;
+
+                const isMyWarehouse = myWarehouseIds.map(Number).includes(Number(targetKhoId));
+                if (!isMyWarehouse) return false;
                 if (po.chiTietDonMuaHangs && Array.isArray(po.chiTietDonMuaHangs)) {
                     return po.chiTietDonMuaHangs.some(ct => (ct.soLuongDaNhan || 0) < (ct.soLuongDat || 0));
                 }
+
                 return true;
             });
             setPoList(validPoList);
