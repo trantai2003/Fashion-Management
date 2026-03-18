@@ -5,6 +5,7 @@ import { getMineKhoList } from "@/services/khoService";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, ClipboardList, Building2, Package } from "lucide-react";
+import { createPortal } from "react-dom";
 
 // ── Trạng thái ────────────────────────────────────────────────────────────
 const STATUS_MAP = {
@@ -332,8 +333,8 @@ export default function PhieuChuyenKhoDetail() {
             </div>
 
             {/* ── Modal xác nhận huỷ ── */}
-            {showCancelConfirm && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-[1px]">
+            {showCancelConfirm && createPortal(
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] p-4 backdrop-blur-[1px]">
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
                         {/* Modal header */}
                         <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
@@ -378,7 +379,8 @@ export default function PhieuChuyenKhoDetail() {
                             </Button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body // Gắn thẳng modal vào thẻ body
             )}
         </div>
     );
