@@ -7,7 +7,6 @@ import {
 
 import { Button } from "@/components/ui/button";
 import {
-
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
@@ -18,6 +17,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useSidebar } from "@/components/ui/sidebar";
+
 export default function BackofficeHeader({
   title,
   subtitle,
@@ -39,13 +39,15 @@ export default function BackofficeHeader({
       console.error("Invalid token", e);
     }
   }
+
   const handleLogout = () => {
-    localStorage.clear()
+    localStorage.clear();
     sessionStorage.clear();
     navigate("/login");
   };
 
   const isWarehouseHeader = routeKey === "WAREHOUSE";
+
   const luxuryDetailHeaderKeys = new Set([
     "LOT_INPUT",
     "GOODS_RECEIPTS_DETAIL",
@@ -68,7 +70,9 @@ export default function BackofficeHeader({
     "CHI_TIET_SAN_PHAM",
     "INVENTORY_REPORT",
   ]);
+
   const isLuxuryDetailHeader = routeKey ? luxuryDetailHeaderKeys.has(routeKey) : false;
+
   const mainHeaderKeys = new Set([
     "DASHBOARD",
     "USER_LIST",
@@ -91,10 +95,15 @@ export default function BackofficeHeader({
     "BAO_CAO_DOANH_THU",
     "BAO_CAO_KHACH_HANG",
     "BAO_CAO_NHAP_XUAT",
+    "LICH_SU_GIAO_DICH_KHO", // ← thêm vào đây
   ]);
+
   const isMainScreenHeader = routeKey ? mainHeaderKeys.has(routeKey) : false;
 
-  const headerEyebrow = isWarehouseHeader ? "FS WMS · INVENTORY" : "FS WMS - TECHNOLOGY SOLUTION";
+  const headerEyebrow = isWarehouseHeader
+    ? "FS WMS · INVENTORY"
+    : "FS WMS - TECHNOLOGY SOLUTION";
+
   const mainTitle = isWarehouseHeader ? "Quản lý kho hàng" : title;
 
   const buildTwoToneTitle = (rawTitle, key) => {
@@ -115,7 +124,9 @@ export default function BackofficeHeader({
     };
   };
 
+  // "Lịch sử giao dịch kho" → base: "Lịch sử" | accent: "giao dịch kho"
   const { base: mainTitleBase, accent: mainTitleAccent } = buildTwoToneTitle(mainTitle, routeKey);
+
   return (
     <header className="sticky top-0 z-40 border-b border-[#b8860b]/20 bg-[#fffaf0]">
       <div className="h-16 px-6 flex items-center justify-between">
@@ -146,15 +157,13 @@ export default function BackofficeHeader({
                 className="text-[20px] md:text-[24px] lg:text-[26px] leading-tight font-black text-[#1a1612]"
                 style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em" }}
               >
-                <>
-                  {mainTitleBase}
-                  {mainTitleAccent ? (
-                    <>
-                      {" "}
-                      <span className="text-[#b8860b]">{mainTitleAccent}</span>
-                    </>
-                  ) : null}
-                </>
+                {mainTitleBase}
+                {mainTitleAccent ? (
+                  <>
+                    {" "}
+                    <span className="text-[#b8860b]">{mainTitleAccent}</span>
+                  </>
+                ) : null}
               </h1>
             </div>
           ) : isLuxuryDetailHeader ? (
@@ -169,15 +178,13 @@ export default function BackofficeHeader({
                 className="text-[20px] md:text-[24px] lg:text-[26px] leading-tight font-black text-[#1a1612]"
                 style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em" }}
               >
-                <>
-                  {mainTitleBase}
-                  {mainTitleAccent ? (
-                    <>
-                      {" "}
-                      <span className="text-[#b8860b]">{mainTitleAccent}</span>
-                    </>
-                  ) : null}
-                </>
+                {mainTitleBase}
+                {mainTitleAccent ? (
+                  <>
+                    {" "}
+                    <span className="text-[#b8860b]">{mainTitleAccent}</span>
+                  </>
+                ) : null}
               </h1>
             </div>
           ) : (
@@ -186,18 +193,14 @@ export default function BackofficeHeader({
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-xs text-[#7a6e5f]">
-                  {subtitle}
-                </p>
+                <p className="text-xs text-[#7a6e5f]">{subtitle}</p>
               )}
             </div>
           )}
         </div>
 
-
         {/* Right */}
         <div className="flex items-center gap-4">
-          {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -207,14 +210,12 @@ export default function BackofficeHeader({
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="" alt="Admin Avatar" />
                   <AvatarFallback className="bg-gradient-to-br from-[#d4a72b] to-[#b8860b] text-white text-sm font-semibold">
-                    {username ? username.charAt(0).toUpperCase() : 'A'}
+                    {username ? username.charAt(0).toUpperCase() : "A"}
                   </AvatarFallback>
                 </Avatar>
-
                 <span className="text-sm font-medium text-[#4a3f2f]">
                   {username}
                 </span>
-
                 <ChevronDown className="h-4 w-4 text-[#7a6e5f]" />
               </Button>
             </DropdownMenuTrigger>
@@ -222,19 +223,9 @@ export default function BackofficeHeader({
             <DropdownMenuContent
               align="end"
               sideOffset={4}
-              className="
-      w-52
-      bg-gradient-to-b from-[#fffaf0] to-[#f7f0df]
-      z-50
-      border border-[#b8860b]/25
-      shadow-[0_16px_40px_rgba(122,87,0,0.18)]
-      rounded-xl
-      p-1.5
-    "
+              className="w-52 bg-gradient-to-b from-[#fffaf0] to-[#f7f0df] z-50 border border-[#b8860b]/25 shadow-[0_16px_40px_rgba(122,87,0,0.18)] rounded-xl p-1.5"
             >
-              <DropdownMenuItem
-                asChild disabled={!userId}
-              >
+              <DropdownMenuItem asChild disabled={!userId}>
                 <Link
                   to={`/user/${userId}`}
                   className="text-sm px-3 py-2 rounded-md focus:bg-[#f2e4bc] text-[#4a3f2f] cursor-pointer"
@@ -243,7 +234,6 @@ export default function BackofficeHeader({
                   Hồ sơ
                 </Link>
               </DropdownMenuItem>
-
 
               <DropdownMenuItem
                 className="text-sm px-3 py-2 rounded-md focus:bg-[#f2e4bc] text-[#4a3f2f] cursor-pointer"
@@ -269,19 +259,13 @@ export default function BackofficeHeader({
 
               <DropdownMenuItem
                 onClick={handleLogout}
-                className="
-        text-sm px-3 py-2 rounded-md
-        text-[#b24a2d]
-        focus:bg-[#fde9df]
-        cursor-pointer
-      "
+                className="text-sm px-3 py-2 rounded-md text-[#b24a2d] focus:bg-[#fde9df] cursor-pointer"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 Đăng xuất
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
         </div>
       </div>
     </header>
