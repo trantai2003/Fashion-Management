@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface LichSuGiaoDichKhoRepository extends JpaRepository<LichSuGiaoDichKho, Integer> {
 
+    // ── Admin: lấy tất cả ─────────────────────────────────────────────────────
     @Query("""
         SELECT ls FROM LichSuGiaoDichKho ls
         LEFT JOIN FETCH ls.bienTheSanPham bts
@@ -24,6 +25,35 @@ public interface LichSuGiaoDichKhoRepository extends JpaRepository<LichSuGiaoDic
         """)
     List<LichSuGiaoDichKho> findAllWithDetails();
 
+    // ── Quản lý kho: lấy theo kho mình phụ trách (quanLy = currentUser) ───────
+    @Query("""
+        SELECT ls FROM LichSuGiaoDichKho ls
+        LEFT JOIN FETCH ls.bienTheSanPham bts
+        LEFT JOIN FETCH bts.sanPham
+        LEFT JOIN FETCH ls.loHang
+        LEFT JOIN FETCH ls.kho k
+        LEFT JOIN FETCH ls.khoChuyenDen
+        LEFT JOIN FETCH ls.nguoiDung
+        WHERE k.quanLy.id = :nguoiDungId
+        ORDER BY ls.ngayGiaoDich DESC
+        """)
+    List<LichSuGiaoDichKho> findAllByQuanLyId(@Param("nguoiDungId") Integer nguoiDungId);
+
+    // ── Nhân viên kho: lấy theo kho mình được phân công ───────────────────────
+    @Query("""
+        SELECT ls FROM LichSuGiaoDichKho ls
+        LEFT JOIN FETCH ls.bienTheSanPham bts
+        LEFT JOIN FETCH bts.sanPham
+        LEFT JOIN FETCH ls.loHang
+        LEFT JOIN FETCH ls.kho k
+        LEFT JOIN FETCH ls.khoChuyenDen
+        LEFT JOIN FETCH ls.nguoiDung
+        WHERE ls.nguoiDung.id = :nguoiDungId
+        ORDER BY ls.ngayGiaoDich DESC
+        """)
+    List<LichSuGiaoDichKho> findAllByNhanVienId(@Param("nguoiDungId") Integer nguoiDungId);
+
+    // ── Chi tiết theo id ───────────────────────────────────────────────────────
     @Query("""
         SELECT ls FROM LichSuGiaoDichKho ls
         LEFT JOIN FETCH ls.bienTheSanPham bts
