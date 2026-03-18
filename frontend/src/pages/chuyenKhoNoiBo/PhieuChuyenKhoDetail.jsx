@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
+import { getMineKhoList } from "@/services/khoService";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, ClipboardList, Building2, Package } from "lucide-react";
@@ -47,13 +48,14 @@ export default function PhieuChuyenKhoDetail() {
     const [loading,            setLoading]            = useState(false);
     const [showCancelConfirm,  setShowCancelConfirm]  = useState(false);
     const [isProcessing,       setIsProcessing]       = useState(false);
+    const [myWarehouseIds,      setMyWarehouseIds]     = useState([]);
 
     const role               = localStorage.getItem("role");
     const isAdmin            = role === "quan_tri_vien";
     const isQuanLy           = role === "quan_ly_kho" || isAdmin;
     const currentWarehouseId = Number(localStorage.getItem("selected_kho_id"));
 
-    useEffect(() => { fetchDetail(); }, [id]);
+    useEffect(() => { fetchDetail(); fetchMyWarehouses(); }, [id]);
 
     async function fetchDetail() {
         setLoading(true);
@@ -64,6 +66,14 @@ export default function PhieuChuyenKhoDetail() {
             toast.error("Không thể tải chi tiết phiếu chuyển kho");
         } finally {
             setLoading(false);
+        }
+    }
+    async function fetchMyWarehouses() {
+        try {
+            const listKho = await getMineKhoList();
+            setMyWarehouseIds(listKho.map(kho => kho.id));
+        } catch (error) {
+            console.error("Lỗi khi tải danh sách kho phân quyền:", error);
         }
     }
 
@@ -107,8 +117,8 @@ export default function PhieuChuyenKhoDetail() {
     }
 
     const st                   = STATUS_MAP[data.trangThai] ?? STATUS_MAP[0];
-    const isDestinationManager = isAdmin || (isQuanLy && data.khoNhapId === currentWarehouseId);
-    const isSourceStaff        = isAdmin || (data.khoXuatId === currentWarehouseId);
+    const isDestinationManager = isAdmin || (isQuanLy && myWarehouseIds.includes(data.khoNhapId));
+    const isSourceStaff        = isAdmin || myWarehouseIds.includes(data.khoXuatId);
     const totalItems           = data.items?.length || 0;
     const totalQty             = data.items?.reduce((s, i) => s + (i.soLuongYeuCau || 0), 0) || 0;
 
