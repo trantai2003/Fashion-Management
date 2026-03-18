@@ -243,9 +243,10 @@ export default function DonBanHangList() {
                         {filters.trangThai === "" && "Tất cả trạng thái"}
                         {filters.trangThai === "0" && "Nháp"}
                         {filters.trangThai === "1" && "Chờ xuất kho"}
-                        {filters.trangThai === "2" && "Đã xuất kho"}
-                        {filters.trangThai === "3" && "Hoàn thành"}
+                        {filters.trangThai === "2" && "Đã xuất kho 1 phần"}
+                        {filters.trangThai === "3" && "Đã xuất kho toàn bộ"}
                         {filters.trangThai === "4" && "Đã hủy"}
+                        {filters.trangThai === "5" && "Hoàn thành"}
                       </span>
                       <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
                     </Button>
