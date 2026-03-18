@@ -320,10 +320,14 @@ export default function PhieuNhapKhoCreate() {
         try {
             const res = await purchaseOrderService.getById(id);
             const data = res.data;
-            data.chiTietDonMuaHangs = data.chiTietDonMuaHangs.map(item => ({
-                ...item,
-                soLuongNhapTay: (item.soLuongDat || 0) - (item.soLuongDaNhan || 0)
-            }));
+            data.chiTietDonMuaHangs = data.chiTietDonMuaHangs.map(item => {
+                const maxQuantity = (item.soLuongDat || 0) - (item.soLuongDaNhan || 0);
+                return {
+                    ...item,
+                    maxSoLuong: maxQuantity,
+                    soLuongNhapTay: maxQuantity
+                };
+            });
             setSelectedPO(data);
             setForm(prev => ({
                 ...prev,
@@ -334,6 +338,28 @@ export default function PhieuNhapKhoCreate() {
         } catch (error) {
             toast.error("Không thể tải chi tiết đơn mua hàng");
         } finally { setActionLoading(false); }
+    };
+
+    const handleQuantityChange = (chiTietId, newValue) => {
+        setSelectedPO(prev => {
+            if (!prev) return prev;
+
+            const updatedItems = prev.chiTietDonMuaHangs.map(ct => {
+                if (ct.id === chiTietId) {
+                    let finalValue = newValue;
+                    if (newValue !== "") {
+                        finalValue = parseInt(newValue, 10);
+                        if (isNaN(finalValue) || finalValue < 0) finalValue = 0;
+                        if (finalValue > ct.maxSoLuong) finalValue = ct.maxSoLuong;
+                    }
+
+                    return { ...ct, soLuongNhapTay: finalValue };
+                }
+                return ct;
+            });
+
+            return { ...prev, chiTietDonMuaHangs: updatedItems };
+        });
     };
 
     const handleSelectTransfer = async (id) => {
@@ -361,7 +387,7 @@ export default function PhieuNhapKhoCreate() {
             if (!selectedPO) return toast.error("Vui lòng chọn đơn mua hàng (PO)"), null;
             const chiTiet = selectedPO.chiTietDonMuaHangs.map(ct => ({
                 bienTheSanPhamId: ct.bienTheSanPham.id,
-                soLuongDuKienNhap: ct.soLuongNhapTay
+                soLuongDuKienNhap: Number(ct.soLuongNhapTay) || 0
             })).filter(ct => ct.soLuongDuKienNhap > 0);
 
             try {
@@ -521,9 +547,22 @@ export default function PhieuNhapKhoCreate() {
                                                             <div className="font-mono text-[11px] text-[#b8860b] mt-0.5">{ct.bienTheSanPham?.maSku}</div>
                                                         </td>
                                                         <td className="wh-td text-center">
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <span className="text-[11px] opacity-40">ORDERED: {ct.soLuongDat}</span>
-                                                                <span className="font-black text-[#b8860b] text-base">{ct.soLuongNhapTay}</span>
+                                                            <div className="flex flex-col items-center justify-center gap-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        max={ct.maxSoLuong}
+                                                                        className="w-20 px-2 py-1.5 text-center font-black text-[#b8860b] text-base bg-white border border-[rgba(184,134,11,0.3)] rounded-lg outline-none focus:border-[#b8860b] focus:ring-2 focus:ring-[rgba(184,134,11,0.2)] transition-all"
+                                                                        value={ct.soLuongNhapTay}
+                                                                        onChange={(e) => handleQuantityChange(ct.id, e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                {ct.soLuongDaNhan > 0 && (
+                                                                    <span className="text-[10px] text-slate-400 font-medium">
+                                                                        Đã nhận: {ct.soLuongDaNhan}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </td>
                                                         <td className="wh-td text-right">
