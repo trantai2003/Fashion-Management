@@ -134,7 +134,7 @@ const STYLES = `
   height: 44px; padding: 0 16px; background: #faf8f3;
   font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
   color: rgba(184,134,11,0.6); text-transform: uppercase; letter-spacing: 0.1em;
-  text-align: left; border-bottom: 2px solid rgba(184,134,11,0.12);
+  border-bottom: 2px solid rgba(184,134,11,0.12);
 }
 .wh-td { padding: 14px 16px; border-bottom: 1px solid rgba(184,134,11,0.08); font-size: 14px; }
 
@@ -506,7 +506,7 @@ export default function PhieuNhapKhoCreate() {
                                         <table className="wh-tbl">
                                             <thead className="wh-thead">
                                                 <tr>
-                                                    <th className="wh-th">Sản phẩm</th>
+                                                    <th className="wh-th text-left">Sản phẩm</th>
                                                     <th className="wh-th text-center">Số lượng</th>
                                                     <th className="wh-th text-right">Trạng thái</th>
                                                 </tr>
@@ -515,7 +515,9 @@ export default function PhieuNhapKhoCreate() {
                                                 {importSource === "PO" ? selectedPO.chiTietDonMuaHangs.map(ct => (
                                                     <tr key={ct.id}>
                                                         <td className="wh-td">
-                                                            <div className="font-bold text-[#1a1612]">{ct.bienTheSanPham?.sanPham}</div>
+                                                            <div className="font-bold text-[#1a1612]">
+                                                                {ct.bienTheSanPham?.tenSanPham || 'Tên sản phẩm'}
+                                                            </div>
                                                             <div className="font-mono text-[11px] text-[#b8860b] mt-0.5">{ct.bienTheSanPham?.maSku}</div>
                                                         </td>
                                                         <td className="wh-td text-center">
@@ -535,7 +537,7 @@ export default function PhieuNhapKhoCreate() {
                                                             <div className="font-mono text-[11px] text-[#b8860b] mt-0.5">{item.sku}</div>
                                                         </td>
                                                         <td className="wh-td text-center">
-                                                            <span className="font-black text-[#6366f1] text-base">{item.soLuongCanXuat || item.soLuongDaPick}</span>
+                                                            <span className="font-black text-[#6366f1] text-base">{item.soLuongYeuCau}</span>
                                                         </td>
                                                         <td className="wh-td text-right">
                                                             <span className="badge-tag indigo">In Transit</span>
