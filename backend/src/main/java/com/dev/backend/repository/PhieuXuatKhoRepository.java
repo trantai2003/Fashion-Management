@@ -32,7 +32,7 @@ WHERE DATE(p.ngayXuat) = CURRENT_DATE
     Long countExportToday();
     @Query("SELECT p FROM PhieuXuatKho p LEFT JOIN p.donBanHang d " +
             "WHERE (:khoId IS NULL OR p.kho.id = :khoId) " +
-            "AND NOT (LOWER(p.loaiXuat) = 'khac' AND p.phieuChuyenKhoGoc IS NULL) " +
+            "AND p.loaiXuat IN ('ban_hang', 'chuyen_kho') " +
             "AND (:keyword IS NULL OR LOWER(p.soPhieuXuat) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(d.soDonHang) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:trangThai IS NULL OR p.trangThai = :trangThai) " +
             "AND (:tenKho IS NULL OR LOWER(p.kho.tenKho) LIKE LOWER(CONCAT('%', :tenKho, '%')))")
@@ -43,9 +43,11 @@ WHERE DATE(p.ngayXuat) = CURRENT_DATE
             @Param("tenKho") String tenKho,
             Pageable pageable
     );
+
+    // Đã cập nhật: Chỉ lấy YÊU CẦU CHUYỂN KHO (loai_xuat = 'khac')
     @Query("SELECT p FROM PhieuXuatKho p " +
             "WHERE (:khoId IS NULL OR (p.kho.id = :khoId OR p.khoChuyenDen.id = :khoId)) " +
-            "AND p.loaiXuat = 'khac' AND p.phieuChuyenKhoGoc IS NULL " +
+            "AND p.loaiXuat = 'khac' " +
             "AND (:keyword IS NULL OR LOWER(p.soPhieuXuat) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:trangThai IS NULL OR p.trangThai = :trangThai) " +
             "AND (:khoNhapTen IS NULL OR LOWER(p.khoChuyenDen.tenKho) LIKE LOWER(CONCAT('%', :khoNhapTen, '%')))")
