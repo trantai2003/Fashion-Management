@@ -31,13 +31,13 @@ WHERE DATE(p.ngayXuat) = CURRENT_DATE
 """)
     Long countExportToday();
     @Query("SELECT p FROM PhieuXuatKho p LEFT JOIN p.donBanHang d " +
-            "WHERE (:khoId IS NULL OR p.kho.id = :khoId) " +
+            "WHERE (:khoIds IS NULL OR p.kho.id IN :khoIds) " +
             "AND p.loaiXuat IN ('ban_hang', 'chuyen_kho') " +
             "AND (:keyword IS NULL OR LOWER(p.soPhieuXuat) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(d.soDonHang) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:trangThai IS NULL OR p.trangThai = :trangThai) " +
             "AND (:tenKho IS NULL OR LOWER(p.kho.tenKho) LIKE LOWER(CONCAT('%', :tenKho, '%')))")
     Page<PhieuXuatKho> findDanhSachThucXuat(
-            @Param("khoId") Integer khoId,
+            @Param("khoIds") List<Integer> khoIds, // Đổi sang List
             @Param("keyword") String keyword,
             @Param("trangThai") Integer trangThai,
             @Param("tenKho") String tenKho,

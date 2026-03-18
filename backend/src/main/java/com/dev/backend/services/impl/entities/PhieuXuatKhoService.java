@@ -67,8 +67,8 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         super(repository);
     }
 
-    public Page<PhieuXuatKho> getDanhSachThucXuatCustom(Integer khoId, String keyword, Integer trangThai, String tenKho, org.springframework.data.domain.Pageable pageable) {
-        return ((PhieuXuatKhoRepository) repository).findDanhSachThucXuat(khoId, keyword, trangThai, tenKho, pageable);
+    public Page<PhieuXuatKho> getDanhSachThucXuatCustom(List<Integer> khoIds, String keyword, Integer trangThai, String tenKho, org.springframework.data.domain.Pageable pageable) {
+        return ((PhieuXuatKhoRepository) repository).findDanhSachThucXuat(khoIds, keyword, trangThai, tenKho, pageable);
     }
 
     public Page<PhieuXuatKho> getDanhSachYeuCauChuyenKhoCustom(Integer khoId, String keyword, Integer trangThai, String khoNhapTen, org.springframework.data.domain.Pageable pageable) {

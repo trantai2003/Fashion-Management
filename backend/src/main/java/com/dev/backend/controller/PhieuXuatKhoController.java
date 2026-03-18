@@ -14,11 +14,14 @@ import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.customize.PhieuXuatKhoViewDto;
 import com.dev.backend.dto.response.customize.PickedLotDto;
 import com.dev.backend.dto.response.entities.ChiTietPhieuNhapKhoResponse;
+import com.dev.backend.dto.response.entities.NguoiDungAuthInfo;
 import com.dev.backend.dto.response.entities.PhieuXuatKhoDto;
 import com.dev.backend.dto.response.entities.TonKhoTheoLoDto;
 import com.dev.backend.entities.PhieuXuatKho;
 import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.PhieuXuatKhoMapper;
+import com.dev.backend.repository.PhanQuyenNguoiDungKhoRepository;
+import com.dev.backend.repository.PhieuXuatKhoRepository;
 import com.dev.backend.services.impl.entities.PhieuXuatKhoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -42,6 +45,9 @@ public class PhieuXuatKhoController {
 
     @Autowired
     private PhieuXuatKhoMapper phieuXuatKhoMapper;
+
+    @Autowired
+    private PhanQuyenNguoiDungKhoRepository phanQuyenNguoiDungKhoRepository;
 
     @PostMapping("/create")
     @RequireAuth(
@@ -192,7 +198,30 @@ public class PhieuXuatKhoController {
             rolesLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<Page<PhieuXuatKhoDto>>> filter(@RequestBody BaseFilterRequest request) {
-        Integer khoId = SecurityContextHolder.getKhoId();
+        NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
+        boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
+        List<Integer> khoIds = null; // Admin truyền null để lấy tất cả
+
+        if (!isAdmin) {
+            // Lấy danh sách ID kho user quản lý
+            khoIds = phanQuyenNguoiDungKhoRepository
+                    .findByNguoiDungIdAndActive(currentUser.getId())
+                    .stream()
+                    .map(pq -> pq.getKho().getId())
+                    .toList();
+
+            // Nếu không có quyền ở kho nào, trả về list rỗng luôn để tiết kiệm query
+            if (khoIds.isEmpty()) {
+                return ResponseEntity.ok(
+                        ResponseData.<Page<PhieuXuatKhoDto>>builder()
+                                .status(HttpStatus.OK.value())
+                                .data(Page.empty())
+                                .message("Bạn chưa được giao phụ trách kho nào.")
+                                .build()
+                );
+            }
+        }
+
         String keyword = null;
         Integer trangThai = null;
         String tenKho = null;
@@ -224,8 +253,8 @@ public class PhieuXuatKhoController {
 
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
 
-        // Gọi Query
-        Page<PhieuXuatKho> pageEntity = phieuXuatKhoService.getDanhSachThucXuatCustom(khoId, keyword, trangThai, tenKho, pageable);
+        // Truyền khoIds (List<Integer>) thay vì khoId (Integer)
+        Page<PhieuXuatKho> pageEntity = phieuXuatKhoService.getDanhSachThucXuatCustom(khoIds, keyword, trangThai, tenKho, pageable);
         Page<PhieuXuatKhoDto> pageDto = pageEntity.map(phieuXuatKhoMapper::toDto);
 
         return ResponseEntity.ok(
