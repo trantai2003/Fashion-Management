@@ -129,10 +129,10 @@ export default function PurchaseOrderList() {
             description: 'Nhà cung cấp đã gửi báo giá chi tiết'
         },
         5: {
-            label: 'Hoàn thành',
-            color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-            icon: CheckCircle,
-            description: 'Đơn hàng đã hoàn thành nhập kho'
+            label: 'Đã thanh toán',
+            color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+            icon: CreditCard,
+            description: 'Đơn hàng đã hoàn thành thanh toán'
         },
         6: {
             label: 'Đã hủy',
@@ -521,12 +521,14 @@ export default function PurchaseOrderList() {
                 <Button
                     variant="ghost"
                     size="icon"
+                    disabled={order.trangThai === 5}
                     onClick={(e) => {
                         e.stopPropagation();
                         handleViewPayment(order.id);
                     }}
+                    title={order.trangThai === 5 ? "Đơn hàng đã thanh toán" : "Thanh toán đơn hàng"}
                 >
-                    <CreditCard className="h-4 w-4 text-blue-600" />
+                    <CreditCard className={`h-4 w-4 ${order.trangThai === 5 ? 'text-gray-400' : 'text-blue-600'}`} />
                 </Button>
 
                 {/* Trạng thái = Chờ duyệt */}

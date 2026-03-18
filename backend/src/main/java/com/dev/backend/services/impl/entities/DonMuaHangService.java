@@ -349,8 +349,9 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             CassoResponse cassoResponse = cassoService.getListTransactionCasso(ngayThang, 1, 20, null);
 
             for (TransactionCasso tran : cassoResponse.getData().getRecords()) {
-                if (tran.getDescription().equals(tranCode) && Math.abs(Math.abs(tran.getAmount()) - Double.parseDouble(donMuaHang.getTongTien().toString())) < 0.1) {
+                if (tran.getDescription().contains(tranCode) && Math.abs(Math.abs(tran.getAmount()) - Double.parseDouble(donMuaHang.getTongTien().toString())) < 0.1) {
                     isSuccess = true;
+                    changeStatus(donMuaHang.getId(), 5);
                     break;
                 }
             }

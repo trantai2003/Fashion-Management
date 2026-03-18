@@ -112,9 +112,11 @@ function DetailModal({ open, onClose, item, loading }) {
         }) : "—";
 
     const soLuong = Number(item?.soLuong ?? 0);
-    const soLuongColor  = soLuong > 0 ? "text-emerald-600" : soLuong < 0 ? "text-red-600" : "text-slate-500";
-    const soLuongBg     = soLuong > 0 ? "bg-emerald-50 border-emerald-200" : soLuong < 0 ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200";
-    const soLuongPrefix = soLuong > 0 ? "+" : "";
+    const isXuatKho = item?.loaiGiaoDich === "xuat_kho";
+    const displaySoLuong = isXuatKho ? -Math.abs(soLuong) : soLuong;
+    const soLuongColor  = displaySoLuong > 0 ? "text-emerald-600" : displaySoLuong < 0 ? "text-red-600" : "text-slate-500";
+    const soLuongBg     = displaySoLuong > 0 ? "bg-emerald-50 border-emerald-200" : displaySoLuong < 0 ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200";
+    const soLuongPrefix = displaySoLuong > 0 ? "+" : displaySoLuong < 0 ? "-" : "";
 
     /* Light field row — matches the list's Field component style */
     function LightField({ icon: Icon, label, value, mono = false }) {
@@ -185,7 +187,7 @@ function DetailModal({ open, onClose, item, loading }) {
                             <div className="grid grid-cols-3 divide-x divide-slate-200 rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
                                 {[
                                     { label: "TRƯỚC",    value: item.soLuongTruoc ?? 0, color: "text-slate-700", bg: "bg-white",    prefix: "" },
-                                    { label: "THAY ĐỔI", value: item.soLuong ?? 0,      color: soLuongColor,     bg: soLuongBg,     prefix: soLuongPrefix },
+                                    { label: "THAY ĐỔI", value: Math.abs(displaySoLuong), color: soLuongColor,     bg: soLuongBg,     prefix: soLuongPrefix },
                                     { label: "SAU",      value: item.soLuongSau ?? 0,   color: "text-slate-700", bg: "bg-white",    prefix: "" },
                                 ].map(({ label, value, color, bg, prefix }) => (
                                     <div key={label} className={`flex flex-col items-center py-4 ${bg}`}>
@@ -426,11 +428,13 @@ export default function LichSuGiaoDichKhoList() {
                                     <tbody className="divide-y divide-slate-100">
                                         {pageItems.map((item, index) => {
                                             const soLuong = Number(item.soLuong);
+                                            const isXuatKho = item.loaiGiaoDich === "xuat_kho";
+                                            const displaySoLuong = isXuatKho ? -Math.abs(soLuong) : soLuong;
                                             const soLuongColor =
-                                                soLuong > 0 ? "text-emerald-600" :
-                                                soLuong < 0 ? "text-red-600" :
+                                                displaySoLuong > 0 ? "text-emerald-600" :
+                                                displaySoLuong < 0 ? "text-red-600" :
                                                 "text-slate-700";
-                                            const soLuongPrefix = soLuong > 0 ? "+" : "";
+                                            const soLuongPrefix = displaySoLuong > 0 ? "+" : displaySoLuong < 0 ? "-" : "";
 
                                             return (
                                                 <tr key={item.id} className="transition-colors duration-150 hover:bg-violet-50/50">
@@ -466,7 +470,7 @@ export default function LichSuGiaoDichKhoList() {
                                                     </td>
                                                     <td className="px-4 py-3.5 align-middle">
                                                         <span className={`font-bold text-base ${soLuongColor}`}>
-                                                            {soLuongPrefix}{item.soLuong}
+                                                            {soLuongPrefix}{Math.abs(displaySoLuong)}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-3.5 align-middle">

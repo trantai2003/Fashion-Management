@@ -42,7 +42,16 @@ export default function PurchaseOrderPayment() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [orderId]);
-
+  //gọi lần đầu
+  useEffect(() => {
+    kiemTraThanhToan(orderId)
+      .then((ok) => {
+        if (ok) {
+          setPaid(true);
+        }
+      })
+      .catch(console.error);
+  }, [orderId]);
   // Poll mỗi 20s
   useEffect(() => {
     if (loading || !data || paid) return;
