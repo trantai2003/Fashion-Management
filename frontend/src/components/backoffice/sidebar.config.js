@@ -169,6 +169,11 @@ export const SIDEBAR_MENU = [
         to: "/warnings/low-stock",
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
       },
+      {
+        label: "Lịch sử giao dịch kho",
+        to: "/lich-su-giao-dich-kho",
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_ban_hang"],
+      },
     ],
   },
 ];
