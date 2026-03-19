@@ -289,10 +289,10 @@ export default function SendRequestDialog({ open, onClose, onSubmit, submitting,
                     </div>
                     <div>
                         <DialogTitle className="text-[17px] font-bold text-white m-0 leading-tight">
-                            Gửi Yêu cầu Tạo Đơn Mua Hàng
+                            Gửi Yêu cầu Nhập Hàng
                         </DialogTitle>
                         <DialogDescription className="text-slate-400 text-[12px] mt-0.5">
-                            Chọn kho và biến thể sản phẩm cần mua · Admin xét duyệt trước khi tạo đơn
+                            Chọn kho và biến thể sản phẩm cần nhập · Admin xét duyệt trước khi tạo đơn
                         </DialogDescription>
                     </div>
                 </div>

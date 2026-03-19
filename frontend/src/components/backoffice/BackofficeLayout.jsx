@@ -249,12 +249,12 @@ export default function BackofficeLayout() {
             title: "Quản lý kiểm kê",
             subtitle: "Xem và quản lý các lần kiểm kê tồn kho",
         },
-        {
-            key: "PURCHASE_ORDER_CREATE",
-            match: (path) => path === "/purchase-orders/create",
-            title: "Tạo đơn mua hàng",
-            subtitle: "Tạo đơn đặt hàng mới và gửi yêu cầu báo giá đến nhà cung cấp",
-        },
+        // {
+        //     key: "PURCHASE_ORDER_CREATE",
+        //     match: (path) => path === "/purchase-orders/create",
+        //     title: "Tạo yêu cầu nhập hàng",
+        //     subtitle: "Tạo đơn đặt hàng mới và gửi yêu cầu báo giá đến nhà cung cấp",
+        // },
         {
             key: "CUSTOMERS",
             match: (path) => path === "/customers",

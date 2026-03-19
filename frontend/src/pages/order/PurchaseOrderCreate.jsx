@@ -64,14 +64,8 @@ function InfoField({ label, value, mono = false, icon: Icon, children }) {
 function RequestStatusBanner({ myRequest, onGoCreateRequest }) {
     if (!myRequest) {
         return (
-            <Alert className="border-orange-200 bg-orange-50 rounded-xl">
-                <AlertCircle className="h-4 w-4 text-orange-600" />
-                <AlertDescription className="text-orange-800 font-medium flex items-center justify-between flex-wrap gap-3">
-                    <span>
-                        Bạn chưa có yêu cầu tạo đơn mua hàng. Vui lòng gửi yêu cầu và chờ admin duyệt trước khi tạo đơn.
-                    </span>
-                </AlertDescription>
-            </Alert>
+            // 
+            ``
         );
     }
 
@@ -306,7 +300,7 @@ export default function PurchaseOrderCreate() {
         setSubmittingRequest(true);
         try {
             await applicationRequestService.createRequest(payload);
-            toast.success('Đã gửi yêu cầu tạo đơn mua hàng. Vui lòng chờ admin duyệt.');
+            toast.success('Đã gửi yêu cầu nhập hàng. Vui lòng chờ admin duyệt.');
             setShowSendRequestDialog(false);
             const req = await applicationRequestService.getMyRequest();
             setMyRequest(req);
@@ -457,7 +451,10 @@ export default function PurchaseOrderCreate() {
     /* ── Blocked screen: no approved request ── */
     if (!isCreateAllowed) {
         return (
-            <div className="p-5 space-y-5 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)]">
+
+            <div>
+                <header className='text-2xl font-bold text-slate-800 mb-4'>Tạo yêu cầu nhập hàng</header>
+               <div className="p-5 space-y-5 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)]">
                 <button
                     type="button"
                     onClick={() => navigate('/purchase-orders')}
@@ -473,14 +470,11 @@ export default function PurchaseOrderCreate() {
                 />
 
                 <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm p-12 flex flex-col items-center justify-center gap-4 text-center">
-                    <div className="h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center">
-                        <LockKeyhole className="h-8 w-8 text-slate-400" />
-                    </div>
+                    
                     <div>
-                        <p className="text-lg font-bold text-slate-700">Chức năng bị khóa</p>
                         <p className="text-sm text-slate-500 mt-1 max-w-sm">
                             {myRequest === null
-                                ? 'Bạn cần gửi yêu cầu tạo đơn mua hàng và được admin/quản lý kho duyệt trước khi tiếp tục.'
+                                ? 'Bạn cần gửi yêu cầu nhập hàng và được quản lý kho duyệt trước khi tiếp tục.'
                                 : myRequest?.trangThai === 1
                                     ? 'Yêu cầu của bạn đang chờ xét duyệt. Vui lòng quay lại sau.'
                                     : 'Yêu cầu của bạn đã bị từ chối. Vui lòng gửi lại yêu cầu mới.'
@@ -505,7 +499,10 @@ export default function PurchaseOrderCreate() {
                     submitting={submittingRequest}
                     warehouses={warehouses}
                 />
+            </div> 
             </div>
+            //thêm header tạo yêu cầu nhập hàng
+            
         );
     }
 
