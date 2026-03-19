@@ -274,12 +274,6 @@ export default function PurchaseOrderCreate() {
         });
 
         setPrefillDone(true);
-
-        // Toast thông báo prefill thành công
-        toast.success(
-            `Đã tự động thêm "${variant.tenSanPham}" từ màn hình tồn kho`,
-            { description: `SKU: ${variant.maBienThe}` }
-        );
     }, [urlBienTheId, productVariants, prefillDone]);
     // allowedVariantIds KHÔNG phải dependency vì validate sẽ làm lại khi submit
 
