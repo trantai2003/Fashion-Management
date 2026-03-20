@@ -23,7 +23,6 @@ public class NhaCungCapController {
     // Supplier List - GET /api/supplier
     @GetMapping
     @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
     )
     public ResponseEntity<ResponseData> getAll(@RequestParam(required = false) String search) {
         List<NhaCungCapDto> dtos = service.findAll(search);
@@ -38,7 +37,6 @@ public class NhaCungCapController {
     // Endpoint này dùng chung cho cả xem chi tiết và lấy dữ liệu để edit
     @GetMapping("/{id}")
     @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_mua_hang}
     )
     public ResponseEntity<ResponseData> getById(@PathVariable Integer id) {
         NhaCungCapDto dto = service.findByIdDto(id);

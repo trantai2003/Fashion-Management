@@ -180,7 +180,7 @@ export default function PurchaseOrderList() {
             description: 'Đã chấp nhận báo giá và hoàn thành thanh toán'
         },
         6: {
-            label: 'Báo giá không thỏa mãn',
+            label: 'Từ chối báo giá của nhà cung cấp',
             color: 'bg-orange-100 text-orange-800 border-orange-200',
             icon: AlertCircle,
             description: 'Báo giá từ nhà cung cấp không đáp ứng yêu cầu'
@@ -475,6 +475,7 @@ export default function PurchaseOrderList() {
         try {
             // TODO: Implement approve API
             // await purchaseOrderService.approve(selectedOrder.id);
+            await purchaseOrderService.duyetDon(selectedOrder.id, 2);
 
             showNotification('success', `Đã phê duyệt đơn hàng ${selectedOrder.soDonMua} thành công!`);
             setShowApproveDialog(false);

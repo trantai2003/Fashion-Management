@@ -23,6 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 import purchaseOrderCreateService from '@/services/purchaseOrderCreateService';
+import apiClient from '@/services/apiClient';
 import { khoService } from "@/services/khoService";
 
 /* ─── Shared layout components ──────────────────────────────────── */
@@ -127,23 +128,55 @@ export default function PurchaseOrderCreate() {
             setIsLoadingData(true);
             try {
                 setFormData(prev => ({ ...prev, soDonMua: generateOrderNumber() }));
-                const [suppliersRes, variantsRes, warehousesRes] = await Promise.all([
-                    purchaseOrderCreateService.getAllSuppliers(),
-                    purchaseOrderCreateService.getAllProductVariants(),
-                    khoService.filter({ page: 0, size: 100, filters: [] }),
-                ]);
 
-                if (suppliersRes?.data) setSuppliers(suppliersRes.data);
-                else if (Array.isArray(suppliersRes)) setSuppliers(suppliersRes);
+                // Load suppliers
+                let suppliersData = [];
+                try {
+                    const suppliersRes = await purchaseOrderCreateService.getAllSuppliers();
+                    if (suppliersRes?.data) suppliersData = suppliersRes.data;
+                    else if (Array.isArray(suppliersRes)) suppliersData = suppliersRes;
+                    console.log('✅ Suppliers loaded:', suppliersData.length);
+                } catch (error) {
+                    console.error('❌ Failed to load suppliers:', error);
+                    toast.error('Không thể tải danh sách nhà cung cấp');
+                }
 
-                const variants = variantsRes?.data ?? (Array.isArray(variantsRes) ? variantsRes : []);
-                setProductVariants(variants);
-                setFilteredProducts(variants);
+                // Load product variants
+                let variantsData = [];
+                try {
+                    const variantsRes = await purchaseOrderCreateService.getAllProductVariants();
+                    variantsData = variantsRes?.data ?? (Array.isArray(variantsRes) ? variantsRes : []);
+                    console.log('✅ Product variants loaded:', variantsData.length);
+                } catch (error) {
+                    console.error('❌ Failed to load product variants:', error);
+                    toast.error('Không thể tải danh sách sản phẩm');
+                }
 
-                if (warehousesRes?.data?.data?.content) setWarehouses(warehousesRes.data.data.content);
+                // Load warehouses
+                let warehousesData = [];
+                try {
+                    const warehousesRes = await khoService.filter({ page: 0, size: 100, filters: [] });
+                    if (warehousesRes?.data?.data?.content) warehousesData = warehousesRes.data.data.content;
+                    console.log('✅ Warehouses loaded:', warehousesData.length);
+                } catch (error) {
+                    console.error('❌ Failed to load warehouses:', error);
+                    toast.error('Không thể tải danh sách kho');
+                }
+
+                // Set state even if some failed
+                setSuppliers(suppliersData);
+                setProductVariants(variantsData);
+                setFilteredProducts(variantsData);
+                setWarehouses(warehousesData);
+
+                // Check if we have minimum required data
+                if (variantsData.length === 0) {
+                    toast.error('Không thể tải danh sách sản phẩm. Vui lòng thử lại.');
+                }
+
             } catch (error) {
-                console.error('Failed to load initial data:', error);
-                toast.error('Không thể tải dữ liệu ban đầu');
+                console.error('❌ Failed to load initial data:', error);
+                toast.error('Không thể tải dữ liệu ban đầu. Vui lòng thử lại.');
             } finally {
                 setIsLoadingData(false);
             }
@@ -162,8 +195,9 @@ export default function PurchaseOrderCreate() {
         const variant = productVariants.find(p => p.id === urlBienTheId);
 
         if (!variant) {
-            // Biến thể không tìm thấy trong danh sách — không báo lỗi ngay, bỏ qua
+            // Biến thể không tìm thấy trong danh sách — báo lỗi
             console.warn(`[PrefillOrder] bienTheId=${urlBienTheId} không tìm thấy trong danh sách biến thể.`);
+            toast.error(`Không tìm thấy sản phẩm với ID ${urlBienTheId}. Vui lòng chọn sản phẩm thủ công.`);
             setPrefillDone(true);
             return;
         }
@@ -187,6 +221,7 @@ export default function PurchaseOrderCreate() {
             }];
         });
 
+        toast.success(`Đã thêm sản phẩm ${variant.tenSanPham} vào đơn hàng từ URL`);
         setPrefillDone(true);
     }, [urlBienTheId, productVariants, prefillDone]);
     // allowedVariantIds KHÔNG phải dependency vì validate sẽ làm lại khi submit
@@ -245,7 +280,7 @@ export default function PurchaseOrderCreate() {
 
     const validateForm = () => {
         if (!formData.nhaCungCapId) { toast.error('Vui lòng chọn nhà cung cấp'); return false; }
-        if (!formData.khoId) { toast.error('Vui lòng chọn kho tiếp nhận'); return false; }
+        if (!formData.khoId && !urlKhoId) { toast.error('Vui lòng chọn kho tiếp nhận'); return false; }
         if (!formData.ngayDatHang) { toast.error('Vui lòng chọn ngày đặt hàng'); return false; }
         if (!formData.ngayGiaoDuKien) { toast.error('Vui lòng chọn ngày giao dự kiến'); return false; }
         if (new Date(formData.ngayGiaoDuKien) <= new Date(formData.ngayDatHang)) {
@@ -292,8 +327,13 @@ export default function PurchaseOrderCreate() {
                 })),
             };
 
-            await purchaseOrderCreateService.create(payload, formData.khoId);
-            toast.success(`Đã gửi điện đến ${selectedSupplier.email} thành công!`);
+            const khoIdToUse = formData.khoId || urlKhoId;
+            await apiClient.post('/api/v1/nghiep-vu/don-mua-hang/create', payload, {
+                headers: {
+                    'kho_id': khoIdToUse
+                }
+            });
+            toast.success(`Đã gửi đơn`);
             setShowSendDialog(false);
             setTimeout(() => navigate('/purchase-orders'), 2000);
         } catch (error) {
@@ -308,7 +348,7 @@ export default function PurchaseOrderCreate() {
     };
 
     const selectedSupplier = suppliers.find(s => s.id === parseInt(formData.nhaCungCapId)) ?? null;
-    const selectedWarehouse = warehouses.find(k => k.id === parseInt(formData.khoId)) ?? null;
+    const selectedWarehouse = warehouses.find(k => k.id === parseInt(formData.khoId || urlKhoId)) ?? null;
 
     /* ── Loading screens ── */
     if (isLoadingData) {
@@ -382,15 +422,20 @@ export default function PurchaseOrderCreate() {
                         <div className="space-y-2">
                             <Label className="text-[13px] font-bold text-slate-700">
                                 Kho Tiếp Nhận <span className="text-rose-500">*</span>
+                                {urlKhoId && <span className="text-[11px] text-amber-600 font-normal ml-1">(Đã khóa từ URL)</span>}
                             </Label>
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full h-11 justify-between font-medium rounded-xl border-slate-200 px-4 text-[14px]">
+                                <DropdownMenuTrigger asChild disabled={!!urlKhoId}>
+                                    <Button
+                                        variant="outline"
+                                        className={`w-full h-11 justify-between font-medium rounded-xl border-slate-200 px-4 text-[14px] ${urlKhoId ? 'bg-slate-50 cursor-not-allowed opacity-75' : ''}`}
+                                    >
                                         <div className="flex items-center gap-2 truncate">
                                             <Package className="h-4 w-4 text-slate-400 shrink-0" />
                                             <span className="truncate">
                                                 {selectedWarehouse ? selectedWarehouse.tenKho : 'Chọn kho tiếp nhận...'}
                                             </span>
+                                            {urlKhoId && <LockKeyhole className="h-3.5 w-3.5 text-amber-500 shrink-0 ml-1" />}
                                         </div>
                                         <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
                                     </Button>
@@ -399,8 +444,9 @@ export default function PurchaseOrderCreate() {
                                     {warehouses.map((warehouse) => (
                                         <DropdownMenuItem
                                             key={warehouse.id}
-                                            onClick={() => handleInputChange('khoId', warehouse.id)}
-                                            className="cursor-pointer p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5"
+                                            onClick={() => !urlKhoId && handleInputChange('khoId', warehouse.id)}
+                                            className={`cursor-pointer p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5 ${urlKhoId ? 'cursor-not-allowed opacity-50' : ''}`}
+                                            disabled={!!urlKhoId}
                                         >
                                             <span className="font-bold text-slate-800">{warehouse.tenKho}</span>
                                             <span className="text-[12px] text-slate-500">{warehouse.diaChi}</span>
@@ -506,7 +552,7 @@ export default function PurchaseOrderCreate() {
                 <div className="flex items-center justify-between">
                     <p className="text-sm text-slate-500 font-medium">
                         {orderItems.length > 0
-                            ? `${orderItems.length} sản phẩm — Tổng: ${formatCurrency(calculateTotal())}`
+                            ? `${orderItems.length} sản phẩm`
                             : 'Chưa có sản phẩm nào'}
                     </p>
                     <Button
@@ -594,16 +640,6 @@ export default function PurchaseOrderCreate() {
                     </Table>
                 )}
 
-                {/* Total */}
-                {orderItems.length > 0 && (
-                    <div className="flex justify-end pt-2">
-                        <div className="bg-slate-900 text-white rounded-xl px-6 py-3 flex items-center gap-4">
-                            <span className="text-sm font-medium opacity-80">Tổng giá trị đơn hàng:</span>
-                            <span className="text-xl font-black font-mono">{formatCurrency(calculateTotal())}</span>
-                        </div>
-                    </div>
-                )}
-
                 {/* Actions */}
                 <div className="flex justify-end gap-3 pt-2">
                     <Button
@@ -623,7 +659,7 @@ export default function PurchaseOrderCreate() {
                         {loading ? (
                             <><Loader2 className="h-4 w-4 animate-spin" />Đang xử lý...</>
                         ) : (
-                            <><Send className="h-4 w-4" />Gửi đến Nhà Cung Cấp</>
+                            <><Send className="h-4 w-4" />Gửi phê duyệt</>
                         )}
                     </Button>
                 </div>
@@ -732,45 +768,38 @@ export default function PurchaseOrderCreate() {
             {/* ── Send Confirmation Dialog ── */}
             <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
                 <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border-0 shadow-2xl">
-                    <div className="bg-slate-900 p-6 flex items-center gap-3">
+                    <div className="bg-blue-600 p-6 flex items-center gap-3">
                         <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
                             <Send className="h-5 w-5 text-white" />
                         </div>
-                        <DialogTitle className="text-xl font-bold text-white m-0">Phát tín hiệu Y/C báo giá</DialogTitle>
+                        <DialogTitle className="text-xl font-bold text-white m-0">Gửi yêu cầu duyệt nhập hàng</DialogTitle>
                     </div>
                     <div className="p-6">
                         <DialogDescription className="text-[15px] text-slate-600 mb-6">
-                            Email yêu cầu báo giá sẽ gửi trực tiếp đến hộp thư của đối tác. Vui lòng rà soát cẩn trọng.
+                            Yêu cầu sẽ được gửi đến quản lý và chờ xét duyệt. Vui lòng rà soát cẩn trọng trước khi gửi.
                         </DialogDescription>
-                        {selectedSupplier && (
-                            <div className="space-y-4 mb-6">
-                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
-                                    <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nhà cung cấp</p>
-                                    <p className="font-bold text-[15px] text-slate-800">{selectedSupplier.tenNhaCungCap}</p>
-                                    <p className="text-[14px] text-blue-600 font-medium mt-1">{selectedSupplier.email}</p>
+                        <div className="space-y-4 mb-6">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mã đơn</p>
+                                    <p className="font-mono font-bold text-[14px] text-[#8b6a21] truncate">{formData.soDonMua}</p>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mã đơn</p>
-                                        <p className="font-mono font-bold text-[14px] text-[#8b6a21] truncate">{formData.soDonMua}</p>
-                                    </div>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mặt hàng</p>
-                                        <p className="font-black text-[15px] text-emerald-600">
-                                            {orderItems.length} <span className="text-[12px] font-medium text-slate-500">sp</span>
-                                        </p>
-                                    </div>
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mặt hàng</p>
+                                    <p className="font-black text-[15px] text-emerald-600">
+                                        {orderItems.length} <span className="text-[12px] font-medium text-slate-500">sp</span>
+                                    </p>
                                 </div>
                             </div>
-                        )}
+                        </div>
                         <DialogFooter className="gap-2 mt-4">
                             <Button variant="outline" onClick={() => setShowSendDialog(false)} disabled={sendingEmail}
                                 className="h-11 rounded-xl font-semibold w-full sm:w-auto">Hủy bỏ</Button>
                             <Button onClick={confirmSendEmail} disabled={sendingEmail}
-                                className="h-11 rounded-xl font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-md w-full sm:w-auto">
+                                className="h-11 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md w-full sm:w-auto">
                                 {sendingEmail
-                                    ? <><Loader2 className="h-5 w-5 animate-spin mr-2" />Đang gửi thư...</>
-                                    : <><Send className="h-4 w-4 mr-2" />Phát lệnh gửi</>
+                                    ? <><Loader2 className="h-5 w-5 animate-spin mr-2" />Đang gửi...</>
+                                    : <><Send className="h-4 w-4 mr-2" />Xác nhận gửi</>
                                 }
                             </Button>
                         </DialogFooter>

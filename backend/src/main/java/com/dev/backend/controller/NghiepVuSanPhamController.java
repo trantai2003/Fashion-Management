@@ -161,7 +161,9 @@ public class NghiepVuSanPhamController {
             roles = {
                     IRoleType.quan_tri_vien,
                     IRoleType.nhan_vien_ban_hang,
-                    IRoleType.nhan_vien_mua_hang
+                    IRoleType.nhan_vien_mua_hang,
+                    IRoleType.nhan_vien_kho
+
             },
             permissions = {
                     IPermissionType.tao_don_mua_hang
@@ -179,9 +181,9 @@ public class NghiepVuSanPhamController {
     @RequireAuth(
             roles = {
                     IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
                     IRoleType.nhan_vien_mua_hang
-            },
-            inWarehouse = true
+            }
     )
     public ResponseEntity<ResponseData<String>> duyetDon(@PathVariable Integer id, @PathVariable Integer trangThai) {
 

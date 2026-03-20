@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -47,6 +48,7 @@ import {
 } from "lucide-react";
 
 import purchaseOrderDetailService from '@/services/purchaseOrderDetailService';
+import apiClient from '@/services/apiClient';
 
 // ── Shared components for lux-sync layout ──────────────────────────────
 function SectionCard({ icon: Icon, iconBg, iconColor, title, children }) {
@@ -159,7 +161,7 @@ export default function PurchaseOrderDetail() {
             description: 'Đã chấp nhận báo giá và hoàn thành thanh toán'
         },
         6: {
-            label: 'Báo giá không thỏa mãn',
+            label: 'Từ chối báo giá của nhà cung cấp',
             bannerBg: 'bg-orange-50',
             bannerBorder: 'border-orange-200',
             iconBg: 'bg-orange-100',
@@ -226,20 +228,13 @@ export default function PurchaseOrderDetail() {
     const handleApproveOrder = async () => {
         setActionLoading(true);
         try {
-            // TODO: Call approve API
-            const response = await fetch(`/api/v1/don-mua-hang/${id}/approve`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                await fetchOrderDetail();
-                setApproveDialog(false);
-            }
+            await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/2`);
+            toast.success('Đơn hàng đã được duyệt thành công');
+            await fetchOrderDetail();
+            setApproveDialog(false);
         } catch (error) {
             console.error('Error approving order:', error);
+            toast.error(error.response?.data?.message || 'Lỗi khi duyệt đơn hàng. Vui lòng thử lại!');
         } finally {
             setActionLoading(false);
         }
@@ -248,28 +243,22 @@ export default function PurchaseOrderDetail() {
     // Handle cancel order
     const handleCancelOrder = async () => {
         if (!cancelReason.trim()) {
-            alert('Vui lòng nhập lý do hủy');
+            toast.error('Vui lòng nhập lý do hủy');
             return;
         }
 
         setActionLoading(true);
         try {
-            // TODO: Call cancel API
-            const response = await fetch(`/api/v1/don-mua-hang/${id}/cancel`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ reason: cancelReason }),
+            await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/0`, { 
+                reason: cancelReason 
             });
-
-            if (response.ok) {
-                await fetchOrderDetail();
-                setCancelDialog(false);
-                setCancelReason('');
-            }
+            toast.success('Đơn hàng đã được hủy thành công');
+            await fetchOrderDetail();
+            setCancelDialog(false);
+            setCancelReason('');
         } catch (error) {
             console.error('Error canceling order:', error);
+            toast.error(error.response?.data?.message || 'Lỗi khi hủy đơn hàng. Vui lòng thử lại!');
         } finally {
             setActionLoading(false);
         }
@@ -634,15 +623,6 @@ export default function PurchaseOrderDetail() {
                                 <span className="text-[13px] text-slate-500 font-bold uppercase tracking-wide">Tổng Nhận:</span>
                                 <span className="font-black text-emerald-600 text-[16px]">
                                     {orderData.chiTietDonMuaHangs?.reduce((sum, item) => sum + (item.soLuongDaNhan || 0), 0) || 0} <span className="text-emerald-600/60 font-semibold text-sm">SP</span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="w-full sm:w-96 bg-white p-6 rounded-2xl border border-violet-100 shadow-[0_4px_20px_rgba(139,92,246,0.08)] flex flex-col justify-center">
-                            <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-2">Thanh toán dự kiến</p>
-                            <div className="flex justify-between items-end gap-4 overflow-hidden">
-                                <span className="font-black text-3xl sm:text-4xl text-violet-700 tracking-tight truncate">
-                                    {formatCurrency(orderData.tongTien)}
                                 </span>
                             </div>
                         </div>
