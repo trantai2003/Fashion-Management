@@ -80,6 +80,11 @@ const APPROVE_ROLES = [
     ROLE.QUAN_LY_KHO,
 ];
 
+/** Vai trò được phép gửi mail yêu cầu báo giá */
+const QUOTATION_REQUEST_ROLES = [
+    ROLE.NHAN_VIEN_MUA_HANG,
+];
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Parse JWT payload (không verify) */
@@ -109,6 +114,7 @@ export default function PurchaseOrderList() {
     const [warehouses, setWarehouses] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showApproveDialog, setShowApproveDialog] = useState(false);
+    const [showQuotationDialog, setShowQuotationDialog] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
@@ -162,7 +168,7 @@ export default function PurchaseOrderList() {
             description: 'Đơn hàng đã được duyệt nội bộ'
         },
         3: {
-            label: 'Đã gửi mail',
+            label: 'Đã gửi mail yêu cầu báo giá đến nhà cung cấp',
             color: 'bg-purple-100 text-purple-800 border-purple-200',
             icon: Send,
             description: 'Đã gửi email yêu cầu đến nhà cung cấp'
@@ -489,6 +495,37 @@ export default function PurchaseOrderList() {
         }
     };
 
+    // Confirm send quotation request
+    const confirmSendQuotation = async () => {
+        if (!selectedOrder) return;
+
+        setActionLoading(true);
+        try {
+            // Gửi email yêu cầu báo giá
+            await purchaseOrderService.guiMailYeuCauBaoGia(selectedOrder.id);
+
+            // Cập nhật trạng thái đơn hàng thành "Đã gửi mail" (status 3)
+            await purchaseOrderService.duyetDon(selectedOrder.id, 3);
+
+            showNotification('success', `Đã gửi email yêu cầu báo giá cho đơn hàng ${selectedOrder.soDonMua} thành công!`);
+            setShowQuotationDialog(false);
+            setSelectedOrder(null);
+            fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
+        } catch (error) {
+            console.error('Error sending quotation request:', error);
+            showNotification('error', 'Không thể gửi email yêu cầu báo giá. Vui lòng thử lại!');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Handle send quotation request email
+    const handleSendQuotationRequest = (order, event) => {
+        event.stopPropagation();
+        setSelectedOrder(order);
+        setShowQuotationDialog(true);
+    };
+
     // Handle cancel order — Không cho phép hủy khi đã gửi mail (3), đã hủy (0) và chưa thỏa mãn (6) không thể thay đổi
     const handleCancelOrder = async (order, event) => {
         event.stopPropagation();
@@ -603,18 +640,16 @@ export default function PurchaseOrderList() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    disabled={order.trangThai === 5 || !canModify || authDisabled}
+                                    disabled={order.trangThai !== 4 || authDisabled}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        if (canModify && !authDisabled) handleViewPayment(order.id);
+                                        if (order.trangThai === 4 && !authDisabled) handleViewPayment(order.id);
                                     }}
                                 >
                                     <CreditCard className={`h-4 w-4 ${
-                                        authDisabled || !canModify
+                                        authDisabled || order.trangThai !== 4
                                             ? 'text-gray-300'
-                                            : order.trangThai === 5
-                                                ? 'text-gray-400'
-                                                : 'text-blue-600'
+                                            : 'text-blue-600'
                                     }`} />
                                 </Button>
                             </span>
@@ -623,11 +658,11 @@ export default function PurchaseOrderList() {
                             <p>
                                 {authDisabled
                                     ? "Đang tải thông tin người dùng..."
-                                    : !canModify
-                                        ? "Đơn hàng đã kết thúc, không thể thao tác"
+                                    : order.trangThai === 4
+                                        ? "Thanh toán đơn hàng"
                                         : order.trangThai === 5
                                             ? "Đơn hàng đã thanh toán"
-                                            : "Thanh toán đơn hàng"
+                                            : "Chỉ có thể thanh toán khi đã nhận báo giá"
                                 }
                             </p>
                         </TooltipContent>
@@ -662,6 +697,40 @@ export default function PurchaseOrderList() {
                                             : !canApprove
                                                 ? "Bạn không có quyền duyệt đơn hàng"
                                                 : "Duyệt đơn hàng"
+                                    }
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </>
+                )}
+
+                {/* Trạng thái = Đã duyệt (status 2) - Gửi mail yêu cầu báo giá */}
+                {order.trangThai === 2 && (
+                    <>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        disabled={authDisabled || !QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role))}
+                                        onClick={(e) => !authDisabled && QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role)) && handleSendQuotationRequest(order, e)}
+                                    >
+                                        <Send className={`h-4 w-4 ${
+                                            authDisabled || !QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role))
+                                                ? 'text-gray-300'
+                                                : 'text-blue-600'
+                                        }`} />
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                    {authDisabled
+                                        ? "Đang tải thông tin người dùng..."
+                                        : !QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role))
+                                            ? "Chỉ nhân viên mua hàng mới có thể gửi mail yêu cầu báo giá"
+                                            : "Gửi email yêu cầu báo giá đến nhà cung cấp"
                                     }
                                 </p>
                             </TooltipContent>
@@ -1364,7 +1433,58 @@ export default function PurchaseOrderList() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* CSS Animation */}
+            {/* Quotation Request Confirmation Dialog */}
+            <AlertDialog open={showQuotationDialog} onOpenChange={setShowQuotationDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-blue-600">
+                            <Send className="h-5 w-5" />
+                            Xác nhận gửi email yêu cầu báo giá
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-600">
+                            Bạn có chắc chắn muốn gửi email yêu cầu báo giá cho đơn hàng{' '}
+                            <span className="font-semibold text-gray-900">{selectedOrder?.soDonMua}</span>?
+                            <br />
+                            <br />
+                            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
+                                <p className="text-sm text-blue-900">
+                                    <strong>Nhà cung cấp:</strong> {selectedOrder?.nhaCungCap?.tenNhaCungCap}
+                                    <br />
+                                    <strong>Email nhà cung cấp:</strong> {selectedOrder?.nhaCungCap?.email || 'Chưa có email'}
+                                    <br />
+                                    <strong>Kho nhập:</strong> {selectedOrder?.khoNhap?.tenKho}
+                                    <br />
+                                    <strong>Tổng tiền:</strong> {formatCurrency(selectedOrder?.tongTien || 0)}
+                                </p>
+                            </div>
+                            <br />
+                            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
+                                <strong>Lưu ý:</strong> Sau khi gửi email, trạng thái đơn hàng sẽ chuyển thành "Đã gửi mail".
+                            </p>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={actionLoading}>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmSendQuotation}
+                            disabled={actionLoading}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            {actionLoading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Đang gửi email...
+                                </>
+                            ) : (
+                                <>
+                                    <Send className="h-4 w-4 mr-2" />
+                                    Gửi email
+                                </>
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <style jsx>{`
                 @keyframes fadeIn {
                     from {

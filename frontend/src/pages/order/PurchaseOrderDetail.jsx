@@ -23,6 +23,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
     ArrowLeft,
     Building2,
     Warehouse,
@@ -45,10 +51,51 @@ import {
     ClipboardList,
     Send,
     CreditCard,
+    Eye,
 } from "lucide-react";
 
 import purchaseOrderDetailService from '@/services/purchaseOrderDetailService';
+import purchaseOrderService from '@/services/purchaseOrderService';
 import apiClient from '@/services/apiClient';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const ROLE = {
+    QUAN_TRI_VIEN: "quan_tri_vien",
+    QUAN_LY_KHO: "quan_ly_kho",
+    NHAN_VIEN_KHO: "nhan_vien_kho",
+    NHAN_VIEN_MUA_HANG: "nhan_vien_mua_hang",
+    NHAN_VIEN_BAN_HANG: "nhan_vien_ban_hang",
+};
+
+/** Các vai trò được phép duyệt đơn hàng */
+const APPROVE_ROLES = [
+    ROLE.QUAN_TRI_VIEN,
+    ROLE.QUAN_LY_KHO,
+];
+
+/** Vai trò được phép gửi mail yêu cầu báo giá */
+const QUOTATION_REQUEST_ROLES = [
+    ROLE.NHAN_VIEN_MUA_HANG,
+];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Parse JWT payload (không verify) */
+function parseJwt(token) {
+    try {
+        const b64 = token.split(".")[1];
+        return JSON.parse(atob(b64.replace(/-/g, "+").replace(/_/g, "/")));
+    } catch { return null; }
+}
+
+/**
+ * Trích danh sách vai trò từ trường vaiTro của NguoiDungDto.
+ * vaiTro có thể là string đơn ("quan_tri_vien") hoặc scope space-separated.
+ */
+function parseRoles(vaiTro) {
+    if (!vaiTro) return [];
+    return vaiTro.includes(" ") ? vaiTro.split(" ") : [vaiTro];
+}
 
 // ── Shared components for lux-sync layout ──────────────────────────────
 function SectionCard({ icon: Icon, iconBg, iconColor, title, children }) {
@@ -96,7 +143,14 @@ export default function PurchaseOrderDetail() {
     // Dialog states
     const [approveDialog, setApproveDialog] = useState(false);
     const [cancelDialog, setCancelDialog] = useState(false);
+    const [showQuotationDialog, setShowQuotationDialog] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
+
+    // User authorization state
+    const [userId, setUserId] = useState(null);
+    const [userRoles, setUserRoles] = useState([]); // string[]
+    const [loadingAuth, setLoadingAuth] = useState(true);
+    const [authError, setAuthError] = useState(null);
 
     // Định nghĩa color/icon cho từng trạng thái theo phong cách lux-sync
     const statusConfig = {
@@ -224,24 +278,114 @@ export default function PurchaseOrderDetail() {
         }
     }, [id]);
 
-    // Handle approve order
-    const handleApproveOrder = async () => {
+    // Fetch user info and roles for authorization
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                setLoadingAuth(true);
+                setAuthError(null);
+
+                // Get userId from JWT token
+                const token = localStorage.getItem('access_token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
+                const payload = parseJwt(token);
+                if (!payload || !payload.id) {
+                    throw new Error('Invalid token payload');
+                }
+
+                const userId = payload.id;
+                setUserId(userId);
+
+                // Fetch user details to get roles
+                const userResponse = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${userId}`);
+                const userData = userResponse.data?.data; // Note: API returns { data: userData }
+
+                if (!userData || !userData.vaiTro) {
+                    throw new Error('User data or roles not found');
+                }
+
+                const roles = parseRoles(userData.vaiTro);
+                setUserRoles(roles);
+
+            } catch (error) {
+                console.error('❌ Error fetching user info:', error);
+                setAuthError(error.message);
+                toast.error('Không thể tải thông tin người dùng');
+            } finally {
+                setLoadingAuth(false);
+            }
+        };
+
+        fetchUserInfo();
+    }, []);
+
+    // Handle approve order - Open dialog
+    const handleApproveOrder = () => {
+        setApproveDialog(true);
+    };
+
+    // Confirm approve
+    const confirmApprove = async () => {
         setActionLoading(true);
         try {
-            await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/2`);
-            toast.success('Đơn hàng đã được duyệt thành công');
-            await fetchOrderDetail();
+            await purchaseOrderService.duyetDon(id, 2);
+            toast.success(`Đã phê duyệt đơn hàng ${orderData?.soDonMua} thành công!`);
             setApproveDialog(false);
+            await fetchOrderDetail();
         } catch (error) {
             console.error('Error approving order:', error);
-            toast.error(error.response?.data?.message || 'Lỗi khi duyệt đơn hàng. Vui lòng thử lại!');
+            toast.error('Không thể phê duyệt đơn hàng. Vui lòng thử lại!');
         } finally {
             setActionLoading(false);
         }
     };
 
-    // Handle cancel order
-    const handleCancelOrder = async () => {
+    // Handle send quotation request email
+    const handleSendQuotationRequest = () => {
+        setShowQuotationDialog(true);
+    };
+
+    // Confirm send quotation request
+    const confirmSendQuotation = async () => {
+        setActionLoading(true);
+        try {
+            // Gửi email yêu cầu báo giá
+            await purchaseOrderService.guiMailYeuCauBaoGia(id);
+
+            // Cập nhật trạng thái đơn hàng thành "Đã gửi mail" (status 3)
+            await purchaseOrderService.duyetDon(id, 3);
+
+            toast.success(`Đã gửi email yêu cầu báo giá cho đơn hàng ${orderData?.soDonMua} thành công!`);
+            setShowQuotationDialog(false);
+            await fetchOrderDetail();
+        } catch (error) {
+            console.error('Error sending quotation request:', error);
+            toast.error('Không thể gửi email yêu cầu báo giá. Vui lòng thử lại!');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Handle cancel order — Không cho phép hủy khi đã gửi mail (3), đã hủy (0) và chưa thỏa mãn (6) không thể thay đổi
+    const handleCancelOrder = () => {
+        if (orderData?.trangThai === 0 || orderData?.trangThai === 3 || orderData?.trangThai === 6) {
+            toast.error('Không thể hủy đơn hàng ở trạng thái này!');
+            return;
+        }
+
+        if (orderData?.trangThai !== 2 && orderData?.trangThai !== 4) {
+            toast.error('Chỉ có thể hủy đơn hàng đã duyệt hoặc đã nhận báo giá!');
+            return;
+        }
+
+        setCancelDialog(true);
+    };
+
+    // Confirm cancel order
+    const confirmCancelOrder = async () => {
         if (!cancelReason.trim()) {
             toast.error('Vui lòng nhập lý do hủy');
             return;
@@ -249,16 +393,14 @@ export default function PurchaseOrderDetail() {
 
         setActionLoading(true);
         try {
-            await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/0`, { 
-                reason: cancelReason 
-            });
-            toast.success('Đơn hàng đã được hủy thành công');
-            await fetchOrderDetail();
+            await purchaseOrderService.duyetDon(id, 6);
+            toast.success(`Đã hủy đơn hàng ${orderData?.soDonMua} thành công!`);
             setCancelDialog(false);
             setCancelReason('');
+            await fetchOrderDetail();
         } catch (error) {
             console.error('Error canceling order:', error);
-            toast.error(error.response?.data?.message || 'Lỗi khi hủy đơn hàng. Vui lòng thử lại!');
+            toast.error('Không thể hủy đơn hàng. Vui lòng thử lại!');
         } finally {
             setActionLoading(false);
         }
@@ -352,34 +494,201 @@ export default function PurchaseOrderDetail() {
                             Xuất file
                         </Button>
 
-                        {orderData.trangThai === 1 && (
-                            <>
-                                <Button
-                                    variant="outline"
-                                    className="h-11 px-5 rounded-xl border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 font-bold transition-all duration-200 shadow-sm"
-                                    onClick={() => setCancelDialog(true)}
-                                >
-                                    <XCircle className="mr-2 h-4 w-4" />
-                                    Hủy đơn
-                                </Button>
-                                <Button
-                                    className="h-11 px-6 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all duration-200 shadow-md shadow-emerald-600/20"
-                                    onClick={() => setApproveDialog(true)}
-                                >
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Phê duyệt
-                                </Button>
-                            </>
-                        )}
-                        {orderData.trangThai === 2 && (
-                            <Button
-                                className="h-11 px-6 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition-all duration-200 shadow-md shadow-violet-600/20"
-                                onClick={() => navigate(`/purchase-orders/${id}/receive`)}
-                            >
-                                <Package className="mr-2 h-4 w-4" />
-                                Nhập hàng
-                            </Button>
-                        )}
+                        {/* ── Action Buttons with full logic ── */}
+                        {(() => {
+                            // Kiểm tra trạng thái có cho phép thao tác không
+                            const canModify = orderData.trangThai !== 0 && orderData.trangThai !== 6;
+
+                            // Kiểm tra quyền duyệt đơn hàng
+                            const canApprove = APPROVE_ROLES.some(role => userRoles.includes(role));
+
+                            // Kiểm tra quyền gửi mail yêu cầu báo giá
+                            const canSendQuotation = QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role));
+
+                            // Disable tất cả buttons khi đang load auth hoặc có lỗi auth
+                            const authDisabled = loadingAuth || authError;
+
+                            return (
+                                <TooltipProvider>
+                                    <div className="flex items-center justify-center gap-2">
+                                        {/* Trạng thái = Chờ duyệt (status 1) */}
+                                        {orderData.trangThai === 1 && (
+                                            <>
+                                                {/* Nút Hủy đơn */}
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span>
+                                                            <Button
+                                                                variant="outline"
+                                                                className="h-11 px-5 rounded-xl border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 hover:border-rose-300 font-bold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                disabled={!canModify || authDisabled}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (canModify && !authDisabled) handleCancelOrder();
+                                                                }}
+                                                            >
+                                                                <XCircle className={`mr-2 h-4 w-4 ${
+                                                                    authDisabled || !canModify ? 'text-gray-300' : 'text-rose-600'
+                                                                }`} />
+                                                                Hủy đơn
+                                                            </Button>
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>
+                                                            {authDisabled
+                                                                ? "Đang tải thông tin người dùng..."
+                                                                : !canModify
+                                                                    ? "Đơn hàng đã kết thúc, không thể thao tác"
+                                                                    : "Hủy đơn hàng"
+                                                            }
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+
+                                                {/* Nút Phê duyệt */}
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span>
+                                                            <Button
+                                                                className="h-11 px-6 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all duration-200 shadow-md shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                disabled={!canModify || !canApprove || authDisabled}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (canModify && canApprove && !authDisabled) handleApproveOrder();
+                                                                }}
+                                                            >
+                                                                <CheckCircle className={`mr-2 h-4 w-4 ${
+                                                                    authDisabled || !canModify || !canApprove ? 'text-white/40' : 'text-white'
+                                                                }`} />
+                                                                Phê duyệt
+                                                            </Button>
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>
+                                                            {authDisabled
+                                                                ? "Đang tải thông tin người dùng..."
+                                                                : !canModify
+                                                                    ? "Đơn hàng đã kết thúc, không thể thao tác"
+                                                                    : !canApprove
+                                                                        ? "Bạn không có quyền duyệt đơn hàng"
+                                                                        : "Duyệt đơn hàng"
+                                                            }
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </>
+                                        )}
+
+                                        {/* Trạng thái = Đã duyệt (status 2) - Gửi mail yêu cầu báo giá */}
+                                        {orderData.trangThai === 2 && (
+                                            <>
+                                                {/* Nút Hủy đơn */}
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span>
+                                                            <Button
+                                                                variant="outline"
+                                                                className="h-11 px-5 rounded-xl border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 hover:border-rose-300 font-bold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                disabled={!canModify || authDisabled}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (canModify && !authDisabled) handleCancelOrder();
+                                                                }}
+                                                            >
+                                                                <XCircle className={`mr-2 h-4 w-4 ${
+                                                                    authDisabled || !canModify ? 'text-gray-300' : 'text-rose-600'
+                                                                }`} />
+                                                                Hủy đơn
+                                                            </Button>
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>
+                                                            {authDisabled
+                                                                ? "Đang tải thông tin người dùng..."
+                                                                : !canModify
+                                                                    ? "Đơn hàng đã kết thúc, không thể thao tác"
+                                                                    : "Hủy đơn hàng"
+                                                            }
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+
+                                                {/* Nút Gửi yêu cầu báo giá */}
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span>
+                                                            <Button
+                                                                className="h-11 px-6 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all duration-200 shadow-md shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                disabled={authDisabled || !canSendQuotation}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (!authDisabled && canSendQuotation) handleSendQuotationRequest();
+                                                                }}
+                                                            >
+                                                                <Send className={`mr-2 h-4 w-4 ${
+                                                                    authDisabled || !canSendQuotation ? 'text-white/40' : 'text-white'
+                                                                }`} />
+                                                                Gửi yêu cầu báo giá
+                                                            </Button>
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>
+                                                            {authDisabled
+                                                                ? "Đang tải thông tin người dùng..."
+                                                                : !canSendQuotation
+                                                                    ? "Chỉ nhân viên mua hàng mới có thể gửi mail yêu cầu báo giá"
+                                                                    : "Gửi email yêu cầu báo giá đến nhà cung cấp"
+                                                            }
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </>
+                                        )}
+
+                                        {/* Trạng thái = Đã nhận báo giá (status 4) - Chỉ cho hủy */}
+                                        {orderData.trangThai === 4 && (
+                                            <>
+                                                {/* Nút Hủy đơn */}
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span>
+                                                            <Button
+                                                                variant="outline"
+                                                                className="h-11 px-5 rounded-xl border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 hover:border-rose-300 font-bold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                disabled={!canModify || authDisabled}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (canModify && !authDisabled) handleCancelOrder();
+                                                                }}
+                                                            >
+                                                                <XCircle className={`mr-2 h-4 w-4 ${
+                                                                    authDisabled || !canModify ? 'text-gray-300' : 'text-rose-600'
+                                                                }`} />
+                                                                Hủy đơn
+                                                            </Button>
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>
+                                                            {authDisabled
+                                                                ? "Đang tải thông tin người dùng..."
+                                                                : !canModify
+                                                                    ? "Đơn hàng đã kết thúc, không thể thao tác"
+                                                                    : "Hủy đơn hàng"
+                                                            }
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </>
+                                        )}
+                                    </div>
+                                </TooltipProvider>
+                            );
+                        })()}
                     </div>
                 </div>
             </div>
@@ -656,11 +965,47 @@ export default function PurchaseOrderDetail() {
                                 Hủy bỏ
                             </Button>
                             <Button
-                                onClick={handleApproveOrder}
+                                onClick={confirmApprove}
                                 disabled={actionLoading}
                                 className="h-11 rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20"
                             >
                                 {actionLoading ? 'Đang xử lý...' : 'Xác nhận phê duyệt'}
+                            </Button>
+                        </DialogFooter>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Send Quotation Dialog */}
+            <Dialog open={showQuotationDialog} onOpenChange={setShowQuotationDialog}>
+                <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border-0 shadow-2xl">
+                    <div className="bg-blue-600 p-6 flex items-center gap-3">
+                        <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+                            <Send className="h-5 w-5 text-white" />
+                        </div>
+                        <DialogTitle className="text-xl font-bold text-white m-0">
+                            Gửi yêu cầu báo giá
+                        </DialogTitle>
+                    </div>
+                    <div className="p-6">
+                        <DialogDescription className="text-[15px] text-slate-600 leading-relaxed mb-6">
+                            Gửi email yêu cầu báo giá đến nhà cung cấp cho đơn đặt mua hàng <span className="font-bold text-slate-900 border-b border-slate-300 pb-0.5">{orderData?.soDonMua}</span>?
+                        </DialogDescription>
+                        <DialogFooter className="gap-2 sm:gap-0">
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowQuotationDialog(false)}
+                                disabled={actionLoading}
+                                className="h-11 rounded-xl font-semibold border-slate-200 hover:bg-slate-50"
+                            >
+                                Hủy bỏ
+                            </Button>
+                            <Button
+                                onClick={confirmSendQuotation}
+                                disabled={actionLoading}
+                                className="h-11 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20"
+                            >
+                                {actionLoading ? 'Đang gửi...' : 'Gửi email'}
                             </Button>
                         </DialogFooter>
                     </div>
@@ -709,7 +1054,7 @@ export default function PurchaseOrderDetail() {
                                 Đóng
                             </Button>
                             <Button
-                                onClick={handleCancelOrder}
+                                onClick={confirmCancelOrder}
                                 disabled={actionLoading}
                                 className="h-11 rounded-xl font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-600/20"
                             >

@@ -123,6 +123,21 @@ const purchaseOrderService = {
             console.error(`Error updating purchase order status ${id}:`, error);
             throw error;
         }
+    },
+
+    /**
+     * Gửi email yêu cầu báo giá đến nhà cung cấp
+     * @param {number} id - ID của đơn mua hàng
+     * @returns Promise<ResponseData<string>>
+     */
+    guiMailYeuCauBaoGia: async (id) => {
+        try {
+            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/3`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error sending quotation request email for purchase order ${id}:`, error);
+            throw error;
+        }
     }
 };
 
