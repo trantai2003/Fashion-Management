@@ -8,9 +8,11 @@ import com.dev.backend.dto.request.PhanQuyenNguoiDungKhoCreating;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.QuyenHanDto;
 import com.dev.backend.entities.NguoiDung;
+import com.dev.backend.entities.PhanQuyenNguoiDungKho;
 import com.dev.backend.exception.customize.CommonException;
 import com.dev.backend.mapper.QuyenHanMapper;
 import com.dev.backend.services.impl.entities.NguoiDungService;
+import com.dev.backend.services.impl.entities.PhanQuyenNguoiDungKhoService;
 import com.dev.backend.services.impl.entities.QuyenHanService;
 import com.dev.backend.services.multitable.DieuHanhHeThongService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,9 @@ class DieuHanhHeThongController {
 
     @Autowired
     private DieuHanhHeThongService dieuHanhHeThongService;
+
+    @Autowired
+    private PhanQuyenNguoiDungKhoService phanQuyenNguoiDungKhoService;
 
     @Autowired
     private QuyenHanMapper quyenHanMapper;
@@ -60,6 +65,29 @@ class DieuHanhHeThongController {
             @RequestBody PhanQuyenNguoiDungKhoCreating pqndkCreating) {
 
         return dieuHanhHeThongService.ganQuyenNhanVienKho(pqndkCreating);
+    }
+
+    @DeleteMapping("/quyen-han/xoa-quyen/{id}")
+    @RequireAuth(
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
+            permissions = {IPermissionType.cap_quyen_nhan_vien},
+            inWarehouse = true,
+            permissionsLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> xoaQuyenNhanVienKho(
+            @PathVariable Integer id
+    ){
+        PhanQuyenNguoiDungKho phanQuyenNguoiDungKho = phanQuyenNguoiDungKhoService.getOne(id).orElseThrow(
+                () -> new CommonException("Không tìm thấy phân quyền người dùng kho id: " + id)
+        );
+
+        phanQuyenNguoiDungKhoService.delete(phanQuyenNguoiDungKho.getId());
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Success")
+                        .build()
+        );
     }
 
     @PutMapping("/vai-tro/gan-vai-tro")

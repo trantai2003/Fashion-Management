@@ -2,14 +2,25 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ROLES } from "@/constants/backend/role";
 import { nguoiDungService } from "@/services/nguoiDungService";
+import { quyenHanService } from "@/services/quyenHan";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   ShieldCheck, ChevronDown, RefreshCcw, UserCog, Lock, Unlock,
-  Warehouse, AlertCircle, Save, X,
+  Warehouse, AlertCircle, Save, X, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import AssignWarehousePermissionModal from "@/components/admin/AssignWarehousePermissionModal";
@@ -19,8 +30,11 @@ export default function UserPermissionEditByAdmin() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [userWarehouses, setUserWarehouses] = useState([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedWarehouseToDelete, setSelectedWarehouseToDelete] = useState(null);
 
   const [form, setForm] = useState({
     role: "quan_ly_kho",
@@ -35,6 +49,7 @@ export default function UserPermissionEditByAdmin() {
       const dto = res?.data;
       if (!dto) return;
 
+      setUser(dto);
       setForm({
         role: dto.vaiTro || "quan_ly_kho",
         status: dto.trangThai ?? 1,
@@ -77,6 +92,33 @@ export default function UserPermissionEditByAdmin() {
 
   const handleRoleChange = (value) => {
     setForm((prev) => ({ ...prev, role: value }));
+  };
+
+  const handleDeleteWarehousePermission = (warehousePermission) => {
+    setSelectedWarehouseToDelete(warehousePermission);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteWarehousePermission = async () => {
+    if (!selectedWarehouseToDelete) return;
+
+    try {
+      setLoading(true);
+      // Call API to delete warehouse permission
+      await quyenHanService.xoaQuyenKho(selectedWarehouseToDelete.id);
+
+      toast.success("Xóa quyền kho thành công!");
+      setShowDeleteDialog(false);
+      setSelectedWarehouseToDelete(null);
+
+      // Reload the warehouse permissions
+      await reloadUserWarehouses();
+    } catch (error) {
+      console.error("Lỗi xóa quyền kho:", error);
+      toast.error(error.response?.data?.message || "Không thể xóa quyền kho");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -203,6 +245,18 @@ export default function UserPermissionEditByAdmin() {
                           </div>
 
                           <div className="flex flex-col items-end gap-2">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteWarehousePermission(item)}
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                title="Xóa quyền kho này"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                             <Badge
                               variant={active ? "default" : "secondary"}
                               className={active ? "bg-emerald-600 hover:bg-emerald-700" : ""}
@@ -324,6 +378,35 @@ export default function UserPermissionEditByAdmin() {
           userId={id}
           onAssigned={reloadUserWarehouses}
         />
+
+        {/* Delete Warehouse Permission Confirmation Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Xác nhận xóa quyền kho</AlertDialogTitle>
+              <AlertDialogDescription>
+                Bạn có chắc chắn muốn xóa quyền truy cập kho{" "}
+                <span className="font-semibold">
+                  {selectedWarehouseToDelete?.kho?.tenKho}
+                </span>{" "}
+                của người dùng{" "}
+                <span className="font-semibold">{user?.hoTen}</span> không?
+                <br />
+                <br />
+                Hành động này không thể hoàn tác.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Hủy</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeleteWarehousePermission}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Xóa quyền kho
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
