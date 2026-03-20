@@ -96,7 +96,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                 .khoNhap(khoNhap)
                 .ngayDatHang(creating.getNgayDatHang())
                 .ngayGiaoDuKien(creating.getNgayGiaoDuKien())
-                .trangThai(nguoiTao.getVaiTro().equals(IRoleType.quan_tri_vien) ? creating.getTrangThai() : 1)
+                .trangThai(1)
                 .tongTien(BigDecimal.ZERO)
                 .ghiChu(creating.getGhiChu())
                 .nguoiTao(nguoiTao)
@@ -106,7 +106,6 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         donMuaHang = create(donMuaHang);
 
         BigDecimal tongTien = BigDecimal.ZERO;
-        int stt = creating.getChiTietDonMuaHangs().size();
         BigDecimal tongSoLuong = BigDecimal.ZERO;
 
         List<ChiTietDonMuaHang> chiTietDonMuaHangs = new ArrayList<>();
@@ -130,48 +129,11 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         }
         donMuaHang.setTongTien(tongTien);
         donMuaHang.setChiTietDonMuaHangs(chiTietDonMuaHangs);
-        donMuaHang.setTrangThai(creating.getTrangThai());
         update(donMuaHang.getId(), donMuaHang);
         donMuaHang = getOne(donMuaHang.getId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy đơn mua hàng : " + creating.getSoDonMua())
         );
 
-        if (donMuaHang.getTrangThai() == 3) {
-            Date now = new Date();
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("ngay", now.getDate());
-            params.put("thang", now.getMonth() + 1);
-            params.put("nam", now.getYear() + 1900);
-            params.put("soDonMua", donMuaHang.getSoDonMua());
-
-            String trangThaiText = "";
-            if (donMuaHang.getTrangThai() == 3) {
-                trangThaiText = " Quản lý đã duyệt và gửi mail";
-            }
-            params.put("trangThaiText", trangThaiText);
-            params.put("tenKho", donMuaHang.getKhoNhap().getTenKho());
-            params.put("diaChiKho", donMuaHang.getKhoNhap().getDiaChi());
-            params.put("tenNhaCungCap", donMuaHang.getNhaCungCap().getTenNhaCungCap());
-            params.put("maNhaCungCap", donMuaHang.getNhaCungCap().getMaNhaCungCap());
-            params.put("nguoiLienHe", donMuaHang.getNhaCungCap().getNguoiLienHe());
-            params.put("soDienThoai", donMuaHang.getNhaCungCap().getSoDienThoai());
-            params.put("email", donMuaHang.getNhaCungCap().getEmail());
-            params.put("tongSoMatHang", stt);
-            params.put("tongSoLuong", tongSoLuong);
-            params.put("tongTien", donMuaHang.getTongTien());
-            params.put("ghiChu", donMuaHang.getGhiChu());
-            params.put("ngayDatHang", donMuaHang.getNgayDatHang());
-            params.put("ngayGiaoDuKien", donMuaHang.getNgayGiaoDuKien());
-            params.put("hanPheDuyet", donMuaHang.getNgayGiaoDuKien());
-
-            emailService.sendHtmlEmailFromTemplate(
-                    donMuaHang.getNhaCungCap().getEmail(),
-                    "Phiếu xác nhận nhập hàng",
-                    "don_mua.html",
-                    params
-            );
-
-        }
         for (ChiTietDonMuaHang chiTietDonMuaHang : donMuaHang.getChiTietDonMuaHangs()) {
             for (ApplicationRequestObj appReq : GlobalCache.APPLICATION_REQUEST_OBJS) {
                 appReq.getBienTheSanPhamIds().removeIf(

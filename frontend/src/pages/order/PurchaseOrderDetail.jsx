@@ -42,6 +42,8 @@ import {
     ShoppingCart,
     Clock,
     ClipboardList,
+    Send,
+    CreditCard,
 } from "lucide-react";
 
 import purchaseOrderDetailService from '@/services/purchaseOrderDetailService';
@@ -97,6 +99,16 @@ export default function PurchaseOrderDetail() {
     // Định nghĩa color/icon cho từng trạng thái theo phong cách lux-sync
     const statusConfig = {
         0: {
+            label: 'Đã hủy',
+            bannerBg: 'bg-rose-50',
+            bannerBorder: 'border-rose-200',
+            iconBg: 'bg-rose-100',
+            iconColor: 'text-rose-600',
+            textColor: 'text-rose-800',
+            icon: XCircle,
+            description: 'Đơn hàng đã bị hủy'
+        },
+        1: {
             label: 'Chờ duyệt',
             bannerBg: 'bg-amber-50',
             bannerBorder: 'border-amber-200',
@@ -106,7 +118,7 @@ export default function PurchaseOrderDetail() {
             icon: AlertCircle,
             description: 'Đơn hàng đang chờ quản lý phê duyệt'
         },
-        1: {
+        2: {
             label: 'Đã duyệt',
             bannerBg: 'bg-blue-50',
             bannerBorder: 'border-blue-200',
@@ -116,25 +128,15 @@ export default function PurchaseOrderDetail() {
             icon: CheckCircle,
             description: 'Đơn hàng đã được duyệt nội bộ'
         },
-        2: {
-            label: 'Đang xử lý',
-            bannerBg: 'bg-violet-50',
-            bannerBorder: 'border-violet-200',
-            iconBg: 'bg-violet-100',
-            iconColor: 'text-violet-600',
-            textColor: 'text-violet-800',
-            icon: Package,
-            description: 'Đơn hàng đang được xử lý'
-        },
         3: {
-            label: 'Chờ báo giá',
-            bannerBg: 'bg-orange-50',
-            bannerBorder: 'border-orange-200',
-            iconBg: 'bg-orange-100',
-            iconColor: 'text-orange-600',
-            textColor: 'text-orange-800',
-            icon: Clock,
-            description: 'Đã gửi yêu cầu đến nhà cung cấp, chờ báo giá'
+            label: 'Đã gửi mail',
+            bannerBg: 'bg-purple-50',
+            bannerBorder: 'border-purple-200',
+            iconBg: 'bg-purple-100',
+            iconColor: 'text-purple-600',
+            textColor: 'text-purple-800',
+            icon: Send,
+            description: 'Đã gửi email yêu cầu đến nhà cung cấp'
         },
         4: {
             label: 'Đã nhận báo giá',
@@ -144,27 +146,27 @@ export default function PurchaseOrderDetail() {
             iconColor: 'text-emerald-600',
             textColor: 'text-emerald-800',
             icon: FileText,
-            description: 'Nhà cung cấp đã gửi báo giá chi tiết'
+            description: 'Nhà cung cấp đã xác nhận và gửi báo giá'
         },
         5: {
-            label: 'Hoàn thành',
+            label: 'Đã thanh toán',
             bannerBg: 'bg-teal-50',
             bannerBorder: 'border-teal-200',
             iconBg: 'bg-teal-100',
             iconColor: 'text-teal-600',
             textColor: 'text-teal-800',
-            icon: CheckCircle,
-            description: 'Đơn hàng đã hoàn thành nhập kho'
+            icon: CreditCard,
+            description: 'Đã chấp nhận báo giá và hoàn thành thanh toán'
         },
         6: {
-            label: 'Đã hủy',
-            bannerBg: 'bg-rose-50',
-            bannerBorder: 'border-rose-200',
-            iconBg: 'bg-rose-100',
-            iconColor: 'text-rose-600',
-            textColor: 'text-rose-800',
-            icon: XCircle,
-            description: 'Đơn hàng đã bị hủy'
+            label: 'Báo giá không thỏa mãn',
+            bannerBg: 'bg-orange-50',
+            bannerBorder: 'border-orange-200',
+            iconBg: 'bg-orange-100',
+            iconColor: 'text-orange-600',
+            textColor: 'text-orange-800',
+            icon: AlertCircle,
+            description: 'Báo giá từ nhà cung cấp không đáp ứng yêu cầu'
         }
     };
 
@@ -361,7 +363,7 @@ export default function PurchaseOrderDetail() {
                             Xuất file
                         </Button>
 
-                        {orderData.trangThai === 0 && (
+                        {orderData.trangThai === 1 && (
                             <>
                                 <Button
                                     variant="outline"
@@ -380,7 +382,7 @@ export default function PurchaseOrderDetail() {
                                 </Button>
                             </>
                         )}
-                        {orderData.trangThai === 1 && (
+                        {orderData.trangThai === 2 && (
                             <Button
                                 className="h-11 px-6 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition-all duration-200 shadow-md shadow-violet-600/20"
                                 onClick={() => navigate(`/purchase-orders/${id}/receive`)}

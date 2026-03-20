@@ -18,7 +18,7 @@ public class DonMuaHangCreating {
     Integer nhaCungCapId;
     Instant ngayDatHang;
     Instant ngayGiaoDuKien;
-    Integer trangThai; //  2 là gửi duyệt, 3 là đã duyệt và gửi mail nhà cung cấp , 4 là nhà cung cấp đã xác nhận, 5 là đã nhận hàng và thanh toán
+//    Integer trangThai;
     BigDecimal tongTien;
     String ghiChu;
     List<ChiTietDonMuaHangCreating> chiTietDonMuaHangs;
