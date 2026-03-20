@@ -48,7 +48,7 @@ public interface TonKhoTongHopRepository extends JpaRepository<BienTheSanPham, I
                         JOIN ctdmh.donMuaHang dmh
                         WHERE ctdmh.bienTheSanPham.id = bt.id
                           AND dmh.khoNhap.id          = k.id
-                          AND dmh.trangThai            IN (4, 5)
+                          AND dmh.trangThai            IN (6, 7)
                           AND (ctdmh.soLuongDat - ctdmh.soLuongDaNhan) > 0
                     ), 0
                 )                                                              AS incoming,

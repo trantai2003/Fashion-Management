@@ -27,8 +27,10 @@ import KhaiBaoLo from "./pages/receipt/KhaiBaoLo.jsx";
 import PhieuXuatKhoList from "./pages/issue/PhieuXuatKhoList.jsx";
 import PurchaseOrderDetail from "./pages/order/PurchaseOrderDetail.jsx";
 import PurchaseOrder from "./pages/order/PurchaseOrder.jsx";
+import PurchaseRequest from "./pages/order/PurchaseRequest.jsx";
 import PurchaseOrderCreate from "./pages/order/PurchaseOrderCreate.jsx";
 import PurchaseOrderPayment from "./pages/order/PurchaseOrderPayment.jsx";
+import SendQuotationRequest from "./pages/order/SendQuotationRequest.jsx";
 import SkuBuilder from "./pages/product/SkuBuilder";
 import PhieuXuatKhoCreate from "./pages/issue/PhieuXuatKhoCreate.jsx";
 import PhieuXuatKhoDetail from "./pages/issue/PhieuXuatKhoDetail.jsx";
@@ -68,6 +70,7 @@ import NotFound404 from "./pages/page-error/NotFound404";
 import TonKhoTongQuan from "./pages/bao-cao/TonKhoTongQuan";
 import ApplicationRequestManagement from "./pages/purchase-oder-create-req/ApplicationRequestManagement";
 import LichSuGiaoDichKhoList from "./pages/lich-su-giao-dich-kho/LichSuGiaoDichKhoList";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -128,10 +131,12 @@ export default function App() {
           <Route path="/material/:id" element={<ChatLieuDetail />} /> */}
 
           {/* Purchase Order */}
+          <Route path="/purchase-requests" element={<PurchaseRequest />} />
           <Route path="/purchase-orders" element={<PurchaseOrder />} />
           <Route path="/purchase-orders/create" element={<PurchaseOrderCreate />} />
           <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
           <Route path="/purchase-orders/:id/payment" element={<PurchaseOrderPayment />} />
+          <Route path="/purchase-requests/:id/gui-bao-gia" element={<SendQuotationRequest />} />
 
           {/* Supplier */}
           <Route path="/supplier" element={<SupplierList />} />

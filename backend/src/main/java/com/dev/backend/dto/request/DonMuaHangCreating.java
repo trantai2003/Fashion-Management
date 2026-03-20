@@ -14,12 +14,8 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class DonMuaHangCreating {
-    String soDonMua;
-    Integer nhaCungCapId;
     Instant ngayDatHang;
     Instant ngayGiaoDuKien;
-//    Integer trangThai;
-    BigDecimal tongTien;
     String ghiChu;
     List<ChiTietDonMuaHangCreating> chiTietDonMuaHangs;
 }

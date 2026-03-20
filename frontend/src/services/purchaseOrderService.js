@@ -138,6 +138,51 @@ const purchaseOrderService = {
             console.error(`Error sending quotation request email for purchase order ${id}:`, error);
             throw error;
         }
+    },
+
+    /**
+     * Chấp nhận báo giá từ nhà cung cấp (trạng thái 4 -> 6)
+     * @param {number} id - ID của đơn mua hàng
+     * @returns Promise<ResponseData<string>>
+     */
+    chapNhanBaoGia: async (id) => {
+        try {
+            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/6`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error accepting quotation for purchase order ${id}:`, error);
+            throw error;
+        }
+    },
+
+    /**
+     * Từ chối báo giá từ nhà cung cấp (trạng thái 4 -> 5)
+     * @param {number} id - ID của đơn mua hàng
+     * @returns Promise<ResponseData<string>>
+     */
+    tuChoiBaoGia: async (id) => {
+        try {
+            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/5`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error rejecting quotation for purchase order ${id}:`, error);
+            throw error;
+        }
+    },
+
+    /**
+     * Thanh toán đơn hàng (trạng thái 6 -> 7)
+     * @param {number} id - ID của đơn mua hàng
+     * @returns Promise<ResponseData<string>>
+     */
+    thanhToanDonHang: async (id) => {
+        try {
+            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/7`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error processing payment for purchase order ${id}:`, error);
+            throw error;
+        }
     }
 };
 

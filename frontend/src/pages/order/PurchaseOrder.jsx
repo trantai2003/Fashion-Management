@@ -147,49 +147,19 @@ export default function PurchaseOrderList() {
         to: '',
     });
 
-    // Trạng thái đơn hàng configuration
+    // Trạng thái đơn hàng configuration (trạng thái >= 6)
     const statusConfig = {
-        0: {
-            label: 'Đã hủy',
-            color: 'bg-red-100 text-red-800 border-red-200',
-            icon: XCircle,
-            description: 'Đơn hàng đã bị hủy'
-        },
-        1: {
-            label: 'Chờ duyệt',
-            color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            icon: AlertCircle,
-            description: 'Đơn hàng đang chờ quản lý phê duyệt'
-        },
-        2: {
-            label: 'Đã duyệt',
-            color: 'bg-blue-100 text-blue-800 border-blue-200',
-            icon: CheckCircle,
-            description: 'Đơn hàng đã được duyệt nội bộ'
-        },
-        3: {
-            label: 'Đã gửi mail yêu cầu báo giá đến nhà cung cấp',
-            color: 'bg-purple-100 text-purple-800 border-purple-200',
-            icon: Send,
-            description: 'Đã gửi email yêu cầu đến nhà cung cấp'
-        },
-        4: {
-            label: 'Đã nhận báo giá',
+        6: {
+            label: 'Đã chấp nhận báo giá',
             color: 'bg-green-100 text-green-800 border-green-200',
-            icon: FileText,
-            description: 'Nhà cung cấp đã xác nhận và gửi báo giá'
+            icon: CheckCircle,
+            description: 'Đã chấp nhận báo giá từ nhà cung cấp'
         },
-        5: {
+        7: {
             label: 'Đã thanh toán',
             color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
             icon: CreditCard,
-            description: 'Đã chấp nhận báo giá và hoàn thành thanh toán'
-        },
-        6: {
-            label: 'Từ chối báo giá của nhà cung cấp',
-            color: 'bg-orange-100 text-orange-800 border-orange-200',
-            icon: AlertCircle,
-            description: 'Báo giá từ nhà cung cấp không đáp ứng yêu cầu'
+            description: 'Đã hoàn thành thanh toán cho đơn hàng'
         }
     };
 
@@ -261,7 +231,15 @@ export default function PurchaseOrderList() {
                 });
             }
 
-            // Filter theo trạng thái
+            // Filter theo trạng thái - chỉ lấy trạng thái >= 6 (đơn hàng thực sự)
+            filterArray.push({
+                fieldName: "trangThai",
+                operation: "GREATER_THAN_OR_EQUAL",
+                value: 6,
+                logicType: "AND"
+            });
+
+            // Filter theo trạng thái cụ thể nếu có
             if (filters.trangThai !== '' && filters.trangThai !== 'all') {
                 filterArray.push({
                     fieldName: "trangThai",
@@ -633,23 +611,23 @@ export default function PurchaseOrderList() {
                         </TooltipContent>
                     </Tooltip>
 
-                    {/* Thanh toán */}
+                    {/* Thanh toán - chỉ cho trạng thái 6 (đã chấp nhận báo giá) */}
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <span>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    disabled={order.trangThai !== 4 || authDisabled}
+                                    disabled={order.trangThai !== 6 || authDisabled}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        if (order.trangThai === 4 && !authDisabled) handleViewPayment(order.id);
+                                        if (order.trangThai === 6 && !authDisabled) handleViewPayment(order.id);
                                     }}
                                 >
                                     <CreditCard className={`h-4 w-4 ${
-                                        authDisabled || order.trangThai !== 4
+                                        authDisabled || order.trangThai !== 6
                                             ? 'text-gray-300'
-                                            : 'text-blue-600'
+                                            : 'text-green-600'
                                     }`} />
                                 </Button>
                             </span>
@@ -658,11 +636,11 @@ export default function PurchaseOrderList() {
                             <p>
                                 {authDisabled
                                     ? "Đang tải thông tin người dùng..."
-                                    : order.trangThai === 4
+                                    : order.trangThai === 6
                                         ? "Thanh toán đơn hàng"
-                                        : order.trangThai === 5
+                                        : order.trangThai === 7
                                             ? "Đơn hàng đã thanh toán"
-                                            : "Chỉ có thể thanh toán khi đã nhận báo giá"
+                                            : "Chỉ có thể thanh toán khi đã chấp nhận báo giá"
                                 }
                             </p>
                         </TooltipContent>
@@ -793,6 +771,24 @@ export default function PurchaseOrderList() {
                 </Alert>
             )}
 
+
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">Đơn hàng nhập</h1>
+                    <p className="text-gray-600 mt-1">
+                        Quản lý các đơn hàng nhập đã được xác nhận từ nhà cung cấp
+                    </p>
+                </div>
+                <Button
+                    onClick={() => navigate('/purchase-requests')}
+                    variant="outline"
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                >
+                    <Package className="mr-2 h-4 w-4" />
+                    Xem yêu cầu nhập hàng
+                </Button>
+            </div>
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

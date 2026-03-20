@@ -4,10 +4,7 @@ package com.dev.backend.controller;
 import com.dev.backend.constant.variables.IPermissionType;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.customizeanotation.RequireAuth;
-import com.dev.backend.dto.request.DonMuaHangBaoGia;
-import com.dev.backend.dto.request.DonMuaHangCreating;
-import com.dev.backend.dto.request.OtpDonMuaHangConfirming;
-import com.dev.backend.dto.request.OtpDonMuaHangGetting;
+import com.dev.backend.dto.request.*;
 import com.dev.backend.dto.response.GiaoDichDto;
 import com.dev.backend.dto.response.ResponseData;
 import com.dev.backend.dto.response.entities.DonMuaHangDto;
@@ -190,46 +187,7 @@ public class NghiepVuSanPhamController {
         DonMuaHang donMuaHang = donMuaHangService.getOne(id).orElseThrow(
                 () -> new CommonException("Không tìm thấy đơn mua hàng id: " + id)
         );
-
-        if (trangThai == 3) {
-            Date now = new Date();
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("ngay", now.getDate());
-            params.put("thang", now.getMonth() + 1);
-            params.put("nam", now.getYear() + 1900);
-            params.put("soDonMua", donMuaHang.getSoDonMua());
-
-            String trangThaiText = " Quản lý đã duyệt và gửi mail";
-            BigDecimal tongSoLuong = BigDecimal.ZERO;
-            // tính tổng số lượng
-            for (ChiTietDonMuaHang chiTietDonMuaHang : donMuaHang.getChiTietDonMuaHangs()) {
-                tongSoLuong = tongSoLuong.add(chiTietDonMuaHang.getSoLuongDat());
-            }
-            params.put("trangThaiText", trangThaiText);
-            params.put("tenKho", donMuaHang.getKhoNhap().getTenKho());
-            params.put("diaChiKho", donMuaHang.getKhoNhap().getDiaChi());
-            params.put("tenNhaCungCap", donMuaHang.getNhaCungCap().getTenNhaCungCap());
-            params.put("maNhaCungCap", donMuaHang.getNhaCungCap().getMaNhaCungCap());
-            params.put("nguoiLienHe", donMuaHang.getNhaCungCap().getNguoiLienHe());
-            params.put("soDienThoai", donMuaHang.getNhaCungCap().getSoDienThoai());
-            params.put("email", donMuaHang.getNhaCungCap().getEmail());
-            params.put("tongSoMatHang", donMuaHang.getChiTietDonMuaHangs().size());
-            params.put("tongSoLuong", tongSoLuong);
-            params.put("tongTien", donMuaHang.getTongTien());
-            params.put("ghiChu", donMuaHang.getGhiChu());
-            params.put("ngayDatHang", donMuaHang.getNgayDatHang());
-            params.put("ngayGiaoDuKien", donMuaHang.getNgayGiaoDuKien());
-            params.put("hanPheDuyet", donMuaHang.getNgayGiaoDuKien());
-
-            emailService.sendHtmlEmailFromTemplate(
-                    donMuaHang.getNhaCungCap().getEmail(),
-                    "Phiếu xác nhận nhập hàng",
-                    "don_mua.html",
-                    params
-            );
-
-        }
-        if (trangThai == 6) {
+        if (trangThai == 5) {
             Date now = new Date();
             HashMap<String, Object> params = new HashMap<>();
             params.put("ngay", now.getDate());
@@ -260,6 +218,16 @@ public class NghiepVuSanPhamController {
                         .error(null)
                         .build()
         );
+    }
+
+    @PutMapping("/don-mua-hang/gui-yeu-cau-bao-gia")
+    @RequireAuth(
+            roles = {
+                    IRoleType.nhan_vien_mua_hang
+            }
+    )
+    public ResponseEntity<ResponseData<String>> guiYeuCauBaoGia(@RequestBody YeuCauBaoGiaCreating yeuCau) {
+        return donMuaHangService.guiYeuCauBaoGia(yeuCau);
     }
 
     @PostMapping("/don-mua-hang/lay-otp")

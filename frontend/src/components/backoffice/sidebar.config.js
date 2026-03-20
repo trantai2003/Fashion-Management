@@ -71,6 +71,11 @@ export const SIDEBAR_MENU = [
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
       },
       {
+        label: "Yêu cầu mua hàng",
+        to: "/purchase-requests",
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
+      },
+      {
         label: "Đơn mua hàng",
         to: "/purchase-orders",
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],

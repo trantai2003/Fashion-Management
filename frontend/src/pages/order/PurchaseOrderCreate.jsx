@@ -69,7 +69,6 @@ export default function PurchaseOrderCreate() {
     const [searchParams] = useSearchParams();
 
     // ── Query-string params: bienTheId và khoId từ URL ──────────────────
-    // Ví dụ: /purchase-orders/create?bienTheId=81&khoId=1
     const urlBienTheId = searchParams.get("bienTheId")
         ? parseInt(searchParams.get("bienTheId"), 10)
         : null;
@@ -78,14 +77,11 @@ export default function PurchaseOrderCreate() {
         : null;
 
     /* ── Data State ── */
-    const [suppliers, setSuppliers] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
     const [productVariants, setProductVariants] = useState([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
 
-    /* ── Prefill state ─────────────────────────────────────────────────
-       prefillDone: tránh inject item nhiều lần khi productVariants load xong
-    */
+    /* ── Prefill state ── */
     const [prefillDone, setPrefillDone] = useState(false);
 
     /* ── Form State ── */
@@ -94,10 +90,9 @@ export default function PurchaseOrderCreate() {
     const [showProductDialog, setShowProductDialog] = useState(false);
     const [sendingEmail, setSendingEmail] = useState(false);
 
+    // ── Chỉ giữ các trường mà backend DTO yêu cầu ──
     const [formData, setFormData] = useState({
-        soDonMua: '',
-        nhaCungCapId: '',
-        khoId: urlKhoId ? String(urlKhoId) : '',   // ← prefill từ URL nếu có
+        khoId: urlKhoId ? String(urlKhoId) : '',
         ngayDatHang: new Date().toISOString().split('T')[0],
         ngayGiaoDuKien: '',
         ghiChu: '',
@@ -108,39 +103,14 @@ export default function PurchaseOrderCreate() {
     const [filteredProducts, setFilteredProducts] = useState([]);
 
     /* ── Helpers ── */
-    const generateOrderNumber = () => {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        const r = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-        return `PO${y}${m}${d}${r}`;
-    };
-
     const formatCurrency = (amount) =>
         new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
-
-
 
     /* ── Load master data ── */
     useEffect(() => {
         const loadData = async () => {
             setIsLoadingData(true);
             try {
-                setFormData(prev => ({ ...prev, soDonMua: generateOrderNumber() }));
-
-                // Load suppliers
-                let suppliersData = [];
-                try {
-                    const suppliersRes = await purchaseOrderCreateService.getAllSuppliers();
-                    if (suppliersRes?.data) suppliersData = suppliersRes.data;
-                    else if (Array.isArray(suppliersRes)) suppliersData = suppliersRes;
-                    console.log('✅ Suppliers loaded:', suppliersData.length);
-                } catch (error) {
-                    console.error('❌ Failed to load suppliers:', error);
-                    toast.error('Không thể tải danh sách nhà cung cấp');
-                }
-
                 // Load product variants
                 let variantsData = [];
                 try {
@@ -163,17 +133,13 @@ export default function PurchaseOrderCreate() {
                     toast.error('Không thể tải danh sách kho');
                 }
 
-                // Set state even if some failed
-                setSuppliers(suppliersData);
                 setProductVariants(variantsData);
                 setFilteredProducts(variantsData);
                 setWarehouses(warehousesData);
 
-                // Check if we have minimum required data
                 if (variantsData.length === 0) {
                     toast.error('Không thể tải danh sách sản phẩm. Vui lòng thử lại.');
                 }
-
             } catch (error) {
                 console.error('❌ Failed to load initial data:', error);
                 toast.error('Không thể tải dữ liệu ban đầu. Vui lòng thử lại.');
@@ -184,29 +150,19 @@ export default function PurchaseOrderCreate() {
         loadData();
     }, []);
 
-    /* ─────────────────────────────────────────────────────────────────
-       PREFILL: khi productVariants đã có và URL có bienTheId
-       → tự động thêm biến thể đó vào orderItems một lần duy nhất
-    ───────────────────────────────────────────────────────────────── */
+    /* ── Prefill từ URL ── */
     useEffect(() => {
-        // Điều kiện: có urlBienTheId, danh sách biến thể đã load, chưa inject
         if (!urlBienTheId || productVariants.length === 0 || prefillDone) return;
 
         const variant = productVariants.find(p => p.id === urlBienTheId);
-
         if (!variant) {
-            // Biến thể không tìm thấy trong danh sách — báo lỗi
-            console.warn(`[PrefillOrder] bienTheId=${urlBienTheId} không tìm thấy trong danh sách biến thể.`);
-            toast.error(`Không tìm thấy sản phẩm với ID ${urlBienTheId}. Vui lòng chọn sản phẩm thủ công.`);
+            console.warn(`[PrefillOrder] bienTheId=${urlBienTheId} không tìm thấy.`);
+            toast.error(`Không tìm thấy sản phẩm với ID ${urlBienTheId}. Vui lòng chọn thủ công.`);
             setPrefillDone(true);
             return;
         }
 
-        // Kiểm tra quyền: nếu allowedVariantIds đã được khởi tạo và không chứa variant này
-        // thì vẫn thêm vào (allowedVariantIds được tính sau khi myRequest load xong,
-        // useEffect này chạy song song — sẽ validate lại khi submit)
         setOrderItems(prev => {
-            // Tránh duplicate nếu effect chạy lại
             if (prev.some(item => item.bienTheSanPhamId === variant.id)) return prev;
             return [...prev, {
                 bienTheSanPhamId: variant.id,
@@ -224,7 +180,6 @@ export default function PurchaseOrderCreate() {
         toast.success(`Đã thêm sản phẩm ${variant.tenSanPham} vào đơn hàng từ URL`);
         setPrefillDone(true);
     }, [urlBienTheId, productVariants, prefillDone]);
-    // allowedVariantIds KHÔNG phải dependency vì validate sẽ làm lại khi submit
 
     /* ── Filter products in dialog ── */
     useEffect(() => {
@@ -275,11 +230,8 @@ export default function PurchaseOrderCreate() {
         toast.success('Đã xóa sản phẩm khỏi đơn hàng');
     };
 
-    const calculateTotal = () =>
-        orderItems.reduce((sum, item) => sum + Number(item.soLuongDat) * Number(item.donGia), 0);
-
+    /* ── Validate ── */
     const validateForm = () => {
-        if (!formData.nhaCungCapId) { toast.error('Vui lòng chọn nhà cung cấp'); return false; }
         if (!formData.khoId && !urlKhoId) { toast.error('Vui lòng chọn kho tiếp nhận'); return false; }
         if (!formData.ngayDatHang) { toast.error('Vui lòng chọn ngày đặt hàng'); return false; }
         if (!formData.ngayGiaoDuKien) { toast.error('Vui lòng chọn ngày giao dự kiến'); return false; }
@@ -302,21 +254,16 @@ export default function PurchaseOrderCreate() {
         setShowSendDialog(true);
     };
 
+    /* ── Submit — chỉ gửi đúng các trường trong DonMuaHangCreating ── */
     const confirmSendEmail = async () => {
         if (!validateForm()) return;
         setSendingEmail(true);
         try {
-            const selectedSupplier = suppliers.find(s => s.id === parseInt(formData.nhaCungCapId));
-            if (!selectedSupplier) { toast.error('Nhà cung cấp không tồn tại'); return; }
-
+            // ── Payload khớp đúng DTO DonMuaHangCreating ──
             const payload = {
-                soDonMua: formData.soDonMua,
-                nhaCungCapId: Number(formData.nhaCungCapId),
                 ngayDatHang: new Date(formData.ngayDatHang).toISOString(),
                 ngayGiaoDuKien: new Date(formData.ngayGiaoDuKien).toISOString(),
                 ghiChu: formData.ghiChu || '',
-                tongTien: calculateTotal(),
-                trangThai: 1,// Mặc định trạng thái là đã gửi duyệt
                 chiTietDonMuaHangs: orderItems.map(item => ({
                     bienTheSanPhamId: Number(item.bienTheSanPhamId),
                     soLuongDat: Number(item.soLuongDat),
@@ -328,29 +275,26 @@ export default function PurchaseOrderCreate() {
             };
 
             const khoIdToUse = formData.khoId || urlKhoId;
+
             await apiClient.post('/api/v1/nghiep-vu/don-mua-hang/create', payload, {
                 headers: {
-                    'kho_id': khoIdToUse
-                }
+                    'kho_id': khoIdToUse,
+                },
             });
-            toast.success(`Đã gửi đơn`);
+
+            toast.success('Đã gửi yêu cầu duyệt nhập hàng thành công!');
             setShowSendDialog(false);
-            setTimeout(() => navigate('/purchase-orders'), 2000);
+            setTimeout(() => navigate('/purchase-requests'), 2000);
         } catch (error) {
-            if (error.response?.status === 409) {
-                toast.error('Mã đơn mua hàng đã tồn tại. Vui lòng tạo lại mã mới.');
-            } else {
-                toast.error(error.response?.data?.message || 'Không thể gửi yêu cầu. Vui lòng thử lại!');
-            }
+            toast.error(error.response?.data?.message || 'Không thể gửi yêu cầu. Vui lòng thử lại!');
         } finally {
             setSendingEmail(false);
         }
     };
 
-    const selectedSupplier = suppliers.find(s => s.id === parseInt(formData.nhaCungCapId)) ?? null;
     const selectedWarehouse = warehouses.find(k => k.id === parseInt(formData.khoId || urlKhoId)) ?? null;
 
-    /* ── Loading screens ── */
+    /* ── Loading screen ── */
     if (isLoadingData) {
         return (
             <div className="p-5 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] flex items-center justify-center">
@@ -364,8 +308,6 @@ export default function PurchaseOrderCreate() {
         );
     }
 
-
-
     /* ══════════════════════════════════════════════════════════════════
        MAIN FORM
     ══════════════════════════════════════════════════════════════════ */
@@ -376,175 +318,108 @@ export default function PurchaseOrderCreate() {
             <div className="flex items-center justify-between">
                 <button
                     type="button"
-                    onClick={() => navigate('/purchase-orders')}
+                    onClick={() => navigate('/purchase-requests')}
                     className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Quay lại danh sách
                 </button>
-
-
             </div>
 
+            {/* ── Info Card: Thiết lập chứng từ (không còn nhà cung cấp & số đơn) ── */}
+            <SectionCard title="Thiết lập chứng từ" icon={FileText} iconBg="bg-amber-100" iconColor="text-amber-600">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-
-            {/* ── Info Cards Grid ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-
-                {/* Card Thiết lập chứng từ */}
-                <SectionCard title="Thiết lập chứng từ" icon={FileText} iconBg="bg-amber-100" iconColor="text-amber-600">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                        {/* Số đơn */}
-                        <div className="space-y-2">
-                            <Label className="text-[13px] font-bold text-slate-700">
-                                Số Đơn <span className="text-rose-500">*</span>
-                            </Label>
-                            <div className="flex gap-2">
-                                <Input
-                                    value={formData.soDonMua}
-                                    onChange={(e) => handleInputChange('soDonMua', e.target.value)}
-                                    className="h-11 font-mono font-bold text-[#8b6a21] rounded-xl border-slate-200 shadow-sm text-[15px] focus-visible:ring-slate-500 flex-1"
-                                    placeholder="Mã đơn tự sinh"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => handleInputChange('soDonMua', generateOrderNumber())}
-                                    className="h-11 w-11 p-0 rounded-xl border-slate-200"
-                                    title="Tái tạo mã"
-                                >
-                                    <RotateCw className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Kho tiếp nhận */}
-                        <div className="space-y-2">
-                            <Label className="text-[13px] font-bold text-slate-700">
-                                Kho Tiếp Nhận <span className="text-rose-500">*</span>
-                                {urlKhoId && <span className="text-[11px] text-amber-600 font-normal ml-1">(Đã khóa từ URL)</span>}
-                            </Label>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild disabled={!!urlKhoId}>
-                                    <Button
-                                        variant="outline"
-                                        className={`w-full h-11 justify-between font-medium rounded-xl border-slate-200 px-4 text-[14px] ${urlKhoId ? 'bg-slate-50 cursor-not-allowed opacity-75' : ''}`}
-                                    >
-                                        <div className="flex items-center gap-2 truncate">
-                                            <Package className="h-4 w-4 text-slate-400 shrink-0" />
-                                            <span className="truncate">
-                                                {selectedWarehouse ? selectedWarehouse.tenKho : 'Chọn kho tiếp nhận...'}
-                                            </span>
-                                            {urlKhoId && <LockKeyhole className="h-3.5 w-3.5 text-amber-500 shrink-0 ml-1" />}
-                                        </div>
-                                        <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[340px] max-h-[320px] overflow-y-auto bg-white rounded-xl shadow-lg" align="start">
-                                    {warehouses.map((warehouse) => (
-                                        <DropdownMenuItem
-                                            key={warehouse.id}
-                                            onClick={() => !urlKhoId && handleInputChange('khoId', warehouse.id)}
-                                            className={`cursor-pointer p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5 ${urlKhoId ? 'cursor-not-allowed opacity-50' : ''}`}
-                                            disabled={!!urlKhoId}
-                                        >
-                                            <span className="font-bold text-slate-800">{warehouse.tenKho}</span>
-                                            <span className="text-[12px] text-slate-500">{warehouse.diaChi}</span>
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            {selectedWarehouse?.diaChi && (
-                                <p className="text-[12px] text-slate-400 pl-1 flex items-center gap-1">
-                                    <span className="h-1 w-1 rounded-full bg-slate-300 inline-block" />
-                                    {selectedWarehouse.diaChi}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Ngày đặt / ngày giao */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                            <Label className="text-[13px] font-bold text-slate-700">
-                                Ngày Đặt Hàng <span className="text-rose-500">*</span>
-                            </Label>
-                            <Input
-                                type="date"
-                                value={formData.ngayDatHang}
-                                onChange={(e) => handleInputChange('ngayDatHang', e.target.value)}
-                                className="h-11 rounded-xl border-slate-200 shadow-sm focus-visible:ring-slate-500"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[13px] font-bold text-slate-700">
-                                Ngày Giao Dự Kiến <span className="text-rose-500">*</span>
-                            </Label>
-                            <Input
-                                type="date"
-                                value={formData.ngayGiaoDuKien}
-                                onChange={(e) => handleInputChange('ngayGiaoDuKien', e.target.value)}
-                                className="h-11 rounded-xl border-slate-200 shadow-sm focus-visible:ring-slate-500"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Ghi chú */}
-                    <div className="space-y-2">
-                        <Label className="text-[13px] font-bold text-slate-700">Ghi Chú</Label>
-                        <Textarea
-                            value={formData.ghiChu}
-                            onChange={(e) => handleInputChange('ghiChu', e.target.value)}
-                            placeholder="Ghi chú thêm về đơn hàng..."
-                            className="rounded-xl border-slate-200 resize-none"
-                            rows={3}
-                        />
-                    </div>
-                </SectionCard>
-
-                {/* Card Nhà cung cấp */}
-                <SectionCard title="Nhà Cung Cấp" icon={Building2} iconBg="bg-blue-100" iconColor="text-blue-600">
+                    {/* Kho tiếp nhận */}
                     <div className="space-y-2">
                         <Label className="text-[13px] font-bold text-slate-700">
-                            Chọn Nhà Cung Cấp <span className="text-rose-500">*</span>
+                            Kho Tiếp Nhận <span className="text-rose-500">*</span>
+                            {urlKhoId && (
+                                <span className="text-[11px] text-amber-600 font-normal ml-1">
+                                    (Đã khóa từ URL)
+                                </span>
+                            )}
                         </Label>
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="w-full h-11 justify-between font-medium rounded-xl border-slate-200 px-4 text-[14px]">
+                            <DropdownMenuTrigger asChild disabled={!!urlKhoId}>
+                                <Button
+                                    variant="outline"
+                                    className={`w-full h-11 justify-between font-medium rounded-xl border-slate-200 px-4 text-[14px] ${urlKhoId ? 'bg-slate-50 cursor-not-allowed opacity-75' : ''}`}
+                                >
                                     <div className="flex items-center gap-2 truncate">
-                                        <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
+                                        <Package className="h-4 w-4 text-slate-400 shrink-0" />
                                         <span className="truncate">
-                                            {selectedSupplier ? selectedSupplier.tenNhaCungCap : 'Chọn nhà cung cấp...'}
+                                            {selectedWarehouse ? selectedWarehouse.tenKho : 'Chọn kho tiếp nhận...'}
                                         </span>
+                                        {urlKhoId && <LockKeyhole className="h-3.5 w-3.5 text-amber-500 shrink-0 ml-1" />}
                                     </div>
                                     <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[340px] max-h-[320px] overflow-y-auto bg-white rounded-xl shadow-lg" align="start">
-                                {suppliers.map((s) => (
+                            <DropdownMenuContent
+                                className="w-[340px] max-h-[320px] overflow-y-auto bg-white rounded-xl shadow-lg"
+                                align="start"
+                            >
+                                {warehouses.map((warehouse) => (
                                     <DropdownMenuItem
-                                        key={s.id}
-                                        onClick={() => handleInputChange('nhaCungCapId', s.id)}
-                                        className="cursor-pointer p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5"
+                                        key={warehouse.id}
+                                        onClick={() => !urlKhoId && handleInputChange('khoId', warehouse.id)}
+                                        className={`cursor-pointer p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5 ${urlKhoId ? 'cursor-not-allowed opacity-50' : ''}`}
+                                        disabled={!!urlKhoId}
                                     >
-                                        <span className="font-bold text-slate-800">{s.tenNhaCungCap}</span>
-                                        <span className="text-[12px] text-slate-500">{s.email}</span>
+                                        <span className="font-bold text-slate-800">{warehouse.tenKho}</span>
+                                        <span className="text-[12px] text-slate-500">{warehouse.diaChi}</span>
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        {selectedWarehouse?.diaChi && (
+                            <p className="text-[12px] text-slate-400 pl-1 flex items-center gap-1">
+                                <span className="h-1 w-1 rounded-full bg-slate-300 inline-block" />
+                                {selectedWarehouse.diaChi}
+                            </p>
+                        )}
                     </div>
 
-                    {selectedSupplier && (
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
-                            <InfoField label="Người liên hệ" icon={User} value={selectedSupplier.nguoiLienHe} />
-                            <InfoField label="Điện thoại" icon={Phone} value={selectedSupplier.soDienThoai} />
-                            <InfoField label="Email" icon={Mail} value={selectedSupplier.email} />
-                            <InfoField label="Địa chỉ" icon={MapPin} value={selectedSupplier.diaChi} />
-                        </div>
-                    )}
-                </SectionCard>
-            </div>
+                    {/* Ngày đặt hàng */}
+                    <div className="space-y-2">
+                        <Label className="text-[13px] font-bold text-slate-700">
+                            Ngày Đặt Hàng <span className="text-rose-500">*</span>
+                        </Label>
+                        <Input
+                            type="date"
+                            value={formData.ngayDatHang}
+                            onChange={(e) => handleInputChange('ngayDatHang', e.target.value)}
+                            className="h-11 rounded-xl border-slate-200 shadow-sm focus-visible:ring-slate-500"
+                        />
+                    </div>
+
+                    {/* Ngày giao dự kiến */}
+                    <div className="space-y-2">
+                        <Label className="text-[13px] font-bold text-slate-700">
+                            Ngày Giao Dự Kiến <span className="text-rose-500">*</span>
+                        </Label>
+                        <Input
+                            type="date"
+                            value={formData.ngayGiaoDuKien}
+                            onChange={(e) => handleInputChange('ngayGiaoDuKien', e.target.value)}
+                            className="h-11 rounded-xl border-slate-200 shadow-sm focus-visible:ring-slate-500"
+                        />
+                    </div>
+                </div>
+
+                {/* Ghi chú */}
+                <div className="space-y-2">
+                    <Label className="text-[13px] font-bold text-slate-700">Ghi Chú</Label>
+                    <Textarea
+                        value={formData.ghiChu}
+                        onChange={(e) => handleInputChange('ghiChu', e.target.value)}
+                        placeholder="Ghi chú thêm về đơn hàng..."
+                        className="rounded-xl border-slate-200 resize-none"
+                        rows={3}
+                    />
+                </div>
+            </SectionCard>
 
             {/* ── Order Items Table ── */}
             <SectionCard title="Danh sách Sản phẩm" icon={ShoppingCart} iconBg="bg-emerald-100" iconColor="text-emerald-600">
@@ -577,8 +452,6 @@ export default function PurchaseOrderCreate() {
                             <TableRow className="bg-slate-50">
                                 <TableHead className="font-bold text-slate-700">Sản phẩm</TableHead>
                                 <TableHead className="font-bold text-slate-700 text-center w-32">Số lượng</TableHead>
-                                <TableHead className="font-bold text-slate-700 text-right w-40" hidden>Đơn giá</TableHead>
-                                <TableHead className="font-bold text-slate-700 text-right" hidden>Thành tiền</TableHead>
                                 <TableHead className="w-10"></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -588,8 +461,11 @@ export default function PurchaseOrderCreate() {
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             {item.anhBienThe?.tepTin?.duongDan ? (
-                                                <img src={item.anhBienThe.tepTin.duongDan} alt=""
-                                                    className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0" />
+                                                <img
+                                                    src={item.anhBienThe.tepTin.duongDan}
+                                                    alt=""
+                                                    className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0"
+                                                />
                                             ) : (
                                                 <div className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
                                                     <Package className="h-4 w-4 text-slate-400" />
@@ -610,18 +486,6 @@ export default function PurchaseOrderCreate() {
                                             onChange={(e) => handleUpdateItem(index, 'soLuongDat', e.target.value)}
                                             className="h-9 w-24 text-center rounded-lg font-bold border-slate-200 mx-auto"
                                         />
-                                    </TableCell>
-                                    <TableCell className="text-right" hidden>
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            value={item.donGia}
-                                            onChange={(e) => handleUpdateItem(index, 'donGia', e.target.value)}
-                                            className="h-9 w-36 text-right rounded-lg border-slate-200 ml-auto font-mono"
-                                        />
-                                    </TableCell>
-                                    <TableCell className="text-right font-bold font-mono text-slate-800" hidden>
-                                        {formatCurrency(Number(item.soLuongDat) * Number(item.donGia))}
                                     </TableCell>
                                     <TableCell>
                                         <Button
@@ -645,7 +509,7 @@ export default function PurchaseOrderCreate() {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => navigate('/purchase-orders')}
+                        onClick={() => navigate('/purchase-requests')}
                         className="h-11 rounded-xl px-6 font-semibold border-slate-200"
                     >
                         Hủy bỏ
@@ -709,7 +573,6 @@ export default function PurchaseOrderCreate() {
                                     </TableRow>
                                 ) : filteredProducts.map((product) => {
                                     const isSelected = orderItems.some(item => item.bienTheSanPhamId === product.id);
-
                                     return (
                                         <TableRow
                                             key={product.id}
@@ -723,8 +586,11 @@ export default function PurchaseOrderCreate() {
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     {product.anhBienThe?.tepTin?.duongDan ? (
-                                                        <img src={product.anhBienThe.tepTin.duongDan} alt=""
-                                                            className="h-10 w-10 rounded-xl object-cover border border-[#e8dcc8] shrink-0" />
+                                                        <img
+                                                            src={product.anhBienThe.tepTin.duongDan}
+                                                            alt=""
+                                                            className="h-10 w-10 rounded-xl object-cover border border-[#e8dcc8] shrink-0"
+                                                        />
                                                     ) : (
                                                         <div className="h-10 w-10 rounded-xl bg-[#f6f0e5] border border-[#e8dcc8] flex items-center justify-center shrink-0">
                                                             <Package className="h-4 w-4 text-[#c7b79c]" />
@@ -765,7 +631,7 @@ export default function PurchaseOrderCreate() {
                 </DialogContent>
             </Dialog>
 
-            {/* ── Send Confirmation Dialog ── */}
+            {/* ── Confirm Dialog ── */}
             <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
                 <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border-0 shadow-2xl">
                     <div className="bg-blue-600 p-6 flex items-center gap-3">
@@ -781,8 +647,10 @@ export default function PurchaseOrderCreate() {
                         <div className="space-y-4 mb-6">
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mã đơn</p>
-                                    <p className="font-mono font-bold text-[14px] text-[#8b6a21] truncate">{formData.soDonMua}</p>
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kho tiếp nhận</p>
+                                    <p className="font-bold text-[14px] text-slate-700 truncate">
+                                        {selectedWarehouse?.tenKho || '—'}
+                                    </p>
                                 </div>
                                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
                                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mặt hàng</p>
@@ -793,10 +661,19 @@ export default function PurchaseOrderCreate() {
                             </div>
                         </div>
                         <DialogFooter className="gap-2 mt-4">
-                            <Button variant="outline" onClick={() => setShowSendDialog(false)} disabled={sendingEmail}
-                                className="h-11 rounded-xl font-semibold w-full sm:w-auto">Hủy bỏ</Button>
-                            <Button onClick={confirmSendEmail} disabled={sendingEmail}
-                                className="h-11 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md w-full sm:w-auto">
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowSendDialog(false)}
+                                disabled={sendingEmail}
+                                className="h-11 rounded-xl font-semibold w-full sm:w-auto"
+                            >
+                                Hủy bỏ
+                            </Button>
+                            <Button
+                                onClick={confirmSendEmail}
+                                disabled={sendingEmail}
+                                className="h-11 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md w-full sm:w-auto"
+                            >
                                 {sendingEmail
                                     ? <><Loader2 className="h-5 w-5 animate-spin mr-2" />Đang gửi...</>
                                     : <><Send className="h-4 w-4 mr-2" />Xác nhận gửi</>
@@ -806,8 +683,6 @@ export default function PurchaseOrderCreate() {
                     </div>
                 </DialogContent>
             </Dialog>
-
-
         </div>
     );
 }
