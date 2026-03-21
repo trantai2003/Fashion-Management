@@ -1,291 +1,492 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, Package, CheckCircle2, ClipboardList } from "lucide-react";
 
-export default function PickLot() {
-    const navigate = useNavigate();
-    const { phieuXuatKhoId, chiTietPhieuXuatKhoId } = useParams();
-    const { state } = useLocation();
+const PRINT_STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500;700&display=swap');
 
-    const bienTheSanPhamId = state?.bienTheSanPhamId;
-    const sku              = state?.sku || "-";
-    const tenBienThe       = state?.tenBienThe || "-";
-    const soLuongCanXuat   = Number(state?.soLuongXuat ?? 0);
-    const phieuTrangThai   = state?.phieuTrangThai;
-    const isReadOnly       = phieuTrangThai !== 0;
+.print-root {
+  font-family: 'DM Sans', sans-serif;
+  color: #1a1612;
+  background: white;
+  min-height: 100vh;
+}
 
-    const [loading,  setLoading]  = useState(false);
-    const [lots,     setLots]     = useState([]);
-    const [pickMap,  setPickMap]  = useState({});
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #faf8f3;
+  border-bottom: 1px solid #e5d9c0;
+  margin-bottom: 24px;
+}
 
-    useEffect(() => {
-        if (!bienTheSanPhamId || !phieuXuatKhoId) {
-            toast.error("Thiếu thông tin biến thể");
-            navigate(-1);
-            return;
-        }
-        async function loadInitialData() {
-            setLoading(true);
-            try {
-                const [lotsRes, pickedRes] = await Promise.all([
-                    phieuXuatKhoService.getAvailableLots(phieuXuatKhoId, bienTheSanPhamId),
-                    phieuXuatKhoService.getPickedLots(phieuXuatKhoId, chiTietPhieuXuatKhoId).catch(() => []),
-                ]);
-                setLots(Array.isArray(lotsRes) ? lotsRes : []);
-                if (Array.isArray(pickedRes)) {
-                    const map = {};
-                    pickedRes.forEach(item => { map[item.loHangId] = String(item.soLuongDaPick); });
-                    setPickMap(map);
-                }
-            } catch { toast.error("Không tải được dữ liệu lô"); }
-            finally { setLoading(false); }
-        }
-        loadInitialData();
-    }, [phieuXuatKhoId, bienTheSanPhamId, chiTietPhieuXuatKhoId, navigate]);
+.top-left {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1612;
+}
 
-    const tongPickMoi = useMemo(() =>
-        Object.values(pickMap).reduce((sum, v) => sum + (Number(v) || 0), 0),
-    [pickMap]);
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-    function handleChange(loHangId, rawValue) {
-        if (isReadOnly) return;
-        if (rawValue === "") { setPickMap(prev => ({ ...prev, [loHangId]: "" })); return; }
-        if (!/^\d+$/.test(rawValue)) return;
-        setPickMap(prev => ({ ...prev, [loHangId]: rawValue }));
-    }
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-    async function handleSave() {
-        if (isReadOnly) return;
-        const entries = Object.entries(pickMap).filter(([, v]) => Number(v) > 0);
-        if (entries.length === 0) { toast.error("Vui lòng nhập số lượng pick"); return; }
-        for (const [id, val] of entries) {
-            const lot = lots.find(l => l.loHangId === Number(id));
-            if (Number(val) > (lot?.soLuongKhaDung || 0)) { toast.error(`Lô ${lot?.maLo} không đủ tồn kho`); return; }
-        }
-        if (tongPickMoi > soLuongCanXuat) { toast.error("Tổng số lượng pick vượt quá số lượng cần xuất"); return; }
+.btn-back {
+  background: white;
+  border: 1px solid #b8860b;
+  color: #b8860b;
+}
 
-        setLoading(true);
-        try {
-            await phieuXuatKhoService.pickLo(phieuXuatKhoId, {
-                chiTietPhieuXuatKhoId: Number(chiTietPhieuXuatKhoId),
-                loHangPicks: entries.map(([loHangId, soLuongXuat]) => ({ loHangId: Number(loHangId), soLuongXuat: Number(soLuongXuat) })),
-            });
-            toast.success("Pick lô thành công");
-            navigate(-1);
-        } catch (e) { toast.error(e?.response?.data?.message || "Pick lô thất bại"); }
-        finally { setLoading(false); }
-    }
+.btn-back:hover {
+  background: #faf8f3;
+}
 
-    // Badge trạng thái lô
-    function LotStatusBadge({ numValue, tonKhaDung }) {
-        if (numValue <= 0) return <span className="text-xs text-slate-400">Không dùng</span>;
-        if (numValue > tonKhaDung) return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />Vượt mức
-            </span>
+.btn-print {
+  background: linear-gradient(to right, #b8860b, #d4a017);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 8px rgba(184,134,11,0.3);
+}
+
+.btn-print:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(184,134,11,0.4);
+}
+
+.print-container {
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 0 18mm 25mm;
+  box-sizing: border-box;
+}
+
+.title-main {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 900;
+  text-align: center;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+  color: #1a1612;
+}
+
+.subtitle {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  text-align: center;
+  color: #7a6e5f;
+  margin: 0 0 20px;
+}
+
+.header-line {
+  border-bottom: 2px solid #b8860b;
+  margin: 0 0 28px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.info-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #b8860b;
+}
+
+.info-value {
+  font-weight: 600;
+}
+
+.table-container {
+  margin: 24px 0;
+}
+
+.table-header {
+  background: #faf8f3;
+  border-bottom: 2px solid #b8860b;
+}
+
+.table-header th {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #b8860b;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.table-row td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5d9c0;
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.lot-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 4px 0;
+  padding: 4px 8px;
+  background: rgba(184,134,11,0.04);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.lot-code {
+  font-family: 'DM Mono', monospace;
+  color: #b8860b;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.lot-date {
+  font-size: 12px;
+  color: #7a6e5f;
+}
+
+.lot-qty {
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.total-row {
+  background: #faf8f3;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.total-row td:last-child {
+  color: #b8860b;
+  font-size: 18px;
+  text-align: right;
+}
+
+.signatures {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 60px;
+  font-size: 14px;
+}
+
+.signature-block {
+  width: 45%;
+  text-align: center;
+}
+
+.signature-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b8860b;
+  margin-bottom: 50px;
+  text-transform: uppercase;
+}
+
+.signature-name {
+  border-top: 1px solid #b8860b;
+  padding-top: 8px;
+  margin-top: 40px;
+}
+
+.signature-note {
+  font-size: 11px;
+  color: #7a6e5f;
+  margin-top: 4px;
+}
+
+.page-number {
+  text-align: center;
+  font-size: 11px;
+  color: #a89f92;
+  margin-top: 40px;
+}
+
+/* Print rules */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 10mm 15mm 10mm;
+  }
+  body {
+    margin: 0;
+    background: white;
+  }
+  .top-bar {
+    display: none !important;
+  }
+}
+`;
+
+export default function PhieuXuatKhoPrint() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const [pickedLotsMap, setPickedLotsMap] = useState({});
+  const [lotMasterMap, setLotMasterMap] = useState({});
+
+  useEffect(() => {
+    fetchFullData();
+  }, [id]);
+
+  async function fetchFullData() {
+    setLoading(true);
+    try {
+      const res = await phieuXuatKhoService.getDetail(id);
+      const detailData = res?.data || res;
+      setData(detailData);
+
+      if (detailData?.chiTiet) {
+        const pickPromises = detailData.chiTiet.map((item) =>
+          phieuXuatKhoService.getPickedLots(id, item.id)
         );
-        if (numValue === tonKhaDung) return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Hết lô
-            </span>
-        );
-        return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-200 bg-yellow-50 px-2.5 py-1 text-xs font-semibold text-yellow-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />Một phần
-            </span>
-        );
-    }
 
+        const availPromises = detailData.chiTiet.map((item) =>
+          phieuXuatKhoService.getAvailableLots(id, item.bienTheSanPhamId)
+        );
+
+        const pickResults = await Promise.all(pickPromises);
+        const availResults = await Promise.all(availPromises);
+
+        const masterMap = {};
+        availResults
+          .flat()
+          .filter(Boolean)
+          .forEach((lot) => {
+            if (lot.loHangId) {
+              masterMap[lot.loHangId] = lot;
+            }
+          });
+        setLotMasterMap(masterMap);
+
+        const lotMap = {};
+        detailData.chiTiet.forEach((item, index) => {
+          const res = pickResults[index];
+          lotMap[item.id] = Array.isArray(res?.data)
+            ? res.data
+            : Array.isArray(res)
+            ? res
+            : [];
+        });
+        setPickedLotsMap(lotMap);
+      }
+    } catch (e) {
+      console.error("Lỗi fetch:", e);
+      toast.error("Không thể tải dữ liệu in");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading || !data) {
     return (
-        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
-            <div className="space-y-6 w-full">
-
-                {/* ── Header ── */}
-                <div className="flex items-center justify-between">
-                    <button
-                        type="button"
-                        onClick={() => navigate(`/goods-issues/${phieuXuatKhoId}`)}
-                        className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors duration-150"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        Quay lại chi tiết phiếu
-                    </button>
-
-                    {isReadOnly && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />Chế độ xem
-                        </span>
-                    )}
-                </div>
-
-                {/* ── Stats cards ── */}
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">SKU</p>
-                                <p className="text-sm font-bold text-gray-900 mt-1 font-mono">{sku}</p>
-                            </div>
-                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-6 w-6 text-blue-600" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-white p-6 md:col-span-1 lg:col-span-1">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Biến thể</p>
-                                <p className="text-sm font-bold text-gray-900 mt-1 leading-snug">{tenBienThe}</p>
-                            </div>
-                            <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                <ClipboardList className="h-6 w-6 text-purple-600" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-amber-50 to-white p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Cần xuất</p>
-                                <p className="text-2xl font-bold text-gray-900 mt-1">{soLuongCanXuat}</p>
-                            </div>
-                            <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                                <Package className="h-6 w-6 text-amber-600" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className={`rounded-2xl border-0 shadow-md hover:shadow-lg transition-shadow duration-200 p-6 ${tongPickMoi >= soLuongCanXuat ? "bg-gradient-to-br from-green-50 to-white" : "bg-gradient-to-br from-slate-50 to-white"}`}>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Đã pick</p>
-                                <p className={`text-2xl font-bold mt-1 ${tongPickMoi >= soLuongCanXuat ? "text-emerald-600" : "text-gray-900"}`}>
-                                    {tongPickMoi}<span className="text-sm font-normal text-gray-400">/{soLuongCanXuat}</span>
-                                </p>
-                            </div>
-                            <div className={`h-12 w-12 rounded-full flex items-center justify-center flex-shrink-0 ${tongPickMoi >= soLuongCanXuat ? "bg-green-100" : "bg-slate-100"}`}>
-                                <CheckCircle2 className={`h-6 w-6 ${tongPickMoi >= soLuongCanXuat ? "text-green-600" : "text-slate-400"}`} />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* ── Bảng lô hàng ── */}
-                <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                    <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 bg-slate-50">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100">
-                            <ClipboardList className="h-4 w-4 text-violet-600" />
-                        </div>
-                        <div>
-                            <p className="font-semibold text-slate-900 leading-snug">Danh sách lô khả dụng</p>
-                            <p className="text-xs text-slate-500 mt-0.5">
-                                {isReadOnly ? "Xem số lượng đã pick cho từng lô" : "Nhập số lượng cần xuất cho từng lô"}
-                            </p>
-                        </div>
-                    </div>
-
-                    {loading ? (
-                        <div className="flex items-center justify-center py-16 gap-2">
-                            <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
-                            <span className="text-sm text-gray-600">Đang tải danh sách lô...</span>
-                        </div>
-                    ) : lots.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-                                <Package className="h-10 w-10 text-slate-400" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-slate-800">Không có lô khả dụng</h3>
-                            <p className="mt-2 text-sm leading-6 text-slate-500">Sản phẩm này hiện không có lô hàng nào khả dụng.</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-slate-200 bg-slate-50">
-                                        <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Mã lô</th>
-                                        <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Ngày nhập</th>
-                                        {!isReadOnly && <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Tồn khả dụng</th>}
-                                        <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Số lượng xuất</th>
-                                        {!isReadOnly && <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase whitespace-nowrap">Trạng thái</th>}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {lots.map((lot) => {
-                                        const displayValue = pickMap[lot.loHangId] ?? "";
-                                        const numValue     = Number(displayValue) || 0;
-                                        const tonKhaDung   = Number(lot.soLuongKhaDung) || 0;
-                                        return (
-                                            <tr key={lot.loHangId} className="transition-colors duration-150 hover:bg-violet-50/50">
-                                                <td className="px-4 py-3.5 align-middle">
-                                                    <span className="font-bold text-violet-600 tracking-wide font-mono">{lot.maLo}</span>
-                                                </td>
-                                                <td className="px-4 py-3.5 align-middle text-center">
-                                                    <span className="text-sm text-slate-600">
-                                                        {lot.ngayNhapGanNhat ? new Date(lot.ngayNhapGanNhat).toLocaleDateString("vi-VN") : "—"}
-                                                    </span>
-                                                </td>
-                                                {!isReadOnly && (
-                                                    <td className="px-4 py-3.5 align-middle text-center">
-                                                        <span className="inline-flex items-center justify-center rounded-lg bg-slate-100 px-2.5 py-1">
-                                                            <span className="font-semibold text-slate-800 text-xs">{tonKhaDung}</span>
-                                                        </span>
-                                                    </td>
-                                                )}
-                                                <td className="px-4 py-3.5 align-middle text-center">
-                                                    <input
-                                                        type="text"
-                                                        inputMode="numeric"
-                                                        readOnly={isReadOnly}
-                                                        value={displayValue}
-                                                        onChange={(e) => handleChange(lot.loHangId, e.target.value)}
-                                                        placeholder="0"
-                                                        className={`w-24 h-9 border rounded-lg text-center font-semibold focus:outline-none transition-all ${
-                                                            isReadOnly
-                                                                ? "bg-slate-50 text-slate-500 border-slate-200 cursor-not-allowed"
-                                                                : "border-gray-200 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 bg-white"
-                                                        }`}
-                                                    />
-                                                </td>
-                                                {!isReadOnly && (
-                                                    <td className="px-4 py-3.5 align-middle text-center">
-                                                        <LotStatusBadge numValue={numValue} tonKhaDung={tonKhaDung} />
-                                                    </td>
-                                                )}
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-
-                    {lots.length > 0 && (
-                        <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-t border-slate-100">
-                            <p className="text-sm text-slate-500">
-                                Tổng <span className="font-semibold text-violet-600">{lots.length}</span> lô — Đã pick{" "}
-                                <span className={`font-semibold ${tongPickMoi >= soLuongCanXuat ? "text-emerald-600" : "text-amber-600"}`}>{tongPickMoi}</span>
-                                /{soLuongCanXuat}
-                            </p>
-                            {!isReadOnly && (
-                                <Button
-                                    disabled={loading || tongPickMoi <= 0}
-                                    onClick={handleSave}
-                                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 font-bold min-w-[140px] disabled:opacity-50"
-                                >
-                                    {loading
-                                        ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Đang lưu...</>
-                                        : <><CheckCircle2 className="mr-2 h-4 w-4" />Xác nhận Lô</>
-                                    }
-                                </Button>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center text-[#b8860b] text-lg font-mono tracking-wider bg-gradient-to-br from-[#faf8f3] to-[#ede9de]">
+        Đang chuẩn bị bản in...
+      </div>
     );
+  }
+
+  const { phieu, chiTiet } = data;
+  const isChuyenKho = phieu.loaiXuat === "chuyen_kho";
+  const tongSoLuong = chiTiet.reduce(
+    (acc, item) => acc + (item.soLuongDaPick || 0),
+    0
+  );
+
+  return (
+    <>
+      <style>{PRINT_STYLES}</style>
+
+      <div className="print-root">
+        {/* Top bar */}
+        <div className="top-bar">
+          <div className="top-left">In phiếu xuất kho</div>
+          <div className="top-right">
+            <button onClick={() => navigate(-1)} className="btn btn-back">
+              ← Quay lại
+            </button>
+            <button onClick={() => window.print()} className="btn btn-print">
+              In phiếu
+            </button>
+          </div>
+        </div>
+
+        {/* Print Container */}
+        <div className="print-container">
+          <h1 className="title-main">PHIẾU XUẤT KHO</h1>
+          <div className="subtitle">
+            Mã phiếu: {phieu.soPhieuXuat || "—"} • Ngày xuất:{" "}
+            {phieu.ngayXuat
+              ? new Date(phieu.ngayXuat).toLocaleDateString("vi-VN")
+              : "—"}
+          </div>
+
+          <div className="header-line" />
+
+          {/* Info Rows */}
+          <div className="info-row">
+            <div>
+              <div className="info-label">KHO XUẤT HÀNG</div>
+              <div className="info-value">{phieu.kho?.tenKho || "—"}</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div className="info-label">
+                {isChuyenKho ? "KHO NHẬN" : "ĐƠN BÁN HÀNG"}
+              </div>
+              <div className="info-value">
+                {isChuyenKho
+                  ? phieu.khoChuyenDen?.tenKho || "—"
+                  : phieu.donBanHang?.soDonHang
+                  ? `#${phieu.donBanHang.soDonHang}`
+                  : "—"}
+              </div>
+            </div>
+          </div>
+
+          <div className="info-row">
+            <div>
+              <div className="info-label">LOẠI NGHIỆP VỤ</div>
+              <div className="info-value">
+                {isChuyenKho ? "Chuyển kho nội bộ" : "Xuất bán hàng"}
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="table-container">
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead className="table-header">
+                <tr>
+                  <th style={{ width: "40px" }}>STT</th>
+                  <th style={{ width: "260px", textAlign: "left" }}>SẢN PHẨM</th>
+                  <th style={{ width: "200px" }}>LÔ HÀNG</th>
+                  <th style={{ width: "100px" }}>SL TỪ LÔ</th>
+                  <th style={{ width: "80px", textAlign: "right" }}>TỔNG SL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {chiTiet.map((item, idx) => {
+                  const lots = pickedLotsMap[item.id] || [];
+
+                  return (
+                    <tr key={item.id} className="table-row">
+                      <td style={{ textAlign: "center", color: "#7a6e5f" }}>
+                        {idx + 1}
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{item.sku || "—"}</div>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "#7a6e5f",
+                            marginTop: "2px",
+                          }}
+                        >
+                          {item.tenBienThe || "—"}
+                        </div>
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {lots.length > 0 ? (
+                          lots.map((lo, i) => {
+                            const lotInfo = lotMasterMap[lo.loHangId];
+                            return (
+                              <div key={i} className="lot-item">
+                                <div className="lot-code">
+                                  {lotInfo?.maLo || lo.loHangId || "—"}
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div
+                            className="lot-item"
+                            style={{ color: "#c2410c", fontStyle: "italic" }}
+                          >
+                            Chưa pick lô
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        {lots.length > 0 ? (
+                          lots.map((lo, i) => (
+                            <div key={i} className="lot-item">
+                              <div className="lot-qty">{lo.soLuongDaPick}</div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="lot-item">—</div>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "right", fontWeight: 700 }}>
+                        {item.soLuongDaPick || 0}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="total-row">
+                  <td
+                    colSpan={4}
+                    style={{ textAlign: "right", padding: "12px" }}
+                  >
+                    TỔNG CỘNG
+                  </td>
+                  <td
+                    style={{
+                      textAlign: "right",
+                      padding: "12px",
+                      fontSize: "18px",
+                    }}
+                  >
+                    {tongSoLuong}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* Signatures */}
+          <div className="signatures">
+            <div className="signature-block">
+              <div className="signature-title">NGƯỜI XUẤT</div>
+              <div className="signature-name">
+                {phieu.nguoiXuat?.hoTen || ".............................."}
+              </div>
+              <div className="signature-note">(Ký và ghi rõ họ tên)</div>
+            </div>
+
+            <div className="signature-block">
+              <div className="signature-title">NGƯỜI NHẬN HÀNG</div>
+              <div className="signature-name">..............................</div>
+              <div className="signature-note">(Ký và ghi rõ họ tên)</div>
+            </div>
+          </div>
+
+          <div className="page-number">1/1</div>
+        </div>
+      </div>
+    </>
+  );
 }
