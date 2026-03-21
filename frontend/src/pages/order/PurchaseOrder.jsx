@@ -150,7 +150,7 @@ export default function PurchaseOrderList() {
     // Trạng thái đơn hàng configuration (trạng thái >= 6)
     const statusConfig = {
         6: {
-            label: 'Đã chấp nhận báo giá',
+            label: 'Chờ thanh toán',
             color: 'bg-green-100 text-green-800 border-green-200',
             icon: CheckCircle,
             description: 'Đã chấp nhận báo giá từ nhà cung cấp'

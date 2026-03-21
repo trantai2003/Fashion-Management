@@ -239,16 +239,6 @@ export default function PurchaseRequestList() {
                 });
             }
 
-            // Filter theo nhà cung cấp - Sử dụng ID từ relation
-            if (filters.nhaCungCapId && filters.nhaCungCapId !== 'all') {
-                filterArray.push({
-                    fieldName: "nhaCungCap.id",
-                    operation: "EQUALS",
-                    value: parseInt(filters.nhaCungCapId),
-                    logicType: "AND"
-                });
-            }
-
             // Filter theo kho - Sử dụng ID từ relation
             if (filters.khoId && filters.khoId !== 'all') {
                 filterArray.push({
@@ -263,7 +253,7 @@ export default function PurchaseRequestList() {
             filterArray.push({
                 fieldName: "trangThai",
                 operation: "IN",
-                value: [0, 1, 2, 3, 4, 5],
+                value: [0, 1, 2],
                 logicType: "AND"
             });
 
@@ -556,15 +546,6 @@ export default function PurchaseRequestList() {
                             Từ chối báo giá
                         </DropdownMenuItem>
                     )}
-
-                    {/* Xem chi tiết */}
-                    <DropdownMenuItem
-                        onClick={() => navigate(`/purchase-orders/${order.id}`)}
-                        className="cursor-pointer"
-                    >
-                        <Eye className="mr-2 h-4 w-4" />
-                        Xem chi tiết
-                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         );
@@ -632,16 +613,10 @@ export default function PurchaseRequestList() {
         <TooltipProvider>
             <div className="container mx-auto p-6 space-y-6">
                 {/* Header */}
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Yêu cầu nhập hàng</h1>
-                        <p className="text-gray-600 mt-1">
-                            Quản lý các yêu cầu nhập hàng từ nhà cung cấp
-                        </p>
-                    </div>
+                <div className="flex justify-end items-center">
                     <Button
                         onClick={() => navigate('/purchase-orders/create')}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-blue-600 text-white hover:bg-blue-700"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Tạo yêu cầu nhập hàng
@@ -677,34 +652,8 @@ export default function PurchaseRequestList() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {/* Số đơn mua */}
-                            <div>
-                                <Label htmlFor="soDonMua">Số đơn mua</Label>
-                                <Input
-                                    id="soDonMua"
-                                    placeholder="Nhập số đơn mua..."
-                                    value={filters.soDonMua}
-                                    onChange={(e) => handleFilterChange('soDonMua', e.target.value)}
-                                />
-                            </div>
 
-                            {/* Nhà cung cấp */}
-                            <div>
-                                <Label htmlFor="nhaCungCapId">Nhà cung cấp</Label>
-                                <select
-                                    id="nhaCungCapId"
-                                    className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={filters.nhaCungCapId}
-                                    onChange={(e) => handleFilterChange('nhaCungCapId', e.target.value)}
-                                >
-                                    <option value="">Tất cả nhà cung cấp</option>
-                                    {suppliers.map(supplier => (
-                                        <option key={supplier.id} value={supplier.id}>
-                                            {supplier.tenNhaCungCap}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            
 
                             {/* Kho */}
                             <div>
@@ -799,8 +748,6 @@ export default function PurchaseRequestList() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Số đơn mua</TableHead>
-                                            <TableHead>Nhà cung cấp</TableHead>
                                             <TableHead>Kho</TableHead>
                                             <TableHead>Trạng thái</TableHead>
                                             <TableHead>Ngày tạo</TableHead>
@@ -822,13 +769,11 @@ export default function PurchaseRequestList() {
                                                 const StatusIcon = statusInfo.icon || AlertCircle;
 
                                                 return (
-                                                    <TableRow key={order.id} className="hover:bg-gray-50">
-                                                        <TableCell className="font-medium">
-                                                            {order.soDonMua}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {order.nhaCungCap?.tenNhaCungCap || '-'}
-                                                        </TableCell>
+                                                    <TableRow
+                                                        key={order.id}
+                                                        className="hover:bg-gray-50 cursor-pointer"
+                                                        onClick={() => navigate(`/purchase-orders/${order.id}`)}
+                                                    >
                                                         <TableCell>
                                                             {order.khoNhap?.tenKho || '-'}
                                                         </TableCell>

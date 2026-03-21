@@ -70,6 +70,7 @@ import NotFound404 from "./pages/page-error/NotFound404";
 import TonKhoTongQuan from "./pages/bao-cao/TonKhoTongQuan";
 import ApplicationRequestManagement from "./pages/purchase-oder-create-req/ApplicationRequestManagement";
 import LichSuGiaoDichKhoList from "./pages/lich-su-giao-dich-kho/LichSuGiaoDichKhoList";
+import QuotationRequestList from "./pages/order/QuotationRequestList";
 
 export default function App() {
   return (
@@ -137,6 +138,7 @@ export default function App() {
           <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
           <Route path="/purchase-orders/:id/payment" element={<PurchaseOrderPayment />} />
           <Route path="/purchase-requests/:id/gui-bao-gia" element={<SendQuotationRequest />} />
+          <Route path="/quotation-requests" element={<QuotationRequestList />} />
 
           {/* Supplier */}
           <Route path="/supplier" element={<SupplierList />} />

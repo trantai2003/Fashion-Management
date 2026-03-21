@@ -71,18 +71,6 @@ public class ThongKeHeThongServiceImpl implements ThongKeHeThongService {
 
     @Override
     public List<TonKhoProjection> getTonKhoTongHop(Integer khoId, String keyword) {
-        List<TonKhoProjection> coLo    = tonKhoTongHopRepository.findTonKhoTongHop(khoId, keyword);
-        List<TonKhoProjection> khongLo = tonKhoTongHopRepository.findTonKhoKhongCoLo(khoId, keyword);
-
-        List<TonKhoProjection> result = new ArrayList<>(coLo);
-        result.addAll(khongLo);
-
-        // Sort lại theo maSanPham, maSku, tenKho
-        result.sort(Comparator
-                .comparing(TonKhoProjection::getMaSanPham)
-                .thenComparing(TonKhoProjection::getMaSku)
-                .thenComparing(TonKhoProjection::getTenKho));
-
-        return result;
+        return tonKhoTongHopRepository.findTonKhoTongHop(khoId, keyword);
     }
 }

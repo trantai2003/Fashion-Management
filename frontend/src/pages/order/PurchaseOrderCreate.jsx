@@ -384,7 +384,7 @@ export default function PurchaseOrderCreate() {
                     {/* Ngày đặt hàng */}
                     <div className="space-y-2">
                         <Label className="text-[13px] font-bold text-slate-700">
-                            Ngày Đặt Hàng <span className="text-rose-500">*</span>
+                            Ngày Tạo <span className="text-rose-500">*</span>
                         </Label>
                         <Input
                             type="date"

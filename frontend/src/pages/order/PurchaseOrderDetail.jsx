@@ -170,10 +170,10 @@ export default function PurchaseOrderDetail() {
             icon: CreditCard, description: 'Không chấp nhận báo giá từ nhà cung cấp'
         },
         6: {
-            label: 'Chấp nhận báo giá',
+            label: 'Chờ thanh toán',
             bannerBg: 'bg-teal-50', bannerBorder: 'border-teal-200',
             iconBg: 'bg-teal-100', iconColor: 'text-teal-600', textColor: 'text-teal-800',
-            icon: AlertCircle, description: 'Chấp nhận báo giá từ nhà cung cấp'
+            icon: AlertCircle, description: 'Đã chấp nhận báo giá từ nhà cung cấp'
         },
         // 7 là đã thanh toán
         7: {
@@ -182,8 +182,6 @@ export default function PurchaseOrderDetail() {
             iconBg: 'bg-green-100', iconColor: 'text-green-600', textColor: 'text-green-800',
             icon: CreditCard, description: 'Đơn hàng đã được thanh toán hoàn tất'
         }
-
-
     };
 
     const formatCurrency = (amount) =>
@@ -259,18 +257,17 @@ export default function PurchaseOrderDetail() {
         }
     };
 
-    // ── [SỬA] Navigate sang trang riêng thay vì mở dialog ──
     const handleSendQuotationRequest = () => {
         navigate(`/purchase-requests/${id}/gui-bao-gia`);
     };
 
     const handleCancelOrder = () => {
         if (orderData?.trangThai === 0 || orderData?.trangThai === 3 || orderData?.trangThai === 6) {
-            toast.error('Không thể hủy đơn hàng ở trạng thái này!');
+            toast.error('Không thể thao tác ở trạng thái này!');
             return;
         }
-        if (orderData?.trangThai !== 2 && orderData?.trangThai !== 4) {
-            toast.error('Chỉ có thể hủy đơn hàng đã duyệt hoặc đã nhận báo giá!');
+        if (orderData?.trangThai !== 1 && orderData?.trangThai !== 2) {
+            toast.error('Chỉ có thể từ chối hoặc hủy đơn hàng ở trạng thái hợp lệ!');
             return;
         }
         setCancelDialog(true);
@@ -278,19 +275,50 @@ export default function PurchaseOrderDetail() {
 
     const confirmCancelOrder = async () => {
         if (!cancelReason.trim()) {
-            toast.error('Vui lòng nhập lý do hủy');
+            toast.error('Vui lòng nhập lý do');
             return;
         }
         setActionLoading(true);
         try {
-            await purchaseOrderService.duyetDon(id, 6);
-            toast.success(`Đã hủy đơn hàng ${orderData?.soDonMua} thành công!`);
+            await purchaseOrderService.duyetDon(id, 0);
+
+            const actionText = orderData?.trangThai === 1 ? 'Từ chối' : 'Hủy';
+            toast.success(`Đã ${actionText.toLowerCase()} đơn hàng ${orderData?.soDonMua} thành công!`);
+
             setCancelDialog(false);
             setCancelReason('');
             await fetchOrderDetail();
         } catch (error) {
-            console.error('Error canceling order:', error);
-            toast.error('Không thể hủy đơn hàng. Vui lòng thử lại!');
+            console.error('Error canceling/rejecting order:', error);
+            toast.error('Không thể thực hiện thao tác. Vui lòng thử lại!');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleAcceptQuotation = async () => {
+        setActionLoading(true);
+        try {
+            await purchaseOrderService.chapNhanBaoGia(id);
+            toast.success('Chấp nhận báo giá thành công!');
+            await fetchOrderDetail();
+        } catch (error) {
+            console.error('Error accepting quotation:', error);
+            toast.error(error.response?.data?.message || 'Không thể chấp nhận báo giá. Vui lòng thử lại!');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleRejectQuotation = async () => {
+        setActionLoading(true);
+        try {
+            await purchaseOrderService.tuChoiBaoGia(id);
+            toast.success('Từ chối báo giá thành công!');
+            await fetchOrderDetail();
+        } catch (error) {
+            console.error('Error rejecting quotation:', error);
+            toast.error(error.response?.data?.message || 'Không thể từ chối báo giá. Vui lòng thử lại!');
         } finally {
             setActionLoading(false);
         }
@@ -333,10 +361,23 @@ export default function PurchaseOrderDetail() {
 
             {/* ── Header ── */}
             <div className="flex flex-col gap-4 mb-2">
-                <button type="button" onClick={() => navigate("/purchase-orders")}
-                    className="inline-flex items-center gap-1.5 text-[14px] font-medium text-slate-500 hover:text-violet-600 transition-colors duration-200 w-fit">
+                <button
+                    type="button"
+                    onClick={() => {
+                        if ([0, 1, 2].includes(orderData.trangThai)) {
+                            navigate("/purchase-requests");
+                        } else if ([3, 4, 5].includes(orderData.trangThai)) {
+                            navigate("/quotation-requests");
+                        } else if (orderData.trangThai === 6) {
+                            navigate("/purchase-orders");
+                        } else {
+                            navigate(-1);
+                        }
+                    }}
+                    className="inline-flex items-center gap-1.5 text-[14px] font-medium text-slate-500 hover:text-violet-600 transition-colors duration-200 w-fit"
+                >
                     <ArrowLeft className="h-4 w-4" />
-                    Quay lại danh sách đơn hàng
+                    Quay lại danh sách
                 </button>
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -346,11 +387,25 @@ export default function PurchaseOrderDetail() {
                         </div>
                         <div>
                             <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
-                                Chi tiết đơn đặt mua
+                                {[0, 1, 2].includes(orderData.trangThai)
+                                    ? "Chi tiết yêu cầu nhập hàng"
+                                    : [3, 4, 5].includes(orderData.trangThai)
+                                        ? "Chi tiết yêu cầu báo giá"
+                                        : orderData.trangThai === 6
+                                            ? "Chi tiết đơn mua hàng"
+                                            : "Thông tin chi tiết"}
                             </h1>
-                            <p className="mt-1 text-[15px] font-medium text-slate-500">
-                                Mã đơn: <span className="font-mono text-violet-700 font-bold bg-violet-100/50 px-2 py-0.5 rounded border border-violet-200/50">{orderData.soDonMua || '—'}</span>
-                            </p>
+                            {![0, 1, 2].includes(orderData.trangThai) && (
+                                <p className="mt-1 text-[15px] font-medium text-slate-500">
+                                    Mã đơn:{" "}
+                                    <span className="font-mono text-violet-700 font-bold bg-violet-100/50 px-2 py-0.5 rounded border border-violet-200/50">
+                                        {/* Nếu trạng thái 3, 4, 5 thì đổi PO thành RFQ, còn lại (6, 7) thì giữ nguyên */}
+                                        {[3, 4, 5].includes(orderData.trangThai)
+                                            ? (orderData.soDonMua ? orderData.soDonMua.replace(/^PO/, 'RFQ') : '—')
+                                            : (orderData.soDonMua || '—')}
+                                    </span>
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -387,15 +442,15 @@ export default function PurchaseOrderDetail() {
                                                         <span>
                                                             <Button variant="outline"
                                                                 className="h-11 px-5 rounded-xl border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 font-bold shadow-sm disabled:opacity-50"
-                                                                disabled={!canModify || authDisabled}
-                                                                onClick={() => canModify && !authDisabled && handleCancelOrder()}>
+                                                                disabled={!canModify || !canApprove || authDisabled}
+                                                                onClick={() => canModify && canApprove && !authDisabled && handleCancelOrder()}>
                                                                 <XCircle className="mr-2 h-4 w-4" />
-                                                                Hủy đơn
+                                                                Từ chối yêu cầu
                                                             </Button>
                                                         </span>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>{authDisabled ? "Đang tải thông tin người dùng..." : !canModify ? "Đơn hàng đã kết thúc" : "Hủy đơn hàng"}</p>
+                                                        <p>{authDisabled ? "Đang tải thông tin người dùng..." : !canApprove ? "Bạn không có quyền từ chối yêu cầu" : "Từ chối yêu cầu"}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
 
@@ -438,7 +493,6 @@ export default function PurchaseOrderDetail() {
                                                     </TooltipContent>
                                                 </Tooltip>
 
-                                                {/* ── Nút Gửi yêu cầu báo giá: navigate sang trang mới ── */}
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
                                                         <span>
@@ -447,7 +501,7 @@ export default function PurchaseOrderDetail() {
                                                                 disabled={authDisabled || !canSendQuotation}
                                                                 onClick={() => !authDisabled && canSendQuotation && handleSendQuotationRequest()}>
                                                                 <Send className="mr-2 h-4 w-4" />
-                                                                Gửi yêu cầu báo giá
+                                                                Tạo yêu cầu báo giá
                                                             </Button>
                                                         </span>
                                                     </TooltipTrigger>
@@ -460,22 +514,40 @@ export default function PurchaseOrderDetail() {
 
                                         {/* Trạng thái = Đã nhận báo giá (4) */}
                                         {orderData.trangThai === 4 && (
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <span>
-                                                        <Button variant="outline"
-                                                            className="h-11 px-5 rounded-xl border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 font-bold shadow-sm disabled:opacity-50"
-                                                            disabled={!canModify || authDisabled}
-                                                            onClick={() => canModify && !authDisabled && handleCancelOrder()}>
-                                                            <XCircle className="mr-2 h-4 w-4" />
-                                                            Hủy đơn
-                                                        </Button>
-                                                    </span>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>{authDisabled ? "Đang tải..." : "Hủy đơn hàng"}</p>
-                                                </TooltipContent>
-                                            </Tooltip>
+                                            <>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span>
+                                                            <Button variant="outline"
+                                                                className="h-11 px-5 rounded-xl border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 font-bold shadow-sm disabled:opacity-50"
+                                                                disabled={authDisabled || !canSendQuotation || actionLoading}
+                                                                onClick={() => !authDisabled && canSendQuotation && handleRejectQuotation()}>
+                                                                <XCircle className="mr-2 h-4 w-4" />
+                                                                Từ chối báo giá
+                                                            </Button>
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{authDisabled ? "Đang tải..." : !canSendQuotation ? "Không có quyền thao tác" : "Từ chối báo giá của nhà cung cấp"}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span>
+                                                            <Button
+                                                                className="h-11 px-6 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-md disabled:opacity-50"
+                                                                disabled={authDisabled || !canSendQuotation || actionLoading}
+                                                                onClick={() => !authDisabled && canSendQuotation && handleAcceptQuotation()}>
+                                                                <CheckCircle className="mr-2 h-4 w-4" />
+                                                                Chấp nhận báo giá
+                                                            </Button>
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{authDisabled ? "Đang tải..." : !canSendQuotation ? "Không có quyền thao tác" : "Chấp nhận báo giá của nhà cung cấp"}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </>
                                         )}
                                     </div>
                                 </TooltipProvider>

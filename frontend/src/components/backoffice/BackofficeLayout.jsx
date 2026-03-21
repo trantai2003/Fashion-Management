@@ -138,7 +138,7 @@ export default function BackofficeLayout() {
         {
             key: "PURCHASE_ORDERS",
             match: (path) => path === "/purchase-orders",
-            title: "Đơn hàng nhập",
+            title: "Đơn mua hàng",
             subtitle: "Quản lý các đơn hàng nhập đã được xác nhận",
         },
         {
@@ -249,12 +249,12 @@ export default function BackofficeLayout() {
             title: "Quản lý kiểm kê",
             subtitle: "Xem và quản lý các lần kiểm kê tồn kho",
         },
-        // {
-        //     key: "PURCHASE_ORDER_CREATE",
-        //     match: (path) => path === "/purchase-orders/create",
-        //     title: "Tạo yêu cầu nhập hàng",
-        //     subtitle: "Tạo đơn đặt hàng mới và gửi yêu cầu báo giá đến nhà cung cấp",
-        // },
+        {
+            key: "PURCHASE_ORDER_CREATE",
+            match: (path) => path === "/purchase-orders/create",
+            title: "Tạo yêu cầu nhập hàng",
+            subtitle: "Tạo đơn đặt hàng mới và gửi yêu cầu báo giá đến nhà cung cấp",
+        },
         {
             key: "CUSTOMERS",
             match: (path) => path === "/customers",
@@ -305,6 +305,17 @@ export default function BackofficeLayout() {
             key: "USER_DETAIL",
             match: (path) => /^\/users\/\d+$/.test(path),
             title: "Thông tin chi tiết người dùng",
+        },
+        {
+            key: "PURCHASE_REQUEST_QUOTATION",
+            match: (path) => /^\/purchase-requests\/\d+\/gui-bao-gia$/.test(path),
+            title: "Tạo yêu cầu báo giá",
+            subtitle: "Gửi yêu cầu báo giá đến nhà cung cấp dựa trên phiếu yêu cầu",
+        },
+        {
+            key: "QUOTATION_REQUEST",
+            match: (path) => path === "/quotation-requests",
+            title: "Danh sách yêu cầu báo giá",
         }
     ];
 

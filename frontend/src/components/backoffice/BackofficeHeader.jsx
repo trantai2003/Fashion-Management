@@ -71,6 +71,8 @@ export default function BackofficeHeader({
     "INVENTORY_REPORT",
     "SALES_INVOICE_PRINT",
     "USER_DETAIL",
+    "PURCHASE_REQUEST_QUOTATION",
+    "QUOTATION_REQUEST"
   ]);
 
   const isLuxuryDetailHeader = routeKey ? luxuryDetailHeaderKeys.has(routeKey) : false;

@@ -154,7 +154,7 @@ export default function SendQuotationRequest() {
 
             toast.success('Đã gửi yêu cầu báo giá thành công! Trạng thái đơn hàng đã được cập nhật.');
             setShowConfirmDialog(false);
-            setTimeout(() => navigate('/purchase-requests'), 1500);
+            setTimeout(() => navigate('/quotation-requests'), 1500);
         } catch (err) {
             console.error('Error sending quotation request:', err);
             toast.error(err.response?.data?.message || 'Không thể gửi yêu cầu báo giá. Vui lòng thử lại!');
@@ -204,16 +204,8 @@ export default function SendQuotationRequest() {
                     className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-slate-900"
                 >
                     <ArrowLeft className="h-4 w-4" />
-                    Quay lại chi tiết đơn hàng
+                    Quay lại chi tiết yêu cầu
                 </button>
-            </div>
-
-            {/* ── Page Title ── */}
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900">Gửi yêu cầu báo giá</h1>
-                <p className="text-slate-500 mt-1 text-[15px]">
-                    Điền thông tin nhà cung cấp và số đơn mua để gửi yêu cầu báo giá
-                </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
@@ -224,7 +216,7 @@ export default function SendQuotationRequest() {
                     {/* Số đơn mua */}
                     <div className="space-y-2">
                         <Label className="text-[13px] font-bold text-slate-700">
-                            Số Đơn Mua <span className="text-rose-500">*</span>
+                            Số Đơn<span className="text-rose-500">*</span>
                         </Label>
                         <div className="flex gap-2">
                             <Input
@@ -244,7 +236,7 @@ export default function SendQuotationRequest() {
                             </Button>
                         </div>
                         <p className="text-[12px] text-slate-400">
-                            Mã đơn mua sẽ được gửi kèm trong email đến nhà cung cấp
+                            Mã đơn sẽ được gửi kèm trong email đến nhà cung cấp
                         </p>
                     </div>
 
@@ -436,7 +428,7 @@ export default function SendQuotationRequest() {
 
                         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 mb-6 text-[14px]">
                             <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Số đơn mua:</span>
+                                <span className="text-slate-500 font-medium">Số đơn:</span>
                                 <span className="font-mono font-bold text-[#8b6a21]">{formData.soDonMua}</span>
                             </div>
                             <div className="flex justify-between items-center">
