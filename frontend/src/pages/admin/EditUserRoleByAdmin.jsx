@@ -365,7 +365,7 @@ export default function UserPermissionEditByAdmin() {
               )}
               Lưu thay đổi
             </Button>
-          </div>
+          </div> 
         </form>
 
         <p className="text-xs text-center text-slate-500 italic pt-4">

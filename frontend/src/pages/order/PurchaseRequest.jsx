@@ -830,7 +830,7 @@ export default function PurchaseRequestList() {
                                                             {order.nhaCungCap?.tenNhaCungCap || '-'}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {order.kho?.tenKho || '-'}
+                                                            {order.khoNhap?.tenKho || '-'}
                                                         </TableCell>
                                                         <TableCell>
                                                             <Badge className={statusInfo.color}>

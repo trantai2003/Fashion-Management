@@ -164,17 +164,26 @@ export default function PurchaseOrderDetail() {
             icon: FileText, description: 'Nhà cung cấp đã xác nhận và gửi báo giá'
         },
         5: {
-            label: 'Đã thanh toán',
-            bannerBg: 'bg-teal-50', bannerBorder: 'border-teal-200',
-            iconBg: 'bg-teal-100', iconColor: 'text-teal-600', textColor: 'text-teal-800',
-            icon: CreditCard, description: 'Đã chấp nhận báo giá và hoàn thành thanh toán'
-        },
-        6: {
-            label: 'Từ chối báo giá của nhà cung cấp',
+            label: 'Không chấp nhận báo giá',
             bannerBg: 'bg-orange-50', bannerBorder: 'border-orange-200',
             iconBg: 'bg-orange-100', iconColor: 'text-orange-600', textColor: 'text-orange-800',
-            icon: AlertCircle, description: 'Báo giá từ nhà cung cấp không đáp ứng yêu cầu'
+            icon: CreditCard, description: 'Không chấp nhận báo giá từ nhà cung cấp'
+        },
+        6: {
+            label: 'Chấp nhận báo giá',
+            bannerBg: 'bg-teal-50', bannerBorder: 'border-teal-200',
+            iconBg: 'bg-teal-100', iconColor: 'text-teal-600', textColor: 'text-teal-800',
+            icon: AlertCircle, description: 'Chấp nhận báo giá từ nhà cung cấp'
+        },
+        // 7 là đã thanh toán
+        7: {
+            label: 'Đã thanh toán',
+            bannerBg: 'bg-green-50', bannerBorder: 'border-green-200',
+            iconBg: 'bg-green-100', iconColor: 'text-green-600', textColor: 'text-green-800',
+            icon: CreditCard, description: 'Đơn hàng đã được thanh toán hoàn tất'
         }
+
+
     };
 
     const formatCurrency = (amount) =>

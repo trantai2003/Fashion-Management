@@ -81,11 +81,6 @@ export const SIDEBAR_MENU = [
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
       },
       {
-        label: "Duyệt yêu cầu nhập hàng",
-        to: "/duyet-don-hang",
-        roles: ["quan_tri_vien", "quan_ly_kho"],
-      },
-      {
         label: "Phiếu nhập kho",
         to: "/goods-receipts",
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],

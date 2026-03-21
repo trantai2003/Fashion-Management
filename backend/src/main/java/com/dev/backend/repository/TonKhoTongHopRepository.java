@@ -116,6 +116,72 @@ public interface TonKhoTongHopRepository extends JpaRepository<BienTheSanPham, I
             @Param("keyword") String  keyword
     );
 
+    @Query("""
+        SELECT
+            bt.id                                                          AS bienTheId,
+            bt.maSku                                                       AS maSku,
+            sp.maSanPham                                                   AS maSanPham,
+            sp.tenSanPham                                                  AS tenSanPham,
+            ms.tenMau                                                      AS tenMau,
+            sz.maSize                                                      AS maSize,
+            cl.tenChatLieu                                                 AS tenChatLieu,
+            sp.mucTonToiThieu                                              AS mucTonToiThieu,
+            dmh2.khoNhap.id                                                AS khoId,
+            dmh2.khoNhap.tenKho                                            AS tenKho,
+            0                                                              AS onHand,
+            COALESCE(
+                (
+                    SELECT SUM(ctdmh.soLuongDat - ctdmh.soLuongDaNhan)
+                    FROM ChiTietDonMuaHang ctdmh
+                    JOIN ctdmh.donMuaHang dmh
+                    WHERE ctdmh.bienTheSanPham.id = bt.id
+                      AND dmh.khoNhap.id          = dmh2.khoNhap.id
+                      AND dmh.trangThai            IN (6, 7)
+                      AND (ctdmh.soLuongDat - ctdmh.soLuongDaNhan) > 0
+                ), 0
+            )                                                              AS incoming,
+            0                                                              AS outgoing,
+            0                                                              AS freeToUse,
+            0                                                              AS tongGiaTri
+
+        FROM BienTheSanPham bt
+        JOIN bt.sanPham                  sp
+        JOIN bt.mauSac                   ms
+        JOIN bt.size                     sz
+        JOIN bt.chatLieu                 cl
+        JOIN ChiTietDonMuaHang           ctdmh2 ON ctdmh2.bienTheSanPham.id = bt.id
+        JOIN ctdmh2.donMuaHang           dmh2
+
+        WHERE bt.trangThai  = 1
+          AND dmh2.trangThai IN (6, 7)
+          AND dmh2.khoNhap.trangThai = 1
+          AND (ctdmh2.soLuongDat - ctdmh2.soLuongDaNhan) > 0
+          AND (:khoId IS NULL OR dmh2.khoNhap.id = :khoId)
+          AND (:keyword IS NULL
+               OR LOWER(bt.maSku)       LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(sp.tenSanPham)  LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(sp.maSanPham)   LIKE LOWER(CONCAT('%', :keyword, '%'))
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM TonKhoTheoLo tkl2
+              JOIN tkl2.loHang lh2
+              WHERE lh2.bienTheSanPham.id = bt.id
+                AND tkl2.kho.id = dmh2.khoNhap.id
+          )
+
+        GROUP BY
+            bt.id, bt.maSku,
+            sp.maSanPham, sp.tenSanPham,
+            ms.tenMau, sz.maSize, cl.tenChatLieu,
+            sp.mucTonToiThieu,
+            dmh2.khoNhap.id, dmh2.khoNhap.tenKho
+        """)
+    List<TonKhoProjection> findTonKhoKhongCoLo(
+            @Param("khoId")   Integer khoId,
+            @Param("keyword") String  keyword
+    );
+
+
 
     /**
      * Overload tiện lợi: lấy tất cả kho, không lọc keyword.

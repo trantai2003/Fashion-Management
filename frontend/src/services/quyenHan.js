@@ -19,4 +19,8 @@ export const quyenHanService = {
         );
     },
 
+    xoaQuyenKho:(id)=>{
+        return apiClient.delete(`/api/v1/dieu-hanh-he-thong/quyen-han/xoa-quyen/${id}`);
+    }
+
 };
