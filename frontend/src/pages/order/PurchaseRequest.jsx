@@ -20,16 +20,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
     Tooltip,
@@ -41,11 +31,9 @@ import {
     ChevronLeft,
     ChevronRight,
     ChevronDown,
-    Search,
     Calendar,
     Package,
     Filter,
-    Download,
     Eye,
     Plus,
     RefreshCw,
@@ -56,39 +44,10 @@ import {
     Clock,
     FileText,
     Loader2,
-    DollarSign,
-    MoreVertical,
+    Search,
     AlertCircle,
-    Send,
-    CreditCard,
-    Trash2,
 } from "lucide-react";
 import purchaseOrderService from "../../services/purchaseOrderService";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-const ROLE = {
-    QUAN_TRI_VIEN: "quan_tri_vien",
-    QUAN_LY_KHO: "quan_ly_kho",
-    NHAN_VIEN_KHO: "nhan_vien_kho",
-    NHAN_VIEN_MUA_HANG: "nhan_vien_mua_hang",
-    NHAN_VIEN_BAN_HANG: "nhan_vien_ban_hang",
-};
-
-/** Các vai trò được phép duyệt đơn hàng */
-const APPROVE_ROLES = [
-    ROLE.QUAN_TRI_VIEN,
-    ROLE.QUAN_LY_KHO,
-];
-
-/** Vai trò được phép gửi mail yêu cầu báo giá */
-const QUOTATION_REQUEST_ROLES = [
-    ROLE.NHAN_VIEN_MUA_HANG,
-];
-
-/** Vai trò được phép chấp nhận/từ chối báo giá */
-const QUOTATION_RESPONSE_ROLES = [
-    ROLE.NHAN_VIEN_MUA_HANG,
-];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -102,7 +61,6 @@ function parseJwt(token) {
 
 /**
  * Trích danh sách vai trò từ trường vaiTro của NguoiDungDto.
- * vaiTro có thể là string đơn ("quan_tri_vien") hoặc scope space-separated.
  */
 function parseRoles(vaiTro) {
     if (!vaiTro) return [];
@@ -117,15 +75,11 @@ export default function PurchaseRequestList() {
     const [loading, setLoading] = useState(false);
     const [suppliers, setSuppliers] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
-    const [selectedOrder, setSelectedOrder] = useState(null);
-    const [showApproveDialog, setShowApproveDialog] = useState(false);
-    const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
 
     // User authorization state
     const [userId, setUserId] = useState(null);
-    const [userRoles, setUserRoles] = useState([]); // string[]
+    const [userRoles, setUserRoles] = useState([]);
     const [loadingAuth, setLoadingAuth] = useState(true);
     const [authError, setAuthError] = useState(null);
 
@@ -139,7 +93,6 @@ export default function PurchaseRequestList() {
 
     // Filter state
     const [filters, setFilters] = useState({
-        soDonMua: '',
         nhaCungCapId: '',
         khoId: '',
         trangThai: '',
@@ -151,52 +104,23 @@ export default function PurchaseRequestList() {
         to: '',
     });
 
-    // Trạng thái yêu cầu nhập hàng configuration (trạng thái < 6)
+    // Trạng thái yêu cầu nhập hàng configuration (chỉ hiển thị 0, 1, 2)
     const statusConfig = {
         0: {
             label: 'Đã hủy',
             color: 'bg-red-100 text-red-800 border-red-200',
             icon: XCircle,
-            description: 'Yêu cầu nhập hàng đã bị hủy'
         },
         1: {
             label: 'Chờ duyệt',
             color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            icon: AlertCircle,
-            description: 'Yêu cầu nhập hàng đang chờ quản lý phê duyệt'
+            icon: Clock,
         },
         2: {
             label: 'Đã duyệt',
             color: 'bg-blue-100 text-blue-800 border-blue-200',
             icon: CheckCircle,
-            description: 'Yêu cầu nhập hàng đã được duyệt nội bộ'
-        },
-        3: {
-            label: 'Đã gửi mail yêu cầu báo giá',
-            color: 'bg-purple-100 text-purple-800 border-purple-200',
-            icon: Send,
-            description: 'Đã gửi email yêu cầu báo giá đến nhà cung cấp'
-        },
-        4: {
-            label: 'Đã nhận báo giá',
-            color: 'bg-green-100 text-green-800 border-green-200',
-            icon: FileText,
-            description: 'Nhà cung cấp đã xác nhận và gửi báo giá'
-        },
-        5: {
-            label: 'Không chấp nhận báo giá',
-            color: 'bg-orange-100 text-orange-800 border-orange-200',
-            icon: AlertCircle,
-            description: 'Báo giá từ nhà cung cấp không đáp ứng yêu cầu'
         }
-    };
-
-    // Format currency
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND',
-        }).format(amount || 0);
     };
 
     // Format date
@@ -209,37 +133,13 @@ export default function PurchaseRequestList() {
         });
     };
 
-    // Show notification
-    const showNotification = (type, message) => {
-        if (type === 'success') {
-            setSuccess(message);
-            setError(null);
-            setTimeout(() => setSuccess(null), 5000);
-        } else {
-            setError(message);
-            setSuccess(null);
-            setTimeout(() => setError(null), 5000);
-        }
-    };
-
-    // Fetch purchase requests from API (chỉ lấy trạng thái < 6)
+    // Fetch purchase requests from API
     const fetchPurchaseOrders = async (page = 0, size = 10) => {
         setLoading(true);
         setError(null);
         try {
             const filterArray = [];
 
-            // Filter theo số đơn mua
-            if (filters.soDonMua) {
-                filterArray.push({
-                    fieldName: "soDonMua",
-                    operation: "LIKE",
-                    value: filters.soDonMua,
-                    logicType: "AND"
-                });
-            }
-
-            // Filter theo kho - Sử dụng ID từ relation
             if (filters.khoId && filters.khoId !== 'all') {
                 filterArray.push({
                     fieldName: "kho.id",
@@ -249,7 +149,7 @@ export default function PurchaseRequestList() {
                 });
             }
 
-            // Filter theo trạng thái - chỉ lấy trạng thái < 6 (yêu cầu nhập hàng)
+            // Chỉ lấy các yêu cầu ở trạng thái 0, 1, 2
             filterArray.push({
                 fieldName: "trangThai",
                 operation: "IN",
@@ -257,7 +157,6 @@ export default function PurchaseRequestList() {
                 logicType: "AND"
             });
 
-            // Filter theo trạng thái cụ thể nếu có
             if (filters.trangThai && filters.trangThai !== 'all') {
                 filterArray.push({
                     fieldName: "trangThai",
@@ -267,7 +166,6 @@ export default function PurchaseRequestList() {
                 });
             }
 
-            // Date range filter
             if (dateRange.from) {
                 filterArray.push({
                     fieldName: "ngayTao",
@@ -319,39 +217,24 @@ export default function PurchaseRequestList() {
         }
     };
 
-    // ── [FIX 1] Load suppliers — dùng purchaseOrderService.getUniqueSuppliers() giống PO ──
     const loadSuppliers = async () => {
         try {
-            console.log('📤 Fetching unique suppliers from purchase orders...');
             const suppliers = await purchaseOrderService.getUniqueSuppliers();
-            console.log('✅ Suppliers loaded:', suppliers.length, 'items');
             setSuppliers(suppliers);
-            if (suppliers.length === 0) {
-                console.warn('⚠️ No suppliers found in orders');
-            }
         } catch (error) {
             console.error('❌ Error fetching suppliers:', error);
-            showNotification('error', 'Không thể tải danh sách nhà cung cấp');
         }
     };
 
-    // ── [FIX 2] Load warehouses — dùng purchaseOrderService.getUniqueWarehouses() giống PO ──
     const loadWarehouses = async () => {
         try {
-            console.log('📤 Fetching unique warehouses from purchase orders...');
             const warehouses = await purchaseOrderService.getUniqueWarehouses();
-            console.log('✅ Warehouses loaded:', warehouses.length, 'items');
             setWarehouses(warehouses);
-            if (warehouses.length === 0) {
-                console.warn('⚠️ No warehouses found in orders');
-            }
         } catch (error) {
             console.error('❌ Error fetching warehouses:', error);
-            showNotification('error', 'Không thể tải danh sách kho');
         }
     };
 
-    // ── [FIX 3] Load user auth — gọi API /nguoi-dung/get-by-id giống PO ──
     const loadUserAuth = async () => {
         setLoadingAuth(true);
         setAuthError(null);
@@ -365,7 +248,6 @@ export default function PurchaseRequestList() {
             const userId = payload.id;
             setUserId(userId);
 
-            // Fetch user details to get roles (giống PO)
             const userResponse = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${userId}`);
             const userData = userResponse.data?.data;
 
@@ -376,207 +258,39 @@ export default function PurchaseRequestList() {
         } catch (error) {
             console.error('❌ Error fetching user info:', error);
             setAuthError(error.message);
-            showNotification('error', 'Không thể tải thông tin người dùng');
         } finally {
             setLoadingAuth(false);
         }
     };
 
-    // Initialize data
     useEffect(() => {
         loadUserAuth();
         loadSuppliers();
         loadWarehouses();
     }, []);
 
-    // Fetch purchase requests when filters or pagination change
     useEffect(() => {
         if (!loadingAuth && !authError) {
             fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
         }
-    }, [filters, dateRange, pagination.pageNumber, pagination.pageSize, loadingAuth, authError]);
+    }, [pagination.pageNumber, pagination.pageSize, loadingAuth, authError]);
 
-    // Handle approve order
-    const handleApproveOrder = (order, event) => {
-        event?.stopPropagation();
-        setSelectedOrder(order);
-        setShowApproveDialog(true);
-    };
-
-    // ── [FIX 4] Confirm approve order — dùng duyetDon(id, 2) giống PO ──
-    const confirmApproveOrder = async () => {
-        if (!selectedOrder) return;
-
-        setActionLoading(true);
-        try {
-            await purchaseOrderService.duyetDon(selectedOrder.id, 2);
-            showNotification('success', `Đã phê duyệt yêu cầu nhập hàng ${selectedOrder.soDonMua} thành công!`);
-            setShowApproveDialog(false);
-            setSelectedOrder(null);
-            fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
-        } catch (err) {
-            console.error('Error approving order:', err);
-            showNotification('error', err.response?.data?.message || 'Không thể duyệt yêu cầu nhập hàng');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    // Handle send quotation request — navigate sang trang riêng để điền soDonMua + nhaCungCapId
-    const handleSendQuotationRequest = (order, event) => {
-        event?.stopPropagation();
-        navigate(`/purchase-requests/${order.id}/gui-bao-gia`);
-    };
-
-    // Handle accept quotation (chỉ cho trạng thái 4)
-    const handleAcceptQuotation = async (order, event) => {
-        event?.stopPropagation();
-        if (order.trangThai !== 4) return;
-
-        setActionLoading(true);
-        try {
-            await purchaseOrderService.chapNhanBaoGia(order.id);
-            showNotification('success', 'Chấp nhận báo giá thành công!');
-            fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
-        } catch (err) {
-            console.error('Error accepting quotation:', err);
-            showNotification('error', err.response?.data?.message || 'Không thể chấp nhận báo giá');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    // Handle reject quotation (chỉ cho trạng thái 4)
-    const handleRejectQuotation = async (order, event) => {
-        event?.stopPropagation();
-        if (order.trangThai !== 4) return;
-
-        setActionLoading(true);
-        try {
-            await purchaseOrderService.tuChoiBaoGia(order.id);
-            showNotification('success', 'Từ chối báo giá thành công!');
-            fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
-        } catch (err) {
-            console.error('Error rejecting quotation:', err);
-            showNotification('error', err.response?.data?.message || 'Không thể từ chối báo giá');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    // Render action buttons based on order status and user roles
-    const renderActionButtons = (order) => {
-        const status = order.trangThai;
-        const canApprove = APPROVE_ROLES.some(role => userRoles.includes(role));
-        const canSendQuotation = QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role));
-        const authDisabled = loadingAuth || authError;
-
-        return (
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreVertical className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                    {/* Duyệt đơn hàng - chỉ trạng thái 1 */}
-                    {status === 1 && canApprove && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <DropdownMenuItem
-                                        onClick={(e) => !authDisabled && handleApproveOrder(order, e)}
-                                        disabled={authDisabled}
-                                        className="cursor-pointer"
-                                    >
-                                        <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                        Duyệt yêu cầu
-                                    </DropdownMenuItem>
-                                </TooltipTrigger>
-                                {authDisabled && (
-                                    <TooltipContent>
-                                        <p>Đang tải thông tin xác thực...</p>
-                                    </TooltipContent>
-                                )}
-                            </Tooltip>
-                        </TooltipProvider>
-                    )}
-
-                    {/* Gửi mail yêu cầu báo giá - chỉ trạng thái 2 */}
-                    {status === 2 && canSendQuotation && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <DropdownMenuItem
-                                        onClick={(e) => !authDisabled && handleSendQuotationRequest(order, e)}
-                                        disabled={authDisabled}
-                                        className="cursor-pointer"
-                                    >
-                                        <Send className="mr-2 h-4 w-4 text-blue-600" />
-                                        Gửi yêu cầu báo giá
-                                    </DropdownMenuItem>
-                                </TooltipTrigger>
-                                {authDisabled && (
-                                    <TooltipContent>
-                                        <p>Đang tải thông tin xác thực...</p>
-                                    </TooltipContent>
-                                )}
-                            </Tooltip>
-                        </TooltipProvider>
-                    )}
-
-                    {/* Chấp nhận báo giá - chỉ trạng thái 4 */}
-                    {status === 4 && (
-                        <DropdownMenuItem
-                            onClick={(e) => handleAcceptQuotation(order, e)}
-                            className="cursor-pointer text-green-600"
-                        >
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Chấp nhận báo giá
-                        </DropdownMenuItem>
-                    )}
-
-                    {/* Từ chối báo giá - chỉ trạng thái 4 */}
-                    {status === 4 && (
-                        <DropdownMenuItem
-                            onClick={(e) => handleRejectQuotation(order, e)}
-                            className="cursor-pointer text-red-600"
-                        >
-                            <XCircle className="mr-2 h-4 w-4" />
-                            Từ chối báo giá
-                        </DropdownMenuItem>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
-        );
-    };
-
-    // Handle filter changes
+    // Handle filters
     const handleFilterChange = (field, value) => {
         setFilters(prev => ({ ...prev, [field]: value }));
-        setPagination(prev => ({ ...prev, pageNumber: 0 }));
     };
 
-    // Handle date range changes
     const handleDateRangeChange = (field, value) => {
         setDateRange(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSearch = () => {
         setPagination(prev => ({ ...prev, pageNumber: 0 }));
+        fetchPurchaseOrders(0, pagination.pageSize);
     };
 
-    // Handle page change
-    const handlePageChange = (newPage) => {
-        setPagination(prev => ({ ...prev, pageNumber: newPage }));
-    };
-
-    // Handle page size change
-    const handlePageSizeChange = (newSize) => {
-        setPagination(prev => ({ ...prev, pageNumber: 0, pageSize: newSize }));
-    };
-
-    // Clear all filters
-    const clearFilters = () => {
+    const handleResetFilters = () => {
         setFilters({
-            soDonMua: '',
             nhaCungCapId: '',
             khoId: '',
             trangThai: '',
@@ -586,306 +300,525 @@ export default function PurchaseRequestList() {
             to: '',
         });
         setPagination(prev => ({ ...prev, pageNumber: 0 }));
+        setTimeout(() => {
+            fetchPurchaseOrders(0, pagination.pageSize);
+        }, 100);
     };
 
-    if (loadingAuth) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-        );
-    }
+    const handlePageChange = (newPage) => {
+        if (newPage >= 0 && newPage < pagination.totalPages) {
+            setPagination(prev => ({ ...prev, pageNumber: newPage }));
+        }
+    };
 
-    if (authError) {
+    const handlePageSizeChange = (newSize) => {
+        setPagination(prev => ({ ...prev, pageNumber: 0, pageSize: newSize }));
+    };
+
+    // Action
+    const handleViewDetail = (orderId) => {
+        navigate(`/purchase-orders/${orderId}`);
+    };
+
+    // UI Helpers
+    const getStatusIcon = (status) => {
+        const StatusIcon = statusConfig[status]?.icon || AlertCircle;
+        return <StatusIcon className="h-4 w-4" />;
+    };
+
+    const getSelectedSupplierName = () => {
+        if (!filters.nhaCungCapId || filters.nhaCungCapId === 'all') return "Tất cả nhà cung cấp";
+        const supplier = suppliers.find(s => s.id === parseInt(filters.nhaCungCapId));
+        return supplier ? supplier.tenNhaCungCap : "Đang tải...";
+    };
+
+    const getSelectedWarehouseName = () => {
+        if (!filters.khoId || filters.khoId === 'all') return "Tất cả kho";
+        const warehouse = warehouses.find(w => w.id === parseInt(filters.khoId));
+        return warehouse ? warehouse.tenKho : "Đang tải...";
+    };
+
+    // Stats
+    const stats = {
+        total: pagination.totalElements,
+        pending: purchaseOrders.filter(o => o.trangThai === 1).length,
+        approved: purchaseOrders.filter(o => o.trangThai === 2).length,
+        cancelled: purchaseOrders.filter(o => o.trangThai === 0).length,
+    };
+
+    // Render Action Buttons (Chỉ hiển thị icon xem chi tiết)
+    const renderActionButtons = (order) => {
+        const authDisabled = loadingAuth || authError;
+
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <Alert className="max-w-md">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                        {authError}
-                    </AlertDescription>
-                </Alert>
-            </div>
+            <TooltipProvider>
+                <div className="flex items-center justify-center gap-1">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={authDisabled}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!authDisabled) handleViewDetail(order.id);
+                                    }}
+                                >
+                                    <Eye className={`h-4 w-4 ${authDisabled ? 'text-gray-300' : 'text-purple-600'}`} />
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{authDisabled ? "Đang tải thông tin người dùng..." : "Xem chi tiết"}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
+            </TooltipProvider>
         );
-    }
+    };
 
     return (
-        <TooltipProvider>
-            <div className="container mx-auto p-6 space-y-6">
-                {/* Header */}
-                <div className="flex justify-end items-center">
-                    <Button
-                        onClick={() => navigate('/purchase-orders/create')}
-                        className="bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tạo yêu cầu nhập hàng
-                    </Button>
-                </div>
+        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+            {/* Notifications */}
+            {error && (
+                <Alert className="bg-red-50 border-red-200 animate-in slide-in-from-top-2 duration-300">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800">{error}</AlertDescription>
+                </Alert>
+            )}
 
-                {/* Notifications */}
-                {error && (
-                    <Alert className="border-red-200 bg-red-50">
-                        <AlertCircle className="h-4 w-4 text-red-600" />
-                        <AlertDescription className="text-red-800">
-                            {error}
-                        </AlertDescription>
-                    </Alert>
-                )}
+            {authError && (
+                <Alert className="bg-orange-50 border-orange-200 animate-in slide-in-from-top-2 duration-300">
+                    <AlertCircle className="h-4 w-4 text-orange-600" />
+                    <AlertDescription className="text-orange-800">{authError}</AlertDescription>
+                </Alert>
+            )}
 
-                {success && (
-                    <Alert className="border-green-200 bg-green-50">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <AlertDescription className="text-green-800">
-                            {success}
-                        </AlertDescription>
-                    </Alert>
-                )}
+            {/* Header */}
+            <div className="flex justify-end items-center">
+                <Button
+                    onClick={() => navigate('/purchase-orders')}
+                    variant="outline"
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                >
+                    <Package className="mr-2 h-4 w-4" />
+                    Xem đơn mua hàng
+                </Button>
+            </div>
 
-                {/* Filters */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Filter className="h-5 w-5" />
-                            Bộ lọc
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-                            
-
-                            {/* Kho */}
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <Label htmlFor="khoId">Kho</Label>
-                                <select
-                                    id="khoId"
-                                    className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={filters.khoId}
-                                    onChange={(e) => handleFilterChange('khoId', e.target.value)}
-                                >
-                                    <option value="">Tất cả kho</option>
-                                    {warehouses.map(warehouse => (
-                                        <option key={warehouse.id} value={warehouse.id}>
-                                            {warehouse.tenKho}
-                                        </option>
-                                    ))}
-                                </select>
+                                <p className="text-sm font-medium text-gray-600">Tổng yêu cầu</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
                             </div>
-
-                            {/* Trạng thái */}
-                            <div>
-                                <Label htmlFor="trangThai">Trạng thái</Label>
-                                <select
-                                    id="trangThai"
-                                    className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={filters.trangThai}
-                                    onChange={(e) => handleFilterChange('trangThai', e.target.value)}
-                                >
-                                    <option value="">Tất cả trạng thái</option>
-                                    {Object.entries(statusConfig).map(([key, config]) => (
-                                        <option key={key} value={key}>
-                                            {config.label}
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <FileText className="h-6 w-6 text-blue-600" />
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
 
-                        {/* Date range */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-yellow-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <Label htmlFor="fromDate">Từ ngày</Label>
+                                <p className="text-sm font-medium text-gray-600">Chờ duyệt</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.pending}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                                <Clock className="h-6 w-6 text-yellow-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Đã duyệt</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.approved}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <CheckCircle className="h-6 w-6 text-green-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-red-50 to-white">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600">Đã hủy</p>
+                                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.cancelled}</p>
+                            </div>
+                            <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                                <XCircle className="h-6 w-6 text-red-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Filter Section */}
+            <Card className="border-0 shadow-lg bg-white">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                        <Filter className="h-5 w-5 text-indigo-600" />
+                        Bộ lọc tìm kiếm
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Nhà cung cấp */}
+                        <div className="space-y-2">
+                            <Label htmlFor="nhaCungCap" className="text-gray-700 font-medium">
+                                Nhà cung cấp {suppliers.length > 0 && `(${suppliers.length})`}
+                            </Label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between font-normal bg-white border-gray-200 hover:bg-gray-50"
+                                        disabled={suppliers.length === 0}
+                                    >
+                                        <div className="flex items-center overflow-hidden">
+                                            <Building2 className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                                            <span className="truncate">{getSelectedSupplierName()}</span>
+                                        </div>
+                                        <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[280px] bg-white shadow-lg border border-gray-100 z-50 max-h-[400px] overflow-y-auto">
+                                    <DropdownMenuItem onClick={() => handleFilterChange('nhaCungCapId', 'all')} className="font-medium hover:bg-indigo-50">
+                                        Tất cả nhà cung cấp
+                                    </DropdownMenuItem>
+                                    {suppliers.map((supplier) => (
+                                        <DropdownMenuItem key={supplier.id} onClick={() => handleFilterChange('nhaCungCapId', supplier.id)} className="cursor-pointer hover:bg-indigo-50 py-3">
+                                            <div className="flex flex-col w-full gap-1">
+                                                <span className="font-medium text-gray-900">{supplier.tenNhaCungCap}</span>
+                                                <span className="text-xs text-gray-500">Mã: {supplier.maNhaCungCap}</span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {/* Kho nhập */}
+                        <div className="space-y-2">
+                            <Label htmlFor="khoNhap" className="text-gray-700 font-medium">
+                                Kho nhập {warehouses.length > 0 && `(${warehouses.length})`}
+                            </Label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between font-normal bg-white border-gray-200 hover:bg-gray-50"
+                                        disabled={warehouses.length === 0}
+                                    >
+                                        <div className="flex items-center overflow-hidden">
+                                            <Warehouse className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                                            <span className="truncate">{getSelectedWarehouseName()}</span>
+                                        </div>
+                                        <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0 ml-2" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[280px] bg-white shadow-lg border border-gray-100 z-50 max-h-[400px] overflow-y-auto">
+                                    <DropdownMenuItem onClick={() => handleFilterChange('khoId', 'all')} className="font-medium hover:bg-indigo-50">
+                                        Tất cả kho
+                                    </DropdownMenuItem>
+                                    {warehouses.map((warehouse) => (
+                                        <DropdownMenuItem key={warehouse.id} onClick={() => handleFilterChange('khoId', warehouse.id)} className="cursor-pointer hover:bg-indigo-50 py-3">
+                                            <div className="flex flex-col w-full gap-1">
+                                                <span className="font-medium text-gray-900">{warehouse.tenKho}</span>
+                                                <span className="text-xs text-gray-500">Mã: {warehouse.maKho}</span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {/* Trạng thái */}
+                        <div className="space-y-2">
+                            <Label htmlFor="trangThai" className="text-gray-700 font-medium">Trạng thái</Label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="w-full justify-between font-normal bg-white border-gray-200 hover:bg-gray-50">
+                                        <span className="truncate">
+                                            {filters.trangThai !== '' && filters.trangThai !== 'all' ? statusConfig[filters.trangThai]?.label : "Tất cả trạng thái"}
+                                        </span>
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[200px] bg-white shadow-lg border border-gray-100 z-50">
+                                    <DropdownMenuItem onClick={() => handleFilterChange('trangThai', 'all')} className="font-medium hover:bg-indigo-50">
+                                        Tất cả trạng thái
+                                    </DropdownMenuItem>
+                                    {Object.entries(statusConfig).map(([key, config]) => (
+                                        <DropdownMenuItem key={key} onClick={() => handleFilterChange('trangThai', key)} className="cursor-pointer hover:bg-indigo-50">
+                                            <div className="flex items-center gap-2">
+                                                {getStatusIcon(parseInt(key))}
+                                                {config.label}
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {/* Từ ngày */}
+                        <div className="space-y-2">
+                            <Label htmlFor="tuNgay" className="text-gray-700 font-medium">Từ ngày</Label>
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                 <Input
-                                    id="fromDate"
+                                    id="tuNgay"
                                     type="date"
+                                    className="pl-9 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
                                     value={dateRange.from}
                                     onChange={(e) => handleDateRangeChange('from', e.target.value)}
                                 />
                             </div>
-                            <div>
-                                <Label htmlFor="toDate">Đến ngày</Label>
+                        </div>
+
+                        {/* Đến ngày */}
+                        <div className="space-y-2">
+                            <Label htmlFor="denNgay" className="text-gray-700 font-medium">Đến ngày</Label>
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                 <Input
-                                    id="toDate"
+                                    id="denNgay"
                                     type="date"
+                                    className="pl-9 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
                                     value={dateRange.to}
                                     onChange={(e) => handleDateRangeChange('to', e.target.value)}
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Filter actions */}
-                        <div className="flex gap-2 mt-4">
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 mt-6">
+                        <Button onClick={handleSearch} className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm h-10 px-4 rounded-xl font-medium transition-all duration-200">
+                            <Search className="h-4 w-4 mr-2" />
+                            Tìm kiếm
+                        </Button>
+                        <Button variant="outline" onClick={handleResetFilters} className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-10 px-4 rounded-xl font-medium transition-all duration-200">
+                            Đặt lại
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Sub Action Buttons */}
+            <div className="flex items-center justify-end gap-2">
+                <Button
+                    variant="outline"
+                    className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 h-10 px-4 rounded-xl font-medium transition-all duration-200 gap-2"
+                    onClick={() => fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize)}
+                >
+                    <RefreshCw className="h-4 w-4" />
+                    Làm mới
+                </Button>
+                <Button
+                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
+                    onClick={() => navigate('/purchase-orders/create')}
+                >
+                    <Plus className="h-4 w-4" />
+                    Tạo yêu cầu nhập hàng
+                </Button>
+            </div>
+
+            {/* Table Section */}
+            <div className="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
+                <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
+                    <table className="w-full text-sm">
+                        {/* HEADER */}
+                        <thead>
+                            <tr className="border-b border-slate-200 bg-slate-50">
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide w-14">STT</th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">Nhà cung cấp</th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">Kho nhập</th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">Ngày tạo</th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide">Trạng thái</th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide w-24">Thao tác</th>
+                            </tr>
+                        </thead>
+
+                        {/* BODY */}
+                        <tbody className="divide-y divide-slate-100">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={6} className="py-16 text-center">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+                                            <span className="text-slate-500 font-medium">Đang tải dữ liệu...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : purchaseOrders.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="py-16 text-center">
+                                        <div className="flex flex-col items-center gap-4">
+                                            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                                                <Package className="h-10 w-10 text-slate-400" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-800">Không tìm thấy yêu cầu nhập hàng</p>
+                                                <p className="text-sm text-slate-500 mt-1">Thử thay đổi bộ lọc hoặc tạo mới</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                purchaseOrders.map((order, index) => (
+                                    <tr
+                                        key={order.id}
+                                        onClick={() => handleViewDetail(order.id)}
+                                        className="transition-colors duration-150 hover:bg-violet-50/50 cursor-pointer"
+                                    >
+                                        {/* STT */}
+                                        <td className="px-4 py-3.5 text-center text-slate-500 text-xs">
+                                            {pagination.pageNumber * pagination.pageSize + index + 1}
+                                        </td>
+                                        {/* Nhà cung cấp */}
+                                        <td className="px-4 py-3.5">
+                                            <p className="font-semibold text-slate-900">{order.nhaCungCap?.tenNhaCungCap}</p>
+                                            <p className="text-xs text-slate-500">{order.nhaCungCap?.maNhaCungCap}</p>
+                                        </td>
+                                        {/* Kho nhập */}
+                                        <td className="px-4 py-3.5">
+                                            <p className="font-semibold text-slate-900">{order.khoNhap?.tenKho || '-'}</p>
+                                            <p className="text-xs text-slate-500">{order.khoNhap?.maKho}</p>
+                                        </td>
+                                        {/* Ngày tạo */}
+                                        <td className="px-4 py-3.5">
+                                            <div className="flex items-center gap-1.5 text-slate-600 text-sm">
+                                                <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                                                {formatDate(order.ngayTao)}
+                                            </div>
+                                        </td>
+                                        {/* Trạng thái */}
+                                        <td className="px-4 py-3.5 text-center">
+                                            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${statusConfig[order.trangThai]?.color}`}>
+                                                {getStatusIcon(order.trangThai)}
+                                                {statusConfig[order.trangThai]?.label}
+                                            </span>
+                                        </td>
+                                        {/* Action */}
+                                        <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                                            <div className="flex items-center justify-center gap-1">
+                                                {renderActionButtons(order)}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Pagination Section */}
+            <Card className="border-0 shadow-md bg-white">
+                <CardContent className="p-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        {/* Page size selector */}
+                        <div className="flex items-center gap-2">
+                            <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
+                                        {pagination.pageSize} dòng
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                                    {[5, 10, 20, 50, 100].map(size => (
+                                        <DropdownMenuItem key={size} onClick={() => handlePageSizeChange(size)} className="cursor-pointer">
+                                            {size} dòng
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {/* Page info */}
+                        <div className="text-sm text-gray-600">
+                            Hiển thị{' '}
+                            <span className="font-semibold text-gray-900">
+                                {pagination.totalElements === 0 ? 0 : pagination.pageNumber * pagination.pageSize + 1}
+                            </span>
+                            {' '}-{' '}
+                            <span className="font-semibold text-gray-900">
+                                {Math.min((pagination.pageNumber + 1) * pagination.pageSize, pagination.totalElements)}
+                            </span>
+                            {' '}trong tổng số{' '}
+                            <span className="font-semibold text-indigo-600">{pagination.totalElements}</span> kết quả
+                        </div>
+
+                        {/* Navigation buttons */}
+                        <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
-                                onClick={clearFilters}
-                                className="border-gray-300"
+                                size="sm"
+                                onClick={() => handlePageChange(pagination.pageNumber - 1)}
+                                disabled={pagination.pageNumber === 0}
+                                className="gap-1 disabled:opacity-50"
                             >
-                                <RefreshCw className="mr-2 h-4 w-4" />
-                                Xóa bộ lọc
+                                <ChevronLeft className="h-4 w-4" /> Trước
+                            </Button>
+
+                            <div className="hidden sm:flex gap-1">
+                                {[...Array(Math.min(5, pagination.totalPages))].map((_, idx) => {
+                                    let pageNum;
+                                    if (pagination.totalPages <= 5) pageNum = idx;
+                                    else if (pagination.pageNumber < 3) pageNum = idx;
+                                    else if (pagination.pageNumber > pagination.totalPages - 4) pageNum = pagination.totalPages - 5 + idx;
+                                    else pageNum = pagination.pageNumber - 2 + idx;
+
+                                    return (
+                                        <Button
+                                            key={idx}
+                                            variant={pagination.pageNumber === pageNum ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handlePageChange(pageNum)}
+                                            className={pagination.pageNumber === pageNum ? "bg-slate-900 text-white border border-slate-900 shadow-sm" : "border-gray-200"}
+                                        >
+                                            {pageNum + 1}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(pagination.pageNumber + 1)}
+                                disabled={pagination.pageNumber >= pagination.totalPages - 1 || pagination.totalPages === 0}
+                                className="gap-1 disabled:opacity-50"
+                            >
+                                Sau <ChevronRight className="h-4 w-4" />
                             </Button>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </CardContent>
+            </Card>
 
-                {/* Purchase Requests Table */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                            <span>Danh sách yêu cầu nhập hàng</span>
-                            <Badge variant="secondary">
-                                {pagination.totalElements} yêu cầu
-                            </Badge>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <div className="flex justify-center py-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Kho</TableHead>
-                                            <TableHead>Trạng thái</TableHead>
-                                            <TableHead>Ngày tạo</TableHead>
-                                            <TableHead>Tổng tiền</TableHead>
-                                            <TableHead className="text-right">Thao tác</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {purchaseOrders.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={7} className="text-center py-12">
-                                                    <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                                                    <p className="text-gray-500">Không có yêu cầu nhập hàng nào</p>
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            purchaseOrders.map((order) => {
-                                                const statusInfo = statusConfig[order.trangThai] || {};
-                                                const StatusIcon = statusInfo.icon || AlertCircle;
-
-                                                return (
-                                                    <TableRow
-                                                        key={order.id}
-                                                        className="hover:bg-gray-50 cursor-pointer"
-                                                        onClick={() => navigate(`/purchase-orders/${order.id}`)}
-                                                    >
-                                                        <TableCell>
-                                                            {order.khoNhap?.tenKho || '-'}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge className={statusInfo.color}>
-                                                                <StatusIcon className="w-3 h-3 mr-1" />
-                                                                {statusInfo.label}
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {formatDate(order.ngayTao)}
-                                                        </TableCell>
-                                                        <TableCell className="font-medium text-green-600">
-                                                            {formatCurrency(order.tongTien)}
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            {renderActionButtons(order)}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
-
-                        {/* Pagination */}
-                        {pagination.totalPages > 1 && (
-                            <div className="flex items-center justify-between mt-6">
-                                <div className="flex items-center gap-2">
-                                    <Label htmlFor="pageSize">Hiển thị:</Label>
-                                    <select
-                                        id="pageSize"
-                                        value={pagination.pageSize}
-                                        onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                                        className="h-8 px-2 py-1 border border-gray-300 rounded text-sm"
-                                    >
-                                        <option value={10}>10</option>
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                    </select>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handlePageChange(pagination.pageNumber - 1)}
-                                        disabled={pagination.pageNumber === 0}
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                        Trước
-                                    </Button>
-
-                                    <span className="text-sm text-gray-600">
-                                        Trang {pagination.pageNumber + 1} / {pagination.totalPages}
-                                    </span>
-
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handlePageChange(pagination.pageNumber + 1)}
-                                        disabled={pagination.pageNumber >= pagination.totalPages - 1}
-                                    >
-                                        Sau
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Approve Dialog */}
-                <AlertDialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle className="flex items-center gap-2 text-green-600">
-                                <CheckCircle className="h-5 w-5" />
-                                Duyệt yêu cầu nhập hàng
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-gray-600">
-                                Bạn có chắc chắn muốn duyệt yêu cầu nhập hàng{" "}
-                                <span className="font-semibold text-gray-900">
-                                    {selectedOrder?.soDonMua}
-                                </span>{" "}
-                                không?
-                                <br />
-                                <br />
-                                Sau khi duyệt, yêu cầu sẽ được chuyển sang trạng thái "Đã duyệt" và có thể gửi mail yêu cầu báo giá đến nhà cung cấp.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel disabled={actionLoading}>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={confirmApproveOrder}
-                                disabled={actionLoading}
-                                className="bg-green-600 hover:bg-green-700"
-                            >
-                                {actionLoading ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                )}
-                                Duyệt yêu cầu
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-
-            </div>
-        </TooltipProvider>
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
+        </div>
     );
 }

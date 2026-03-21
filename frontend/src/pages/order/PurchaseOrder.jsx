@@ -773,13 +773,7 @@ export default function PurchaseOrderList() {
 
 
             {/* Header */}
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Đơn hàng nhập</h1>
-                    <p className="text-gray-600 mt-1">
-                        Quản lý các đơn hàng nhập đã được xác nhận từ nhà cung cấp
-                    </p>
-                </div>
+            <div className="flex justify-end items-center">
                 <Button
                     onClick={() => navigate('/purchase-requests')}
                     variant="outline"
