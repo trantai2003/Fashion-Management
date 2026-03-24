@@ -129,6 +129,11 @@ export const SIDEBAR_MENU = [
         roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
       },
       {
+        label: "Báo giá",
+        to: "/sales-quotations",
+        roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
+      },
+      {
         label: "Đơn bán hàng",
         to: "/sales-orders",
         roles: ["quan_tri_vien", "nhan_vien_ban_hang", "nhan_vien_kho", "quan_ly_kho"], 

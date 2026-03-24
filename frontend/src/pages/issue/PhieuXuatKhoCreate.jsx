@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
 import { donBanHangService } from "@/services/donBanHangService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
@@ -16,6 +16,7 @@ import {
 
 export default function PhieuXuatKhoCreate() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams(); // Lấy query param từ URL
 
     const [exportSource, setExportSource] = useState("SO");
     const [soList, setSoList] = useState([]);
@@ -45,7 +46,8 @@ export default function PhieuXuatKhoCreate() {
                 filters: [{ fieldName: "trangThai", operation: "IN", value: [1, 2] }],
                 sorts: [{ fieldName: "ngayDatHang", direction: "DESC" }],
             });
-            setSoList(soRes.content || soRes.data?.content || []);
+            const validSoList = soRes.content || soRes.data?.content || [];
+            setSoList(validSoList);
 
             // 2. Tải danh sách Phiếu Chuyển Kho
             const transferRes = await phieuChuyenKhoService.filter({
@@ -90,6 +92,19 @@ export default function PhieuXuatKhoCreate() {
 
             if (warehouseList.length === 1)
                 setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
+
+            // auto-fill nếu có param soId từ URL
+            const urlSoId = searchParams.get("soId");
+            if (urlSoId) {
+                // Kiểm tra xem SO này có trong danh sách khả dụng không
+                const isSoValid = validSoList.some(so => String(so.id) === String(urlSoId));
+                if (isSoValid) {
+                    await handleSelectSO(urlSoId);
+                } else {
+                    toast.warning("Đơn hàng này không đủ điều kiện xuất kho hoặc bạn không có quyền");
+                }
+            }
+
         } catch {
             toast.error("Không thể tải dữ liệu khởi tạo");
         } finally {
@@ -320,9 +335,9 @@ export default function PhieuXuatKhoCreate() {
                                     </p>
                                     <p className="text-xs text-slate-500 mt-0.5">Danh sách hàng hóa cần xuất kho</p>
                                 </div>
-                                {(exportSource === "SO" ? selectedSO?.soDonHang : selectedTransfer?.soPhieuXuat) && (
+                                {(exportSource === "SO" ? selectedSO?.donBanHang?.soDonHang : selectedTransfer?.soPhieuXuat) && (
                                     <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">
-                                        {exportSource === "SO" ? selectedSO?.soDonHang : selectedTransfer?.soPhieuXuat}
+                                        {exportSource === "SO" ? selectedSO?.donBanHang?.soDonHang : selectedTransfer?.soPhieuXuat}
                                     </span>
                                 )}
                             </div>
@@ -418,9 +433,8 @@ export default function PhieuXuatKhoCreate() {
                             {((exportSource === "SO" && selectedSO) || (exportSource === "TRANSFER" && selectedTransfer)) && (
                                 <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-t border-slate-100">
                                     <p className="text-sm text-slate-500">
-                                        Kho đích:{" "}
                                         <span className="font-semibold text-slate-900">
-                                            {exportSource === "TRANSFER" ? selectedTransfer?.khoNhapTen : khoLabel}
+                                            {exportSource === "TRANSFER" ? "Kho đích: " + selectedTransfer?.khoNhapTen : ""}
                                         </span>
                                     </p>
                                     <div className="flex gap-3">
