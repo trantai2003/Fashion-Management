@@ -71,6 +71,7 @@ import TonKhoTongQuan from "./pages/bao-cao/TonKhoTongQuan";
 import ApplicationRequestManagement from "./pages/purchase-oder-create-req/ApplicationRequestManagement";
 import LichSuGiaoDichKhoList from "./pages/lich-su-giao-dich-kho/LichSuGiaoDichKhoList";
 import QuotationRequestList from "./pages/order/QuotationRequestList";
+import QuotationRequestCreate from "./pages/order/QuotationRequestCreate";
 
 export default function App() {
   return (
@@ -139,6 +140,7 @@ export default function App() {
           <Route path="/purchase-orders/:id/payment" element={<PurchaseOrderPayment />} />
           <Route path="/purchase-requests/:id/gui-bao-gia" element={<SendQuotationRequest />} />
           <Route path="/quotation-requests" element={<QuotationRequestList />} />
+          <Route path="/quotation-requests/create" element={<QuotationRequestCreate />} />
 
           {/* Supplier */}
           <Route path="/supplier" element={<SupplierList />} />

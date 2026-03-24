@@ -596,6 +596,13 @@ export default function QuotationRequestList() {
                     <RefreshCw className="h-4 w-4" />
                     Làm mới
                 </Button>
+                <Button
+                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
+                    onClick={() => navigate('/quotation-requests/create')}
+                >
+                    <Plus className="h-4 w-4" />
+                    Tạo yêu cầu báo giá
+                </Button>
             </div>
 
             {/* Table Section */}
@@ -651,20 +658,20 @@ export default function QuotationRequestList() {
                                         <td className="px-4 py-3.5 text-center text-slate-500 text-xs">
                                             {pagination.pageNumber * pagination.pageSize + index + 1}
                                         </td>
-                                        
+
                                         {/* Số yêu cầu */}
                                         <td className="px-4 py-3.5">
                                             <span className="font-bold text-blue-600 tracking-wide">
                                                 {order.soDonMua ? order.soDonMua.replace(/^PO/, 'RFQ') : '-'}
                                             </span>
                                         </td>
-                                        
+
                                         {/* Nhà cung cấp */}
                                         <td className="px-4 py-3.5">
                                             <p className="font-semibold text-slate-900">{order.nhaCungCap?.tenNhaCungCap}</p>
                                             <p className="text-xs text-slate-500">{order.nhaCungCap?.maNhaCungCap}</p>
                                         </td>
-                                        
+
                                         {/* Trạng thái */}
                                         <td className="px-4 py-3.5 text-left">
                                             <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${statusConfig[order.trangThai]?.color}`}>
