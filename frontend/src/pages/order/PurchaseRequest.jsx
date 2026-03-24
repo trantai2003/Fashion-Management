@@ -630,7 +630,7 @@ export default function PurchaseRequestList() {
                 </Button>
                 <Button
                     className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
-                    onClick={() => navigate('/purchase-orders/create')}
+                    onClick={() => navigate('/purchase-requests/create')}
                 >
                     <Plus className="h-4 w-4" />
                     Tạo yêu cầu nhập hàng

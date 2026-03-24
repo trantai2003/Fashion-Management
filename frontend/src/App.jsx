@@ -135,7 +135,7 @@ export default function App() {
           {/* Purchase Order */}
           <Route path="/purchase-requests" element={<PurchaseRequest />} />
           <Route path="/purchase-orders" element={<PurchaseOrder />} />
-          <Route path="/purchase-orders/create" element={<PurchaseOrderCreate />} />
+          <Route path="/purchase-requests/create" element={<PurchaseOrderCreate />} />
           <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
           <Route path="/purchase-orders/:id/payment" element={<PurchaseOrderPayment />} />
           <Route path="/purchase-requests/:id/gui-bao-gia" element={<SendQuotationRequest />} />
