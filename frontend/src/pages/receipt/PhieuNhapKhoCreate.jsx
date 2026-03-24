@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import purchaseOrderService from "@/services/purchaseOrderService";
@@ -176,6 +176,7 @@ const STYLES = `
 
 export default function PhieuNhapKhoCreate() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams(); // Đọc params từ URL
 
     // --- States cho Loại Nhập ---
     const [importSource, setImportSource] = useState("PO"); // "PO" hoặc "TRANSFER"
@@ -313,6 +314,20 @@ export default function PhieuNhapKhoCreate() {
             if (warehouseList.length === 1) {
                 setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
             }
+
+            //kiem tra poId tu url de auto select neu hop le
+            const urlPoId = searchParams.get("poId");
+            if (urlPoId) {
+                // Tìm trong danh sách hợp lệ xem có PO này không
+                const poInList = validPoList.find(p => String(p.id) === String(urlPoId));
+                if (poInList) {
+                    // Gọi hàm handleSelectPO để load chi tiết và set selectedPO
+                    await handleSelectPO(urlPoId);
+                } else {
+                    toast.warning("PO này không đủ điều kiện để nhập kho hoặc bạn không có quyền");
+                }
+            }
+
         } catch (error) {
             toast.error("Không thể tải dữ liệu khởi tạo");
         } finally {

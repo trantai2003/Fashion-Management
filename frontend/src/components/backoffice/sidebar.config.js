@@ -83,7 +83,7 @@ export const SIDEBAR_MENU = [
       {
         label: "Đơn mua hàng",
         to: "/purchase-orders",
-        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang", "nhan_vien_kho"],
       },
       {
         label: "Phiếu nhập kho",
@@ -108,7 +108,7 @@ export const SIDEBAR_MENU = [
       {
         label: "Chuyển kho nội bộ",
         to: "/transfer-tickets",
-        roles: ["quan_tri_vien", "quan_ly_kho"]
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],
       },
       { label: "Kiểm kê", to: "/stock-take" },
     ],
@@ -120,7 +120,7 @@ export const SIDEBAR_MENU = [
     icon: ShoppingCart,
     roles: [
       "quan_tri_vien",
-      "nhan_vien_ban_hang",
+      "nhan_vien_ban_hang", "nhan_vien_kho", "quan_ly_kho"
     ],
     children: [
       {
@@ -131,7 +131,7 @@ export const SIDEBAR_MENU = [
       {
         label: "Đơn bán hàng",
         to: "/sales-orders",
-        roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
+        roles: ["quan_tri_vien", "nhan_vien_ban_hang", "nhan_vien_kho", "quan_ly_kho"], 
       },
     ],
   },

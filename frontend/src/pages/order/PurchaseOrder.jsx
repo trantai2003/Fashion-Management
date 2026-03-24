@@ -125,6 +125,9 @@ export default function PurchaseOrderList() {
     const [loadingAuth, setLoadingAuth] = useState(true);
     const [authError, setAuthError] = useState(null);
 
+    // Kiểm tra nhanh xem user có thuộc nhóm KHO không (để ẩn nút)
+    const isKhoRole = userRoles.includes(ROLE.QUAN_LY_KHO) || userRoles.includes(ROLE.NHAN_VIEN_KHO);
+
     // Pagination state
     const [pagination, setPagination] = useState({
         pageNumber: 0,
@@ -280,11 +283,7 @@ export default function PurchaseOrderList() {
                 size: size
             };
 
-            console.log('📤 Filter request:', requestBody);
-
             const response = await purchaseOrderService.filter(requestBody);
-
-            console.log('📥 Response:', response);
 
             if (response && response.data) {
                 setPurchaseOrders(response.data.content || []);
@@ -306,14 +305,8 @@ export default function PurchaseOrderList() {
     // Fetch suppliers for filter - Từ purchase orders
     const fetchSuppliers = async () => {
         try {
-            console.log('📤 Fetching unique suppliers from purchase orders...');
             const suppliers = await purchaseOrderService.getUniqueSuppliers();
-            console.log('✅ Suppliers loaded:', suppliers.length, 'items');
             setSuppliers(suppliers);
-
-            if (suppliers.length === 0) {
-                console.warn('⚠️ No suppliers found in orders');
-            }
         } catch (error) {
             console.error('❌ Error fetching suppliers:', error);
             showNotification('error', 'Không thể tải danh sách nhà cung cấp');
@@ -323,14 +316,8 @@ export default function PurchaseOrderList() {
     // Fetch warehouses for filter - Từ purchase orders
     const fetchWarehouses = async () => {
         try {
-            console.log('📤 Fetching unique warehouses from purchase orders...');
             const warehouses = await purchaseOrderService.getUniqueWarehouses();
-            console.log('✅ Warehouses loaded:', warehouses.length, 'items');
             setWarehouses(warehouses);
-
-            if (warehouses.length === 0) {
-                console.warn('⚠️ No warehouses found in orders');
-            }
         } catch (error) {
             console.error('❌ Error fetching warehouses:', error);
             showNotification('error', 'Không thể tải danh sách kho');
@@ -390,7 +377,6 @@ export default function PurchaseOrderList() {
 
     // Handle filter change
     const handleFilterChange = (field, value) => {
-        console.log(`🔄 Filter changed - ${field}:`, value);
         setFilters(prev => ({ ...prev, [field]: value }));
     };
 
@@ -401,8 +387,6 @@ export default function PurchaseOrderList() {
 
     // Handle search
     const handleSearch = () => {
-        console.log('🔍 Current filters:', filters);
-        console.log('📅 Date range:', dateRange);
         fetchPurchaseOrders(0, pagination.pageSize);
     };
 
@@ -457,8 +441,6 @@ export default function PurchaseOrderList() {
 
         setActionLoading(true);
         try {
-            // TODO: Implement approve API
-            // await purchaseOrderService.approve(selectedOrder.id);
             await purchaseOrderService.duyetDon(selectedOrder.id, 2);
 
             showNotification('success', `Đã phê duyệt đơn hàng ${selectedOrder.soDonMua} thành công!`);
@@ -611,40 +593,42 @@ export default function PurchaseOrderList() {
                         </TooltipContent>
                     </Tooltip>
 
-                    {/* Thanh toán - chỉ cho trạng thái 6 (đã chấp nhận báo giá) */}
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={order.trangThai !== 6 || authDisabled}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (order.trangThai === 6 && !authDisabled) handleViewPayment(order.id);
-                                    }}
-                                >
-                                    <CreditCard className={`h-4 w-4 ${
-                                        authDisabled || order.trangThai !== 6
-                                            ? 'text-gray-300'
-                                            : 'text-green-600'
-                                    }`} />
-                                </Button>
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>
-                                {authDisabled
-                                    ? "Đang tải thông tin người dùng..."
-                                    : order.trangThai === 6
-                                        ? "Thanh toán đơn hàng"
-                                        : order.trangThai === 7
-                                            ? "Đơn hàng đã thanh toán"
-                                            : "Chỉ có thể thanh toán khi đã chấp nhận báo giá"
-                                }
-                            </p>
-                        </TooltipContent>
-                    </Tooltip>
+                    {/* Thanh toán - Ẩn hoàn toàn nếu là quản lý kho / nhân viên kho */}
+                    {!isKhoRole && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        disabled={order.trangThai !== 6 || authDisabled}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (order.trangThai === 6 && !authDisabled) handleViewPayment(order.id);
+                                        }}
+                                    >
+                                        <CreditCard className={`h-4 w-4 ${
+                                            authDisabled || order.trangThai !== 6
+                                                ? 'text-gray-300'
+                                                : 'text-green-600'
+                                        }`} />
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                    {authDisabled
+                                        ? "Đang tải thông tin người dùng..."
+                                        : order.trangThai === 6
+                                            ? "Thanh toán đơn hàng"
+                                            : order.trangThai === 7
+                                                ? "Đơn hàng đã thanh toán"
+                                                : "Chỉ có thể thanh toán khi đã chấp nhận báo giá"
+                                    }
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    )}
 
                 {/* Trạng thái = Chờ duyệt (status 1) */}
                 {order.trangThai === 1 && (
@@ -671,7 +655,7 @@ export default function PurchaseOrderList() {
                                     {authDisabled
                                         ? "Đang tải thông tin người dùng..."
                                         : !canModify
-                                            ? "Đơn hàng đã kết thúc, không thể thao tác"
+                                            ? "Không thể thao tác"
                                             : !canApprove
                                                 ? "Bạn không có quyền duyệt đơn hàng"
                                                 : "Duyệt đơn hàng"
@@ -741,7 +725,7 @@ export default function PurchaseOrderList() {
                             {authDisabled
                                 ? "Đang tải thông tin người dùng..."
                                 : !canModify
-                                    ? "Đơn hàng đã kết thúc, không thể thao tác"
+                                    ? "Không thể thao tác"
                                     : order.trangThai === 2 || order.trangThai === 4
                                         ? "Hủy đơn hàng"
                                         : (order.trangThai === 0 || order.trangThai === 6 ? "Đơn hàng đã hủy" : "Không thể hủy đơn hàng ở trạng thái này")
@@ -1099,13 +1083,16 @@ export default function PurchaseOrderList() {
                     <RefreshCw className="h-4 w-4" />
                     Làm mới
                 </Button>
-                <Button
-                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
-                    onClick={() => navigate('/purchase-orders/create')}
-                >
-                    <Plus className="h-4 w-4" />
-                    Tạo đơn mua
-                </Button>
+                {/* Nút Tạo đơn mua - Ẩn hoàn toàn nếu là quản lý kho / nhân viên kho */}
+                {!isKhoRole && (
+                    <Button
+                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
+                        onClick={() => navigate('/purchase-orders/create')}
+                    >
+                        <Plus className="h-4 w-4" />
+                        Tạo đơn mua
+                    </Button>
+                )}
             </div>
 
             {/* Table Section */}

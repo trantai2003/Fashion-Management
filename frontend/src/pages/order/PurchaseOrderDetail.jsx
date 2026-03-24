@@ -36,7 +36,6 @@ import {
     User,
     FileText,
     Package,
-    Edit,
     CheckCircle,
     XCircle,
     Truck,
@@ -51,7 +50,7 @@ import {
     ClipboardList,
     Send,
     CreditCard,
-    Eye,
+    ArrowRightLeft
 } from "lucide-react";
 
 import purchaseOrderDetailService from '@/services/purchaseOrderDetailService';
@@ -175,7 +174,6 @@ export default function PurchaseOrderDetail() {
             iconBg: 'bg-teal-100', iconColor: 'text-teal-600', textColor: 'text-teal-800',
             icon: AlertCircle, description: 'Đã chấp nhận báo giá từ nhà cung cấp'
         },
-        // 7 là đã thanh toán
         7: {
             label: 'Đã thanh toán',
             bannerBg: 'bg-green-50', bannerBorder: 'border-green-200',
@@ -324,6 +322,10 @@ export default function PurchaseOrderDetail() {
         }
     };
 
+    const handleCreateReceipt = () => {
+        navigate(`/goods-receipts/create?poId=${id}`);
+    };
+
     const handlePrint = () => window.print();
     const handleExport = () => console.log('Export order:', id);
 
@@ -355,6 +357,11 @@ export default function PurchaseOrderDetail() {
 
     const currentStatus = statusConfig[orderData.trangThai] || statusConfig[0];
     const StatusIcon = currentStatus.icon;
+
+    // Kiểm tra xem đã nhập đủ hàng chưa
+    const isFullyReceived = orderData.chiTietDonMuaHangs?.every(
+        ct => (ct.soLuongDaNhan || 0) >= (ct.soLuongDat || 0)
+    ) && orderData.chiTietDonMuaHangs?.length > 0;
 
     return (
         <div className="p-6 md:p-8 pb-24 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-[calc(100vh-64px)] lux-sync">
@@ -422,6 +429,36 @@ export default function PurchaseOrderDetail() {
                             <Download className="mr-2 h-4 w-4 text-slate-500" />
                             Xuất file
                         </Button>
+
+                        {/* Nút Tạo Phiếu Nhập Kho */}
+                        {(() => {
+                            const canCreateReceipt = [6, 7].includes(orderData.trangThai) &&
+                                (userRoles.includes(ROLE.NHAN_VIEN_KHO) || userRoles.includes(ROLE.QUAN_LY_KHO));
+
+                            if (!canCreateReceipt) return null;
+
+                            return (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span>
+                                                <Button
+                                                    onClick={handleCreateReceipt}
+                                                    disabled={isFullyReceived || actionLoading}
+                                                    className="h-11 px-6 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    <ArrowRightLeft className="mr-2 h-4 w-4" />
+                                                    Tạo phiếu nhập kho
+                                                </Button>
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{isFullyReceived ? "Đơn hàng đã được nhập kho đầy đủ" : "Tạo phiếu nhập kho từ đơn hàng này"}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            );
+                        })()}
 
                         {/* ── Action Buttons ── */}
                         {(() => {
