@@ -291,17 +291,17 @@ export default function QuotationRequestCreate() {
                                             <option value="">-- Chọn PR đã duyệt --</option>
                                             {prList.map(pr => (
                                                 <option key={pr.id} value={pr.id}>
-                                                    {pr.soDonMua || `PR-${pr.id}`} - {pr.nhaCungCap?.tenNhaCungCap || "Chưa có NCC"}
+                                                    {pr.soDonMua || `PR-${pr.id}`}
                                                 </option>
                                             ))}
                                         </select>
                                     </div>
 
                                     <div className="inp-group">
-                                        <label className="inp-label">Số Đơn <span className="text-rose-500">*</span></label>
+                                        <label className="inp-label">Mã yêu cầu <span className="text-rose-500">*</span></label>
                                         <div className="flex gap-2">
                                             <Input
-                                                value={form.soDonMua}
+                                                value={form.soDonMua?.replace(/^PO/, 'RFQ')}
                                                 onChange={(e) => setForm(prev => ({ ...prev, soDonMua: e.target.value }))}
                                                 placeholder="Nhập hoặc tự sinh..."
                                                 className="h-11 font-mono font-bold text-[#8b6a21] bg-[#faf8f3] rounded-xl border-[#b8860b]/20 shadow-sm text-[15px] flex-1 focus-visible:ring-[#b8860b]"
@@ -442,7 +442,7 @@ export default function QuotationRequestCreate() {
                         <Button 
                             onClick={handleCreate} 
                             disabled={actionLoading || !form.prId} 
-                            className="h-11 rounded-xl px-6 gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-md transition-all"
+                            className="flex items-center justify-center h-11 rounded-xl px-6 gap-2 bg-gradient-to-r from-[#b8860b] to-[#d4af37] hover:from-[#a07409] hover:to-[#b8860b] text-white font-bold shadow-md border-0 transition-all duration-300"
                         >
                             {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                             Tạo & Gửi báo giá
@@ -453,24 +453,24 @@ export default function QuotationRequestCreate() {
 
             {/* ── Confirm Dialog ── */}
             <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-                <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border-0 shadow-2xl">
-                    <div className="bg-slate-900 p-6 flex items-center gap-3">
-                        <div className="h-10 w-10 bg-white/10 rounded-full flex items-center justify-center shrink-0">
-                            <Send className="h-5 w-5 text-[#b8860b]" />
+                <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border border-[#b8860b]/20 shadow-2xl">
+                    <div className="bg-gradient-to-r from-[#b8860b] to-[#d4af37] p-6 flex items-center gap-3">
+                        <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">
+                            <Send className="h-5 w-5 text-white" />
                         </div>
-                        <DialogTitle className="text-xl font-bold text-white m-0">
+                        <DialogTitle className="text-xl font-bold text-white m-0 tracking-wide font-['Playfair_Display']">
                             Xác nhận gửi yêu cầu báo giá
                         </DialogTitle>
                     </div>
-                    <div className="p-6">
-                        <DialogDescription className="text-[15px] text-slate-600 mb-6">
+                    <div className="p-6 bg-[#faf8f3]">
+                        <DialogDescription className="text-[15px] text-slate-700 mb-6 leading-relaxed">
                             Hệ thống sẽ gửi email yêu cầu báo giá đến nhà cung cấp và cập nhật trạng thái đơn hàng.
                         </DialogDescription>
 
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 mb-6 text-[14px]">
+                        <div className="bg-white border border-[#b8860b]/20 shadow-sm rounded-xl p-4 space-y-3 mb-6 text-[14px]">
                             <div className="flex justify-between items-center">
                                 <span className="text-slate-500 font-medium">Số đơn:</span>
-                                <span className="font-mono font-bold text-[#8b6a21]">{form.soDonMua}</span>
+                                <span className="font-mono font-bold text-[#b8860b] text-[15px]">{form.soDonMua?.replace(/^PO/, 'RFQ')}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-slate-500 font-medium">Nhà cung cấp:</span>
@@ -487,14 +487,14 @@ export default function QuotationRequestCreate() {
                                 variant="outline"
                                 onClick={() => setShowConfirmDialog(false)}
                                 disabled={sending}
-                                className="h-11 rounded-xl font-semibold w-full sm:w-auto"
+                                className="h-11 rounded-xl font-semibold w-full sm:w-auto border-slate-300 text-slate-600 hover:bg-slate-100"
                             >
                                 Hủy bỏ
                             </Button>
                             <Button
                                 onClick={confirmSend}
                                 disabled={sending}
-                                className="h-11 rounded-xl font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-md w-full sm:w-auto"
+                                className="h-11 rounded-xl font-bold bg-gradient-to-r from-[#b8860b] to-[#d4af37] hover:from-[#a07409] hover:to-[#b8860b] text-white shadow-md border-0 w-full sm:w-auto transition-all"
                             >
                                 {sending
                                     ? <><Loader2 className="h-5 w-5 animate-spin mr-2" />Đang gửi...</>
