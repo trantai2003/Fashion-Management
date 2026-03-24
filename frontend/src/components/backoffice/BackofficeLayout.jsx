@@ -250,12 +250,6 @@ export default function BackofficeLayout() {
             subtitle: "Xem và quản lý các lần kiểm kê tồn kho",
         },
         {
-            key: "PURCHASE_ORDER_CREATE",
-            match: (path) => path === "/purchase-orders/create",
-            title: "Tạo yêu cầu nhập hàng",
-            subtitle: "Tạo đơn đặt hàng mới và gửi yêu cầu báo giá đến nhà cung cấp",
-        },
-        {
             key: "CUSTOMERS",
             match: (path) => path === "/customers",
             title: "Quản lý khách hàng",
@@ -316,6 +310,21 @@ export default function BackofficeLayout() {
             key: "QUOTATION_REQUEST",
             match: (path) => path === "/quotation-requests",
             title: "Danh sách yêu cầu báo giá",
+        },
+        {
+            key: "QUOTATION_REQUEST_CREATE",
+            match: (path) => path === "/quotation-requests/create",
+            title: "Tạo yêu cầu báo giá",
+        },
+        {
+            key: "PURCHASE_REQUEST_CREATE",
+            match: (path) => path === "/purchase-requests/create",
+            title: "Tạo yêu cầu nhập hàng",
+        },
+        {
+            key: "PURCHASE_ORDER_CREATE",
+            match: (path) => path === "/purchase-orders/create",
+            title: "Tạo đơn mua hàng",
         }
     ];
 
