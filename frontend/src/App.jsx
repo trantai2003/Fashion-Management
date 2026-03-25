@@ -73,6 +73,8 @@ import LichSuGiaoDichKhoList from "./pages/lich-su-giao-dich-kho/LichSuGiaoDichK
 import QuotationRequestList from "./pages/order/QuotationRequestList";
 import QuotationRequestCreate from "./pages/order/QuotationRequestCreate";
 import PurchaseOrderCreateManual from "./pages/order/PurchaseOrderCreateManual";
+import BaoGiaList from "./pages/sales-orders/Bao-gia/BaoGiaList";
+import BaoGiaCreate from "./pages/sales-orders/Bao-gia/BaoGiaCreate";
 
 export default function App() {
   return (
@@ -175,6 +177,8 @@ export default function App() {
           <Route path="/sales-orders/:id" element={<DonBanHangDetail />} />
           <Route path="/sales-orders/:id/invoice" element={<DonBanHangInvoice />} />
           <Route path="/sales-orders/create" element={<DonBanHangCreate />} />
+          <Route path="/sales-quotations" element={<BaoGiaList />} />
+          <Route path="/sales-quotations/create" element={<BaoGiaCreate />} />
 
           {/* Chuyen kho noi bo */}
           <Route path="/transfer-tickets" element={<PhieuChuyenKhoList />} />
