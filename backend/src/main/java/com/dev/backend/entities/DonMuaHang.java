@@ -51,9 +51,8 @@ public class DonMuaHang {
     @ColumnDefault("0")
     @Column(name = "trang_thai")
     Integer trangThai;
-    // 0 là bị huỷ, 1 là gửi duyệt, 2 là duyệt,
-    // 3 là đã gửi mail nhà cung cấp , 4 là nhà cung cấp đã xác nhận và gửi báo giá,
-    // 5 là không chấp nhận báo giá, 6 là đã chấp nhận báo giá, 7 là đã thanh toán, 8 là đã nhận
+    // 0 là xoá, 1 là đã gửi, 2 là đã báo giá, 3 là chấp nhận báo giá và chờ vận chuyển, 4 là không chấp nhận báo giá,
+    // 5 là đã thanh toán
     @ColumnDefault("0.00")
     @Column(name = "tong_tien", precision = 15, scale = 2)
     BigDecimal tongTien;
