@@ -65,6 +65,9 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
     @Autowired
     private DonBanHangRepository donBanHangRepository;
 
+    @Autowired
+    private PhieuNhapKhoService phieuNhapKhoService;
+
 
     @Override
     protected EntityManager getEntityManager() {
@@ -462,6 +465,26 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
         }
 
         don.setTrangThai(5); // 5 = Hoàn thành / Đã giao thành công
+        repository.save(don);
+    }
+    @Transactional
+    public void returnOrder(Integer id) {
+        DonBanHang don = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn bán"));
+
+        // Chỉ cho phép hoàn trả khi đơn đang ở trạng thái đã xuất kho (2, 3)
+        if (don.getTrangThai() != 2 && don.getTrangThai() != 3) {
+            throw new RuntimeException("Chỉ có thể hoàn trả đơn hàng đã xuất kho");
+        }
+
+        // Kiểm tra xem đơn hàng đã có phiếu xuất kho nào hoàn thành chưa
+        boolean hasCompletedExport = phieuXuatKhoRepository.existsByDonBanHangIdAndTrangThai(id, 3);
+        if (!hasCompletedExport) {
+            throw new RuntimeException("Đơn hàng chưa có phiếu xuất kho nào hoàn thành, không có hàng để hoàn trả");
+        }
+
+        // Chuyển trạng thái thành Bị hoàn trả (6)
+        don.setTrangThai(6);
         repository.save(don);
     }
 }
