@@ -64,7 +64,7 @@ class DieuHanhHeThongController {
     public ResponseEntity<ResponseData<String>> ganQuyenNhanVienKho(
             @RequestBody PhanQuyenNguoiDungKhoCreating pqndkCreating) {
 
-        return dieuHanhHeThongService.ganQuyenNhanVienKho(pqndkCreating);
+        return dieuHanhHeThongService. ganQuyenNhanVienKho(pqndkCreating);
     }
 
     @DeleteMapping("/quyen-han/xoa-quyen/{id}")

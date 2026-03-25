@@ -456,7 +456,7 @@ export default function AuthPage() {
                 setErrors({ general: 'Vui lòng điền đầy đủ thông tin đăng nhập' });
                 return;
             }
-            const response = await nguoiDungService.login({ username: loginData.username, password: loginData.matKhau });
+            const response   = await nguoiDungService.login({ username: loginData.username, password: loginData.matKhau });
             if (response?.status === 200) {
                 const token = localStorage.getItem('access_token');
                 if (token) {
