@@ -59,19 +59,18 @@ export default function PhieuXuatKhoCreate() {
             // 3. Tải danh sách Phiếu Xuất Kho (Bỏ filter NOT_IN để tránh lỗi Backend)
             const exportsRes = await phieuXuatKhoService.filter({
                 page: 0, size: 10000
-                // Không truyền filter trạng thái từ Frontend nữa
             });
-            
+
             const allExportsRaw = exportsRes.content || exportsRes.data?.content || [];
-            
+
             // Lọc bỏ các phiếu đã hủy (trạng thái = 4) bằng JavaScript
             const allExports = allExportsRaw.filter(pxk => pxk.trangThai !== 4);
 
             // Trích xuất ra mảng ID của các phiếu chuyển đã được tạo phiếu xuất
-            // LƯU Ý: Đảm bảo 'phieuChuyenKhoGocId' là đúng tên trường từ API trả về
             const usedTransferIds = allExports
-                .map(pxk => pxk.phieuChuyenKhoGocId || pxk.phieuChuyenId || pxk.transferId)
+                .map(pxk => pxk.phieuChuyenKhoGocId)
                 .filter(Boolean); // Lọc bỏ null/undefined
+
 
             // 4. Lọc phiếu chuyển kho
             const allTransfers = transferRes.content || transferRes.data?.content || [];
@@ -93,8 +92,10 @@ export default function PhieuXuatKhoCreate() {
             if (warehouseList.length === 1)
                 setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
 
-            // auto-fill nếu có param soId từ URL
+            // auto-fill nếu có param soId HOẶC transferId TỪ URL
             const urlSoId = searchParams.get("soId");
+            const urlTransferId = searchParams.get("transferId");
+
             if (urlSoId) {
                 // Kiểm tra xem SO này có trong danh sách khả dụng không
                 const isSoValid = validSoList.some(so => String(so.id) === String(urlSoId));
@@ -102,6 +103,14 @@ export default function PhieuXuatKhoCreate() {
                     await handleSelectSO(urlSoId);
                 } else {
                     toast.warning("Đơn hàng này không đủ điều kiện xuất kho hoặc bạn không có quyền");
+                }
+            } else if (urlTransferId) {
+                setExportSource("TRANSFER");
+                const isTransferValid = validTransfers.some(t => String(t.id) === String(urlTransferId));
+                if (isTransferValid) {
+                    await handleSelectTransfer(urlTransferId);
+                } else {
+                    toast.warning("Yêu cầu chuyển kho này không đủ điều kiện xuất kho hoặc bạn không có quyền");
                 }
             }
 

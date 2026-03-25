@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
+import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
+import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { getMineKhoList } from "@/services/khoService";
+import apiClient from "@/services/apiClient";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, ClipboardList, Building2, Package } from "lucide-react";
+import { ArrowLeft, Loader2, ClipboardList, Building2, Package, ArrowRightLeft } from "lucide-react";
 import { createPortal } from "react-dom";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ── Trạng thái ────────────────────────────────────────────────────────────
 const STATUS_MAP = {
@@ -49,14 +53,52 @@ export default function PhieuChuyenKhoDetail() {
     const [loading,            setLoading]            = useState(false);
     const [showCancelConfirm,  setShowCancelConfirm]  = useState(false);
     const [isProcessing,       setIsProcessing]       = useState(false);
-    const [myWarehouseIds,      setMyWarehouseIds]     = useState([]);
-
-    const role               = localStorage.getItem("role");
-    const isAdmin            = role === "quan_tri_vien";
-    const isQuanLy           = role === "quan_ly_kho" || isAdmin;
-    const currentWarehouseId = Number(localStorage.getItem("selected_kho_id"));
+    const [myWarehouseIds,     setMyWarehouseIds]     = useState([]);
+    
+    // Auth & roles
+    const [userRoles, setUserRoles] = useState([]);
+    const [relatedIssue, setRelatedIssue] = useState(null);
+    const [relatedReceipt, setRelatedReceipt] = useState(null);
 
     useEffect(() => { fetchDetail(); fetchMyWarehouses(); }, [id]);
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const token = localStorage.getItem('access_token');
+                if (!token) return;
+                const b64 = token.split(".")[1];
+                const payload = JSON.parse(atob(b64.replace(/-/g, "+").replace(/_/g, "/")));
+                if (!payload || !payload.id) return;
+
+                const userResponse = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${payload.id}`);
+                const userData = userResponse.data?.data;
+                if (userData && userData.vaiTro) {
+                    setUserRoles(userData.vaiTro.includes(" ") ? userData.vaiTro.split(" ") : [userData.vaiTro]);
+                }
+            } catch (error) {
+                console.error('Lỗi khi lấy thông tin user:', error);
+            }
+        };
+        fetchUserInfo();
+    }, []);
+
+    // Lấy trước thông tin phiếu xuất / nhập liên kết để validate (Disable nút nếu đã tồn tại)
+    useEffect(() => {
+        if (id) {
+            phieuXuatKhoService.filter({ page: 0, size: 2000 }).then(res => {
+                const issues = res.content || res.data?.content || [];
+                const found = issues.find(i => (String(i.phieuChuyenKhoGocId) === String(id) || String(i.phieuChuyenId) === String(id) || String(i.transferId) === String(id)) && i.trangThai !== 4);
+                if (found) setRelatedIssue(found);
+            }).catch(() => {});
+
+            phieuNhapKhoService.filter({ page: 0, size: 2000 }).then(res => {
+                const receipts = res.content || res.data?.content || [];
+                const found = receipts.find(r => (String(r.phieuXuatGocId) === String(id) || String(r.phieuChuyenId) === String(id) || String(r.transferId) === String(id)));
+                if (found) setRelatedReceipt(found);
+            }).catch(() => {});
+        }
+    }, [id]);
 
     async function fetchDetail() {
         setLoading(true);
@@ -69,6 +111,7 @@ export default function PhieuChuyenKhoDetail() {
             setLoading(false);
         }
     }
+
     async function fetchMyWarehouses() {
         try {
             const listKho = await getMineKhoList();
@@ -117,9 +160,14 @@ export default function PhieuChuyenKhoDetail() {
         );
     }
 
+    const isKhoRole            = userRoles.includes("quan_ly_kho") || userRoles.includes("nhan_vien_kho");
+    const isStaffRole          = userRoles.includes("nhan_vien_kho");
+    const isAdmin              = userRoles.includes("quan_tri_vien");
+    const isQuanLy             = userRoles.includes("quan_ly_kho") || isAdmin;
+
     const st                   = STATUS_MAP[data.trangThai] ?? STATUS_MAP[0];
     const isDestinationManager = isAdmin || (isQuanLy && myWarehouseIds.includes(data.khoNhapId));
-    const isSourceStaff        = isAdmin || myWarehouseIds.includes(data.khoXuatId);
+    const isSourceStaff        = isAdmin || (isQuanLy && myWarehouseIds.includes(data.khoXuatId));
     const totalItems           = data.items?.length || 0;
     const totalQty             = data.items?.reduce((s, i) => s + (i.soLuongYeuCau || 0), 0) || 0;
 
@@ -146,8 +194,72 @@ export default function PhieuChuyenKhoDetail() {
                             {st.label}
                         </span>
 
-                        {/* Nút Huỷ */}
-                        {[0, 1, 2, 3].includes(data.trangThai) && (
+                        {/* Các nút xử lý kho đặc thù cho role KHO */}
+                        {isKhoRole && data.trangThai === 2 && myWarehouseIds.includes(data.khoXuatId) && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span>
+                                            <Button
+                                                onClick={() => navigate(`/goods-issues/create?transferId=${id}`)}
+                                                disabled={!!relatedIssue}
+                                                className="bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-200 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <ArrowRightLeft className="mr-2 h-4 w-4" /> Tạo phiếu xuất kho
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{relatedIssue ? "Đã tồn tại phiếu xuất kho cho yêu cầu này" : "Tạo phiếu xuất kho điều chuyển"}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
+
+                        {isKhoRole && data.trangThai === 3 && myWarehouseIds.includes(data.khoNhapId) && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span>
+                                            <Button
+                                                onClick={() => navigate(`/goods-receipts/create?transferId=${id}`)}
+                                                disabled={!!relatedReceipt}
+                                                className="bg-emerald-600 text-white border border-emerald-600 hover:bg-emerald-700 shadow-sm transition-all duration-200 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <Package className="mr-2 h-4 w-4" /> Nhập kho
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{relatedReceipt ? "Đã tồn tại phiếu nhập kho cho yêu cầu này" : "Tạo phiếu nhập kho tại kho đích"}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
+
+                        {isKhoRole && data.trangThai === 4 && myWarehouseIds.includes(data.khoXuatId) && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span>
+                                            <Button
+                                                onClick={() => navigate(`/goods-receipts/create?transferId=${id}`)}
+                                                disabled={!!relatedReceipt}
+                                                className="bg-orange-600 text-white border border-orange-600 hover:bg-orange-700 shadow-sm transition-all duration-200 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <Package className="mr-2 h-4 w-4" /> Nhập kho (Hoàn trả)
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{relatedReceipt ? "Đã tồn tại phiếu nhập kho hoàn trả" : "Tạo phiếu nhập kho hoàn trả về kho nguồn"}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
+
+                        {/* Nút Huỷ (Chỉ hiện khi không phải nhân viên kho) */}
+                        {!isStaffRole && [0, 1, 2, 3].includes(data.trangThai) && (
                             <Button
                                 variant="outline"
                                 disabled={isProcessing}

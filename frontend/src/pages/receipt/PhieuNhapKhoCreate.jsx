@@ -315,8 +315,10 @@ export default function PhieuNhapKhoCreate() {
                 setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
             }
 
-            //kiem tra poId tu url de auto select neu hop le
+            //kiem tra poId hoặc transferId tu url de auto select neu hop le
             const urlPoId = searchParams.get("poId");
+            const urlTransferId = searchParams.get("transferId");
+
             if (urlPoId) {
                 // Tìm trong danh sách hợp lệ xem có PO này không
                 const poInList = validPoList.find(p => String(p.id) === String(urlPoId));
@@ -325,6 +327,14 @@ export default function PhieuNhapKhoCreate() {
                     await handleSelectPO(urlPoId);
                 } else {
                     toast.warning("PO này không đủ điều kiện để nhập kho hoặc bạn không có quyền");
+                }
+            } else if (urlTransferId) {
+                setImportSource("TRANSFER");
+                const isTransferValid = availableTransfers.some(t => String(t.id) === String(urlTransferId));
+                if (isTransferValid) {
+                    await handleSelectTransfer(urlTransferId);
+                } else {
+                    toast.warning("Yêu cầu chuyển kho này không đủ điều kiện nhập kho hoặc bạn không có quyền");
                 }
             }
 
