@@ -346,7 +346,7 @@ export default function BaoGiaList() {
                     <tr
                       key={item.id}
                       className="transition-colors duration-150 hover:bg-purple-50/50 cursor-pointer"
-                      onClick={() => navigate(`/quotations/${item.id}`)}
+                      onClick={() => navigate(`/sales-quotations/${item.id}`)}
                     >
                       <td className="px-4 py-3.5 align-middle text-center text-slate-500 text-xs">
                         {filters.page * filters.size + index + 1}
@@ -377,7 +377,7 @@ export default function BaoGiaList() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/quotations/${item.id}`);
+                              navigate(`/sales-quotations/${item.id}`);
                             }}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-purple-600 hover:bg-purple-50 hover:border-purple-200"
                             title="Xem chi tiết"

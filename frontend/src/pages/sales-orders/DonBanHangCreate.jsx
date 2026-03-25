@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,14 +14,15 @@ import { getKhoList } from "@/services/khoService";
 
 export default function DonBanHangCreate() {
   const navigate = useNavigate();
-
+  const [searchParams] = useSearchParams();
+  const initialQuoteId = searchParams.get("quoteId");
   const [pendingQuotes, setPendingQuotes] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
-  
+
   const [loading, setLoading] = useState(false);
   const [quoteSearch, setQuoteSearch] = useState("");
   const [showQuoteDropdown, setShowQuoteDropdown] = useState(false);
-  
+
   const [warehouseSearch, setWarehouseSearch] = useState("");
   const [showWarehouseDropdown, setShowWarehouseDropdown] = useState(false);
 
@@ -38,7 +39,7 @@ export default function DonBanHangCreate() {
 
   async function loadData() {
     try {
-      // Fetch các báo giá đang "Chờ phản hồi" (trangThai = 0, loaiChungTu = bao_gia)
+      // Fetch các báo giá đang Chờ phản hồi
       const payload = {
         page: 0, size: 100,
         filters: [
@@ -50,8 +51,23 @@ export default function DonBanHangCreate() {
         donBanHangService.filter(payload),
         getKhoList(),
       ]);
-      setPendingQuotes(quotesRes?.content || []);
+      
+      const quotes = quotesRes?.content || [];
+      setPendingQuotes(quotes);
       setWarehouses(warehouseRes || []);
+
+      if (initialQuoteId) {
+        let targetQuote = quotes.find(q => q.id.toString() === initialQuoteId);
+        
+        if (!targetQuote) {
+            const detailRes = await donBanHangService.getDetail(initialQuoteId);
+            targetQuote = detailRes.data?.donBanHang;
+        }
+        if (targetQuote) {
+            handleSelectQuote(targetQuote);
+        }
+      }
+
     } catch { 
       toast.error("Không thể tải dữ liệu hệ thống"); 
     }
@@ -61,7 +77,7 @@ export default function DonBanHangCreate() {
     const lower = quoteSearch.toLowerCase();
     if (!lower.trim()) return pendingQuotes;
     return pendingQuotes.filter(q =>
-      q.soDonHang?.toLowerCase().includes(lower) || 
+      q.soDonHang?.toLowerCase().includes(lower) ||
       q.khachHang?.tenKhachHang?.toLowerCase().includes(lower)
     );
   }, [quoteSearch, pendingQuotes]);
@@ -118,7 +134,7 @@ export default function DonBanHangCreate() {
   async function handleCreateOrder() {
     if (!selectedQuoteId) return toast.error("Vui lòng chọn báo giá để tạo đơn");
     if (!formData.khoXuatId) return toast.error("Vui lòng chọn kho xuất hàng");
-    
+
     try {
       setLoading(true);
       // Gọi API convertToOrder
@@ -295,10 +311,10 @@ export default function DonBanHangCreate() {
 
               {/* Empty state / Loading */}
               {loading ? (
-                 <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-400">
-                   <Loader2 className="h-10 w-10 animate-spin mb-4 text-purple-600" />
-                   <p>Đang tải chi tiết...</p>
-                 </div>
+                <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-400">
+                  <Loader2 className="h-10 w-10 animate-spin mb-4 text-purple-600" />
+                  <p>Đang tải chi tiết...</p>
+                </div>
               ) : orderItems.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
                   <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
