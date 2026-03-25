@@ -98,7 +98,13 @@ export default function DonBanHangList() {
   }, []);
 
   function buildFilterPayload() {
-    const filterList = [];
+    const filterList = [
+      {
+        fieldName: "loaiChungTu",
+        operation: "EQUALS",
+        value: "don_ban_hang",
+      }
+    ];
 
     if (filters.keyword?.trim()) {
       filterList.push({
@@ -186,7 +192,7 @@ export default function DonBanHangList() {
   const stats = {
     total: total,
     choXuatKho: data.filter((d) => d.trangThai === 1).length,
-    hoanThanh: data.filter((d) => d.trangThai === 3).length,
+    hoanThanh: data.filter((d) => d.trangThai === 3 || d.trangThai === 5).length,
     daHuy: data.filter((d) => d.trangThai === 4).length,
   };
 
@@ -372,7 +378,7 @@ export default function DonBanHangList() {
                     <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Số đơn</th>
                     <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Khách hàng</th>
                     <th className="h-12 px-4 text-left font-semibold text-slate-600 tracking-wide text-xs uppercase">Kho xuất</th>
-                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Ngày đặt</th>
+                    <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Ngày chốt đơn</th>
                     <th className="h-12 px-4 text-right font-semibold text-slate-600 tracking-wide text-xs uppercase">Tổng tiền</th>
                     <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Trạng thái</th>
                     <th className="h-12 px-4 text-center font-semibold text-slate-600 tracking-wide text-xs uppercase">Thao tác</th>
@@ -385,9 +391,6 @@ export default function DonBanHangList() {
                       className="transition-colors duration-150 hover:bg-purple-50/50 cursor-pointer"
                       onClick={() => navigate(`/sales-orders/${item.id}`)}
                     >
-                      <td className="px-4 py-3.5 align-middle text-center text-slate-500 text-xs">
-                        {filters.page * filters.size + index + 1}
-                      </td>
                       <td className="px-4 py-3.5 align-middle">
                         <span className="font-bold text-purple-600 tracking-wide uppercase">{item.soDonHang}</span>
                       </td>
@@ -455,7 +458,7 @@ export default function DonBanHangList() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
-                    {[10, 20, 30, 50].map((s) => (
+                    {[10, 20, 30, 40, 50].map((s) => (
                       <DropdownMenuItem
                         key={s}
                         onClick={() => handlePageSizeChange(s)}
