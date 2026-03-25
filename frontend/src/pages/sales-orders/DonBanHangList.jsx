@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { donBanHangService } from "@/services/donBanHangService";
 import { Link, useNavigate } from "react-router-dom";
+import apiClient from "@/services/apiClient";
 import {
   Loader2,
   ChevronDown,
@@ -39,12 +40,32 @@ const STATUS_MAP = {
   4: { label: "Đã hủy", className: "bg-red-50 text-red-700 border border-red-200" },
   5: { label: "Hoàn thành", className: "bg-emerald-50 text-emerald-700 border border-emerald-200" }
 };
+const ROLE = {
+    QUAN_TRI_VIEN: "quan_tri_vien",
+    QUAN_LY_KHO: "quan_ly_kho",
+    NHAN_VIEN_KHO: "nhan_vien_kho",
+    NHAN_VIEN_MUA_HANG: "nhan_vien_mua_hang",
+    NHAN_VIEN_BAN_HANG: "nhan_vien_ban_hang",
+};
+
+function parseJwt(token) {
+    try {
+        const b64 = token.split(".")[1];
+        return JSON.parse(atob(b64.replace(/-/g, "+").replace(/_/g, "/")));
+    } catch { return null; }
+}
+
+function parseRoles(vaiTro) {
+    if (!vaiTro) return [];
+    return vaiTro.includes(" ") ? vaiTro.split(" ") : [vaiTro];
+}
 
 export default function DonBanHangList() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [userRoles, setUserRoles] = useState([]);
 
   const [filters, setFilters] = useState({
     keyword: "",
@@ -53,6 +74,28 @@ export default function DonBanHangList() {
     page: 0,
     size: 10,
   });
+
+  // Kiểm tra quyền kho
+  const isKhoRole = userRoles.includes(ROLE.QUAN_LY_KHO) || userRoles.includes(ROLE.NHAN_VIEN_KHO);
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+            const payload = parseJwt(token);
+            if (!payload || !payload.id) return;
+
+            const userResponse = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${payload.id}`);
+            const userData = userResponse.data?.data;
+            if (userData && userData.vaiTro) {
+                setUserRoles(parseRoles(userData.vaiTro));
+            }
+        } catch (error) {
+            console.error('Lỗi khi lấy thông tin user:', error);
+        }
+    };
+    fetchUserInfo();
+  }, []);
 
   function buildFilterPayload() {
     const filterList = [];
@@ -293,14 +336,16 @@ export default function DonBanHangList() {
         </Card>
 
         {/* CREATE BUTTON */}
-        <div className="flex justify-end">
-          <Link to="/sales-orders/create">
-            <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200">
-              <Plus className="h-4 w-4" />
-              Tạo đơn bán
-            </Button>
-          </Link>
-        </div>
+        {!isKhoRole && (
+            <div className="flex justify-end">
+              <Link to="/sales-orders/create">
+                <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200">
+                  <Plus className="h-4 w-4" />
+                  Tạo đơn bán
+                </Button>
+              </Link>
+            </div>
+        )}
 
         {/* TABLE SECTION */}
         <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">

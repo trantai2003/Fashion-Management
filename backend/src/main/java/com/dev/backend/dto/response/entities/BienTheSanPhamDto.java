@@ -35,4 +35,5 @@ public class BienTheSanPhamDto implements Serializable {
     Instant ngayTao;
     Instant ngayCapNhat;
     AnhBienTheDto anhBienThe;
+    String tenSanPham;
 }

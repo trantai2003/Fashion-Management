@@ -75,9 +75,6 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
     @Transactional
     public ResponseEntity<ResponseData<DonMuaHangDto>> create(DonMuaHangCreating creating) {
 
-        NhaCungCap nhaCungCap = nhaCungCapService.getOne(creating.getNhaCungCapId()).orElseThrow(
-                () -> new CommonException("Không tìm thấy nhà cung cấp id: " + creating.getNhaCungCapId())
-        );
 
         Kho khoNhap = khoService.getOne(SecurityContextHolder.getKhoId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy kho id: " + SecurityContextHolder.getKhoId())
@@ -91,12 +88,10 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         );
 
         DonMuaHang donMuaHang = DonMuaHang.builder()
-                .soDonMua(creating.getSoDonMua())
-                .nhaCungCap(nhaCungCap)
                 .khoNhap(khoNhap)
                 .ngayDatHang(creating.getNgayDatHang())
                 .ngayGiaoDuKien(creating.getNgayGiaoDuKien())
-                .trangThai(nguoiTao.getVaiTro().equals(IRoleType.quan_tri_vien) ? creating.getTrangThai() : 1)
+                .trangThai(1)
                 .tongTien(BigDecimal.ZERO)
                 .ghiChu(creating.getGhiChu())
                 .nguoiTao(nguoiTao)
@@ -106,7 +101,6 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         donMuaHang = create(donMuaHang);
 
         BigDecimal tongTien = BigDecimal.ZERO;
-        int stt = creating.getChiTietDonMuaHangs().size();
         BigDecimal tongSoLuong = BigDecimal.ZERO;
 
         List<ChiTietDonMuaHang> chiTietDonMuaHangs = new ArrayList<>();
@@ -130,48 +124,11 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         }
         donMuaHang.setTongTien(tongTien);
         donMuaHang.setChiTietDonMuaHangs(chiTietDonMuaHangs);
-        donMuaHang.setTrangThai(creating.getTrangThai());
         update(donMuaHang.getId(), donMuaHang);
         donMuaHang = getOne(donMuaHang.getId()).orElseThrow(
-                () -> new CommonException("Không tìm thấy đơn mua hàng : " + creating.getSoDonMua())
+                () -> new CommonException("Không tìm thấy đơn mua hàng : " + creating.getNgayDatHang())
         );
 
-        if (donMuaHang.getTrangThai() == 3) {
-            Date now = new Date();
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("ngay", now.getDate());
-            params.put("thang", now.getMonth() + 1);
-            params.put("nam", now.getYear() + 1900);
-            params.put("soDonMua", donMuaHang.getSoDonMua());
-
-            String trangThaiText = "";
-            if (donMuaHang.getTrangThai() == 3) {
-                trangThaiText = " Quản lý đã duyệt và gửi mail";
-            }
-            params.put("trangThaiText", trangThaiText);
-            params.put("tenKho", donMuaHang.getKhoNhap().getTenKho());
-            params.put("diaChiKho", donMuaHang.getKhoNhap().getDiaChi());
-            params.put("tenNhaCungCap", donMuaHang.getNhaCungCap().getTenNhaCungCap());
-            params.put("maNhaCungCap", donMuaHang.getNhaCungCap().getMaNhaCungCap());
-            params.put("nguoiLienHe", donMuaHang.getNhaCungCap().getNguoiLienHe());
-            params.put("soDienThoai", donMuaHang.getNhaCungCap().getSoDienThoai());
-            params.put("email", donMuaHang.getNhaCungCap().getEmail());
-            params.put("tongSoMatHang", stt);
-            params.put("tongSoLuong", tongSoLuong);
-            params.put("tongTien", donMuaHang.getTongTien());
-            params.put("ghiChu", donMuaHang.getGhiChu());
-            params.put("ngayDatHang", donMuaHang.getNgayDatHang());
-            params.put("ngayGiaoDuKien", donMuaHang.getNgayGiaoDuKien());
-            params.put("hanPheDuyet", donMuaHang.getNgayGiaoDuKien());
-
-            emailService.sendHtmlEmailFromTemplate(
-                    donMuaHang.getNhaCungCap().getEmail(),
-                    "Phiếu xác nhận nhập hàng",
-                    "don_mua.html",
-                    params
-            );
-
-        }
         for (ChiTietDonMuaHang chiTietDonMuaHang : donMuaHang.getChiTietDonMuaHangs()) {
             for (ApplicationRequestObj appReq : GlobalCache.APPLICATION_REQUEST_OBJS) {
                 appReq.getBienTheSanPhamIds().removeIf(
@@ -309,7 +266,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             throw new CommonException("Nhà cung cấp chưa xác nhận gửi hàng");
         }
 
-        if (donMuaHang.getTrangThai() == 6) {
+        if (donMuaHang.getTrangThai() == 7) {
             throw new CommonException("Đơn hàng đã được thành toán");
         }
         return ResponseEntity.ok(
@@ -351,7 +308,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             for (TransactionCasso tran : cassoResponse.getData().getRecords()) {
                 if (tran.getDescription().contains(tranCode) && Math.abs(Math.abs(tran.getAmount()) - Double.parseDouble(donMuaHang.getTongTien().toString())) < 0.1) {
                     isSuccess = true;
-                    changeStatus(donMuaHang.getId(), 5);
+                    changeStatus(donMuaHang.getId(), 7);
                     break;
                 }
             }
@@ -369,17 +326,62 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         );
     }
 
-//    @AllArgsConstructor
-//    @NoArgsConstructor
-//    @Getter
-//    @Setter
-//    @Builder
-//    @FieldDefaults(level = AccessLevel.PRIVATE)
-//    private static class ChiTietDonMuaHangMail {
-//        Integer stt;
-//        String tenBienThe;
-//        BigDecimal soLuong;
-//        BigDecimal donGia;
-//        String ghiChu;
-//    }
+    @Transactional
+    public ResponseEntity<ResponseData<String>> guiYeuCauBaoGia(YeuCauBaoGiaCreating yeuCau) {
+        DonMuaHang donMuaHang = getOne(yeuCau.getId()).orElseThrow(
+                () -> new CommonException("Không tìm thấy báo giá id: " + yeuCau.getId())
+        );
+        NhaCungCap nhaCungCap = nhaCungCapService.getOne(yeuCau.getNhaCungCapId()).orElseThrow(
+                () -> new CommonException("Không tìm thấy nhà cung cấp id: " + yeuCau.getNhaCungCapId())
+        );
+        donMuaHang.setTrangThai(3);
+        donMuaHang.setNhaCungCap(nhaCungCap);
+        donMuaHang.setSoDonMua(yeuCau.getSoDonMua());
+
+        Date now = new Date();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("ngay", now.getDate());
+        params.put("thang", now.getMonth() + 1);
+        params.put("nam", now.getYear() + 1900);
+        params.put("soDonMua", donMuaHang.getSoDonMua());
+
+        String trangThaiText = " Quản lý đã duyệt và gửi mail";
+        BigDecimal tongSoLuong = BigDecimal.ZERO;
+        // tính tổng số lượng
+        for (ChiTietDonMuaHang chiTietDonMuaHang : donMuaHang.getChiTietDonMuaHangs()) {
+            tongSoLuong = tongSoLuong.add(chiTietDonMuaHang.getSoLuongDat());
+        }
+        params.put("trangThaiText", trangThaiText);
+        params.put("tenKho", donMuaHang.getKhoNhap().getTenKho());
+        params.put("diaChiKho", donMuaHang.getKhoNhap().getDiaChi());
+        params.put("tenNhaCungCap", nhaCungCap.getTenNhaCungCap());
+        params.put("maNhaCungCap", nhaCungCap.getMaNhaCungCap());
+        params.put("nguoiLienHe", nhaCungCap.getNguoiLienHe());
+        params.put("soDienThoai", nhaCungCap.getSoDienThoai());
+        params.put("email", nhaCungCap.getEmail());
+        params.put("tongSoMatHang", donMuaHang.getChiTietDonMuaHangs().size());
+        params.put("tongSoLuong", tongSoLuong);
+        params.put("tongTien", donMuaHang.getTongTien());
+        params.put("ghiChu", donMuaHang.getGhiChu());
+        params.put("ngayDatHang", donMuaHang.getNgayDatHang());
+        params.put("ngayGiaoDuKien", donMuaHang.getNgayGiaoDuKien());
+        params.put("hanPheDuyet", donMuaHang.getNgayGiaoDuKien());
+
+        emailService.sendHtmlEmailFromTemplate(
+                nhaCungCap.getEmail(),
+                "Phiếu xác nhận nhập hàng",
+                "don_mua.html",
+                params
+        );
+        update(donMuaHang.getId(), donMuaHang);
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .data("Success")
+                        .message("Success")
+                        .error(null)
+                        .build()
+        );
+    }
+
 }

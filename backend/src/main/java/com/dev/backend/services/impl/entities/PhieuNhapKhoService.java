@@ -72,8 +72,8 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
 
         DonMuaHang donMuaHang = donMuaHangRepository.findById(request.getDonMuaHangId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy PO"));
-        if (donMuaHang.getTrangThai() == null || donMuaHang.getTrangThai() != 4) {
-            throw new RuntimeException("Chỉ được tạo phiếu nhập cho đơn mua hàng ở trạng thái 4");
+        if (donMuaHang.getTrangThai() == null || (donMuaHang.getTrangThai() != 6 && donMuaHang.getTrangThai() != 7)) {
+            throw new RuntimeException("Chỉ được tạo phiếu nhập cho đơn mua hàng ở trạng thái chờ thanh toán hoặc đã thanh toán");
         }
         var currentUser = SecurityContextHolder.getUser();
         boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);

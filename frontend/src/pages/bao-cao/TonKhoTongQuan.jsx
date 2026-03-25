@@ -495,8 +495,11 @@ export default function TonKhoTongQuan() {
                                 const onHand = Number(item.onHand ?? item.tongSoLuongKhaDung ?? 0);
                                 const incoming = Number(item.incoming ?? item.tongSoLuongChoNhan ?? 0);
                                 const outgoing = Number(item.outgoing ?? item.tongSoLuongChoDuaHang ?? 0);
-                                // freeToUse = onHand + incoming - outgoing
-                                const freeToUse = onHand + incoming - outgoing;
+                                // Ưu tiên lấy freeToUse từ Backend (đã xử lý logic tránh trừ đúp)
+                                const freeToUse = item.freeToUse != null
+                                    ? Number(item.freeToUse)
+                                    : (onHand + incoming - outgoing);
+
                                 const giaTri = Number(item.tongGiaTri ?? item.giaTriTonKho ?? 0);
 
                                 return (
@@ -629,18 +632,6 @@ export default function TonKhoTongQuan() {
                                         {/* Thao tác */}
                                         <TableCell>
                                             <div className="flex items-center gap-1.5 justify-center">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-7 gap-1 text-xs border-slate-200 hover:bg-slate-50"
-                                                    onClick={() => {
-                                                        navigate(`/lich-su-giao-dich?bienTheId=${item.bienTheId}&khoId=${item.khoId}`);
-                                                    }}
-                                                >
-                                                    <History className="h-3 w-3" />
-                                                    Lịch sử
-                                                </Button>
-
                                                 {showNhapKho && (
                                                     <Button
                                                         size="sm"

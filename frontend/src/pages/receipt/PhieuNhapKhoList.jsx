@@ -320,8 +320,8 @@ export default function PhieuNhapKhoList() {
                         </td>
                         <td className="px-4 py-3.5 align-middle text-slate-600">
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-medium">{item.donMuaHang?.soDonMua || "—"}</span>
-                            <span className="text-xs text-slate-500">{item.nhaCungCap?.tenNhaCungCap || "—"}</span>
+                            <span className="font-medium">{item.soDonMua || "—"}</span>
+                            <span className="text-xs text-slate-500">{item.tenNhaCungCap || "—"}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3.5 align-middle">

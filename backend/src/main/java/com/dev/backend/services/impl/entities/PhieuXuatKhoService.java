@@ -237,10 +237,6 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                     isXuatChuyenKho ? "Xuất chuyển kho: " + phieu.getSoPhieuXuat() : "Xuất kho cho phiếu: " + phieu.getSoPhieuXuat(),
                     nguoiXuat, soLuongTruoc, tonKho.getSoLuongTon());
 
-            if ("ban_hang".equals(phieu.getLoaiXuat()) && phieu.getDonBanHang() != null) {
-                updateSoLuongDaGiao(phieu.getDonBanHang().getId(), pick.getBienTheSanPham().getId(), soLuongXuat);
-                updateTrangThaiDonBanHang(phieu.getDonBanHang().getId());
-            }
             sanPhamIdsCanCapNhat.add(pick.getBienTheSanPham().getSanPham().getId());
         }
 
@@ -258,6 +254,12 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
         }
 
         entityManager.flush();
+
+        // update trạng thái đơn hàng đã flush phiếu xuất
+        if ("ban_hang".equals(phieu.getLoaiXuat()) && phieu.getDonBanHang() != null) {
+            updateTrangThaiDonBanHang(phieu.getDonBanHang().getId());
+        }
+
         for (Integer spId : sanPhamIdsCanCapNhat) {
             sanPhamQuanAoService.recalculatePriceAndStatus(spId);
         }
@@ -265,17 +267,19 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
 
     private void updateTrangThaiDonBanHang(Integer donBanHangId) {
         DonBanHang don = entityManager.find(DonBanHang.class, donBanHangId);
-        List<ChiTietDonBanHang> list =
-                chiTietDonBanHangRepository.findByDonBanHangId(donBanHangId);
+        List<ChiTietDonBanHang> list = chiTietDonBanHangRepository.findByDonBanHangId(donBanHangId);
+
         boolean allZero = true;
         boolean allFull = true;
         for (ChiTietDonBanHang ct : list) {
-            BigDecimal daGiao =
-                    ct.getSoLuongDaGiao() != null ? ct.getSoLuongDaGiao() : BigDecimal.ZERO;
-            if (daGiao.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal daXuatKho = chiTietPhieuXuatKhoRepository.sumSoLuongDaXuatThucTe(donBanHangId, ct.getBienTheSanPham().getId());
+
+            if (daXuatKho == null) daXuatKho = BigDecimal.ZERO;
+
+            if (daXuatKho.compareTo(BigDecimal.ZERO) > 0) {
                 allZero = false;
             }
-            if (daGiao.compareTo(ct.getSoLuongDat()) < 0) {
+            if (daXuatKho.compareTo(ct.getSoLuongDat()) < 0) {
                 allFull = false;
             }
         }
@@ -287,20 +291,6 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
             don.setTrangThai(1); // Chưa có hàng nào xuất -> Chờ xuất kho
         }
         entityManager.merge(don);
-    }
-
-
-    private void updateSoLuongDaGiao(Integer donHangId, Integer bienTheId, BigDecimal qtyShipped) {
-        List<ChiTietDonBanHang> listCtSO = chiTietDonBanHangRepository.findByDonBanHangId(donHangId);
-        ChiTietDonBanHang ctSO = listCtSO.stream()
-                .filter(ct -> ct.getBienTheSanPham().getId().equals(bienTheId))
-                .findFirst()
-                .orElse(null);
-        if (ctSO != null) {
-            BigDecimal hienTai = ctSO.getSoLuongDaGiao() != null ? ctSO.getSoLuongDaGiao() : BigDecimal.ZERO;
-            ctSO.setSoLuongDaGiao(hienTai.add(qtyShipped));
-            chiTietDonBanHangRepository.save(ctSO);
-        }
     }
 
     @Transactional

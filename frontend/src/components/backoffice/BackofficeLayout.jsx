@@ -130,16 +130,16 @@ export default function BackofficeLayout() {
             subtitle: "Xem chi tiết phiếu xuất kho",
         },
         {
-            key: "PURCHASE_ORDERS",
-            match: (path) => path === "/purchase-orders",
-            title: "Quản lý đơn mua hàng",
-            subtitle: "Theo dõi và quản lý các đơn đặt hàng từ nhà cung cấp",
+            key: "PURCHASE_REQUESTS",
+            match: (path) => path === "/purchase-requests",
+            title: "Yêu cầu nhập hàng",
+            subtitle: "Quản lý các yêu cầu nhập hàng từ nhà cung cấp",
         },
         {
-            key: "PURCHASE_ORDER_REQUESTS",
-            match: (path) => path === "/duyet-don-hang",
-            title: "Quản lý đơn mua hàng",
-            subtitle: "Xem xét và duyệt yêu cầu tạo đơn mua hàng",
+            key: "PURCHASE_ORDERS",
+            match: (path) => path === "/purchase-orders",
+            title: "Đơn mua hàng",
+            subtitle: "Quản lý các đơn hàng nhập đã được xác nhận",
         },
         {
             key: "TRANSFER_TICKETS",
@@ -250,12 +250,6 @@ export default function BackofficeLayout() {
             subtitle: "Xem và quản lý các lần kiểm kê tồn kho",
         },
         {
-            key: "PURCHASE_ORDER_CREATE",
-            match: (path) => path === "/purchase-orders/create",
-            title: "Tạo đơn mua hàng",
-            subtitle: "Tạo đơn đặt hàng mới và gửi yêu cầu báo giá đến nhà cung cấp",
-        },
-        {
             key: "CUSTOMERS",
             match: (path) => path === "/customers",
             title: "Quản lý khách hàng",
@@ -305,6 +299,32 @@ export default function BackofficeLayout() {
             key: "USER_DETAIL",
             match: (path) => /^\/users\/\d+$/.test(path),
             title: "Thông tin chi tiết người dùng",
+        },
+        {
+            key: "PURCHASE_REQUEST_QUOTATION",
+            match: (path) => /^\/purchase-requests\/\d+\/gui-bao-gia$/.test(path),
+            title: "Tạo yêu cầu báo giá",
+            subtitle: "Gửi yêu cầu báo giá đến nhà cung cấp dựa trên phiếu yêu cầu",
+        },
+        {
+            key: "QUOTATION_REQUEST",
+            match: (path) => path === "/quotation-requests",
+            title: "Danh sách yêu cầu báo giá",
+        },
+        {
+            key: "QUOTATION_REQUEST_CREATE",
+            match: (path) => path === "/quotation-requests/create",
+            title: "Tạo yêu cầu báo giá",
+        },
+        {
+            key: "PURCHASE_REQUEST_CREATE",
+            match: (path) => path === "/purchase-requests/create",
+            title: "Tạo yêu cầu nhập hàng",
+        },
+        {
+            key: "PURCHASE_ORDER_CREATE",
+            match: (path) => path === "/purchase-orders/create",
+            title: "Tạo đơn mua hàng",
         }
     ];
 

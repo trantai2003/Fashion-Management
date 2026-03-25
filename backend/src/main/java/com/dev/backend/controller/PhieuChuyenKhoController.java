@@ -158,7 +158,7 @@ public class PhieuChuyenKhoController {
     }
     @PutMapping("/{id}/cancel")
     @RequireAuth(
-            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho, IRoleType.nhan_vien_kho},
+            roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
             inWarehouse = true
     )
     public ResponseEntity<ResponseData<String>> cancelTransfer(@PathVariable Integer id) {

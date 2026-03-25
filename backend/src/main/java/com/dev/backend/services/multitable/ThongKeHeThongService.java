@@ -15,4 +15,5 @@ public interface ThongKeHeThongService {
     ResponseEntity<ResponseData<List<TonKhoChiTietDTO>>> findTonKhoChiTietByBienTheAndKho(Integer bienTheId, Integer khoId);
 
     ResponseEntity<ResponseData<List<TonKhoProjection>>> tonKhoTongHop(Integer khoId, String keyword);
+    List<TonKhoProjection> getTonKhoTongHop(Integer khoId, String keyword);
 }

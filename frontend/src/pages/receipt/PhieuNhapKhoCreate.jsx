@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import purchaseOrderService from "@/services/purchaseOrderService";
@@ -134,7 +134,7 @@ const STYLES = `
   height: 44px; padding: 0 16px; background: #faf8f3;
   font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700;
   color: rgba(184,134,11,0.6); text-transform: uppercase; letter-spacing: 0.1em;
-  text-align: left; border-bottom: 2px solid rgba(184,134,11,0.12);
+  border-bottom: 2px solid rgba(184,134,11,0.12);
 }
 .wh-td { padding: 14px 16px; border-bottom: 1px solid rgba(184,134,11,0.08); font-size: 14px; }
 
@@ -176,6 +176,7 @@ const STYLES = `
 
 export default function PhieuNhapKhoCreate() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams(); // Đọc params từ URL
 
     // --- States cho Loại Nhập ---
     const [importSource, setImportSource] = useState("PO"); // "PO" hoặc "TRANSFER"
@@ -215,7 +216,7 @@ export default function PhieuNhapKhoCreate() {
             const [poRes, transferRes3, transferRes4, allReceiptsRes, allIssuesRes] = await Promise.all([
                 purchaseOrderService.filter({
                     page: 0, size: 1000,
-                    filters: [{ fieldName: "trangThai", operator: "EQUALS", value: 4 }],
+                    filters: [{ fieldName: "trangThai", operator: "IN", value: [6, 7] }],
                     sorts: [{ fieldName: "id", direction: "DESC" }]
                 }).catch(() => ({ content: [] })),
 
@@ -239,10 +240,16 @@ export default function PhieuNhapKhoCreate() {
 
             const rawPoList = poRes.data?.content || poRes.content || [];
             const validPoList = rawPoList.filter(po => {
-                if (po.trangThai !== 4) return false;
+                if (po.trangThai !== 6 && po.trangThai !== 7) return false;
+                const targetKhoId = po.khoNhap?.id || po.khoNhapId;
+                if (!targetKhoId) return false;
+
+                const isMyWarehouse = myWarehouseIds.map(Number).includes(Number(targetKhoId));
+                if (!isMyWarehouse) return false;
                 if (po.chiTietDonMuaHangs && Array.isArray(po.chiTietDonMuaHangs)) {
                     return po.chiTietDonMuaHangs.some(ct => (ct.soLuongDaNhan || 0) < (ct.soLuongDat || 0));
                 }
+
                 return true;
             });
             setPoList(validPoList);
@@ -307,6 +314,30 @@ export default function PhieuNhapKhoCreate() {
             if (warehouseList.length === 1) {
                 setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
             }
+
+            //kiem tra poId hoặc transferId tu url de auto select neu hop le
+            const urlPoId = searchParams.get("poId");
+            const urlTransferId = searchParams.get("transferId");
+
+            if (urlPoId) {
+                // Tìm trong danh sách hợp lệ xem có PO này không
+                const poInList = validPoList.find(p => String(p.id) === String(urlPoId));
+                if (poInList) {
+                    // Gọi hàm handleSelectPO để load chi tiết và set selectedPO
+                    await handleSelectPO(urlPoId);
+                } else {
+                    toast.warning("PO này không đủ điều kiện để nhập kho hoặc bạn không có quyền");
+                }
+            } else if (urlTransferId) {
+                setImportSource("TRANSFER");
+                const isTransferValid = availableTransfers.some(t => String(t.id) === String(urlTransferId));
+                if (isTransferValid) {
+                    await handleSelectTransfer(urlTransferId);
+                } else {
+                    toast.warning("Yêu cầu chuyển kho này không đủ điều kiện nhập kho hoặc bạn không có quyền");
+                }
+            }
+
         } catch (error) {
             toast.error("Không thể tải dữ liệu khởi tạo");
         } finally {
@@ -320,10 +351,14 @@ export default function PhieuNhapKhoCreate() {
         try {
             const res = await purchaseOrderService.getById(id);
             const data = res.data;
-            data.chiTietDonMuaHangs = data.chiTietDonMuaHangs.map(item => ({
-                ...item,
-                soLuongNhapTay: (item.soLuongDat || 0) - (item.soLuongDaNhan || 0)
-            }));
+            data.chiTietDonMuaHangs = data.chiTietDonMuaHangs.map(item => {
+                const maxQuantity = (item.soLuongDat || 0) - (item.soLuongDaNhan || 0);
+                return {
+                    ...item,
+                    maxSoLuong: maxQuantity,
+                    soLuongNhapTay: maxQuantity
+                };
+            });
             setSelectedPO(data);
             setForm(prev => ({
                 ...prev,
@@ -334,6 +369,28 @@ export default function PhieuNhapKhoCreate() {
         } catch (error) {
             toast.error("Không thể tải chi tiết đơn mua hàng");
         } finally { setActionLoading(false); }
+    };
+
+    const handleQuantityChange = (chiTietId, newValue) => {
+        setSelectedPO(prev => {
+            if (!prev) return prev;
+
+            const updatedItems = prev.chiTietDonMuaHangs.map(ct => {
+                if (ct.id === chiTietId) {
+                    let finalValue = newValue;
+                    if (newValue !== "") {
+                        finalValue = parseInt(newValue, 10);
+                        if (isNaN(finalValue) || finalValue < 0) finalValue = 0;
+                        if (finalValue > ct.maxSoLuong) finalValue = ct.maxSoLuong;
+                    }
+
+                    return { ...ct, soLuongNhapTay: finalValue };
+                }
+                return ct;
+            });
+
+            return { ...prev, chiTietDonMuaHangs: updatedItems };
+        });
     };
 
     const handleSelectTransfer = async (id) => {
@@ -361,7 +418,7 @@ export default function PhieuNhapKhoCreate() {
             if (!selectedPO) return toast.error("Vui lòng chọn đơn mua hàng (PO)"), null;
             const chiTiet = selectedPO.chiTietDonMuaHangs.map(ct => ({
                 bienTheSanPhamId: ct.bienTheSanPham.id,
-                soLuongDuKienNhap: ct.soLuongNhapTay
+                soLuongDuKienNhap: Number(ct.soLuongNhapTay) || 0
             })).filter(ct => ct.soLuongDuKienNhap > 0);
 
             try {
@@ -506,7 +563,7 @@ export default function PhieuNhapKhoCreate() {
                                         <table className="wh-tbl">
                                             <thead className="wh-thead">
                                                 <tr>
-                                                    <th className="wh-th">Sản phẩm</th>
+                                                    <th className="wh-th text-left">Sản phẩm</th>
                                                     <th className="wh-th text-center">Số lượng</th>
                                                     <th className="wh-th text-right">Trạng thái</th>
                                                 </tr>
@@ -515,13 +572,28 @@ export default function PhieuNhapKhoCreate() {
                                                 {importSource === "PO" ? selectedPO.chiTietDonMuaHangs.map(ct => (
                                                     <tr key={ct.id}>
                                                         <td className="wh-td">
-                                                            <div className="font-bold text-[#1a1612]">{ct.bienTheSanPham?.sanPham}</div>
+                                                            <div className="font-bold text-[#1a1612]">
+                                                                {ct.bienTheSanPham?.tenSanPham || 'Tên sản phẩm'}
+                                                            </div>
                                                             <div className="font-mono text-[11px] text-[#b8860b] mt-0.5">{ct.bienTheSanPham?.maSku}</div>
                                                         </td>
                                                         <td className="wh-td text-center">
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <span className="text-[11px] opacity-40">ORDERED: {ct.soLuongDat}</span>
-                                                                <span className="font-black text-[#b8860b] text-base">{ct.soLuongNhapTay}</span>
+                                                            <div className="flex flex-col items-center justify-center gap-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        max={ct.maxSoLuong}
+                                                                        className="w-20 px-2 py-1.5 text-center font-black text-[#b8860b] text-base bg-white border border-[rgba(184,134,11,0.3)] rounded-lg outline-none focus:border-[#b8860b] focus:ring-2 focus:ring-[rgba(184,134,11,0.2)] transition-all"
+                                                                        value={ct.soLuongNhapTay}
+                                                                        onChange={(e) => handleQuantityChange(ct.id, e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                {ct.soLuongDaNhan > 0 && (
+                                                                    <span className="text-[10px] text-slate-400 font-medium">
+                                                                        Đã nhận: {ct.soLuongDaNhan}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </td>
                                                         <td className="wh-td text-right">
@@ -535,7 +607,7 @@ export default function PhieuNhapKhoCreate() {
                                                             <div className="font-mono text-[11px] text-[#b8860b] mt-0.5">{item.sku}</div>
                                                         </td>
                                                         <td className="wh-td text-center">
-                                                            <span className="font-black text-[#6366f1] text-base">{item.soLuongCanXuat || item.soLuongDaPick}</span>
+                                                            <span className="font-black text-[#6366f1] text-base">{item.soLuongYeuCau}</span>
                                                         </td>
                                                         <td className="wh-td text-right">
                                                             <span className="badge-tag indigo">In Transit</span>

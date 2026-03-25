@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
+import apiClient from "@/services/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +17,27 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+//Constants & Helpers
+const ROLE = {
+    QUAN_TRI_VIEN: "quan_tri_vien",
+    QUAN_LY_KHO: "quan_ly_kho",
+    NHAN_VIEN_KHO: "nhan_vien_kho",
+    NHAN_VIEN_MUA_HANG: "nhan_vien_mua_hang",
+    NHAN_VIEN_BAN_HANG: "nhan_vien_ban_hang",
+};
+
+function parseJwt(token) {
+    try {
+        const b64 = token.split(".")[1];
+        return JSON.parse(atob(b64.replace(/-/g, "+").replace(/_/g, "/")));
+    } catch { return null; }
+}
+
+function parseRoles(vaiTro) {
+    if (!vaiTro) return [];
+    return vaiTro.includes(" ") ? vaiTro.split(" ") : [vaiTro];
+}
 
 const STATUS_MAP = {
     0: { label: "Nháp", className: "border-amber-200 bg-amber-50 text-amber-700", dot: "bg-amber-500" },
@@ -36,6 +58,7 @@ export default function PhieuChuyenKhoList() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [total, setTotal] = useState(0);
+    const [userRoles, setUserRoles] = useState([]);
 
     const [filters, setFilters] = useState({
         keyword: "",
@@ -44,6 +67,30 @@ export default function PhieuChuyenKhoList() {
         page: 0,
         size: 10,
     });
+
+    // Kiểm tra quyền (chỉ nhân viên kho)
+    const isNhanVienKho = userRoles.includes(ROLE.NHAN_VIEN_KHO);
+
+    // Fetch roles
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const token = localStorage.getItem('access_token');
+                if (!token) return;
+                const payload = parseJwt(token);
+                if (!payload || !payload.id) return;
+
+                const userResponse = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${payload.id}`);
+                const userData = userResponse.data?.data;
+                if (userData && userData.vaiTro) {
+                    setUserRoles(parseRoles(userData.vaiTro));
+                }
+            } catch (error) {
+                console.error('Lỗi khi lấy thông tin user:', error);
+            }
+        };
+        fetchUserInfo();
+    }, []);
 
     function buildFilterPayload() {
         const filterList = [];
@@ -161,11 +208,13 @@ export default function PhieuChuyenKhoList() {
                 </Card>
 
                 {/* ══ ACTION BUTTONS ══════════════════════════════════════════════ */}
-                <div className="flex items-center justify-end gap-3">
-                    <Link to="/transfer-tickets/create">
-                        <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"><Plus className="w-4 h-4 mr-2" />Tạo Phiếu Chuyển Kho</Button>
-                    </Link>
-                </div>
+                {!isNhanVienKho && (
+                    <div className="flex items-center justify-end gap-3">
+                        <Link to="/transfer-tickets/create">
+                            <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"><Plus className="w-4 h-4 mr-2" />Tạo Phiếu Chuyển Kho</Button>
+                        </Link>
+                    </div>
+                )}
 
                 {/* ══ TABLE / LOADING / EMPTY ═════════════════════════════════════ */}
                 {loading ? (

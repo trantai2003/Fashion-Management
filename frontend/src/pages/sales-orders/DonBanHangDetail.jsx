@@ -1,13 +1,36 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { donBanHangService } from "@/services/donBanHangService";
+import apiClient from "@/services/apiClient";
 import { toast } from "sonner";
 import {
   ArrowLeft, Loader2, FileText, User, Home, Truck, Calculator,
   Clock, CheckCircle2, Package, Calendar, Send, XCircle,
-  Receipt, Hash, MapPin,
+  Receipt, Hash, MapPin, ArrowRightLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+// ── Constants & Helpers ──────────────────────────────────────────────────
+const ROLE = {
+    QUAN_TRI_VIEN: "quan_tri_vien",
+    QUAN_LY_KHO: "quan_ly_kho",
+    NHAN_VIEN_KHO: "nhan_vien_kho",
+    NHAN_VIEN_MUA_HANG: "nhan_vien_mua_hang",
+    NHAN_VIEN_BAN_HANG: "nhan_vien_ban_hang",
+};
+
+function parseJwt(token) {
+    try {
+        const b64 = token.split(".")[1];
+        return JSON.parse(atob(b64.replace(/-/g, "+").replace(/_/g, "/")));
+    } catch { return null; }
+}
+
+function parseRoles(vaiTro) {
+    if (!vaiTro) return [];
+    return vaiTro.includes(" ") ? vaiTro.split(" ") : [vaiTro];
+}
 
 // ── Trạng thái ────────────────────────────────────────────────────────────
 const STATUS_MAP = {
@@ -24,11 +47,35 @@ export default function DonBanHangDetail() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [userRoles, setUserRoles] = useState([]);
+
+  // Fetch roles
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+            const payload = parseJwt(token);
+            if (!payload || !payload.id) return;
+
+            const userResponse = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${payload.id}`);
+            const userData = userResponse.data?.data;
+            if (userData && userData.vaiTro) {
+                setUserRoles(parseRoles(userData.vaiTro));
+            }
+        } catch (error) {
+            console.error('Lỗi khi lấy thông tin user:', error);
+        }
+    };
+    fetchUserInfo();
+  }, []);
+
+  const isKhoRole = userRoles.includes(ROLE.QUAN_LY_KHO) || userRoles.includes(ROLE.NHAN_VIEN_KHO);
 
   async function handleMarkAsDelivered() {
     try {
       setLoading(true);
-      await donBanHangService.markAsDelivered(id); // Nhớ khai báo API này trong donBanHangService
+      await donBanHangService.markAsDelivered(id);
       toast.success("Đã xác nhận giao hàng thành công!");
       fetchDetail();
     }
@@ -73,6 +120,9 @@ export default function DonBanHangDetail() {
   const { donBanHang, chiTiet, phieuXuatKhoList } = data;
   const st = STATUS_MAP[donBanHang.trangThai] ?? STATUS_MAP[0];
 
+  // Kiểm tra xem đơn hàng đã xuất đủ số lượng chưa
+  const isFullyExported = chiTiet.every(item => item.soLuongDaGiao >= item.soLuongDat);
+
   return (
     <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
       <div className="space-y-6 w-full">
@@ -91,44 +141,71 @@ export default function DonBanHangDetail() {
           <div className="flex items-center gap-2">
             <span className={st.badge}><span className={st.dot} />{st.label}</span>
 
-            {donBanHang.trangThai === 0 && (
-              <Button
-                onClick={handleSendToWarehouse}
-                disabled={loading}
-                className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 font-bold"
-              >
-                <Send className="mr-2 h-4 w-4" /> Gửi sang kho
-              </Button>
+            {/* Các role thường mới thấy các nút này */}
+            {!isKhoRole && (
+              <>
+                {donBanHang.trangThai === 0 && (
+                  <Button
+                    onClick={handleSendToWarehouse}
+                    disabled={loading}
+                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 font-bold"
+                  >
+                    <Send className="mr-2 h-4 w-4" /> Gửi sang kho
+                  </Button>
+                )}
+
+                {donBanHang.trangThai < 3 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={loading}
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium transition-all duration-200"
+                  >
+                    <XCircle className="mr-2 h-4 w-4" /> Hủy đơn
+                  </Button>
+                )}
+
+                {donBanHang.trangThai === 3 && (
+                  <Button
+                    onClick={handleMarkAsDelivered}
+                    disabled={loading}
+                    className="bg-emerald-600 text-white border border-emerald-600 hover:bg-emerald-700 shadow-sm transition-all duration-200 font-bold"
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" /> Xác nhận đã giao
+                  </Button>
+                )}
+
+                {donBanHang.trangThai >= 0 && (
+                  <Button
+                    onClick={() => navigate(`/sales-orders/${id}/invoice`)}
+                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 font-bold"
+                  >
+                    <Receipt className="mr-2 h-4 w-4" /> Xem hóa đơn
+                  </Button>
+                )}
+              </>
             )}
 
-            {donBanHang.trangThai < 3 && (
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                disabled={loading}
-                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium transition-all duration-200"
-              >
-                <XCircle className="mr-2 h-4 w-4" /> Hủy đơn
-              </Button>
-            )}
-
-            {donBanHang.trangThai === 3 && (
-              <Button
-                onClick={handleMarkAsDelivered}
-                disabled={loading}
-                className="bg-emerald-600 text-white border border-emerald-600 hover:bg-emerald-700 shadow-sm transition-all duration-200 font-bold"
-              >
-                <CheckCircle2 className="mr-2 h-4 w-4" /> Xác nhận đã giao
-              </Button>
-            )}
-
-            {donBanHang.trangThai >= 0 && (
-              <Button
-                onClick={() => navigate(`/sales-orders/${id}/invoice`)}
-                className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200 font-bold"
-              >
-                <Receipt className="mr-2 h-4 w-4" /> Xem hóa đơn
-              </Button>
+            {/* Nút Tạo Phiếu Xuất Kho cho role KHO */}
+            {isKhoRole && (donBanHang.trangThai === 1 || donBanHang.trangThai === 2) && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        onClick={() => navigate(`/goods-issues/create?soId=${id}`)}
+                        disabled={isFullyExported || loading}
+                        className="bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 shadow-sm transition-all duration-200 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ArrowRightLeft className="mr-2 h-4 w-4" /> Tạo phiếu xuất kho
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isFullyExported ? "Đơn hàng đã được xuất kho toàn bộ" : "Tạo phiếu xuất kho cho đơn hàng này"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
         </div>
@@ -157,7 +234,7 @@ export default function DonBanHangDetail() {
 
                 {/* Info rows */}
                 {[
-                  { icon: User,     color: "bg-blue-50 text-blue-600",   label: "Khách hàng",         value: donBanHang.khachHang?.tenKhachHang },
+                  { icon: User,     color: "bg-blue-50 text-blue-600",   label: "Khách hàng",        value: donBanHang.khachHang?.tenKhachHang },
                   { icon: Home,     color: "bg-orange-50 text-orange-600", label: "Kho xuất",          value: donBanHang.khoXuat?.tenKho || "Chưa xác định" },
                   { icon: Calendar, color: "bg-indigo-50 text-indigo-600", label: "Ngày đặt",          value: new Date(donBanHang.ngayDatHang).toLocaleDateString("vi-VN", { day: "2-digit", month: "long", year: "numeric" }) },
                   { icon: MapPin,   color: "bg-red-50 text-red-600",     label: "Địa chỉ nhận hàng", value: donBanHang.diaChiGiaoHang || "—" },

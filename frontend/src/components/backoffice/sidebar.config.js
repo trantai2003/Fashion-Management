@@ -71,14 +71,19 @@ export const SIDEBAR_MENU = [
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
       },
       {
-        label: "Đơn mua hàng",
-        to: "/purchase-orders",
-        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
+        label: "Yêu cầu nhập hàng",
+        to: "/purchase-requests",
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho", "nhan_vien_mua_hang"],
       },
       {
-        label: "Duyệt yêu cầu nhập hàng",
-        to: "/duyet-don-hang",
-        roles: ["quan_tri_vien", "quan_ly_kho"],
+        label: "Yêu cầu báo giá",
+        to: "/quotation-requests",
+        roles: ["quan_tri_vien", "nhan_vien_mua_hang"],
+      },
+      {
+        label: "Đơn mua hàng",
+        to: "/purchase-orders",
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang", "nhan_vien_kho"],
       },
       {
         label: "Phiếu nhập kho",
@@ -103,7 +108,7 @@ export const SIDEBAR_MENU = [
       {
         label: "Chuyển kho nội bộ",
         to: "/transfer-tickets",
-        roles: ["quan_tri_vien", "quan_ly_kho"]
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],
       },
       { label: "Kiểm kê", to: "/stock-take" },
     ],
@@ -115,7 +120,7 @@ export const SIDEBAR_MENU = [
     icon: ShoppingCart,
     roles: [
       "quan_tri_vien",
-      "nhan_vien_ban_hang",
+      "nhan_vien_ban_hang", "nhan_vien_kho", "quan_ly_kho"
     ],
     children: [
       {
@@ -124,9 +129,14 @@ export const SIDEBAR_MENU = [
         roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
       },
       {
+        label: "Báo giá",
+        to: "/sales-quotations",
+        roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
+      },
+      {
         label: "Đơn bán hàng",
         to: "/sales-orders",
-        roles: ["quan_tri_vien", "nhan_vien_ban_hang"],
+        roles: ["quan_tri_vien", "nhan_vien_ban_hang", "nhan_vien_kho", "quan_ly_kho"], 
       },
     ],
   },
@@ -160,11 +170,6 @@ export const SIDEBAR_MENU = [
         roles: ["quan_tri_vien", "quan_ly_kho"],
       },
       {
-        label: "Báo cáo doanh thu",
-        to: "/bao-cao/doanh-thu",
-        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_ban_hang"],
-      },
-      {
         label: "Cảnh báo sắp hết hàng",
         to: "/warnings/low-stock",
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
@@ -172,7 +177,7 @@ export const SIDEBAR_MENU = [
       {
         label: "Lịch sử giao dịch kho",
         to: "/lich-su-giao-dich-kho",
-        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_ban_hang"],
+        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],
       },
     ],
   },

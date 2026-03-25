@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -60,10 +62,15 @@ public class ThongKeHeThongServiceImpl implements ThongKeHeThongService {
         return ResponseEntity.ok(
                 ResponseData.<List<TonKhoProjection>>builder()
                         .status(HttpStatus.OK.value())
-                        .data(tonKhoTongHopRepository.findTonKhoTongHop(khoId, keyword))
+                        .data(getTonKhoTongHop(khoId, keyword))
                         .message("Success")
                         .error(null)
                         .build()
         );
+    }
+
+    @Override
+    public List<TonKhoProjection> getTonKhoTongHop(Integer khoId, String keyword) {
+        return tonKhoTongHopRepository.findTonKhoTongHop(khoId, keyword);
     }
 }

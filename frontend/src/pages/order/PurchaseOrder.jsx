@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import apiClient from "@/services/apiClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
     ChevronLeft,
     ChevronRight,
     ChevronDown,
@@ -44,8 +51,6 @@ import {
     RefreshCw,
     Building2,
     Warehouse,
-    Edit,
-    Trash2,
     CheckCircle,
     XCircle,
     Clock,
@@ -56,8 +61,48 @@ import {
     AlertCircle,
     Send,
     CreditCard,
+    Trash2,
 } from "lucide-react";
 import purchaseOrderService from "../../services/purchaseOrderService";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const ROLE = {
+    QUAN_TRI_VIEN: "quan_tri_vien",
+    QUAN_LY_KHO: "quan_ly_kho",
+    NHAN_VIEN_KHO: "nhan_vien_kho",
+    NHAN_VIEN_MUA_HANG: "nhan_vien_mua_hang",
+    NHAN_VIEN_BAN_HANG: "nhan_vien_ban_hang",
+};
+
+/** Các vai trò được phép duyệt đơn hàng */
+const APPROVE_ROLES = [
+    ROLE.QUAN_TRI_VIEN,
+    ROLE.QUAN_LY_KHO,
+];
+
+/** Vai trò được phép gửi mail yêu cầu báo giá */
+const QUOTATION_REQUEST_ROLES = [
+    ROLE.NHAN_VIEN_MUA_HANG,
+];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Parse JWT payload (không verify) */
+function parseJwt(token) {
+    try {
+        const b64 = token.split(".")[1];
+        return JSON.parse(atob(b64.replace(/-/g, "+").replace(/_/g, "/")));
+    } catch { return null; }
+}
+
+/**
+ * Trích danh sách vai trò từ trường vaiTro của NguoiDungDto.
+ * vaiTro có thể là string đơn ("quan_tri_vien") hoặc scope space-separated.
+ */
+function parseRoles(vaiTro) {
+    if (!vaiTro) return [];
+    return vaiTro.includes(" ") ? vaiTro.split(" ") : [vaiTro];
+}
 
 export default function PurchaseOrderList() {
     const navigate = useNavigate();
@@ -68,11 +113,20 @@ export default function PurchaseOrderList() {
     const [suppliers, setSuppliers] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showApproveDialog, setShowApproveDialog] = useState(false);
+    const [showQuotationDialog, setShowQuotationDialog] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+
+    // User authorization state
+    const [userId, setUserId] = useState(null);
+    const [userRoles, setUserRoles] = useState([]); // string[]
+    const [loadingAuth, setLoadingAuth] = useState(true);
+    const [authError, setAuthError] = useState(null);
+
+    // Kiểm tra nhanh xem user có thuộc nhóm KHO không (để ẩn nút)
+    const isKhoRole = userRoles.includes(ROLE.QUAN_LY_KHO) || userRoles.includes(ROLE.NHAN_VIEN_KHO);
 
     // Pagination state
     const [pagination, setPagination] = useState({
@@ -96,49 +150,19 @@ export default function PurchaseOrderList() {
         to: '',
     });
 
-    // Trạng thái đơn hàng configuration
+    // Trạng thái đơn hàng configuration (trạng thái >= 6)
     const statusConfig = {
-        0: {
-            label: 'Chờ duyệt',
-            color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            icon: AlertCircle,
-            description: 'Đơn hàng đang chờ quản lý phê duyệt'
-        },
-        1: {
-            label: 'Đã duyệt',
-            color: 'bg-blue-100 text-blue-800 border-blue-200',
-            icon: CheckCircle,
-            description: 'Đơn hàng đã được duyệt nội bộ'
-        },
-        2: {
-            label: 'Đang xử lý',
-            color: 'bg-purple-100 text-purple-800 border-purple-200',
-            icon: Package,
-            description: 'Đơn hàng đang được xử lý'
-        },
-        3: {
-            label: 'Chờ báo giá',
-            color: 'bg-orange-100 text-orange-800 border-orange-200',
-            icon: Clock,
-            description: 'Đã gửi yêu cầu đến nhà cung cấp, chờ báo giá'
-        },
-        4: {
-            label: 'Đã nhận báo giá',
+        6: {
+            label: 'Chờ thanh toán',
             color: 'bg-green-100 text-green-800 border-green-200',
-            icon: FileText,
-            description: 'Nhà cung cấp đã gửi báo giá chi tiết'
+            icon: CheckCircle,
+            description: 'Đã chấp nhận báo giá từ nhà cung cấp'
         },
-        5: {
+        7: {
             label: 'Đã thanh toán',
             color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
             icon: CreditCard,
-            description: 'Đơn hàng đã hoàn thành thanh toán'
-        },
-        6: {
-            label: 'Đã hủy',
-            color: 'bg-red-100 text-red-800 border-red-200',
-            icon: XCircle,
-            description: 'Đơn hàng đã bị hủy'
+            description: 'Đã hoàn thành thanh toán cho đơn hàng'
         }
     };
 
@@ -210,7 +234,15 @@ export default function PurchaseOrderList() {
                 });
             }
 
-            // Filter theo trạng thái
+            // Filter theo trạng thái - chỉ lấy trạng thái >= 6 (đơn hàng thực sự)
+            filterArray.push({
+                fieldName: "trangThai",
+                operation: "GREATER_THAN_OR_EQUAL",
+                value: 6,
+                logicType: "AND"
+            });
+
+            // Filter theo trạng thái cụ thể nếu có
             if (filters.trangThai !== '' && filters.trangThai !== 'all') {
                 filterArray.push({
                     fieldName: "trangThai",
@@ -251,11 +283,7 @@ export default function PurchaseOrderList() {
                 size: size
             };
 
-            console.log('📤 Filter request:', requestBody);
-
             const response = await purchaseOrderService.filter(requestBody);
-
-            console.log('📥 Response:', response);
 
             if (response && response.data) {
                 setPurchaseOrders(response.data.content || []);
@@ -277,14 +305,8 @@ export default function PurchaseOrderList() {
     // Fetch suppliers for filter - Từ purchase orders
     const fetchSuppliers = async () => {
         try {
-            console.log('📤 Fetching unique suppliers from purchase orders...');
             const suppliers = await purchaseOrderService.getUniqueSuppliers();
-            console.log('✅ Suppliers loaded:', suppliers.length, 'items');
             setSuppliers(suppliers);
-
-            if (suppliers.length === 0) {
-                console.warn('⚠️ No suppliers found in orders');
-            }
         } catch (error) {
             console.error('❌ Error fetching suppliers:', error);
             showNotification('error', 'Không thể tải danh sách nhà cung cấp');
@@ -294,19 +316,57 @@ export default function PurchaseOrderList() {
     // Fetch warehouses for filter - Từ purchase orders
     const fetchWarehouses = async () => {
         try {
-            console.log('📤 Fetching unique warehouses from purchase orders...');
             const warehouses = await purchaseOrderService.getUniqueWarehouses();
-            console.log('✅ Warehouses loaded:', warehouses.length, 'items');
             setWarehouses(warehouses);
-
-            if (warehouses.length === 0) {
-                console.warn('⚠️ No warehouses found in orders');
-            }
         } catch (error) {
             console.error('❌ Error fetching warehouses:', error);
             showNotification('error', 'Không thể tải danh sách kho');
         }
     };
+
+    // Fetch user info and roles for authorization
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                setLoadingAuth(true);
+                setAuthError(null);
+
+                // Get userId from JWT token
+                const token = localStorage.getItem('access_token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
+                const payload = parseJwt(token);
+                if (!payload || !payload.id) {
+                    throw new Error('Invalid token payload');
+                }
+
+                const userId = payload.id;
+                setUserId(userId);
+
+                // Fetch user details to get roles
+                const userResponse = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${userId}`);
+                const userData = userResponse.data?.data; // Note: API returns { data: userData }
+
+                if (!userData || !userData.vaiTro) {
+                    throw new Error('User data or roles not found');
+                }
+
+                const roles = parseRoles(userData.vaiTro);
+                setUserRoles(roles);
+
+            } catch (error) {
+                console.error('❌ Error fetching user info:', error);
+                setAuthError(error.message);
+                showNotification('error', 'Không thể tải thông tin người dùng');
+            } finally {
+                setLoadingAuth(false);
+            }
+        };
+
+        fetchUserInfo();
+    }, []);
 
     // Initial load
     useEffect(() => {
@@ -317,7 +377,6 @@ export default function PurchaseOrderList() {
 
     // Handle filter change
     const handleFilterChange = (field, value) => {
-        console.log(`🔄 Filter changed - ${field}:`, value);
         setFilters(prev => ({ ...prev, [field]: value }));
     };
 
@@ -328,8 +387,6 @@ export default function PurchaseOrderList() {
 
     // Handle search
     const handleSearch = () => {
-        console.log('🔍 Current filters:', filters);
-        console.log('📅 Date range:', dateRange);
         fetchPurchaseOrders(0, pagination.pageSize);
     };
 
@@ -371,44 +428,6 @@ export default function PurchaseOrderList() {
         navigate(`/purchase-orders/${orderId}/payment`);
     }
 
-    // Handle edit order
-    const handleEditOrder = (order, event) => {
-        event.stopPropagation();
-        if (order.trangThai === 0) {
-            navigate(`/purchase-orders/edit/${order.id}`);
-        } else {
-            showNotification('error', 'Chỉ có thể chỉnh sửa đơn hàng đang chờ duyệt!');
-        }
-    };
-
-    // Handle delete order
-    const handleDeleteOrder = (order, event) => {
-        event.stopPropagation();
-        setSelectedOrder(order);
-        setShowDeleteDialog(true);
-    };
-
-    // Confirm delete
-    const confirmDelete = async () => {
-        if (!selectedOrder) return;
-
-        setActionLoading(true);
-        try {
-            // TODO: Implement delete API
-            // await purchaseOrderService.delete(selectedOrder.id);
-
-            showNotification('success', `Đã xóa đơn hàng ${selectedOrder.soDonMua} thành công!`);
-            setShowDeleteDialog(false);
-            setSelectedOrder(null);
-            fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
-        } catch (error) {
-            console.error('Error deleting order:', error);
-            showNotification('error', 'Không thể xóa đơn hàng. Vui lòng thử lại!');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
     // Handle approve order
     const handleApproveOrder = (order, event) => {
         event.stopPropagation();
@@ -422,8 +441,7 @@ export default function PurchaseOrderList() {
 
         setActionLoading(true);
         try {
-            // TODO: Implement approve API
-            // await purchaseOrderService.approve(selectedOrder.id);
+            await purchaseOrderService.duyetDon(selectedOrder.id, 2);
 
             showNotification('success', `Đã phê duyệt đơn hàng ${selectedOrder.soDonMua} thành công!`);
             setShowApproveDialog(false);
@@ -437,15 +455,53 @@ export default function PurchaseOrderList() {
         }
     };
 
-    // Handle cancel order
-    const handleCancelOrder = async (order, event) => {
-        event.stopPropagation();
+    // Confirm send quotation request
+    const confirmSendQuotation = async () => {
+        if (!selectedOrder) return;
 
         setActionLoading(true);
         try {
-            // TODO: Implement cancel API
-            // await purchaseOrderService.cancel(order.id);
+            // Gửi email yêu cầu báo giá
+            await purchaseOrderService.guiMailYeuCauBaoGia(selectedOrder.id);
 
+            // Cập nhật trạng thái đơn hàng thành "Đã gửi mail" (status 3)
+            await purchaseOrderService.duyetDon(selectedOrder.id, 3);
+
+            showNotification('success', `Đã gửi email yêu cầu báo giá cho đơn hàng ${selectedOrder.soDonMua} thành công!`);
+            setShowQuotationDialog(false);
+            setSelectedOrder(null);
+            fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
+        } catch (error) {
+            console.error('Error sending quotation request:', error);
+            showNotification('error', 'Không thể gửi email yêu cầu báo giá. Vui lòng thử lại!');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Handle send quotation request email
+    const handleSendQuotationRequest = (order, event) => {
+        event.stopPropagation();
+        setSelectedOrder(order);
+        setShowQuotationDialog(true);
+    };
+
+    // Handle cancel order — Không cho phép hủy khi đã gửi mail (3), đã hủy (0) và chưa thỏa mãn (6) không thể thay đổi
+    const handleCancelOrder = async (order, event) => {
+        event.stopPropagation();
+        if (order.trangThai === 0 || order.trangThai === 3 || order.trangThai === 6) {
+            showNotification('error', 'Không thể hủy đơn hàng ở trạng thái này!');
+            return;
+        }
+
+        if (order.trangThai !== 2 && order.trangThai !== 4) {
+            showNotification('error', 'Chỉ có thể hủy đơn hàng đã duyệt hoặc đã nhận báo giá!');
+            return;
+        }
+
+        setActionLoading(true);
+        try {
+            await purchaseOrderService.duyetDon(order.id, 6);
             showNotification('success', `Đã hủy đơn hàng ${order.soDonMua} thành công!`);
             fetchPurchaseOrders(pagination.pageNumber, pagination.pageSize);
         } catch (error) {
@@ -471,10 +527,10 @@ export default function PurchaseOrderList() {
     const stats = {
         total: pagination.totalElements,
         totalValue: purchaseOrders.reduce((sum, order) => sum + (order.tongTien || 0), 0),
-        pending: purchaseOrders.filter(o => o.trangThai === 0).length,
-        approved: purchaseOrders.filter(o => o.trangThai === 1 || o.trangThai === 2 || o.trangThai === 3 || o.trangThai === 4).length,
+        pending: purchaseOrders.filter(o => o.trangThai === 1).length,
+        approved: purchaseOrders.filter(o => o.trangThai === 2 || o.trangThai === 3 || o.trangThai === 4).length,
         completed: purchaseOrders.filter(o => o.trangThai === 5).length,
-        cancelled: purchaseOrders.filter(o => o.trangThai === 6).length,
+        cancelled: purchaseOrders.filter(o => o.trangThai === 0 || o.trangThai === 6).length,
     };
 
     // Get status icon
@@ -503,74 +559,182 @@ export default function PurchaseOrderList() {
 
     // Render action buttons based on order status
     const renderActionButtons = (order) => {
+        // Kiểm tra trạng thái có cho phép thao tác không
+        const canModify = order.trangThai !== 0 && order.trangThai !== 6;
+
+        // Kiểm tra quyền duyệt đơn hàng
+        const canApprove = APPROVE_ROLES.some(role => userRoles.includes(role));
+
+        // Disable tất cả buttons khi đang load auth hoặc có lỗi auth
+        const authDisabled = loadingAuth || authError;
+
         return (
-            <div className="flex items-center justify-center gap-1">
-                {/* Xem chi tiết */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewDetail(order.id);
-                    }}
-                >
-                    <Eye className="h-4 w-4 text-purple-600" />
-                </Button>
+            <TooltipProvider>
+                <div className="flex items-center justify-center gap-1">
+                    {/* Xem chi tiết */}
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={authDisabled}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!authDisabled) handleViewDetail(order.id);
+                                    }}
+                                >
+                                    <Eye className={`h-4 w-4 ${authDisabled ? 'text-gray-300' : 'text-purple-600'}`} />
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{authDisabled ? "Đang tải thông tin người dùng..." : "Xem chi tiết đơn hàng"}</p>
+                        </TooltipContent>
+                    </Tooltip>
 
-                {/* Thanh toán */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={order.trangThai === 5}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewPayment(order.id);
-                    }}
-                    title={order.trangThai === 5 ? "Đơn hàng đã thanh toán" : "Thanh toán đơn hàng"}
-                >
-                    <CreditCard className={`h-4 w-4 ${order.trangThai === 5 ? 'text-gray-400' : 'text-blue-600'}`} />
-                </Button>
+                    {/* Thanh toán - Ẩn hoàn toàn nếu là quản lý kho / nhân viên kho */}
+                    {!isKhoRole && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        disabled={order.trangThai !== 6 || authDisabled}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (order.trangThai === 6 && !authDisabled) handleViewPayment(order.id);
+                                        }}
+                                    >
+                                        <CreditCard className={`h-4 w-4 ${
+                                            authDisabled || order.trangThai !== 6
+                                                ? 'text-gray-300'
+                                                : 'text-green-600'
+                                        }`} />
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                    {authDisabled
+                                        ? "Đang tải thông tin người dùng..."
+                                        : order.trangThai === 6
+                                            ? "Thanh toán đơn hàng"
+                                            : order.trangThai === 7
+                                                ? "Đơn hàng đã thanh toán"
+                                                : "Chỉ có thể thanh toán khi đã chấp nhận báo giá"
+                                    }
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    )}
 
-                {/* Trạng thái = Chờ duyệt */}
-                {order.trangThai === 0 && (
+                {/* Trạng thái = Chờ duyệt (status 1) */}
+                {order.trangThai === 1 && (
                     <>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => handleEditOrder(order, e)}
-                        >
-                            <Edit className="h-4 w-4 text-orange-500" />
-                        </Button>
-
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => handleApproveOrder(order, e)}
-                        >
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                        </Button>
-
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => handleDeleteOrder(order, e)}
-                        >
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        disabled={!canModify || !canApprove || authDisabled}
+                                        onClick={(e) => canModify && canApprove && !authDisabled && handleApproveOrder(order, e)}
+                                    >
+                                        <CheckCircle className={`h-4 w-4 ${
+                                            authDisabled || !canModify || !canApprove
+                                                ? 'text-gray-300'
+                                                : 'text-green-600'
+                                        }`} />
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                    {authDisabled
+                                        ? "Đang tải thông tin người dùng..."
+                                        : !canModify
+                                            ? "Không thể thao tác"
+                                            : !canApprove
+                                                ? "Bạn không có quyền duyệt đơn hàng"
+                                                : "Duyệt đơn hàng"
+                                    }
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
                     </>
                 )}
 
-                {/* Trạng thái đang xử lý */}
-                {(order.trangThai === 1 || order.trangThai === 2) && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => handleCancelOrder(order, e)}
-                    >
-                        <XCircle className="h-4 w-4 text-red-600" />
-                    </Button>
+                {/* Trạng thái = Đã duyệt (status 2) - Gửi mail yêu cầu báo giá */}
+                {order.trangThai === 2 && (
+                    <>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        disabled={authDisabled || !QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role))}
+                                        onClick={(e) => !authDisabled && QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role)) && handleSendQuotationRequest(order, e)}
+                                    >
+                                        <Send className={`h-4 w-4 ${
+                                            authDisabled || !QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role))
+                                                ? 'text-gray-300'
+                                                : 'text-blue-600'
+                                        }`} />
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                    {authDisabled
+                                        ? "Đang tải thông tin người dùng..."
+                                        : !QUOTATION_REQUEST_ROLES.some(role => userRoles.includes(role))
+                                            ? "Chỉ nhân viên mua hàng mới có thể gửi mail yêu cầu báo giá"
+                                            : "Gửi email yêu cầu báo giá đến nhà cung cấp"
+                                    }
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </>
                 )}
+
+                {/* Nút hủy đơn: Cho phép ở trạng thái 2, 4; không cho phép ở 0, 3, 6 */}
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={!canModify || (order.trangThai !== 2 && order.trangThai !== 4) || authDisabled}
+                                onClick={(e) => canModify && !authDisabled && handleCancelOrder(order, e)}
+                            >
+                                <XCircle className={`h-4 w-4 ${
+                                    authDisabled || !canModify
+                                        ? 'text-gray-300'
+                                        : order.trangThai === 2 || order.trangThai === 4
+                                            ? 'text-red-600'
+                                            : 'text-gray-300'
+                                }`} />
+                            </Button>
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>
+                            {authDisabled
+                                ? "Đang tải thông tin người dùng..."
+                                : !canModify
+                                    ? "Không thể thao tác"
+                                    : order.trangThai === 2 || order.trangThai === 4
+                                        ? "Hủy đơn hàng"
+                                        : (order.trangThai === 0 || order.trangThai === 6 ? "Đơn hàng đã hủy" : "Không thể hủy đơn hàng ở trạng thái này")
+                            }
+                        </p>
+                    </TooltipContent>
+                </Tooltip>
             </div>
+        </TooltipProvider>
         );
     };
 
@@ -591,6 +755,18 @@ export default function PurchaseOrderList() {
                 </Alert>
             )}
 
+
+            {/* Header */}
+            <div className="flex justify-end items-center">
+                <Button
+                    onClick={() => navigate('/purchase-requests')}
+                    variant="outline"
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                >
+                    <Package className="mr-2 h-4 w-4" />
+                    Xem yêu cầu nhập hàng
+                </Button>
+            </div>
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -907,13 +1083,16 @@ export default function PurchaseOrderList() {
                     <RefreshCw className="h-4 w-4" />
                     Làm mới
                 </Button>
-                <Button
-                    className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
-                    onClick={() => navigate('/purchase-orders/create')}
-                >
-                    <Plus className="h-4 w-4" />
-                    Tạo đơn mua
-                </Button>
+                {/* Nút Tạo đơn mua - Ẩn hoàn toàn nếu là quản lý kho / nhân viên kho */}
+                {!isKhoRole && (
+                    <Button
+                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm gap-2 transition-all duration-200"
+                        onClick={() => navigate('/purchase-orders/create')}
+                    >
+                        <Plus className="h-4 w-4" />
+                        Tạo đơn mua
+                    </Button>
+                )}
             </div>
 
             {/* Table Section */}
@@ -1184,44 +1363,6 @@ export default function PurchaseOrderList() {
                 </CardContent>
             </Card>
 
-            {/* Delete Confirmation Dialog */}
-            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-2 text-red-600">
-                            <AlertCircle className="h-5 w-5" />
-                            Xác nhận xóa đơn hàng
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-gray-600">
-                            Bạn có chắc chắn muốn xóa đơn hàng{' '}
-                            <span className="font-semibold text-gray-900">{selectedOrder?.soDonMua}</span>?
-                            <br />
-                            Hành động này không thể hoàn tác.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={actionLoading}>Hủy</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={confirmDelete}
-                            disabled={actionLoading}
-                            className="bg-red-600 hover:bg-red-700"
-                        >
-                            {actionLoading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Đang xóa...
-                                </>
-                            ) : (
-                                <>
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Xóa
-                                </>
-                            )}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
             {/* Approve Confirmation Dialog */}
             <AlertDialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
                 <AlertDialogContent>
@@ -1269,7 +1410,58 @@ export default function PurchaseOrderList() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* CSS Animation */}
+            {/* Quotation Request Confirmation Dialog */}
+            <AlertDialog open={showQuotationDialog} onOpenChange={setShowQuotationDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-blue-600">
+                            <Send className="h-5 w-5" />
+                            Xác nhận gửi email yêu cầu báo giá
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-600">
+                            Bạn có chắc chắn muốn gửi email yêu cầu báo giá cho đơn hàng{' '}
+                            <span className="font-semibold text-gray-900">{selectedOrder?.soDonMua}</span>?
+                            <br />
+                            <br />
+                            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
+                                <p className="text-sm text-blue-900">
+                                    <strong>Nhà cung cấp:</strong> {selectedOrder?.nhaCungCap?.tenNhaCungCap}
+                                    <br />
+                                    <strong>Email nhà cung cấp:</strong> {selectedOrder?.nhaCungCap?.email || 'Chưa có email'}
+                                    <br />
+                                    <strong>Kho nhập:</strong> {selectedOrder?.khoNhap?.tenKho}
+                                    <br />
+                                    <strong>Tổng tiền:</strong> {formatCurrency(selectedOrder?.tongTien || 0)}
+                                </p>
+                            </div>
+                            <br />
+                            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
+                                <strong>Lưu ý:</strong> Sau khi gửi email, trạng thái đơn hàng sẽ chuyển thành "Đã gửi mail".
+                            </p>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={actionLoading}>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmSendQuotation}
+                            disabled={actionLoading}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            {actionLoading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Đang gửi email...
+                                </>
+                            ) : (
+                                <>
+                                    <Send className="h-4 w-4 mr-2" />
+                                    Gửi email
+                                </>
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <style jsx>{`
                 @keyframes fadeIn {
                     from {

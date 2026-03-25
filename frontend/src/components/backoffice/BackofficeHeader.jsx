@@ -71,6 +71,11 @@ export default function BackofficeHeader({
     "INVENTORY_REPORT",
     "SALES_INVOICE_PRINT",
     "USER_DETAIL",
+    "PURCHASE_REQUEST_QUOTATION",
+    "QUOTATION_REQUEST",
+    "PURCHASE_REQUEST_CREATE",
+    "PURCHASE_ORDER_CREATE",
+    "QUOTATION_REQUEST_CREATE",
   ]);
 
   const isLuxuryDetailHeader = routeKey ? luxuryDetailHeaderKeys.has(routeKey) : false;
@@ -87,8 +92,8 @@ export default function BackofficeHeader({
     "WAREHOUSE",
     "GOODS_RECEIPTS",
     "GOODS_ISSUES",
+    "PURCHASE_REQUESTS",
     "PURCHASE_ORDERS",
-    "PURCHASE_ORDER_REQUESTS",
     "TRANSFER_TICKETS",
     "STOCK_TAKE_LIST",
     "DANH_MUC_QUAN_AO",
