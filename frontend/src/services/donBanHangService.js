@@ -30,5 +30,14 @@ export const donBanHangService = {
   async markAsDelivered(id) {
     const res = await apiClient.put(`/api/v1/don-ban-hang/${id}/mark-delivered`);
     return res.data;
+  },
+  async convertToOrder(id, payload) {
+    const res = await apiClient.put(`/api/v1/don-ban-hang/${id}/convert-to-order`, payload);
+    return res.data;
+  },
+  
+  async rejectQuote(id, payload) {
+    const res = await apiClient.put(`/api/v1/don-ban-hang/${id}/reject-quote`, payload);
+    return res.data;
   }
 };
