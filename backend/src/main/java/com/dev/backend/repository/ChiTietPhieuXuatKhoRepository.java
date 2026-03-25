@@ -67,4 +67,13 @@ public interface ChiTietPhieuXuatKhoRepository extends JpaRepository<ChiTietPhie
     LIMIT :top
     """)
     List<Integer> findTopSanPham(@Param("top") Integer top);
+
+    @Query("SELECT SUM(ct.soLuongXuat) FROM ChiTietPhieuXuatKho ct " +
+            "JOIN ct.phieuXuatKho p " +
+            "WHERE p.donBanHang.id = :donBanHangId " +
+            "AND ct.bienTheSanPham.id = :bienTheSanPhamId " +
+            "AND p.trangThai = 3 " +
+            "AND ct.loHang IS NOT NULL")
+    BigDecimal sumSoLuongDaXuatThucTe(@Param("donBanHangId") Integer donBanHangId,
+                                      @Param("bienTheSanPhamId") Integer bienTheSanPhamId);
 }

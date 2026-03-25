@@ -495,8 +495,11 @@ export default function TonKhoTongQuan() {
                                 const onHand = Number(item.onHand ?? item.tongSoLuongKhaDung ?? 0);
                                 const incoming = Number(item.incoming ?? item.tongSoLuongChoNhan ?? 0);
                                 const outgoing = Number(item.outgoing ?? item.tongSoLuongChoDuaHang ?? 0);
-                                // freeToUse = onHand + incoming - outgoing
-                                const freeToUse = onHand + incoming - outgoing;
+                                // Ưu tiên lấy freeToUse từ Backend (đã xử lý logic tránh trừ đúp)
+                                const freeToUse = item.freeToUse != null
+                                    ? Number(item.freeToUse)
+                                    : (onHand + incoming - outgoing);
+
                                 const giaTri = Number(item.tongGiaTri ?? item.giaTriTonKho ?? 0);
 
                                 return (

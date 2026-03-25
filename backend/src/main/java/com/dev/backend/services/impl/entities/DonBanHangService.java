@@ -350,6 +350,13 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
         if (don.getTrangThai() != 3) {
             throw new RuntimeException("Đơn hàng chưa được xuất kho đầy đủ, không thể đánh dấu hoàn thành");
         }
+        // Cập nhật số lượng đã giao cho các chi tiết đơn hàng
+        List<ChiTietDonBanHang> chiTietList = chiTietDonBanHangRepository.findByDonBanHangId(don.getId());
+        for (ChiTietDonBanHang ct : chiTietList) {
+            ct.setSoLuongDaGiao(ct.getSoLuongDat());
+            chiTietDonBanHangRepository.save(ct);
+        }
+
         don.setTrangThai(5); // 5 = Hoàn thành / Đã giao thành công
         repository.save(don);
     }

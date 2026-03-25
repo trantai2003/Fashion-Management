@@ -514,7 +514,7 @@ export default function PhieuXuatKhoDetail() {
                             <div className="modal-body">
                                 {isChuyenKho
                                     ? `Hàng hóa trong phiếu ${phieu.soPhieuXuat} sẽ được trừ tồn tại kho hiện tại và đưa vào kho Trung Chuyển để bắt đầu vận chuyển.`
-                                    : `Phiếu xuất kho ${phieu.soPhieuXuat} sẽ được hoàn thành và trừ tồn kho thực tế của các lô đã chọn.`}
+                                    : `Phiếu xuất kho ${phieu.soPhieuXuat} sẽ được hoàn thành và không thể chỉnh sửa.`}
                             </div>
                             <div className="modal-foot">
                                 <button className="btn-white" onClick={() => setShowConfirm(false)}>Hủy</button>
