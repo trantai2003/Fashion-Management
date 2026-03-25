@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { donBanHangService } from "@/services/donBanHangService";
 import apiClient from "@/services/apiClient";
@@ -6,7 +7,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Loader2, FileText, User, Home, Truck, Calculator,
   Clock, CheckCircle2, Package, Calendar, Send, XCircle,
-  Receipt, Hash, MapPin, ArrowRightLeft
+  Receipt, Hash, MapPin, ArrowRightLeft, Undo2, AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,7 +40,8 @@ const STATUS_MAP = {
   2: { label: "Đã xuất kho 1 phần", badge: "inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700", dot: "h-1.5 w-1.5 rounded-full bg-indigo-500" },
   3: { label: "Đã xuất kho", badge: "inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700", dot: "h-1.5 w-1.5 rounded-full bg-orange-500" },
   4: { label: "Đã hủy", badge: "inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700", dot: "h-1.5 w-1.5 rounded-full bg-red-500" },
-  5: { label: "Hoàn thành", badge: "inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700", dot: "h-1.5 w-1.5 rounded-full bg-emerald-500" }
+  5: { label: "Hoàn thành", badge: "inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700", dot: "h-1.5 w-1.5 rounded-full bg-emerald-500" },
+  6: { label: "Bị hoàn trả", badge: "inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700", dot: "h-1.5 w-1.5 rounded-full bg-rose-500" }
 };
 
 export default function DonBanHangDetail() {
@@ -48,6 +50,9 @@ export default function DonBanHangDetail() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [userRoles, setUserRoles] = useState([]);
+  
+  // State quản lý hiển thị Modal hoàn trả
+  const [showReturnModal, setShowReturnModal] = useState(false);
 
   // Fetch roles
   useEffect(() => {
@@ -71,6 +76,7 @@ export default function DonBanHangDetail() {
   }, []);
 
   const isKhoRole = userRoles.includes(ROLE.QUAN_LY_KHO) || userRoles.includes(ROLE.NHAN_VIEN_KHO);
+  const isAdminOrSaleRole = userRoles.includes(ROLE.QUAN_TRI_VIEN) || userRoles.includes(ROLE.NHAN_VIEN_BAN_HANG);
 
   async function handleMarkAsDelivered() {
     try {
@@ -104,6 +110,26 @@ export default function DonBanHangDetail() {
     finally { setLoading(false); }
   }
 
+  // Mở modal hoàn trả
+  const handleOpenReturnModal = () => {
+    setShowReturnModal(true);
+  };
+
+  // Xác nhận hoàn trả gọi API
+  async function confirmReturnGoods() {
+    try {
+      setLoading(true);
+      setShowReturnModal(false); // Đóng modal ngay khi bấm xác nhận
+      await donBanHangService.returnOrder(id);
+      toast.success("Đã cập nhật trạng thái đơn hàng thành Bị hoàn trả!");
+      fetchDetail();
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error?.response?.data?.errors?.[0] || "Không thể hoàn trả đơn hàng");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   if (loading && !data) {
     return (
       <div className="lux-sync warehouse-unified p-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen flex items-center justify-center">
@@ -124,7 +150,7 @@ export default function DonBanHangDetail() {
   const isFullyExported = chiTiet.every(item => item.soLuongDaGiao >= item.soLuongDat);
 
   return (
-    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
+    <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen relative">
       <div className="space-y-6 w-full">
 
         {/* ── Header ── */}
@@ -162,6 +188,16 @@ export default function DonBanHangDetail() {
                     className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-medium transition-all duration-200"
                   >
                     <XCircle className="mr-2 h-4 w-4" /> Hủy đơn
+                  </Button>
+                )}
+                {isAdminOrSaleRole && (donBanHang.trangThai === 2 || donBanHang.trangThai === 3) && (
+                  <Button
+                    variant="outline"
+                    onClick={handleOpenReturnModal}
+                    disabled={loading}
+                    className="border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300 font-medium transition-all duration-200"
+                  >
+                    <Undo2 className="mr-2 h-4 w-4" /> Hoàn trả hàng
                   </Button>
                 )}
 
@@ -380,6 +416,44 @@ export default function DonBanHangDetail() {
           </div>
         </div>
       </div>
+
+      {/* ── Modal Xác Nhận Hoàn Trả ── */}
+      {showReturnModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 transition-all duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-2">
+                <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 text-orange-600">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-1.5">Xác nhận hoàn trả</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Bạn có chắc chắn muốn hoàn trả đơn hàng này? Thao tác này sẽ chuyển trạng thái đơn sang <strong className="text-rose-600 font-semibold">Bị hoàn trả</strong> và hệ thống sẽ chờ kho nhập lại hàng hóa.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowReturnModal(false)}
+                className="font-semibold text-slate-600 hover:bg-slate-200 hover:text-slate-900 border-slate-200"
+              >
+                Hủy bỏ
+              </Button>
+              <Button
+                onClick={confirmReturnGoods}
+                className="bg-orange-600 hover:bg-orange-700 text-white font-bold border-transparent shadow-sm"
+              >
+                Xác nhận hoàn trả
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

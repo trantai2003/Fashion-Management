@@ -39,5 +39,9 @@ export const donBanHangService = {
   async rejectQuote(id, payload) {
     const res = await apiClient.put(`/api/v1/don-ban-hang/${id}/reject-quote`, payload);
     return res.data;
+  },
+  async returnOrder(id) {
+    const res = await apiClient.put(`/api/v1/don-ban-hang/${id}/return`);
+    return res.data;
   }
 };
