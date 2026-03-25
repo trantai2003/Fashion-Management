@@ -54,7 +54,7 @@ import {
 } from "lucide-react";
 
 import purchaseOrderDetailService from '@/services/purchaseOrderDetailService';
-import purchaseOrderService from '@/services/purchaseOrderService';
+import purchaseOrderService, { purchaseRequestService } from '@/services/purchaseOrderService';
 import apiClient from '@/services/apiClient';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -132,47 +132,51 @@ export default function PurchaseOrderDetail() {
     const [authError, setAuthError] = useState(null);
 
     const statusConfig = {
+        // ── YeuCauMuaHang (khi xem từ /purchase-requests/:id) ──
         0: {
-            label: 'Đã hủy',
+            label: 'Đã từ chối',
             bannerBg: 'bg-rose-50', bannerBorder: 'border-rose-200',
             iconBg: 'bg-rose-100', iconColor: 'text-rose-600', textColor: 'text-rose-800',
-            icon: XCircle, description: 'Đơn hàng đã bị hủy'
+            icon: XCircle, description: 'Yêu cầu nhập hàng đã bị từ chối'
         },
         1: {
             label: 'Chờ duyệt',
             bannerBg: 'bg-amber-50', bannerBorder: 'border-amber-200',
             iconBg: 'bg-amber-100', iconColor: 'text-amber-600', textColor: 'text-amber-800',
-            icon: AlertCircle, description: 'Đơn hàng đang chờ quản lý phê duyệt'
+            icon: AlertCircle, description: 'Yêu cầu đang chờ quản lý kho phê duyệt'
         },
         2: {
             label: 'Đã duyệt',
             bannerBg: 'bg-blue-50', bannerBorder: 'border-blue-200',
             iconBg: 'bg-blue-100', iconColor: 'text-blue-600', textColor: 'text-blue-800',
-            icon: CheckCircle, description: 'Đơn hàng đã được duyệt nội bộ'
+            icon: CheckCircle, description: 'Yêu cầu đã được duyệt — nhân viên mua hàng có thể tạo đơn mua'
         },
+        // ── DonMuaHang (khi xem từ /purchase-orders/:id) ──
+        // 0 đã dùng cho YeuCauMuaHang; DonMuaHang hủy cũng = 0 nhưng sẽ phân biệt qua context
+        // Các trạng thái DonMuaHang > 2:
         3: {
-            label: 'Đã gửi mail',
+            label: 'Đã gửi yêu cầu báo giá',
             bannerBg: 'bg-purple-50', bannerBorder: 'border-purple-200',
             iconBg: 'bg-purple-100', iconColor: 'text-purple-600', textColor: 'text-purple-800',
-            icon: Send, description: 'Đã gửi email yêu cầu đến nhà cung cấp'
+            icon: Send, description: 'Đã gửi yêu cầu báo giá đến nhà cung cấp, đang chờ phản hồi'
         },
         4: {
             label: 'Đã nhận báo giá',
             bannerBg: 'bg-emerald-50', bannerBorder: 'border-emerald-200',
             iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600', textColor: 'text-emerald-800',
-            icon: FileText, description: 'Nhà cung cấp đã xác nhận và gửi báo giá'
+            icon: FileText, description: 'Nhà cung cấp đã gửi báo giá — chờ xác nhận chấp nhận hay từ chối'
         },
         5: {
-            label: 'Không chấp nhận báo giá',
-            bannerBg: 'bg-orange-50', bannerBorder: 'border-orange-200',
-            iconBg: 'bg-orange-100', iconColor: 'text-orange-600', textColor: 'text-orange-800',
-            icon: CreditCard, description: 'Không chấp nhận báo giá từ nhà cung cấp'
-        },
-        6: {
-            label: 'Đang vận chuyển',
+            label: 'Chờ vận chuyển',
             bannerBg: 'bg-teal-50', bannerBorder: 'border-teal-200',
             iconBg: 'bg-teal-100', iconColor: 'text-teal-600', textColor: 'text-teal-800',
-            icon: AlertCircle, description: 'Đã chấp nhận báo giá từ nhà cung cấp'
+            icon: CheckCircle, description: 'Đã chấp nhận báo giá, hàng đang trên đường vận chuyển'
+        },
+        6: {
+            label: 'Từ chối báo giá',
+            bannerBg: 'bg-orange-50', bannerBorder: 'border-orange-200',
+            iconBg: 'bg-orange-100', iconColor: 'text-orange-600', textColor: 'text-orange-800',
+            icon: XCircle, description: 'Đã từ chối báo giá của nhà cung cấp'
         },
         7: {
             label: 'Đã thanh toán',
@@ -243,51 +247,58 @@ export default function PurchaseOrderDetail() {
     const confirmApprove = async () => {
         setActionLoading(true);
         try {
-            await purchaseOrderService.duyetDon(id, 2);
-            toast.success(`Đã phê duyệt đơn hàng ${orderData?.soDonMua} thành công!`);
+            // YeuCauMuaHang: dùng purchaseRequestService.duyet → PUT /yeu-cau-mua-hang/duyet-tu-choi/{id}/2
+            await purchaseRequestService.duyet(id);
+            toast.success(`Đã phê duyệt yêu cầu nhập hàng #${id} thành công!`);
             setApproveDialog(false);
             await fetchOrderDetail();
         } catch (error) {
-            console.error('Error approving order:', error);
-            toast.error('Không thể phê duyệt đơn hàng. Vui lòng thử lại!');
+            console.error('Error approving request:', error);
+            toast.error('Không thể phê duyệt yêu cầu. Vui lòng thử lại!');
         } finally {
             setActionLoading(false);
         }
     };
 
     const handleSendQuotationRequest = () => {
-        navigate(`/purchase-requests/${id}/gui-bao-gia`);
+        // Nhân viên mua hàng điều hướng đến trang tạo đơn mua hàng / gửi yêu cầu báo giá
+        // Truyền yeuCauMuaHangId để tạo đơn mua hàng từ yêu cầu đã duyệt
+        navigate(`/purchase-orders/create?yeuCauId=${id}`);
     };
 
     const handleCancelOrder = () => {
-        if (orderData?.trangThai === 0 || orderData?.trangThai === 3 || orderData?.trangThai === 6) {
-            toast.error('Không thể thao tác ở trạng thái này!');
-            return;
-        }
-        if (orderData?.trangThai !== 1 && orderData?.trangThai !== 2) {
-            toast.error('Chỉ có thể từ chối hoặc hủy đơn hàng ở trạng thái hợp lệ!');
-            return;
+        // Xác định đây là YeuCauMuaHang hay DonMuaHang dựa vào trangThai
+        // YeuCauMuaHang: trangThai 0,1,2
+        // DonMuaHang:    trangThai 0-5
+        // Vì detail dùng chung route, ta phân biệt qua context
+        const isYeuCau = [0, 1, 2].includes(orderData?.trangThai) && !orderData?.soDonMua?.startsWith('PO');
+        if (isYeuCau) {
+            if (orderData?.trangThai !== 1) { toast.error('Chỉ có thể từ chối yêu cầu đang ở trạng thái Chờ duyệt!'); return; }
+        } else {
+            if ([0, 3, 5].includes(orderData?.trangThai)) { toast.error('Không thể hủy đơn hàng ở trạng thái này!'); return; }
         }
         setCancelDialog(true);
     };
 
     const confirmCancelOrder = async () => {
-        if (!cancelReason.trim()) {
-            toast.error('Vui lòng nhập lý do');
-            return;
-        }
+        if (!cancelReason.trim()) { toast.error('Vui lòng nhập lý do'); return; }
         setActionLoading(true);
         try {
-            await purchaseOrderService.duyetDon(id, 0);
-
-            const actionText = orderData?.trangThai === 1 ? 'Từ chối' : 'Hủy';
-            toast.success(`Đã ${actionText.toLowerCase()} đơn hàng ${orderData?.soDonMua} thành công!`);
-
+            const isYeuCau = [0, 1, 2].includes(orderData?.trangThai) && !orderData?.soDonMua?.startsWith('PO');
+            if (isYeuCau) {
+                // YeuCauMuaHang: PUT /yeu-cau-mua-hang/duyet-tu-choi/{id}/0
+                await purchaseRequestService.tuChoi(id);
+                toast.success(`Đã từ chối yêu cầu nhập hàng #${id} thành công!`);
+            } else {
+                // DonMuaHang: PUT /don-mua-hang/duyet-don/{id}/0
+                await purchaseOrderService.huyDon(id);
+                toast.success(`Đã hủy đơn mua hàng ${orderData?.soDonMua} thành công!`);
+            }
             setCancelDialog(false);
             setCancelReason('');
             await fetchOrderDetail();
         } catch (error) {
-            console.error('Error canceling/rejecting order:', error);
+            console.error('Error canceling/rejecting:', error);
             toast.error('Không thể thực hiện thao tác. Vui lòng thử lại!');
         } finally {
             setActionLoading(false);
@@ -297,8 +308,9 @@ export default function PurchaseOrderDetail() {
     const handleAcceptQuotation = async () => {
         setActionLoading(true);
         try {
+            // DonMuaHang: chấp nhận báo giá → trangThai = 3
             await purchaseOrderService.chapNhanBaoGia(id);
-            toast.success('Chấp nhận báo giá thành công!');
+            toast.success('Chấp nhận báo giá thành công! Đơn hàng chuyển sang trạng thái Chờ vận chuyển.');
             await fetchOrderDetail();
         } catch (error) {
             console.error('Error accepting quotation:', error);
@@ -311,6 +323,7 @@ export default function PurchaseOrderDetail() {
     const handleRejectQuotation = async () => {
         setActionLoading(true);
         try {
+            // DonMuaHang: từ chối báo giá → trangThai = 4
             await purchaseOrderService.tuChoiBaoGia(id);
             toast.success('Từ chối báo giá thành công!');
             await fetchOrderDetail();
@@ -471,7 +484,7 @@ export default function PurchaseOrderDetail() {
                                 <TooltipProvider>
                                     <div className="flex items-center justify-center gap-2">
 
-                                        {/* Trạng thái = Chờ duyệt (1) */}
+                    {/* Trạng thái = Chờ duyệt (1) — YeuCauMuaHang: Quản lý kho duyệt/từ chối */}
                                         {orderData.trangThai === 1 && (
                                             <>
                                                 <Tooltip>
@@ -479,15 +492,15 @@ export default function PurchaseOrderDetail() {
                                                         <span>
                                                             <Button variant="outline"
                                                                 className="h-11 px-5 rounded-xl border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 font-bold shadow-sm disabled:opacity-50"
-                                                                disabled={!canModify || !canApprove || authDisabled}
-                                                                onClick={() => canModify && canApprove && !authDisabled && handleCancelOrder()}>
+                                                                disabled={!canApprove || authDisabled}
+                                                                onClick={() => canApprove && !authDisabled && handleCancelOrder()}>
                                                                 <XCircle className="mr-2 h-4 w-4" />
                                                                 Từ chối yêu cầu
                                                             </Button>
                                                         </span>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>{authDisabled ? "Đang tải thông tin người dùng..." : !canApprove ? "Bạn không có quyền từ chối yêu cầu" : "Từ chối yêu cầu"}</p>
+                                                        <p>{!canApprove ? "Bạn không có quyền từ chối" : "Từ chối yêu cầu nhập hàng"}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
 
@@ -496,40 +509,23 @@ export default function PurchaseOrderDetail() {
                                                         <span>
                                                             <Button
                                                                 className="h-11 px-6 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-md disabled:opacity-50"
-                                                                disabled={!canModify || !canApprove || authDisabled}
-                                                                onClick={() => canModify && canApprove && !authDisabled && handleApproveOrder()}>
+                                                                disabled={!canApprove || authDisabled}
+                                                                onClick={() => canApprove && !authDisabled && handleApproveOrder()}>
                                                                 <CheckCircle className="mr-2 h-4 w-4" />
-                                                                Phê duyệt
+                                                                Phê duyệt yêu cầu
                                                             </Button>
                                                         </span>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>{authDisabled ? "Đang tải thông tin người dùng..." : !canApprove ? "Bạn không có quyền duyệt đơn hàng" : "Duyệt đơn hàng"}</p>
+                                                        <p>{!canApprove ? "Bạn không có quyền duyệt" : "Duyệt yêu cầu nhập hàng"}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </>
                                         )}
 
-                                        {/* Trạng thái = Đã duyệt (2) */}
+                                        {/* Trạng thái = Đã duyệt (2) — YeuCauMuaHang: Nhân viên mua hàng tạo đơn mua */}
                                         {orderData.trangThai === 2 && (
                                             <>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <span>
-                                                            <Button variant="outline"
-                                                                className="h-11 px-5 rounded-xl border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 font-bold shadow-sm disabled:opacity-50"
-                                                                disabled={!canModify || authDisabled}
-                                                                onClick={() => canModify && !authDisabled && handleCancelOrder()}>
-                                                                <XCircle className="mr-2 h-4 w-4" />
-                                                                Hủy đơn
-                                                            </Button>
-                                                        </span>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>{authDisabled ? "Đang tải..." : "Hủy đơn hàng"}</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
                                                         <span>
@@ -538,18 +534,18 @@ export default function PurchaseOrderDetail() {
                                                                 disabled={authDisabled || !canSendQuotation}
                                                                 onClick={() => !authDisabled && canSendQuotation && handleSendQuotationRequest()}>
                                                                 <Send className="mr-2 h-4 w-4" />
-                                                                Tạo yêu cầu báo giá
+                                                                Tạo đơn mua hàng
                                                             </Button>
                                                         </span>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>{authDisabled ? "Đang tải..." : !canSendQuotation ? "Chỉ nhân viên mua hàng mới có thể gửi" : "Điền thông tin và gửi yêu cầu báo giá"}</p>
+                                                        <p>{!canSendQuotation ? "Chỉ nhân viên mua hàng mới có thể tạo đơn" : "Tạo đơn mua hàng từ yêu cầu này"}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </>
                                         )}
 
-                                        {/* Trạng thái = Đã nhận báo giá (4) */}
+                                        {/* Trạng thái = Đã nhận báo giá (4) — DonMuaHang: Chấp nhận hoặc từ chối */}
                                         {orderData.trangThai === 4 && (
                                             <>
                                                 <Tooltip>
@@ -565,7 +561,7 @@ export default function PurchaseOrderDetail() {
                                                         </span>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>{authDisabled ? "Đang tải..." : !canSendQuotation ? "Không có quyền thao tác" : "Từ chối báo giá của nhà cung cấp"}</p>
+                                                        <p>{!canSendQuotation ? "Không có quyền thao tác" : "Từ chối báo giá của nhà cung cấp"}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                                 <Tooltip>
@@ -581,7 +577,7 @@ export default function PurchaseOrderDetail() {
                                                         </span>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>{authDisabled ? "Đang tải..." : !canSendQuotation ? "Không có quyền thao tác" : "Chấp nhận báo giá của nhà cung cấp"}</p>
+                                                        <p>{!canSendQuotation ? "Không có quyền thao tác" : "Chấp nhận báo giá của nhà cung cấp"}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </>

@@ -77,6 +77,9 @@ import BaoGiaList from "./pages/sales-orders/Bao-gia/BaoGiaList";
 import BaoGiaCreate from "./pages/sales-orders/Bao-gia/BaoGiaCreate";
 import BaoGiaDetail from "./pages/sales-orders/Bao-gia/BaoGiaDetail";
 import BaoGiaPrint from "./pages/sales-orders/Bao-gia/BaoGiaPrint";
+import PurchaseRequestList from "./pages/order/PurchaseRequestList";
+import CreatePurchaseRequestPage from "./pages/order/CreatePurchaseRequestPage";
+import SendQuotationRequestPage from "./pages/order/SendQuotationRequestPage";
 
 export default function App() {
   return (
@@ -138,15 +141,17 @@ export default function App() {
           <Route path="/material/:id" element={<ChatLieuDetail />} /> */}
 
           {/* Purchase Order */}
-          <Route path="/purchase-requests" element={<PurchaseRequest />} />
+          <Route path="/purchase-requests" element={<PurchaseRequestList />} />
           <Route path="/purchase-orders" element={<PurchaseOrder />} />
-          <Route path="/purchase-requests/create" element={<PurchaseOrderCreate />} />
+          <Route path="/purchase-requests/create" element={<CreatePurchaseRequestPage />} />
+          <Route path="/purchase-requests/:id/send-quotation" element={<SendQuotationRequestPage />} />
           <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
           <Route path="/purchase-orders/:id/payment" element={<PurchaseOrderPayment />} />
           <Route path="/purchase-requests/:id/gui-bao-gia" element={<SendQuotationRequest />} />
           <Route path="/quotation-requests" element={<QuotationRequestList />} />
           <Route path="/quotation-requests/create" element={<QuotationRequestCreate />} />
           <Route path="/purchase-orders/create" element={<PurchaseOrderCreateManual />} />
+          
 
           {/* Supplier */}
           <Route path="/supplier" element={<SupplierList />} />
