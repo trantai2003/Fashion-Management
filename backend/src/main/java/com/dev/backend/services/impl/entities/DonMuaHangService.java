@@ -159,7 +159,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             throw new CommonException("Email nhà cung cấp không hợp lệ email: " + getting.getEmail());
         }
 
-        if (donMuaHang.getTrangThai() != 3) {
+        if (donMuaHang.getTrangThai() != 2) {
             throw new CommonException("Đơn mua hàng không tồn tại id: " + getting.getDonMuaHangId());
         }
 
@@ -242,7 +242,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             tongTienTinhToan = tongTienTinhToan.add(thanhTienTinToan);
         }
         donMuaHang.setTongTien(tongTienTinhToan);
-        donMuaHang.setTrangThai(4);
+        donMuaHang.setTrangThai(2);
         update(donMuaHang.getId(), donMuaHang);
 
         return ResponseEntity.ok(
@@ -269,7 +269,8 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             throw new CommonException("Nhà cung cấp chưa xác nhận gửi hàng");
         }
 
-        if (donMuaHang.getTrangThai() == 3) {
+        if (donMuaHang.getTrangThai() == 4) {
+            System.out.println("Đi qua đây");
             throw new CommonException("Báo giá đã bị từ chôi");
         }
 
@@ -395,6 +396,11 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
     @Transactional
     public ResponseEntity<ResponseData<String>> guiYeuCauBaoGiaDenNhaCungCap(YeuCauDenNhaCungCapCreating yeuCau) {
+
+        NguoiDungAuthInfo nguoiDungAuthInfo = SecurityContextHolder.getUser();
+        NguoiDung nguoiDung = nguoiDungService.getOne(nguoiDungAuthInfo.getId()).orElseThrow(
+                () -> new CommonException("Không tìm thấy người tạo: id"+ nguoiDungAuthInfo.getId())
+        );
         YeuCauMuaHang yeuCauMuaHang = yeuCauMuaHangService.getOne(yeuCau.getYeuCauMuaHangId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy yêu cầu id: " + yeuCau.getYeuCauMuaHangId())
         );
@@ -409,10 +415,12 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                     () -> new CommonException("Không tìm thấy nhà cung cấp id: " + nhaCungCapId)
             );
             DonMuaHang donMuaHang = DonMuaHang.builder()
+                    .yeuCauMuaHang(yeuCauMuaHang)
                     .soDonMua(calcService.getRandomProductCode("PO"))
                     .nhaCungCap(nhaCungCap)
                     .khoNhap(yeuCauMuaHang.getKhoNhap())
                     .trangThai(2)
+                    .nguoiTao(nguoiDung)
                     .ngayDatHang(now)
                     .ngayGiaoDuKien(yeuCauMuaHang.getNgayGiaoDuKien())
                     .build();
@@ -426,7 +434,9 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             }
             donMuaHang.setChiTietDonMuaHangs(chiTietDonMuaHangs);
             guiMailYeuCauBaoGiaChoNhaCungCap(donMuaHang);
-            yeuCauMuaHangService.changeStatus(yeuCauMuaHang.getId(), 3);
+            yeuCauMuaHang.setSoYeuCauMuaHang(calcService.getRandomProductCode("RFQ"));
+            yeuCauMuaHang.setTrangThai(3);
+            yeuCauMuaHangService.update(yeuCauMuaHang.getId(), yeuCauMuaHang);
         }
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
@@ -442,6 +452,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         return ChiTietDonMuaHang.builder()
                 .bienTheSanPham(chiTietYeuCauMuaHang.getBienTheSanPham())
                 .donMuaHang(donMuaHang)
+                .donGia(BigDecimal.ZERO)
                 .soLuongDat(chiTietYeuCauMuaHang.getSoLuongDat())
                 .soLuongDaNhan(BigDecimal.ZERO )
                 .thanhTien(BigDecimal.ZERO)

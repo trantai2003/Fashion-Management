@@ -20,6 +20,7 @@ import java.util.List;
 @EqualsAndHashCode(of = {"id"})
 public class YeuCauMuaHangDto implements Serializable {
     Integer id;
+    String soYeuCauMuaHang;
     KhoDto khoNhap;
     Instant ngayGiaoDuKien;
     Integer trangThai;
@@ -29,4 +30,5 @@ public class YeuCauMuaHangDto implements Serializable {
     Instant ngayTao;
     Instant ngayCapNhat;
     List<ChiTietYeuCauMuaHangDto> chiTietYeuCauMuaHangs;
+    List<DonMuaHangDto> donMuaHangs;
 }

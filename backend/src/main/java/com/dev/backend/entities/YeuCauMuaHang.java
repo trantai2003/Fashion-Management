@@ -2,6 +2,7 @@ package com.dev.backend.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -21,6 +22,10 @@ public class YeuCauMuaHang {
     @Column(name = "id", nullable = false)
     private Integer id;
 
+    @Size(max = 50)
+    @Column(name = "so_yeu_cau_mua_hang", nullable = false, length = 50)
+    String soYeuCauMuaHang;
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "kho_nhap_id", nullable = false)
@@ -31,7 +36,7 @@ public class YeuCauMuaHang {
 
     @ColumnDefault("0")
     @Column(name = "trang_thai")
-    private Integer trangThai; //0: Nháp, 1: Đã gửi, 2: Đã duyệt, 3: Đã tạo đơn yêu cầu báo giá cho nhà cung cấp, 4: Từ chối
+    private Integer trangThai; //0: Nháp, 1: Đã gửi, 2: Đã duyệt, 3: Đã tạo đơn yêu cầu báo giá cho nhà cung cấp, 4: Từ chối, 5: Đã vận chuyển
 
     @Column(name = "ghi_chu")
     private String ghiChu;
@@ -56,4 +61,6 @@ public class YeuCauMuaHang {
     @OneToMany(mappedBy = "yeuCauMuaHang", fetch = FetchType.LAZY)
     private List<ChiTietYeuCauMuaHang> chiTietYeuCauMuaHangs;
 
+    @OneToMany(mappedBy = "yeuCauMuaHang", fetch = FetchType.LAZY)
+    private List<DonMuaHang> donMuaHangs;
 }

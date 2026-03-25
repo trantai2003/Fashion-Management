@@ -28,6 +28,10 @@ public class DonMuaHang {
     @Column(name = "id", nullable = false)
     Integer id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "yeu_cau_mua_hang_id", nullable = false)
+    YeuCauMuaHang yeuCauMuaHang;
+
     @Size(max = 50)
     @Column(name = "so_don_mua", nullable = false, length = 50)
     String soDonMua;

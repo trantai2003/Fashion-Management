@@ -71,6 +71,7 @@ public class YeuCauMuaHangService extends BaseServiceImpl<YeuCauMuaHang, Integer
                 .ngayGiaoDuKien(creating.getNgayGiaoDuKien())
                 .nguoiTao(nguoiTao)
                 .trangThai(1)
+                .nguoiTao(nguoiTao)
                 .ngayTao(now)
                 .build();
         yeuCauMuaHang = create(yeuCauMuaHang);
