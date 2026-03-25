@@ -32,13 +32,17 @@ public class DonBanHang {
     @Column(name = "so_don_hang", nullable = false, length = 50)
     String soDonHang;
 
+    @ColumnDefault("'don_ban_hang'")
+    @Column(name = "loai_chung_tu", length = 20)
+    String loaiChungTu;
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "khach_hang_id", nullable = false)
     KhachHang khachHang;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "kho_xuat_id", nullable = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "kho_xuat_id")
     Kho khoXuat;
 
     @NotNull
@@ -77,6 +81,10 @@ public class DonBanHang {
     @Lob
     @Column(name = "ghi_chu")
     String ghiChu;
+
+    @Lob
+    @Column(name = "ly_do_tu_choi")
+    String lyDoTuChoi;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nguoi_tao_id")

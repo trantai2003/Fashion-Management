@@ -19,6 +19,8 @@ public interface DonBanHangRepository
         select function('date', d.ngayDatHang), sum(d.tongCong)
         from DonBanHang d
         where d.ngayDatHang >= :fromDate
+          and d.loaiChungTu = 'don_ban_hang'
+          and d.trangThai != 4
         group by function('date', d.ngayDatHang)
         order by function('date', d.ngayDatHang)
     """)
@@ -28,6 +30,7 @@ public interface DonBanHangRepository
         select count(d)
         from DonBanHang d
         where function('date', d.ngayDatHang) = current_date
+          and d.loaiChungTu = 'don_ban_hang'
     """)
     Long countOrdersToday();
 
@@ -35,13 +38,19 @@ public interface DonBanHangRepository
         select coalesce(sum(d.tongCong), 0)
         from DonBanHang d
         where function('date', d.ngayDatHang) = current_date
+          and d.loaiChungTu = 'don_ban_hang'
+          and d.trangThai != 4
     """)
     Long sumRevenueToday();
     @Query("""
-    select count(d)
-    from DonBanHang d
-    where d.trangThai = 1
-""")
+        select count(d)
+        from DonBanHang d
+        where d.trangThai = 1
+          and d.loaiChungTu = 'don_ban_hang'
+    """)
     Long countPendingSaleOrders();
     long countBySoDonHangStartingWith(String prefix);
+
+    // Dùng để tìm kiếm khôi phục chứng từ khi Hủy đơn
+    java.util.Optional<DonBanHang> findBySoDonHang(String soDonHang);
 }
