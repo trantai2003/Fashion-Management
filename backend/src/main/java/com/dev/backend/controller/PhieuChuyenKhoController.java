@@ -178,7 +178,7 @@ public class PhieuChuyenKhoController {
             rolesLogic = RequireAuth.LogicType.OR
     )
     public ResponseEntity<ResponseData<PhieuXuatKhoDto>> createTransfer(@RequestBody PhieuChuyenKhoCreating request) {
-        PhieuXuatKho entity = phieuXuatKhoService.createTransfer(request);
+        PhieuXuatKho entity = phieuXuatKhoService.createTransfer(request); //chạy hàm create tranfer bên service
         PhieuXuatKhoDto dto = phieuXuatKhoMapper.toDto(entity);
         return ResponseEntity.ok(
                 ResponseData.<PhieuXuatKhoDto>builder()
