@@ -169,7 +169,7 @@ export default function PurchaseOrderDetail() {
             icon: CreditCard, description: 'Không chấp nhận báo giá từ nhà cung cấp'
         },
         6: {
-            label: 'Chờ thanh toán',
+            label: 'Đang vận chuyển',
             bannerBg: 'bg-teal-50', bannerBorder: 'border-teal-200',
             iconBg: 'bg-teal-100', iconColor: 'text-teal-600', textColor: 'text-teal-800',
             icon: AlertCircle, description: 'Đã chấp nhận báo giá từ nhà cung cấp'

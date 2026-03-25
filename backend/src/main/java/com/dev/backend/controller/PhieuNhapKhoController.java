@@ -186,4 +186,29 @@ public class PhieuNhapKhoController {
                         .build()
         );
     }
+    @PostMapping("/from-sales-return/{donBanHangId}")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.quan_ly_kho,
+                    IRoleType.nhan_vien_kho
+            },
+            inWarehouse = true,
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<PhieuNhapKhoDto>> createReturnImportDraft(
+            @PathVariable Integer donBanHangId,
+            @RequestBody(required = false) java.util.Map<String, String> body
+    ) {
+        String ghiChu = body != null ? body.get("ghiChu") : null;
+        PhieuNhapKho entity = phieuNhapKhoService.createReturnImportDraft(donBanHangId, ghiChu);
+
+        return ResponseEntity.ok(
+                ResponseData.<PhieuNhapKhoDto>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Khởi tạo phiếu nhập trả hàng thành công")
+                        .data(phieuNhapKhoMapper.toDto(entity))
+                        .build()
+        );
+    }
 }

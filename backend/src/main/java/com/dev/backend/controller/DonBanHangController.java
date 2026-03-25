@@ -237,4 +237,27 @@ public class DonBanHangController {
                         .build()
         );
     }
+
+    @PutMapping("/{id}/return")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> returnOrder(
+            @PathVariable Integer id
+    ) {
+        donBanHangService.returnOrder(id);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(200)
+                        .data("Success")
+                        .message("Đã chuyển trạng thái đơn hàng thành Bị hoàn trả")
+                        .error(null)
+                        .build()
+        );
+    }
 }

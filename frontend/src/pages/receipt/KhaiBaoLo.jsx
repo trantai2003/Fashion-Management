@@ -373,7 +373,7 @@ export default function KhaiBaoLo() {
                                     </div>
                                     <p className="text-sm font-medium text-[#7a6e5f]">
                                         {isAutoLotMode 
-                                            ? "Hệ thống đã tự động kế thừa lô hàng từ nguồn luân chuyển. Bạn không cần khai báo thủ công." 
+                                            ? "Hệ thống đã tự động kế thừa lô hàng từ nguồn. Bạn không cần khai báo thủ công." 
                                             : "Phiếu đã khóa hoặc bị hủy, không thể chỉnh sửa dữ liệu lô."}
                                     </p>
                                 </div>

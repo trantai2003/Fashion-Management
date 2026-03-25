@@ -232,20 +232,34 @@ export default function PhieuNhapKhoDetail() {
         );
     }
 
-    const isInternalTransfer = !data.soDonMua || (data.loaiNhap || "").includes("Chuyển kho") || (data.loaiNhap || "").includes("hoàn trả");
-    const isReturn = (data.loaiNhap || "").includes("hoàn trả");
+    // 1. Nếu có data.soDonMua -> Nhập từ Đối tác (PO)
+    // 2. Nếu có data.phieuXuatGocId -> Nhập từ phiếu Chuyển kho / Hủy luân chuyển
+    // 3. Nếu không có cả hai -> Nhập hoàn trả (Sales Return)
+    const isPO = !!data.soDonMua;
+    const isTransfer = !!data.phieuXuatGocId;
+    const isSalesReturn = !isPO && !isTransfer;
+
+    const isInternalTransfer = isTransfer;
+    const isReturn = isSalesReturn || (data.loaiNhap || "").toLowerCase().includes("hoàn trả") || (data.soPhieuNhap || "").includes("-RET-");
+    
     const isAllDuLo = (data.items || []).every(item => item.daDuLo === true);
-    const canComplete = isInternalTransfer || isAllDuLo;
+    
+    // Phiếu luân chuyển hoặc phiếu trả hàng (kế thừa) thì pass qua check lô
+    const canComplete = isInternalTransfer || isSalesReturn || isAllDuLo;
+
+    const displayLoaiNhap = isSalesReturn ? "Nhập hoàn trả (Từ Đơn bán)" : (data.loaiNhap || "Phiếu nhập kho");
 
     const handleConfirmImport = async () => {
         setIsProcessing(true);
         try {
             if (isInternalTransfer) {
+                // Riêng phiếu Transfer mới gọi API completeTransferReceipt
                 await phieuNhapKhoService.completeTransferReceipt(id);
                 toast.success("Nhận hàng luân chuyển thành công!");
             } else {
+                // PO và Return gọi API complete chung
                 await phieuNhapKhoService.complete(id);
-                toast.success("Nhập kho từ đối tác thành công!");
+                toast.success(isSalesReturn ? "Nhập kho hoàn trả thành công!" : "Nhập kho từ đối tác thành công!");
             }
             setShowCompleteConfirm(false);
             fetchDetail();
@@ -285,7 +299,6 @@ export default function PhieuNhapKhoDetail() {
                 <div className="wh-orb-1" />
 
                 <div className="wh-inner">
-                    {/* ── Header actions only (title moved to global top header) ── */}
                     <div className="wh-header" style={{ justifyContent: "space-between" }}>
                         <button
                             type="button"
@@ -311,6 +324,7 @@ export default function PhieuNhapKhoDetail() {
                                 </button>
                             )}
 
+                            {/* Không cho phép hủy đối với phiếu Hoàn trả Sales Return */}
                             {!isReturn && data.trangThai === 0 && (
                                 <button
                                     disabled={isProcessing}
@@ -328,7 +342,7 @@ export default function PhieuNhapKhoDetail() {
                                     className="btn-gold"
                                 >
                                     {isProcessing ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
-                                    {isInternalTransfer ? "Nhận hàng" : "Confirm Nhập kho"}
+                                    {isInternalTransfer ? "Nhận hàng" : (isSalesReturn ? "Xác nhận Nhập trả" : "Xác nhận Nhập kho")}
                                 </button>
                             )}
                         </div>
@@ -355,17 +369,16 @@ export default function PhieuNhapKhoDetail() {
                             ) : (
                                 <>
                                     <InfoItem icon={Warehouse} label="Kho nhập hàng" value={data.tenKho} />
-                                    <InfoItem icon={Truck} label="Nhà cung cấp" value={data.tenNhaCungCap} />
+                                    {!isSalesReturn && <InfoItem icon={Truck} label="Nhà cung cấp" value={data.tenNhaCungCap} />}
                                 </>
                             )}
 
-                            <InfoItem icon={InfoIcon} label="Loại nghiệp vụ" value={data.loaiNhap || "Phiếu nhập kho"} />
+                            <InfoItem icon={InfoIcon} label="Loại nghiệp vụ" value={displayLoaiNhap} />
                             
-                            {!isInternalTransfer ? (
-                                <InfoItem icon={ClipboardList} label="Đơn mua (PO)" value={data.soDonMua} />
-                            ) : (
-                                <InfoItem icon={ClipboardList} label="Phiếu xuất gốc" value={data.soPhieuXuatGoc || (data.phieuXuatGocId ? `#${data.phieuXuatGocId}` : "Tự động")} />
-                            )}
+                            {/* Nguồn gốc chứng từ dựa trên loại luồng */}
+                            {isPO && <InfoItem icon={ClipboardList} label="Đơn mua (PO)" value={data.soDonMua} />}
+                            {isInternalTransfer && <InfoItem icon={ClipboardList} label="Phiếu xuất gốc" value={data.soPhieuXuatGoc || (data.phieuXuatGocId ? `#${data.phieuXuatGocId}` : "Tự động")} />}
+                            {isSalesReturn && <InfoItem icon={ClipboardList} label="Ghi chú" value="Tự động kế thừa lô" />}
 
                             <InfoItem icon={Calendar} label="Ngày nhập" value={data.ngayNhap ? new Date(data.ngayNhap).toLocaleDateString("vi-VN") : "---"} />
                             <InfoItem icon={User} label="Người nhập" value={data.tenNguoiNhap || "---"} />
@@ -388,7 +401,7 @@ export default function PhieuNhapKhoDetail() {
                                 <Package size={14} className="text-[#b8860b]" />
                                 <span className="wh-eyebrow font-bold text-[#1a1612]">Danh sách hàng hóa</span>
                             </div>
-                            {isInternalTransfer && (
+                            {(isInternalTransfer || isSalesReturn) && (
                                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#a89f92]">Tự động kế thừa lô</span>
                             )}
                         </div>
@@ -416,14 +429,14 @@ export default function PhieuNhapKhoDetail() {
                                                 {item.soLuongCanNhap || 0}
                                             </td>
                                             <td className="wh-td text-center">
-                                                <span className={`font-mono font-bold ${item.daDuLo || isInternalTransfer ? "text-[#16a34a]" : "text-[#b8860b]"}`}>
-                                                    {isInternalTransfer ? (item.soLuongCanNhap || 0) : (item.soLuongDaKhaiBao || 0)}
+                                                <span className={`font-mono font-bold ${(item.daDuLo || isInternalTransfer || isSalesReturn) ? "text-[#16a34a]" : "text-[#b8860b]"}`}>
+                                                    {(isInternalTransfer || isSalesReturn) ? (item.soLuongCanNhap || 0) : (item.soLuongDaKhaiBao || 0)}
                                                     <span className="text-[#a89f92] font-normal mx-1">/</span>
                                                     {item.soLuongCanNhap || 0}
                                                 </span>
                                             </td>
                                             <td className="wh-td text-center">
-                                                {item.daDuLo || isInternalTransfer ? (
+                                                {(item.daDuLo || isInternalTransfer || isSalesReturn) ? (
                                                     <span className="badge green"><span className="dot" /> Đủ hàng</span>
                                                 ) : (
                                                     <span className="badge amber"><span className="dot" /> Thiếu lô</span>
@@ -434,7 +447,7 @@ export default function PhieuNhapKhoDetail() {
                                                     onClick={() => navigate(`/goods-receipts/${data.id}/lot-input/${item.bienTheSanPhamId}`)}
                                                     className="btn-white h-8 px-4 text-xs"
                                                 >
-                                                    {isInternalTransfer ? "Lô tự động" : (data.trangThai === 0 ? "Khai báo lô →" : "Xem lô")}
+                                                    {(isInternalTransfer || isSalesReturn) ? "Lô tự động" : (data.trangThai === 0 ? "Khai báo lô →" : "Xem lô")}
                                                 </button>
                                             </td>
                                         </tr>
@@ -451,7 +464,7 @@ export default function PhieuNhapKhoDetail() {
                         <div className="modal-card">
                             <div className="modal-head">
                                 <h2 className="modal-ttl">
-                                    {isInternalTransfer ? "Nhận hàng luân chuyển" : "Xác nhận nhập kho"}
+                                    {isInternalTransfer ? "Nhận hàng luân chuyển" : (isSalesReturn ? "Xác nhận nhập trả kho" : "Xác nhận nhập kho")}
                                 </h2>
                             </div>
                             <div className="modal-body">
