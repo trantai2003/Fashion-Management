@@ -76,6 +76,7 @@ import PurchaseOrderCreateManual from "./pages/order/PurchaseOrderCreateManual";
 import BaoGiaList from "./pages/sales-orders/Bao-gia/BaoGiaList";
 import BaoGiaCreate from "./pages/sales-orders/Bao-gia/BaoGiaCreate";
 import BaoGiaDetail from "./pages/sales-orders/Bao-gia/BaoGiaDetail";
+import BaoGiaPrint from "./pages/sales-orders/Bao-gia/BaoGiaPrint";
 
 export default function App() {
   return (
@@ -181,6 +182,7 @@ export default function App() {
           <Route path="/sales-quotations" element={<BaoGiaList />} />
           <Route path="/sales-quotations/create" element={<BaoGiaCreate />} />
           <Route path="/sales-quotations/:id" element={<BaoGiaDetail />} />
+          <Route path="/sales-quotations/:id/print" element={<BaoGiaPrint />} />
 
           {/* Chuyen kho noi bo */}
           <Route path="/transfer-tickets" element={<PhieuChuyenKhoList />} />
