@@ -19,7 +19,8 @@ import {
   Calendar,
   Eye,
   Trash2,
-  FileText
+  FileText,
+  Undo2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,8 +39,10 @@ const STATUS_MAP = {
   2: { label: "Đã xuất kho 1 phần", className: "bg-indigo-50 text-indigo-700 border border-indigo-200" },
   3: { label: "Đã xuất kho toàn bộ", className: "bg-orange-50 text-orange-700 border border-orange-200" },
   4: { label: "Đã hủy", className: "bg-red-50 text-red-700 border border-red-200" },
-  5: { label: "Hoàn thành", className: "bg-emerald-50 text-emerald-700 border border-emerald-200" }
+  5: { label: "Hoàn thành", className: "bg-emerald-50 text-emerald-700 border border-emerald-200" },
+  6: { label: "Bị hoàn trả", className: "bg-rose-50 text-rose-700 border border-rose-200" }
 };
+
 const ROLE = {
     QUAN_TRI_VIEN: "quan_tri_vien",
     QUAN_LY_KHO: "quan_ly_kho",
@@ -194,13 +197,14 @@ export default function DonBanHangList() {
     choXuatKho: data.filter((d) => d.trangThai === 1).length,
     hoanThanh: data.filter((d) => d.trangThai === 3 || d.trangThai === 5).length,
     daHuy: data.filter((d) => d.trangThai === 4).length,
+    biHoanTra: data.filter((d) => d.trangThai === 6).length,
   };
 
   return (
     <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
       <div className="space-y-6 w-full">
         {/* STATS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -238,6 +242,20 @@ export default function DonBanHangList() {
                 </div>
                 <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
                   <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-rose-50 to-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Bị hoàn trả</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{stats.biHoanTra}</p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-rose-100 flex items-center justify-center">
+                  <Undo2 className="h-6 w-6 text-rose-600" />
                 </div>
               </div>
             </CardContent>
@@ -296,6 +314,7 @@ export default function DonBanHangList() {
                         {filters.trangThai === "3" && "Đã xuất kho toàn bộ"}
                         {filters.trangThai === "4" && "Đã hủy"}
                         {filters.trangThai === "5" && "Hoàn thành"}
+                        {filters.trangThai === "6" && "Bị hoàn trả"}
                       </span>
                       <ChevronDown className="h-4 w-4 opacity-70 flex-shrink-0" />
                     </Button>
