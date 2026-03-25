@@ -80,6 +80,7 @@ import BaoGiaPrint from "./pages/sales-orders/Bao-gia/BaoGiaPrint";
 import PurchaseRequestList from "./pages/order/PurchaseRequestList";
 import CreatePurchaseRequestPage from "./pages/order/CreatePurchaseRequestPage";
 import SendQuotationRequestPage from "./pages/order/SendQuotationRequestPage";
+import PurchaseRequestDetail from "./pages/order/PurchaseRequestDetail";
 
 export default function App() {
   return (
@@ -151,6 +152,7 @@ export default function App() {
           <Route path="/quotation-requests" element={<QuotationRequestList />} />
           <Route path="/quotation-requests/create" element={<QuotationRequestCreate />} />
           <Route path="/purchase-orders/create" element={<PurchaseOrderCreateManual />} />
+          <Route path="/purchase-requests/:id" element={<PurchaseRequestDetail />} />
           
 
           {/* Supplier */}

@@ -325,7 +325,12 @@ export default function BackofficeLayout() {
             key: "PURCHASE_ORDER_CREATE",
             match: (path) => path === "/purchase-orders/create",
             title: "Tạo đơn mua hàng",
-        }
+        },
+        {
+            key: "PURCHASE_REQUEST_DETAIL",
+            match: (path) => /^\/purchase-requests\/\d+$/.test(path),
+            title: "Chi tiết yêu cầu nhập hàng",
+        },
     ];
 
     const pageMeta = PAGE_META_CONFIG.find((item) =>
