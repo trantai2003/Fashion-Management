@@ -79,6 +79,12 @@ public abstract class BaseServiceImpl<T, ID> implements BaseService<T, ID> {
 
     @Override
     @Transactional
+    public List<T> create(List<T> entities){
+        return repository.saveAll(entities);
+    }
+
+    @Override
+    @Transactional
     public T update(ID id, T entity) {
         Optional<T> optional = repository.findById(id);
         if (optional.isEmpty()) {
