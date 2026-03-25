@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -57,6 +58,8 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
     private EmailService emailService;
     @Autowired
     private CalcService calcService;
+    @Autowired
+    private YeuCauMuaHangService yeuCauMuaHangService;
 
     @Autowired
     private CassoService cassoService;
@@ -262,13 +265,19 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                 () -> new CommonException("Không tìm thấy đơn hàng id: " + id)
         );
 
-        if (donMuaHang.getTrangThai() < 4) {
+        if (donMuaHang.getTrangThai() <= 2) {
             throw new CommonException("Nhà cung cấp chưa xác nhận gửi hàng");
         }
 
-        if (donMuaHang.getTrangThai() == 7) {
+        if (donMuaHang.getTrangThai() == 3) {
+            throw new CommonException("Báo giá đã bị từ chôi");
+        }
+
+
+        if (donMuaHang.getTrangThai() == 5) {
             throw new CommonException("Đơn hàng đã được thành toán");
         }
+
         return ResponseEntity.ok(
                 ResponseData.<GiaoDichDto>builder()
                         .status(HttpStatus.OK.value())
@@ -308,7 +317,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             for (TransactionCasso tran : cassoResponse.getData().getRecords()) {
                 if (tran.getDescription().contains(tranCode) && Math.abs(Math.abs(tran.getAmount()) - Double.parseDouble(donMuaHang.getTongTien().toString())) < 0.1) {
                     isSuccess = true;
-                    changeStatus(donMuaHang.getId(), 7);
+                    changeStatus(donMuaHang.getId(), 5);
                     break;
                 }
             }
@@ -384,4 +393,97 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         );
     }
 
+    @Transactional
+    public ResponseEntity<ResponseData<String>> guiYeuCauBaoGiaDenNhaCungCap(YeuCauDenNhaCungCapCreating yeuCau) {
+        YeuCauMuaHang yeuCauMuaHang = yeuCauMuaHangService.getOne(yeuCau.getYeuCauMuaHangId()).orElseThrow(
+                () -> new CommonException("Không tìm thấy yêu cầu id: " + yeuCau.getYeuCauMuaHangId())
+        );
+
+        if(yeuCauMuaHang.getTrangThai() != 2){
+            throw new CommonException("Đơn mua hàng chưa được duyệt");
+        }
+
+        Instant now = Instant.now();
+        for (Integer nhaCungCapId : yeuCau.getNhaCungCapIds()) {
+            NhaCungCap nhaCungCap = nhaCungCapService.getOne(nhaCungCapId).orElseThrow(
+                    () -> new CommonException("Không tìm thấy nhà cung cấp id: " + nhaCungCapId)
+            );
+            DonMuaHang donMuaHang = DonMuaHang.builder()
+                    .soDonMua(calcService.getRandomProductCode("PO"))
+                    .nhaCungCap(nhaCungCap)
+                    .khoNhap(yeuCauMuaHang.getKhoNhap())
+                    .trangThai(2)
+                    .ngayDatHang(now)
+                    .ngayGiaoDuKien(yeuCauMuaHang.getNgayGiaoDuKien())
+                    .build();
+
+            donMuaHang = create(donMuaHang);
+            List<ChiTietDonMuaHang> chiTietDonMuaHangs = new ArrayList<>();
+            for (ChiTietYeuCauMuaHang chiTietYeuCauMuaHang : yeuCauMuaHang.getChiTietYeuCauMuaHangs()) {
+                ChiTietDonMuaHang chiTietDonMuaHang = fromChiTietYeuCauToChiTietBaoGia(donMuaHang, chiTietYeuCauMuaHang);
+                chiTietDonMuaHang = chiTietDonMuaHangService.create(chiTietDonMuaHang);
+                chiTietDonMuaHangs.add(chiTietDonMuaHang);
+            }
+            donMuaHang.setChiTietDonMuaHangs(chiTietDonMuaHangs);
+            guiMailYeuCauBaoGiaChoNhaCungCap(donMuaHang);
+            yeuCauMuaHangService.changeStatus(yeuCauMuaHang.getId(), 3);
+        }
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .data("Success")
+                        .message("Success")
+                        .error(null)
+                        .build()
+        );
+    }
+
+    private ChiTietDonMuaHang fromChiTietYeuCauToChiTietBaoGia(DonMuaHang donMuaHang,ChiTietYeuCauMuaHang chiTietYeuCauMuaHang){
+        return ChiTietDonMuaHang.builder()
+                .bienTheSanPham(chiTietYeuCauMuaHang.getBienTheSanPham())
+                .donMuaHang(donMuaHang)
+                .soLuongDat(chiTietYeuCauMuaHang.getSoLuongDat())
+                .soLuongDaNhan(BigDecimal.ZERO )
+                .thanhTien(BigDecimal.ZERO)
+                .build();
+    }
+
+    private void guiMailYeuCauBaoGiaChoNhaCungCap(DonMuaHang donMuaHang){
+        NhaCungCap nhaCungCap = donMuaHang.getNhaCungCap();
+        Date now = new Date();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("ngay", now.getDate());
+        params.put("thang", now.getMonth() + 1);
+        params.put("nam", now.getYear() + 1900);
+        params.put("soDonMua", donMuaHang.getSoDonMua());
+
+        String trangThaiText = " Quản lý đã duyệt và gửi mail";
+        BigDecimal tongSoLuong = BigDecimal.ZERO;
+        // tính tổng số lượng
+        for (ChiTietDonMuaHang chiTietDonMuaHang : donMuaHang.getChiTietDonMuaHangs()) {
+            tongSoLuong = tongSoLuong.add(chiTietDonMuaHang.getSoLuongDat());
+        }
+        params.put("trangThaiText", trangThaiText);
+        params.put("tenKho", donMuaHang.getKhoNhap().getTenKho());
+        params.put("diaChiKho", donMuaHang.getKhoNhap().getDiaChi());
+        params.put("tenNhaCungCap", nhaCungCap.getTenNhaCungCap());
+        params.put("maNhaCungCap", nhaCungCap.getMaNhaCungCap());
+        params.put("nguoiLienHe", nhaCungCap.getNguoiLienHe());
+        params.put("soDienThoai", nhaCungCap.getSoDienThoai());
+        params.put("email", nhaCungCap.getEmail());
+        params.put("tongSoMatHang", donMuaHang.getChiTietDonMuaHangs().size());
+        params.put("tongSoLuong", tongSoLuong);
+        params.put("tongTien", donMuaHang.getTongTien());
+        params.put("ghiChu", donMuaHang.getGhiChu());
+        params.put("ngayDatHang", donMuaHang.getNgayDatHang());
+        params.put("ngayGiaoDuKien", donMuaHang.getNgayGiaoDuKien());
+        params.put("hanPheDuyet", donMuaHang.getNgayGiaoDuKien());
+
+        emailService.sendHtmlEmailFromTemplate(
+                nhaCungCap.getEmail(),
+                "Phiếu xác nhận nhập hàng",
+                "don_mua.html",
+                params
+        );
+    }
 }
