@@ -4,6 +4,7 @@ import { phieuNhapKhoService } from "@/services/phieuNhapKhoService";
 import { phieuChuyenKhoService } from "@/services/phieuChuyenKhoService";
 import purchaseOrderService from "@/services/purchaseOrderService";
 import { phieuXuatKhoService } from "@/services/phieuXuatKhoService";
+import { donBanHangService } from "@/services/donBanHangService";
 import { getMineKhoList } from "@/services/khoService";
 import { toast } from "sonner";
 import {
@@ -21,7 +22,8 @@ import {
     AlertCircle,
     Info,
     LayoutGrid,
-    Truck
+    Truck,
+    Undo2
 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════
@@ -179,15 +181,17 @@ export default function PhieuNhapKhoCreate() {
     const [searchParams] = useSearchParams(); // Đọc params từ URL
 
     // --- States cho Loại Nhập ---
-    const [importSource, setImportSource] = useState("PO"); // "PO" hoặc "TRANSFER"
+    const [importSource, setImportSource] = useState("PO"); // "PO", "TRANSFER", hoặc "RETURN"
 
     // --- Data States ---
     const [poList, setPoList] = useState([]);
     const [transferList, setTransferList] = useState([]);
+    const [returnList, setReturnList] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
 
     const [selectedPO, setSelectedPO] = useState(null);
     const [selectedTransfer, setSelectedTransfer] = useState(null);
+    const [selectedReturn, setSelectedReturn] = useState(null);
 
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
@@ -196,6 +200,7 @@ export default function PhieuNhapKhoCreate() {
     const [form, setForm] = useState({
         donMuaHangId: "",
         transferId: "",
+        phieuXuatId: "", // ID phiếu xuất kho dùng cho chức năng hoàn trả
         khoId: "",
         ghiChu: "",
     });
@@ -212,8 +217,7 @@ export default function PhieuNhapKhoCreate() {
             setWarehouses(warehouseList);
             const myWarehouseIds = warehouseList.map(w => w.id);
 
-            // Thêm API phieuXuatKhoService vào Promise.all
-            const [poRes, transferRes3, transferRes4, allReceiptsRes, allIssuesRes] = await Promise.all([
+            const [poRes, transferRes3, transferRes4, allReceiptsRes, allIssuesRes, returnSoRes] = await Promise.all([
                 purchaseOrderService.filter({
                     page: 0, size: 1000,
                     filters: [{ fieldName: "trangThai", operator: "IN", value: [6, 7] }],
@@ -233,11 +237,18 @@ export default function PhieuNhapKhoCreate() {
                 }).catch(() => ({ content: [] })),
 
                 phieuNhapKhoService.filter({ page: 0, size: 2000 }).catch(() => ({ content: [] })),
+                
+                phieuXuatKhoService.filter({ page: 0, size: 2000 }).catch(() => ({ content: [] })),
 
-                // Gọi thêm API Phiếu Xuất Kho để check điều kiện cho Phiếu Chuyển bị hủy
-                phieuXuatKhoService.filter({ page: 0, size: 2000 }).catch(() => ({ content: [] }))
+                // Fetch các Đơn Bán Hàng trạng thái 6 (Bị hoàn trả) để tham chiếu
+                donBanHangService.filter({
+                    page: 0, size: 1000,
+                    filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 6 }],
+                    sorts: [{ fieldName: "ngayCapNhat", direction: "DESC" }]
+                }).catch(() => ({ content: [] }))
             ]);
 
+            // === 1. XỬ LÝ PO (Logic nguyên gốc) ===
             const rawPoList = poRes.data?.content || poRes.content || [];
             const validPoList = rawPoList.filter(po => {
                 if (po.trangThai !== 6 && po.trangThai !== 7) return false;
@@ -254,22 +265,19 @@ export default function PhieuNhapKhoCreate() {
             });
             setPoList(validPoList);
 
-            // 1. Trích xuất ID các phiếu chuyển đã LẬP PHIẾU NHẬP (Chống duplicate)
+            // === 2. XỬ LÝ TRANSFER (Logic nguyên gốc) ===
             const allReceipts = allReceiptsRes.content || allReceiptsRes.data?.content || [];
             const usedTransferIds = new Set(
                 allReceipts
                     .filter(r => r.trangThai === 3)
-                    // Lưu ý: Đảm bảo trường này là ID của Phiếu Chuyển (không phải Phiếu Xuất)
                     .map(r => Number(r.phieuXuatGocId || r.phieuChuyenId || r.transferId))
                     .filter(id => id > 0)
             );
 
-            // 2. Trích xuất ID các phiếu chuyển ĐÃ CÓ PHIẾU XUẤT thành công (Trạng thái 3)
             const allIssues = allIssuesRes.content || allIssuesRes.data?.content || [];
             const validIssueTransferIds = new Set(
                 allIssues
-                    .filter(pxk => pxk.trangThai === 3) // Chỉ lấy Phiếu xuất có trạng thái 3 (Đã xuất)
-                    // Bổ sung thêm các tên trường dự phòng đề phòng API trả về tên khác
+                    .filter(pxk => pxk.trangThai === 3)
                     .map(pxk => Number(pxk.phieuChuyenKhoGocId || pxk.phieuChuyenId || pxk.transferId))
                     .filter(id => id > 0)
             );
@@ -311,11 +319,39 @@ export default function PhieuNhapKhoCreate() {
 
             setTransferList(availableTransfers);
 
+            // Lọc phiếu xuất thuộc đơn hàng bị hoàn trả
+            const rawReturnSOs = returnSoRes.content || returnSoRes.data?.content || [];
+            const returnedSOIds = new Set(rawReturnSOs.map(so => Number(so.id)));
+
+            // Lọc ra các Phiếu nhập hoàn trả đang TỒN TẠI (Trạng thái khác 4 - Đã hủy)
+            const activeReturnReceipts = allReceipts.filter(r => 
+                r.trangThai !== 4 && 
+                (r.soPhieuNhap?.includes("-RET-") || (r.loaiNhap || "").toLowerCase().includes("hoàn trả"))
+            );
+
+            const availableReturnPXs = allIssues.filter(px => {
+                if (px.trangThai !== 3) return false; // Phải là phiếu đã xuất thành công
+                if (!px.donBanHang || !returnedSOIds.has(Number(px.donBanHang.id))) return false; // Phải thuộc Đơn bán hàng bị hoàn trả
+                
+                // Kho xuất đi phải là kho thuộc quyền quản lý của nhân viên (để trả về đúng kho)
+                const targetKhoId = px.kho?.id || px.khoXuatId;
+                if (!targetKhoId || !myWarehouseIds.map(Number).includes(Number(targetKhoId))) return false;
+
+                // Kiểm tra xem phiếu xuất này đã bị lấy đi tạo Phiếu nhập hoàn trả nào chưa (dựa vào ghi chú chứa mã phiếu xuất)
+                const isAlreadyReturned = activeReturnReceipts.some(receipt => 
+                    receipt.ghiChu?.includes(px.soPhieuXuat)
+                );
+                if (isAlreadyReturned) return false; // Nếu đã có phiếu nhập -> Ẩn khỏi dropdown
+
+                return true;
+            });
+            setReturnList(availableReturnPXs);
+
             if (warehouseList.length === 1) {
                 setForm(prev => ({ ...prev, khoId: warehouseList[0].id }));
             }
 
-            //kiem tra poId hoặc transferId tu url de auto select neu hop le
+            // === URL PARAMS AUTO SELECT ===
             const urlPoId = searchParams.get("poId");
             const urlTransferId = searchParams.get("transferId");
 
@@ -413,6 +449,32 @@ export default function PhieuNhapKhoCreate() {
         } finally { setActionLoading(false); }
     };
 
+    // Bổ sung handler khi chọn Phiếu Xuất trả lại
+    const handleSelectReturn = async (id) => {
+        if (!id) { 
+            setSelectedReturn(null); 
+            setForm(prev => ({ ...prev, phieuXuatId: "", ghiChu: "" })); // Reset form khi bỏ chọn
+            return; 
+        }
+        setActionLoading(true);
+        try {
+            const res = await phieuXuatKhoService.getDetail(id);
+            const data = res.data || res;
+
+            setSelectedReturn(data); // Lưu nguyên vẹn để dùng cho việc map danh sách chi tiết
+            const selectedItem = returnList.find(px => String(px.id) === String(id));
+
+            setForm(prev => ({
+                ...prev,
+                phieuXuatId: id, // Lấy cứng ID truyền vào luôn, không sợ undefined
+                khoId: selectedItem?.kho?.id || selectedItem?.khoXuatId || prev.khoId,
+                ghiChu: `Nhập hoàn trả từ phiếu xuất: ${selectedItem?.soPhieuXuat} (Đơn: ${selectedItem?.donBanHang?.soDonHang || 'Không rõ'})`
+            }));
+        } catch (e) {
+            toast.error("Không thể tải chi tiết phiếu xuất");
+        } finally { setActionLoading(false); }
+    };
+
     async function createPhieu() {
         if (importSource === "PO") {
             if (!selectedPO) return toast.error("Vui lòng chọn đơn mua hàng (PO)"), null;
@@ -429,13 +491,13 @@ export default function PhieuNhapKhoCreate() {
                     chiTietPhieuNhapKhos: chiTiet
                 });
                 setCreatedId(res.id);
-                toast.success("Tạo phiếu nhập từ PO thành công");
+                toast.success("Tạo phiếu nhập thành công");
                 return res.id;
             } catch (e) {
                 toast.error(e?.response?.data?.message || "Lỗi khi tạo phiếu nhập");
                 return null;
             } finally { setActionLoading(false); }
-        } else {
+        } else if (importSource === "TRANSFER") {
             if (!form.transferId) return toast.error("Vui lòng chọn yêu cầu chuyển kho"), null;
             try {
                 setActionLoading(true);
@@ -448,6 +510,19 @@ export default function PhieuNhapKhoCreate() {
                 toast.error(e?.response?.data?.message || "Không thể tạo phiếu");
                 return null;
             } finally { setActionLoading(false); }
+        } else if (importSource === "RETURN") {
+            if (!form.phieuXuatId) return toast.error("Vui lòng chọn phiếu xuất của đơn hàng cần hoàn trả"), null;
+            try {
+                setActionLoading(true);
+                const res = await phieuNhapKhoService.createFromSalesReturn(form.phieuXuatId, { ghiChu: form.ghiChu });
+                const newId = res.data?.id || res.id;
+                setCreatedId(newId);
+                toast.success("Khởi tạo phiếu nhập trả hàng thành công");
+                return newId;
+            } catch (e) {
+                toast.error(e?.response?.data?.message || "Không thể tạo phiếu nhập hoàn trả");
+                return null;
+            } finally { setActionLoading(false); }
         }
     }
 
@@ -457,6 +532,8 @@ export default function PhieuNhapKhoCreate() {
     };
 
     if (loading) return <div className="wh-root flex items-center justify-center"><Loader2 size={32} className="animate-spin text-[#b8860b]" /></div>;
+
+    const returnItemsToRender = selectedReturn?.chiTiet || selectedReturn?.chiTietPhieuXuatKhos || [];
 
     return (
         <>
@@ -478,10 +555,13 @@ export default function PhieuNhapKhoCreate() {
                     <div className="flex justify-center sm:justify-start">
                         <div className="toggle-pill">
                             <button onClick={() => setImportSource("PO")} className={`toggle-btn ${importSource === "PO" ? "active" : ""}`}>
-                                <FileText size={14} /> Nhập từ Đối Tác (PO)
+                                <FileText size={14} /> Nhập từ Đối Tác
                             </button>
                             <button onClick={() => setImportSource("TRANSFER")} className={`toggle-btn ${importSource === "TRANSFER" ? "active" : ""}`}>
                                 <ArrowRightLeft size={14} /> Nhận hàng nội bộ
+                            </button>
+                            <button onClick={() => setImportSource("RETURN")} className={`toggle-btn ${importSource === "RETURN" ? "active" : ""}`}>
+                                <Undo2 size={14} /> Nhập hàng trả lại
                             </button>
                         </div>
                     </div>
@@ -495,19 +575,20 @@ export default function PhieuNhapKhoCreate() {
                                     <span className="sec-title">Thông tin nguồn</span>
                                 </div>
                                 <div className="sec-body">
-                                    {importSource === "PO" ? (
+                                    {importSource === "PO" && (
                                         <div className="inp-group">
-                                            <label className="inp-label">Đơn mua hàng liên kết</label>
+                                            <label className="inp-label">Đơn liên kết</label>
                                             <select
                                                 className="inp-select"
                                                 value={form.donMuaHangId}
                                                 onChange={(e) => handleSelectPO(e.target.value)}
                                             >
-                                                <option value="">-- Chọn đơn mua (PO) --</option>
+                                                <option value="">-- Chọn đơn --</option>
                                                 {poList.map(po => <option key={po.id} value={po.id}>{po.soDonMua} - {po.nhaCungCap?.tenNhaCungCap}</option>)}
                                             </select>
                                         </div>
-                                    ) : (
+                                    )}
+                                    {importSource === "TRANSFER" && (
                                         <div className="inp-group">
                                             <label className="inp-label">Yêu cầu luân chuyển</label>
                                             <select
@@ -517,6 +598,23 @@ export default function PhieuNhapKhoCreate() {
                                             >
                                                 <option value="">-- Chọn chứng từ vận chuyển --</option>
                                                 {transferList.map(t => <option key={t.id} value={t.id}>{t.soPhieuXuat} ({t.kho?.tenKho} → {t.khoChuyenDen?.tenKho})</option>)}
+                                            </select>
+                                        </div>
+                                    )}
+                                    {importSource === "RETURN" && (
+                                        <div className="inp-group">
+                                            <label className="inp-label">Phiếu xuất hoàn trả</label>
+                                            <select
+                                                className="inp-select"
+                                                value={form.phieuXuatId}
+                                                onChange={(e) => handleSelectReturn(e.target.value)}
+                                            >
+                                                <option value="">-- Chọn phiếu xuất --</option>
+                                                {returnList.map(px => (
+                                                    <option key={px.id} value={px.id}>
+                                                        {px.soPhieuXuat} (Đơn: {px.donBanHang?.soDonHang})
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
                                     )}
@@ -552,9 +650,12 @@ export default function PhieuNhapKhoCreate() {
                                     </div>
                                     {importSource === "PO" && selectedPO && <span className="badge-tag gold">#{selectedPO.soDonMua}</span>}
                                     {importSource === "TRANSFER" && selectedTransfer && <span className="badge-tag indigo">#{selectedTransfer.soPhieuXuat}</span>}
+                                    {importSource === "RETURN" && selectedReturn && <span className="badge-tag red">#{selectedReturn?.phieu.soPhieuXuat}</span>}
                                 </div>
                                 <div className="flex-1 overflow-x-auto">
-                                    {((importSource === "PO" && !selectedPO) || (importSource === "TRANSFER" && !selectedTransfer)) ? (
+                                    {((importSource === "PO" && !selectedPO) || 
+                                      (importSource === "TRANSFER" && !selectedTransfer) || 
+                                      (importSource === "RETURN" && !selectedReturn)) ? (
                                         <div className="h-[400px] flex flex-col items-center justify-center opacity-30 gap-3 grayscale">
                                             <Truck size={48} />
                                             <p className="font-mono text-xs uppercase tracking-widest italic">Vui lòng chọn nguồn chứng từ</p>
@@ -600,7 +701,7 @@ export default function PhieuNhapKhoCreate() {
                                                             <span className="badge-tag gold">Waiting</span>
                                                         </td>
                                                     </tr>
-                                                )) : selectedTransfer.items?.map(item => (
+                                                )) : importSource === "TRANSFER" ? selectedTransfer.items?.map(item => (
                                                     <tr key={item.id}>
                                                         <td className="wh-td">
                                                             <div className="font-bold text-[#1a1612]">{item.tenSanPham}</div>
@@ -611,6 +712,19 @@ export default function PhieuNhapKhoCreate() {
                                                         </td>
                                                         <td className="wh-td text-right">
                                                             <span className="badge-tag indigo">In Transit</span>
+                                                        </td>
+                                                    </tr>
+                                                )) : returnItemsToRender.map(item => (
+                                                    <tr key={item.id}>
+                                                        <td className="wh-td">
+                                                            <div className="font-bold text-[#1a1612]">{item.tenSanPham || item.bienTheSanPham?.sanPham?.tenSanPham || 'Sản phẩm'}</div>
+                                                            <div className="font-mono text-[11px] text-[#b8860b] mt-0.5">{item.sku || item.bienTheSanPham?.maSku}</div>
+                                                        </td>
+                                                        <td className="wh-td text-center">
+                                                            <span className="font-black text-[#e11d48] text-base">{item.soLuongCanXuat || item.soLuong}</span>
+                                                        </td>
+                                                        <td className="wh-td text-right">
+                                                            <span className="badge-tag red">Return</span>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -626,8 +740,10 @@ export default function PhieuNhapKhoCreate() {
                     <div className="flex justify-end gap-3">
                         <button onClick={createPhieu} disabled={actionLoading || !form.khoId} className="btn-white">Lưu nháp</button>
                         <button onClick={handleContinue} disabled={actionLoading || !form.khoId} className="btn-gold">
-                            {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRightLeft size={16} />}
-                            {importSource === "PO" ? "Tiếp tục khai Lô" : "Nhập kho ngay"}
+                            {actionLoading ? <Loader2 size={16} className="animate-spin" /> : (
+                                importSource === "RETURN" ? <Undo2 size={16} /> : <ArrowRightLeft size={16} />
+                            )}
+                            {importSource === "PO" ? "Tiếp tục khai Lô" : (importSource === "RETURN" ? "Xác nhận nhập kho" : "Nhập kho ngay")}
                         </button>
                     </div>
                 </div>
