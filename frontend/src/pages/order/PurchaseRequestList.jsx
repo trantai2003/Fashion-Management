@@ -5,20 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
     Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+    AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+    Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
     ChevronLeft, ChevronRight, ChevronDown, Search, Calendar,
     Filter, Eye, Plus, RefreshCw, Warehouse, CheckCircle,
     XCircle, Clock, FileText, Loader2, AlertCircle, Send,
-    Package, Building2, ShoppingBag,
-    Ship,
+    Package, Building2,
 } from 'lucide-react';
 import purchaseRequestService from '@/services/purchaseRequestService';
 import apiClient from '@/services/apiClient';
@@ -38,11 +42,11 @@ function parseRoles(vaiTro) {
 const MANAGER_ROLES = ['quan_tri_vien', 'quan_ly_kho', 'nhan_vien_mua_hang'];
 
 const statusConfig = {
-    1: { label: 'Chờ duyệt', color: 'bg-amber-100 text-amber-800 border-amber-200', icon: Clock },
+    1: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
     2: { label: 'Đã duyệt', color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle },
-    3: { label: 'Đã gửi báo giá', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: Send },
+    3: { label: 'Đã chuyển thành báo giá', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: FileText },
     4: { label: 'Từ chối', color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle },
-    5: { label: 'Đang vận chuyển', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: Ship },
+    5: { label: 'Đã chuyển thành báo giá', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: FileText },
 };
 
 const formatDate = (d) => {
@@ -162,88 +166,6 @@ function SendToSupplierDialog({ open, onClose, request, suppliers, onConfirm, su
     );
 }
 
-// ─── Detail Dialog ────────────────────────────────────────────────────────────
-function DetailDialog({ open, onClose, request }) {
-    if (!request) return null;
-    const cfg = statusConfig[request.trangThai] || statusConfig[1];
-    const StatusIcon = cfg.icon;
-    return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="rounded-2xl sm:max-w-lg p-0 overflow-hidden border-0 shadow-2xl max-h-[90vh] flex flex-col">
-                <div className="bg-slate-900 p-6 flex items-center gap-3 shrink-0">
-                    <div className="h-10 w-10 bg-white/10 rounded-full flex items-center justify-center shrink-0">
-                        <FileText className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                        <DialogTitle className="text-xl font-bold text-white m-0">Chi tiết yêu cầu #{request.id}</DialogTitle>
-                        <DialogDescription className="text-slate-400 text-[12px] mt-0.5">
-                            Tạo bởi {request.nguoiTao?.hoTen || '—'} · {formatDate(request.ngayTao)}
-                        </DialogDescription>
-                    </div>
-                </div>
-                <div className="p-6 space-y-4 overflow-y-auto flex-1">
-                    {/* Status + info */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Trạng thái</p>
-                            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${cfg.color}`}>
-                                <StatusIcon className="h-3.5 w-3.5" />{cfg.label}
-                            </span>
-                        </div>
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kho nhập</p>
-                            <p className="font-bold text-[13px] text-slate-800">{request.khoNhap?.tenKho || '—'}</p>
-                        </div>
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Ngày giao dự kiến</p>
-                            <p className="font-semibold text-[13px] text-slate-800">{formatDate(request.ngayGiaoDuKien)}</p>
-                        </div>
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Người duyệt</p>
-                            <p className="font-semibold text-[13px] text-slate-800">{request.nguoiDuyet?.hoTen || 'Chưa duyệt'}</p>
-                        </div>
-                    </div>
-
-                    {request.ghiChu && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5">
-                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">Ghi chú</p>
-                            <p className="text-[13px] text-slate-700">{request.ghiChu}</p>
-                        </div>
-                    )}
-
-                    {/* Chi tiết sản phẩm */}
-                    <div>
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                            Sản phẩm ({request.chiTietYeuCauMuaHangs?.length || 0} biến thể)
-                        </p>
-                        <div className="space-y-2 max-h-[240px] overflow-y-auto">
-                            {(request.chiTietYeuCauMuaHangs || []).map((item, i) => {
-                                const img = item.bienTheSanPham?.anhBienThe?.tepTin?.duongDan;
-                                return (
-                                    <div key={i} className="flex items-center gap-3 bg-slate-50 rounded-xl border border-slate-100 px-3 py-2.5">
-                                        {img
-                                            ? <img src={img} alt="" className="h-9 w-9 rounded-lg object-cover border border-slate-200 shrink-0" />
-                                            : <div className="h-9 w-9 rounded-lg bg-slate-200 flex items-center justify-center shrink-0"><Package className="h-4 w-4 text-slate-400" /></div>
-                                        }
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-[13px] text-slate-800 truncate">{item.bienTheSanPham?.tenBienThe || item.bienTheSanPham?.maSku}</p>
-                                            <p className="font-mono text-[11px] text-amber-700">{item.bienTheSanPham?.maSku}</p>
-                                        </div>
-                                        <span className="font-bold text-slate-700 shrink-0 text-[13px]">×{item.soLuongDat}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-                <div className="px-6 pb-5 shrink-0">
-                    <Button variant="outline" onClick={onClose} className="w-full h-10 rounded-xl font-semibold">Đóng</Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -267,7 +189,6 @@ export default function PurchaseRequestList() {
     const [warehouses, setWarehouses] = useState([]);
 
     // Dialogs
-    const [detailRequest, setDetailRequest] = useState(null);
     const [sendRequest, setSendRequest] = useState(null);
     const [approvingId, setApprovingId] = useState(null);  // { id, action: 'approve'|'reject' }
     const [submitting, setSubmitting] = useState(false);
@@ -403,7 +324,7 @@ export default function PurchaseRequestList() {
         total: pagination.totalElements,
         pending: requests.filter(r => r.trangThai === 1).length,
         approved: requests.filter(r => r.trangThai === 2).length,
-        sent: requests.filter(r => r.trangThai === 3).length,
+        sent: requests.filter(r => r.trangThai === 3 || r.trangThai === 5).length,
     };
 
     const getStatusIcon = (status) => {
@@ -417,38 +338,32 @@ export default function PurchaseRequestList() {
     };
 
     return (
-        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 min-h-screen">
-
+        <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Yêu cầu mua hàng</h1>
-                    <p className="text-sm text-slate-500 mt-0.5">Quản lý các yêu cầu nhập hàng từ nhân viên</p>
+                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Yêu cầu nhập hàng</h1>
+                    <p className="text-sm text-slate-500 mt-0.5">Nhân viên kho tạo yêu cầu → <strong>Quản lý kho duyệt</strong> → Nhân viên mua hàng tạo đơn mua</p>
                 </div>
-                <Button onClick={() => navigate('/purchase-requests/create')}
-                    className="bg-slate-900 text-white hover:bg-slate-700 shadow-sm gap-2">
-                    <Plus className="h-4 w-4" />
-                    Tạo yêu cầu
-                </Button>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: 'Tổng yêu cầu', value: stats.total, icon: FileText, bg: 'from-blue-50', iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
-                    { label: 'Chờ duyệt', value: stats.pending, icon: Clock, bg: 'from-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
+                    { label: 'Chờ duyệt', value: stats.pending, icon: Clock, bg: 'from-yellow-50', iconBg: 'bg-yellow-100', iconColor: 'text-yellow-600' },
                     { label: 'Đã duyệt', value: stats.approved, icon: CheckCircle, bg: 'from-green-50', iconBg: 'bg-green-100', iconColor: 'text-green-600' },
-                    { label: 'Đã gửi báo giá', value: stats.sent, icon: Send, bg: 'from-purple-50', iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
+                    { label: 'Đã chuyển báo giá', value: stats.sent, icon: FileText, bg: 'from-blue-50', iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
                 ].map(({ label, value, icon: Icon, bg, iconBg, iconColor }) => (
-                    <Card key={label} className={`border-0 shadow-md hover:shadow-lg transition-shadow bg-gradient-to-br ${bg} to-white`}>
-                        <CardContent className="p-5">
+                    <Card key={label} className={`border-0 shadow-md bg-gradient-to-br ${bg} to-white`}>
+                        <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600">{label}</p>
                                     <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
                                 </div>
-                                <div className={`h-11 w-11 rounded-full ${iconBg} flex items-center justify-center`}>
-                                    <Icon className={`h-5 w-5 ${iconColor}`} />
+                                <div className={`h-12 w-12 rounded-full ${iconBg} flex items-center justify-center`}>
+                                    <Icon className={`h-6 w-6 ${iconColor}`} />
                                 </div>
                             </div>
                         </CardContent>
@@ -464,8 +379,37 @@ export default function PurchaseRequestList() {
                         Bộ lọc tìm kiếm
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Kho */}
+                        <div className="space-y-2">
+                            <Label className="text-gray-700 font-medium">Kho nhập {warehouses.length > 0 && `(${warehouses.length})`}</Label>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="w-full justify-between font-normal bg-white border-gray-200">
+                                        <div className="flex items-center overflow-hidden gap-2">
+                                            <Warehouse className="h-4 w-4 text-gray-400 shrink-0" />
+                                            <span className="truncate">{getSelectedWarehouseName()}</span>
+                                        </div>
+                                        <ChevronDown className="h-4 w-4 opacity-50 ml-2 shrink-0" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[260px] bg-white shadow-lg border border-gray-100 z-50 max-h-[400px] overflow-y-auto">
+                                    <DropdownMenuItem onClick={() => handleFilterChange('khoId', 'all')} className="hover:bg-indigo-50 font-medium py-2">
+                                        Tất cả kho
+                                    </DropdownMenuItem>
+                                    {warehouses.map(w => (
+                                        <DropdownMenuItem key={w.id} onClick={() => handleFilterChange('khoId', w.id)} className="cursor-pointer hover:bg-indigo-50 py-2">
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-gray-900">{w.tenKho}</span>
+                                                {w.maKho && <span className="text-xs text-gray-500">Mã: {w.maKho}</span>}
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
                         {/* Trạng thái */}
                         <div className="space-y-2">
                             <Label className="text-gray-700 font-medium">Trạng thái</Label>
@@ -481,46 +425,17 @@ export default function PurchaseRequestList() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[200px] bg-white shadow-lg border border-gray-100 z-50">
-                                    <DropdownMenuItem onClick={() => handleFilterChange('trangThai', 'all')} className="hover:bg-indigo-50">
+                                    <DropdownMenuItem onClick={() => handleFilterChange('trangThai', 'all')} className="hover:bg-indigo-50 font-medium">
                                         Tất cả trạng thái
                                     </DropdownMenuItem>
-                                    {Object.entries(statusConfig).map(([key, cfg]) => {
-                                        const Icon = cfg.icon;
+                                    {[1, 2, 4, 3].map(key => {
+                                        const cfg = statusConfig[key];
                                         return (
                                             <DropdownMenuItem key={key} onClick={() => handleFilterChange('trangThai', key)} className="cursor-pointer hover:bg-indigo-50">
-                                                <div className="flex items-center gap-2"><Icon className="h-4 w-4" />{cfg.label}</div>
+                                                <div className="flex items-center gap-2">{getStatusIcon(parseInt(key))}{cfg.label}</div>
                                             </DropdownMenuItem>
                                         );
                                     })}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-
-                        {/* Kho */}
-                        <div className="space-y-2">
-                            <Label className="text-gray-700 font-medium">Kho nhập</Label>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-between font-normal bg-white border-gray-200">
-                                        <div className="flex items-center overflow-hidden gap-2">
-                                            <Warehouse className="h-4 w-4 text-gray-400 shrink-0" />
-                                            <span className="truncate">{getSelectedWarehouseName()}</span>
-                                        </div>
-                                        <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[240px] bg-white shadow-lg border border-gray-100 z-50 max-h-[300px] overflow-y-auto">
-                                    <DropdownMenuItem onClick={() => handleFilterChange('khoId', 'all')} className="hover:bg-indigo-50 font-medium">
-                                        Tất cả kho
-                                    </DropdownMenuItem>
-                                    {warehouses.map(w => (
-                                        <DropdownMenuItem key={w.id} onClick={() => handleFilterChange('khoId', w.id)} className="cursor-pointer hover:bg-indigo-50">
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-gray-900">{w.tenKho}</span>
-                                                {w.maKho && <span className="text-xs text-gray-500">Mã: {w.maKho}</span>}
-                                            </div>
-                                        </DropdownMenuItem>
-                                    ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -558,117 +473,81 @@ export default function PurchaseRequestList() {
             </Card>
 
             {/* Actions */}
-            <div className="flex justify-end gap-2">
+            <div className="flex items-center justify-end gap-2">
                 <Button variant="outline" onClick={() => fetchRequests(pagination.pageNumber, pagination.pageSize)}
                     className="gap-2 h-10 px-4 rounded-xl font-medium">
                     <RefreshCw className="h-4 w-4" />Làm mới
+                </Button>
+                <Button className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 gap-2 h-10 px-4 rounded-xl font-medium"
+                    onClick={() => navigate('/purchase-requests/create')}>
+                    <Plus className="h-4 w-4" />Tạo yêu cầu nhập hàng
                 </Button>
             </div>
 
             {/* Table */}
             <div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 overflow-hidden">
-                <div className="overflow-x-auto overflow-y-auto max-h-[560px]">
+                <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50">
-                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide w-12">STT</th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide w-14">STT</th>
                                 <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">Kho nhập</th>
                                 <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">Người tạo</th>
-                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide">Số SP</th>
-                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">Trạng thái</th>
-                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">Ngày giao DK</th>
                                 <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">Ngày tạo</th>
-                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide w-40">Thao tác</th>
+                                <th className="h-12 px-4 text-left font-semibold text-slate-600 text-xs uppercase tracking-wide">Ngày giao DK</th>
+                                <th className="h-12 px-4 text-center font-semibold text-slate-600 text-xs uppercase tracking-wide">Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {loading ? (
-                                <tr><td colSpan={8} className="py-16 text-center">
+                                <tr><td colSpan={7} className="py-16 text-center">
                                     <div className="flex flex-col items-center gap-3">
                                         <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
                                         <span className="text-slate-500 font-medium">Đang tải dữ liệu...</span>
                                     </div>
                                 </td></tr>
                             ) : requests.length === 0 ? (
-                                <tr><td colSpan={8} className="py-16 text-center">
+                                <tr><td colSpan={7} className="py-16 text-center">
                                     <div className="flex flex-col items-center gap-4">
-                                        <div className="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center">
-                                            <ShoppingBag className="h-10 w-10 text-slate-400" />
+                                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                                            <Package className="h-10 w-10 text-slate-400" />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-slate-800">Không tìm thấy yêu cầu mua hàng</p>
-                                            <p className="text-sm text-slate-500 mt-1">Thử thay đổi bộ lọc hoặc tạo yêu cầu mới</p>
+                                            <p className="font-semibold text-slate-800">Không tìm thấy yêu cầu nhập hàng</p>
+                                            <p className="text-sm text-slate-500 mt-1">Thử thay đổi bộ lọc hoặc tạo mới</p>
                                         </div>
                                     </div>
                                 </td></tr>
                             ) : requests.map((req, index) => {
                                 const cfg = statusConfig[req.trangThai] || statusConfig[1];
-                                const StatusIcon = cfg.icon;
                                 return (
-                                    <tr key={req.id} className="hover:bg-violet-50/40 transition-colors cursor-pointer"
-                                        onClick={() => setDetailRequest(req)}>
+                                    <tr key={req.id} className="transition-colors hover:bg-violet-50/50 cursor-pointer"
+                                        onClick={() => navigate(`/purchase-requests/${req.id}`)}>
                                         <td className="px-4 py-3.5 text-center text-slate-500 text-xs">
                                             {pagination.pageNumber * pagination.pageSize + index + 1}
                                         </td>
                                         <td className="px-4 py-3.5">
-                                            <p className="font-semibold text-slate-900">{req.khoNhap?.tenKho || '—'}</p>
-                                            <p className="text-xs text-slate-400">{req.khoNhap?.maKho}</p>
+                                            <p className="font-semibold text-slate-900">{req.khoNhap?.tenKho || '-'}</p>
+                                            <p className="text-xs text-slate-500">{req.khoNhap?.maKho}</p>
                                         </td>
                                         <td className="px-4 py-3.5">
-                                            <p className="font-semibold text-slate-900">{req.nguoiTao?.hoTen || '—'}</p>
-                                            <p className="text-xs text-slate-400">{req.nguoiTao?.email}</p>
+                                            <p className="font-semibold text-slate-900">{req.nguoiTao?.hoTen || '-'}</p>
+                                            <p className="text-xs text-slate-500">{req.nguoiTao?.email}</p>
+                                        </td>
+                                        <td className="px-4 py-3.5">
+                                            <div className="flex items-center gap-1.5 text-slate-600 text-sm">
+                                                <Calendar className="h-3.5 w-3.5 text-slate-400" />{formatDate(req.ngayTao)}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3.5">
+                                            <div className="flex items-center gap-1.5 text-slate-600 text-sm">
+                                                <Calendar className="h-3.5 w-3.5 text-slate-400" />{formatDate(req.ngayGiaoDuKien)}
+                                            </div>
                                         </td>
                                         <td className="px-4 py-3.5 text-center">
-                                            <span className="inline-flex items-center justify-center h-6 min-w-6 px-2 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
-                                                {req.chiTietYeuCauMuaHangs?.length || 0}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3.5">
                                             <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${cfg.color}`}>
-                                                <StatusIcon className="h-3.5 w-3.5" />
-                                                {cfg.label}
+                                                {getStatusIcon(req.trangThai)}{cfg.label}
                                             </span>
-                                        </td>
-                                        <td className="px-4 py-3.5 text-slate-600 text-sm">{formatDate(req.ngayGiaoDuKien)}</td>
-                                        <td className="px-4 py-3.5 text-slate-600 text-sm">{formatDate(req.ngayTao)}</td>
-                                        <td className="px-4 py-3.5" onClick={e => e.stopPropagation()}>
-                                            <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                                                {/* Xem chi tiết */}
-                                                <button type="button" onClick={() => setDetailRequest(req)}
-                                                    title="Xem chi tiết"
-                                                    className="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
-                                                    <Eye className="h-4 w-4 text-slate-600" />
-                                                </button>
-
-                                                {/* Manager: Duyệt (chỉ khi chờ duyệt) */}
-                                                {isManager && req.trangThai === 1 && (
-                                                    <>
-                                                        <button type="button"
-                                                            onClick={() => setApprovingId({ id: req.id, action: 'approve' })}
-                                                            title="Duyệt"
-                                                            className="h-8 w-8 rounded-lg bg-green-100 hover:bg-green-200 flex items-center justify-center transition-colors">
-                                                            <CheckCircle className="h-4 w-4 text-green-700" />
-                                                        </button>
-                                                        <button type="button"
-                                                            onClick={() => setApprovingId({ id: req.id, action: 'reject' })}
-                                                            title="Từ chối"
-                                                            className="h-8 w-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors">
-                                                            <XCircle className="h-4 w-4 text-red-700" />
-                                                        </button>
-                                                    </>
-                                                )}
-
-                                                {/* Manager: Gửi báo giá (chỉ khi đã duyệt) */}
-                                                {isManager && req.trangThai === 2 && (
-                                                    <button type="button"
-                                                        onClick={() => navigate(`/purchase-requests/${req.id}/send-quotation`)}
-                                                        title="Gửi yêu cầu báo giá"
-                                                        className="h-8 px-3 rounded-lg bg-blue-100 hover:bg-blue-200 flex items-center gap-1 transition-colors text-[12px] font-semibold text-blue-700">
-                                                        <Send className="h-3.5 w-3.5" />
-                                                        Gửi NCC
-                                                    </button>
-                                                )}
-                                            </div>
                                         </td>
                                     </tr>
                                 );
@@ -686,11 +565,11 @@ export default function PurchaseRequestList() {
                             <Label className="text-sm text-gray-600 whitespace-nowrap">Hiển thị:</Label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-[120px] justify-between font-normal bg-white border-gray-200">
-                                        {pagination.pageSize} dòng <ChevronDown className="h-4 w-4 opacity-50" />
+                                    <Button variant="outline" className="w-[110px] justify-between font-normal bg-white border-gray-200">
+                                        {pagination.pageSize} dòng<ChevronDown className="h-4 w-4 opacity-50" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[120px] bg-white shadow-lg border border-gray-100 z-50">
+                                <DropdownMenuContent className="w-[110px] bg-white shadow-lg border border-gray-100 z-50">
                                     {[5, 10, 20, 50].map(size => (
                                         <DropdownMenuItem key={size} onClick={() => setPagination(p => ({ ...p, pageNumber: 0, pageSize: size }))} className="cursor-pointer">
                                             {size} dòng
@@ -699,15 +578,18 @@ export default function PurchaseRequestList() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
+
                         <div className="text-sm text-gray-600">
-                            Hiển thị <span className="font-semibold text-gray-900">{pagination.totalElements === 0 ? 0 : pagination.pageNumber * pagination.pageSize + 1}</span>–
-                            <span className="font-semibold text-gray-900">{Math.min((pagination.pageNumber + 1) * pagination.pageSize, pagination.totalElements)}</span> trong
-                            <span className="font-semibold text-indigo-600"> {pagination.totalElements}</span> kết quả
+                            Hiển thị <span className="font-semibold text-gray-900">{pagination.totalElements === 0 ? 0 : pagination.pageNumber * pagination.pageSize + 1}</span>
+                            {' '}-{' '}
+                            <span className="font-semibold text-gray-900">{Math.min((pagination.pageNumber + 1) * pagination.pageSize, pagination.totalElements)}</span>
+                            {' '}trong{' '}<span className="font-semibold text-indigo-600">{pagination.totalElements}</span> kết quả
                         </div>
+
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" onClick={() => setPagination(p => ({ ...p, pageNumber: p.pageNumber - 1 }))}
                                 disabled={pagination.pageNumber === 0} className="gap-1">
-                                <ChevronLeft className="h-4 w-4" /> Trước
+                                <ChevronLeft className="h-4 w-4" />Trước
                             </Button>
                             <div className="hidden sm:flex gap-1">
                                 {[...Array(Math.min(5, pagination.totalPages))].map((_, idx) => {
@@ -728,49 +610,42 @@ export default function PurchaseRequestList() {
                             </div>
                             <Button variant="outline" size="sm" onClick={() => setPagination(p => ({ ...p, pageNumber: p.pageNumber + 1 }))}
                                 disabled={pagination.pageNumber >= pagination.totalPages - 1 || pagination.totalPages === 0} className="gap-1">
-                                Sau <ChevronRight className="h-4 w-4" />
+                                Sau<ChevronRight className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* ── Approve/Reject confirm dialog ── */}
-            <Dialog open={!!approvingId} onOpenChange={() => setApprovingId(null)}>
-                <DialogContent className="rounded-2xl sm:max-w-sm p-0 overflow-hidden border-0 shadow-2xl">
-                    <div className={`p-6 flex items-center gap-3 ${approvingId?.action === 'approve' ? 'bg-green-600' : 'bg-red-600'}`}>
-                        <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+            <AlertDialog open={!!approvingId} onOpenChange={(open) => !open && setApprovingId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className={`flex items-center gap-2 ${approvingId?.action === 'approve' ? 'text-green-600' : 'text-red-600'}`}>
+                            {approvingId?.action === 'approve' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+                            {approvingId?.action === 'approve' ? 'Xác nhận duyệt yêu cầu' : 'Xác nhận từ chối yêu cầu'}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bạn có chắc chắn muốn <strong>{approvingId?.action === 'approve' ? 'duyệt' : 'từ chối'}</strong> yêu cầu nhập hàng <strong>#{approvingId?.id}</strong>?
+                            <br /><br />
                             {approvingId?.action === 'approve'
-                                ? <CheckCircle className="h-5 w-5 text-white" />
-                                : <XCircle className="h-5 w-5 text-white" />
+                                ? 'Sau khi duyệt, có thể gửi báo giá đến nhà cung cấp để tạo đơn báo giá tương ứng.'
+                                : 'Hành động từ chối yêu cầu này không thể hoàn tác.'
                             }
-                        </div>
-                        <DialogTitle className="text-xl font-bold text-white m-0">
-                            {approvingId?.action === 'approve' ? 'Xác nhận duyệt' : 'Xác nhận từ chối'}
-                        </DialogTitle>
-                    </div>
-                    <div className="p-6">
-                        <DialogDescription className="text-[15px] text-slate-600 mb-6">
-                            {approvingId?.action === 'approve'
-                                ? 'Bạn có chắc muốn duyệt yêu cầu mua hàng này? Sau khi duyệt, có thể gửi báo giá đến nhà cung cấp.'
-                                : 'Bạn có chắc muốn từ chối yêu cầu này? Hành động này không thể hoàn tác.'
-                            }
-                        </DialogDescription>
-                        <DialogFooter className="gap-2">
-                            <Button variant="outline" onClick={() => setApprovingId(null)} disabled={submitting}
-                                className="h-11 rounded-xl font-semibold w-full sm:w-auto">Hủy</Button>
-                            <Button onClick={() => handleApprove(approvingId.id, approvingId.action === 'approve' ? 2 : 4)}
-                                disabled={submitting}
-                                className={`h-11 rounded-xl font-semibold w-full sm:w-auto ${approvingId?.action === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-white`}>
-                                {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : (approvingId?.action === 'approve' ? 'Duyệt' : 'Từ chối')}
-                            </Button>
-                        </DialogFooter>
-                    </div>
-                </DialogContent>
-            </Dialog>
-
-            {/* ── Detail Dialog ── */}
-            <DetailDialog open={!!detailRequest} onClose={() => setDetailRequest(null)} request={detailRequest} />
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={submitting} onClick={() => setApprovingId(null)}>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => handleApprove(approvingId.id, approvingId?.action === 'approve' ? 2 : 4)}
+                            disabled={submitting}
+                            className={approvingId?.action === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
+                        >
+                            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                            {approvingId?.action === 'approve' ? 'Duyệt yêu cầu' : 'Từ chối yêu cầu'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* ── Send to Supplier Dialog ── */}
             <SendToSupplierDialog
