@@ -637,7 +637,7 @@ export default function TonKhoTongQuan() {
                                                         size="sm"
                                                         className="h-7 gap-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white border-0"
                                                         onClick={() => {
-                                                            navigate(`/purchase-orders/create?bienTheId=${item.bienTheId}&khoId=${item.khoId}`);
+                                                            navigate(`/purchase-requests/create?bienTheId=${item.bienTheId}&khoId=${item.khoId}`);
                                                         }}
                                                     >
                                                         <PackagePlus className="h-3 w-3" />
