@@ -111,8 +111,8 @@ export default function DonBanHangCreate() {
 
       setOrderItems(chiTiet.map(item => ({
         ...item,
-        tenSanPham: item.bienTheSanPham?.sanPham?.tenSanPham || "",
-        maBienThe: item.bienTheSanPham?.maBienThe || "",
+        tenSanPham: item.tenSanPham || "",
+        maBienThe: item.sku || "",
         thanhTien: item.soLuongDat * item.donGia
       })));
     } catch (error) {
@@ -137,9 +137,6 @@ export default function DonBanHangCreate() {
 
     try {
       setLoading(true);
-      // Gọi API convertToOrder
-      // Lưu ý: Backend Service của bạn ở hàm convertToOrder hiện chỉ đọc khoXuatId.
-      // Nếu bạn muốn lưu cả ghiChu và phiVanChuyen, hãy bổ sung logic vào Backend Service.
       await donBanHangService.convertToOrder(selectedQuoteId, {
         khoXuatId: parseInt(formData.khoXuatId),
         phiVanChuyen: Number(formData.phiVanChuyen),
