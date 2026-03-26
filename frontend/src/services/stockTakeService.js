@@ -16,7 +16,7 @@ export const getStockTakes = async () => {
 // Tạo đợt kiểm kê mới → trả về dotKiemKeId (Integer)
 export const createStockTake = async (values) => {
   const response = await apiClient.post(`/api/phieu-kiem-ke`, values);
-  return response.data.data; // số nguyên dotKiemKeId
+  return response.data.data; // trả về dotKiemKeId (Integer)
 };
 
 // Lấy chi tiết các lô hàng trong đợt kiểm kê

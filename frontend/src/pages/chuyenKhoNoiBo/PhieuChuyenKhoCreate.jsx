@@ -29,21 +29,23 @@ export default function PhieuChuyenKhoCreate() {
 
     useEffect(() => { loadInitialData(); }, []);
 
+    //tải danh sách biến thể và danh sách kho
     async function loadInitialData() {
         try {
             const [variantRes, khoRes] = await Promise.all([
-                donBanHangService.getVariantsForCreate(),
-                khoService.filter({ page: 0, size: 100, filters: [] }),
+                donBanHangService.getVariantsForCreate(), // tải danh sách biến thể
+                khoService.filter({ page: 0, size: 100, filters: [] }), // tải danh sách kho (giới hạn 100 kho, có thể điều chỉnh nếu cần)
             ]);
             setVariants(variantRes?.data?.data || variantRes?.data || []);
-            const listKho = khoRes.data?.data?.content || khoRes.data?.content || [];
+            const listKho = khoRes.data?.data?.content || khoRes.data?.content || []; 
             setWarehouses(listKho);
         } catch {
             toast.error("Không thể tải dữ liệu khởi tạo");
         }
     }
 
-    const filteredProducts = useMemo(() => {
+    // Lọc biến thể dựa trên searchTerm, tìm kiếm sản phẩm theo tên hoặc mã SKU, không phân biệt hoa thường
+    const filteredProducts = useMemo(() => { 
         const lower = searchTerm.toLowerCase().trim();
         if (!lower) return variants.slice(0, 10);
         return variants.filter(v =>
@@ -88,7 +90,7 @@ export default function PhieuChuyenKhoCreate() {
                     soLuongXuat: item.quantity,
                 })),
             };
-            const res = await phieuChuyenKhoService.create(payload);
+            const res = await phieuChuyenKhoService.create(payload); //chạy api
             toast.success("Tạo yêu cầu điều chuyển thành công");
             navigate(`/transfer-tickets/${res.id}`);
         } catch (e) {
@@ -396,7 +398,7 @@ export default function PhieuChuyenKhoCreate() {
                                             Hủy
                                         </Button>
                                         <Button
-                                            onClick={handleCreate}
+                                            onClick={handleCreate} //khi bấm vào button tạo phiếu điều chuyển thì sẽ gọi hàm handleCreate để gửi dữ liệu lên server
                                             disabled={loading}
                                             className="bg-yellow-500 text-white border border-yellow-500 hover:bg-yellow-600 shadow-sm transition-all duration-200 min-w-[180px] font-bold"
                                         >

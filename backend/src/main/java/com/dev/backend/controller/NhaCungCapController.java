@@ -39,21 +39,21 @@ public class NhaCungCapController {
     @RequireAuth(
     )
     public ResponseEntity<ResponseData> getById(@PathVariable Integer id) {
-        NhaCungCapDto dto = service.findByIdDto(id);
+        NhaCungCapDto dto = service.findByIdDto(id); // ← Gọi Service
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
-                .data(dto)
+                .data(dto)  // Trả về DTO
                 .message("Lấy chi tiết nhà cung cấp thành công")
                 .build());
     }
 
-    // Add Supplier - POST /api/supplier
+    // Add Supplier - POST /api/supplier--------------
     @PostMapping
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
     )
-    public ResponseEntity<ResponseData> create(@RequestBody NhaCungCapCreating creating) {
-        NhaCungCapDto dto = service.create(creating);
+    public ResponseEntity<ResponseData> create(@RequestBody NhaCungCapCreating creating) { // ← Nhận DTO từ FE
+        NhaCungCapDto dto = service.create(creating); // ← Gọi Service
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dto)
@@ -61,13 +61,13 @@ public class NhaCungCapController {
                 .build());
     }
 
-    // Edit Supplier - PUT /api/supplier/{id}
+    // Edit Supplier - PUT /api/supplier/{id}--------------
     @PutMapping("/{id}")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.nhan_vien_mua_hang}
     )
-    public ResponseEntity<ResponseData> update(@PathVariable Integer id, @RequestBody NhaCungCapUpdating updating) {
-        NhaCungCapDto dto = service.update(id, updating);
+    public ResponseEntity<ResponseData> update(@PathVariable Integer id, @RequestBody NhaCungCapUpdating updating) { // ← Nhận DTO cập nhật
+        NhaCungCapDto dto = service.update(id, updating); // ← Gọi Service
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dto)

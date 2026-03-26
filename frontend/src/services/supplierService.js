@@ -27,7 +27,7 @@ export const getSupplierById = async (id) => {
 // Tạo mới
 export const createSupplier = async (data) => {
     try {
-        const response = await apiClient.post(API_URL, data);
+        const response = await apiClient.post(API_URL, data); // Gửi request POST đến backend với nội dung chính là payload từ form.
         return response.data.data;
     } catch (error) {
         console.error('Lỗi tạo nhà cung cấp:', error);
@@ -38,7 +38,7 @@ export const createSupplier = async (data) => {
 // Cập nhật
 export const updateSupplier = async (id, data) => {
     try {
-        const response = await apiClient.put(`${API_URL}/${id}`, data);
+        const response = await apiClient.put(`${API_URL}/${id}`, data); // Gửi request PUT đến backend với nội dung chính là payload từ form.
         return response.data.data;
     } catch (error) {
         console.error('Lỗi cập nhật nhà cung cấp:', error);
