@@ -302,7 +302,7 @@ export default function BackofficeLayout() {
         },
         {
             key: "PURCHASE_REQUEST_QUOTATION",
-            match: (path) => /^\/purchase-requests\/\d+\/gui-bao-gia$/.test(path),
+            match: (path) => /^\/purchase-requests\/\d+\/send-quotation$/.test(path),
             title: "Tạo yêu cầu báo giá",
             subtitle: "Gửi yêu cầu báo giá đến nhà cung cấp dựa trên phiếu yêu cầu",
         },
@@ -331,6 +331,21 @@ export default function BackofficeLayout() {
             match: (path) => /^\/purchase-requests\/\d+$/.test(path),
             title: "Chi tiết yêu cầu nhập hàng",
         },
+        {
+            key: "QUOTATION_REQUEST_DETAIL",
+            match: (path) => /^\/quotation-requests\/\d+$/.test(path),
+            title: "Chi tiết yêu cầu báo giá",
+        },
+        {
+            key: "QUOTATION_DETAIL",
+            match: (path) => /^\/quotation\/\d+$/.test(path),
+            title: "Chi tiết báo giá",
+        },
+        {
+            key: "PURCHASE_ORDER_DETAIL",
+            match: (path) => /^\/purchase-orders\/\d+$/.test(path),
+            title: "Chi tiết đơn mua hàng",
+        }
     ];
 
     const pageMeta = PAGE_META_CONFIG.find((item) =>

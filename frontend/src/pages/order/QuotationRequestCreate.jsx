@@ -1,28 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import purchaseOrderService from "@/services/purchaseOrderService";
+import purchaseRequestService from "@/services/purchaseRequestService";
 import apiClient from "@/services/apiClient";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
-    FileText,
-    ArrowLeft,
-    Loader2,
-    ClipboardList,
-    Truck,
-    CheckCircle2,
-    Send,
-    RotateCw,
-    Building2,
-    ChevronDown
+    FileText, ArrowLeft, Loader2, ClipboardList, Truck,
+    CheckCircle2, Send, RotateCw, Building2, Check, Users
 } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════
@@ -57,13 +45,6 @@ const STYLES = `
   position: relative; z-index: 1;
   max-width: 1400px; margin: 0 auto;
   display: flex; flex-direction: column; gap: 24px;
-}
-
-/* ── Header ── */
-.wh-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  padding-bottom: 24px;
-  border-bottom: 1.5px solid rgba(184,134,11,0.15);
 }
 
 /* ── Cards ── */
@@ -104,6 +85,12 @@ const STYLES = `
 }
 .inp-area { height: auto; padding: 14px 16px; min-height: 100px; resize: none; }
 
+/* Custom Scrollbar cho Supplier List */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(184,134,11,0.2); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(184,134,11,0.4); }
+
 /* ── Table ── */
 .wh-tbl { width: 100%; border-collapse: collapse; }
 .wh-th {
@@ -138,9 +125,10 @@ export default function QuotationRequestCreate() {
     const [form, setForm] = useState({
         prId: "",
         soDonMua: "",
-        nhaCungCapId: "",
         ghiChu: "",
     });
+
+    const [selectedSupplierIds, setSelectedSupplierIds] = useState([]);
 
     useEffect(() => {
         fetchInitialData();
@@ -149,25 +137,24 @@ export default function QuotationRequestCreate() {
     async function fetchInitialData() {
         setLoading(true);
         try {
-            // Lấy danh sách PR (Đã duyệt) và danh sách nhà cung cấp song song
-            const [prRes, suppRes] = await Promise.all([
-                purchaseOrderService.filter({
-                    filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 2, logicType: "AND" }],
-                    sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
-                    page: 0, size: 1000
-                }),
-                purchaseOrderService.getUniqueSuppliers()
-            ]);
-            
-            setPrList(prRes.data?.content || prRes.content || []);
-            setSuppliers(suppRes || []);
+            // Lấy danh sách PR (Đã duyệt) từ API filter mới
+            const prRes = await apiClient.post('/api/v1/yeu-cau-mua-hang/filter', {
+                filters: [{ fieldName: "trangThai", operation: "EQUALS", value: 2, logicType: "AND" }],
+                sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
+                page: 0, size: 1000
+            });
+            setPrList(prRes.data?.data?.content || prRes.data?.content || []);
+
+            // Lấy danh sách nhà cung cấp (chỉ hiển thị những NCC đang hoạt động: trangThai = 1)
+            const suppRes = await apiClient.get('/api/supplier');
+            const allSuppliers = suppRes.data?.data || [];
+            setSuppliers(allSuppliers.filter(s => s.trangThai === 1));
 
             // Xử lý auto-fill nếu đi từ màn detail sang
             const initialPrId = searchParams.get("prId");
             if (initialPrId) {
                 await loadPRDetails(initialPrId);
             }
-
         } catch (error) {
             toast.error("Không thể tải dữ liệu khởi tạo");
         } finally {
@@ -178,17 +165,16 @@ export default function QuotationRequestCreate() {
     const loadPRDetails = async (id) => {
         setActionLoading(true);
         try {
-            const res = await purchaseOrderService.getById(id);
-            const data = res.data;
+            const res = await apiClient.get(`/api/v1/yeu-cau-mua-hang/get-by-id/${id}`);
+            const data = res.data?.data;
             
             setSelectedPR(data);
             setForm(prev => ({
                 ...prev,
                 prId: data.id,
-                soDonMua: data.soDonMua || prev.soDonMua,
-                nhaCungCapId: data.nhaCungCap?.id || prev.nhaCungCapId,
-                ghiChu: `Tạo yêu cầu báo giá từ PR: ${data.soDonMua || data.id}`
+                ghiChu: `Tạo yêu cầu báo giá từ PR #${data.id}`
             }));
+            generateOrderNumber();
         } catch (error) {
             toast.error("Không thể tải chi tiết Yêu cầu mua hàng");
             setSelectedPR(null);
@@ -201,10 +187,16 @@ export default function QuotationRequestCreate() {
     const handleSelectPR = (id) => {
         if (!id) { 
             setSelectedPR(null); 
-            setForm(prev => ({ ...prev, prId: "", soDonMua: "", nhaCungCapId: "" }));
+            setForm(prev => ({ ...prev, prId: "", soDonMua: "" }));
             return; 
         }
         loadPRDetails(id);
+    };
+
+    const toggleSupplier = (id) => {
+        setSelectedSupplierIds(prev => 
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
     };
 
     const generateOrderNumber = () => {
@@ -213,28 +205,25 @@ export default function QuotationRequestCreate() {
         const m = String(now.getMonth() + 1).padStart(2, '0');
         const d = String(now.getDate()).padStart(2, '0');
         const r = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-        setForm(prev => ({ ...prev, soDonMua: `PO${y}${m}${d}${r}` }));
+        setForm(prev => ({ ...prev, soDonMua: `RFQ${y}${m}${d}${r}` }));
     };
 
     const handleCreate = () => {
         if (!form.prId) return toast.error("Vui lòng chọn Yêu cầu mua hàng (PR)");
-        if (!form.soDonMua?.trim()) return toast.error("Vui lòng nhập số đơn mua");
-        if (!form.nhaCungCapId) return toast.error("Vui lòng chọn nhà cung cấp");
-        
+        if (selectedSupplierIds.length === 0) return toast.error("Vui lòng chọn ít nhất một Nhà cung cấp");
         setShowConfirmDialog(true);
     };
 
     const confirmSend = async () => {
         setSending(true);
         try {
-            // Logic gửi y hệt màn SendQuotationRequest
-            await apiClient.put('/api/v1/nghiep-vu/don-mua-hang/gui-yeu-cau-bao-gia', {
-                id: parseInt(form.prId),
-                soDonMua: form.soDonMua.trim(),
-                nhaCungCapId: parseInt(form.nhaCungCapId),
+            await purchaseRequestService.sendQuotationRequest({
+                yeuCauMuaHangId: parseInt(form.prId),
+                nhaCungCapIds: selectedSupplierIds,
+                ghiChu: form.ghiChu,
             });
 
-            toast.success('Đã gửi yêu cầu báo giá thành công! Trạng thái đã được cập nhật.');
+            toast.success(`Đã gửi yêu cầu báo giá đến ${selectedSupplierIds.length} NCC thành công!`);
             setShowConfirmDialog(false);
             setTimeout(() => navigate('/quotation-requests'), 1500);
         } catch (err) {
@@ -244,8 +233,6 @@ export default function QuotationRequestCreate() {
             setSending(false);
         }
     };
-
-    const selectedSupplier = suppliers.find(s => s.id === parseInt(form.nhaCungCapId)) ?? null;
 
     if (loading) {
         return (
@@ -291,81 +278,63 @@ export default function QuotationRequestCreate() {
                                             <option value="">-- Chọn PR đã duyệt --</option>
                                             {prList.map(pr => (
                                                 <option key={pr.id} value={pr.id}>
-                                                    {pr.soDonMua || `PR-${pr.id}`}
+                                                    {pr.soYeuCauMuaHang || `PR-${pr.id}`}
                                                 </option>
                                             ))}
                                         </select>
                                     </div>
 
                                     <div className="inp-group">
-                                        <label className="inp-label">Mã yêu cầu <span className="text-rose-500">*</span></label>
+                                        <label className="inp-label">Tiền tố mã báo giá (Tùy chọn)</label>
                                         <div className="flex gap-2">
                                             <Input
-                                                value={form.soDonMua?.replace(/^PO/, 'RFQ')}
+                                                value={form.soDonMua}
                                                 onChange={(e) => setForm(prev => ({ ...prev, soDonMua: e.target.value }))}
-                                                placeholder="Nhập hoặc tự sinh..."
+                                                placeholder="VD: RFQ2024..."
                                                 className="h-11 font-mono font-bold text-[#8b6a21] bg-[#faf8f3] rounded-xl border-[#b8860b]/20 shadow-sm text-[15px] flex-1 focus-visible:ring-[#b8860b]"
                                             />
                                             <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={generateOrderNumber}
-                                                className="h-11 w-11 p-0 rounded-xl border-[#b8860b]/20 hover:bg-[#b8860b]/10 text-[#b8860b]"
-                                                title="Tự sinh mã"
+                                                type="button" variant="outline" onClick={generateOrderNumber}
+                                                className="h-11 w-11 p-0 rounded-xl border-[#b8860b]/20 hover:bg-[#b8860b]/10 text-[#b8860b]" title="Tự sinh mã"
                                             >
                                                 <RotateCw className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>
 
+                                    {/* ── Multi-select Nhà Cung Cấp ── */}
                                     <div className="inp-group">
-                                        <label className="inp-label">Nhà Cung Cấp <span className="text-rose-500">*</span></label>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className="w-full h-11 justify-between font-medium rounded-xl border-[#b8860b]/20 bg-[#faf8f3] px-4 text-[14px]"
-                                                >
-                                                    <div className="flex items-center gap-2 truncate">
-                                                        <Building2 className="h-4 w-4 text-[#b8860b] shrink-0" />
-                                                        <span className="truncate text-[#1a1612]">
-                                                            {selectedSupplier ? selectedSupplier.tenNhaCungCap : 'Chọn nhà cung cấp...'}
-                                                        </span>
-                                                    </div>
-                                                    <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent
-                                                className="w-[380px] max-h-[320px] overflow-y-auto bg-white rounded-xl shadow-lg border border-slate-100 z-50"
-                                                align="start"
-                                            >
-                                                {suppliers.length === 0 ? (
-                                                    <div className="p-4 text-center text-slate-500 text-sm italic">Không có dữ liệu</div>
-                                                ) : suppliers.map((s) => (
-                                                    <DropdownMenuItem
-                                                        key={s.id}
-                                                        onClick={() => setForm(prev => ({ ...prev, nhaCungCapId: s.id }))}
-                                                        className="cursor-pointer p-3 flex flex-col items-start gap-1 rounded-lg mx-1 my-0.5 hover:bg-slate-50 focus:bg-slate-50"
+                                        <div className="flex items-center justify-between">
+                                            <label className="inp-label">Nhà Cung Cấp <span className="text-rose-500">*</span></label>
+                                            {selectedSupplierIds.length > 0 && (
+                                                <span className="text-[10px] font-bold text-white bg-[#b8860b] px-2 py-0.5 rounded-full shadow-sm">
+                                                    {selectedSupplierIds.length} đã chọn
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="max-h-[220px] overflow-y-auto rounded-xl border border-[#b8860b]/20 bg-[#faf8f3] p-1.5 space-y-1 custom-scrollbar">
+                                            {suppliers.length === 0 ? (
+                                                <p className="text-center text-[12px] text-slate-400 py-6 italic">Không có dữ liệu NCC</p>
+                                            ) : suppliers.map(s => {
+                                                const isSelected = selectedSupplierIds.includes(s.id);
+                                                return (
+                                                    <button
+                                                        key={s.id} type="button" onClick={() => toggleSupplier(s.id)}
+                                                        className={`w-full flex items-center justify-between p-2.5 rounded-lg border transition-all text-left ${isSelected ? 'bg-white border-[#b8860b]/40 shadow-sm' : 'border-transparent hover:bg-black/5'}`}
                                                     >
-                                                        <span className="font-bold text-slate-800">{s.tenNhaCungCap}</span>
-                                                        <div className="flex items-center justify-between w-full text-xs text-slate-500">
-                                                            <span>Mã: {s.maNhaCungCap}</span>
-                                                            {s.email && <span className="text-slate-400 truncate max-w-[180px]">{s.email}</span>}
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`h-4 w-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-[#b8860b] border-[#b8860b]' : 'border-slate-300 bg-white'}`}>
+                                                                {isSelected && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                                                            </div>
+                                                            <div>
+                                                                <p className={`text-[13px] leading-tight ${isSelected ? 'font-bold text-[#1a1612]' : 'font-semibold text-slate-700'}`}>{s.tenNhaCungCap}</p>
+                                                                <p className="text-[10px] text-slate-500 font-mono mt-0.5">{s.maNhaCungCap}</p>
+                                                            </div>
                                                         </div>
-                                                    </DropdownMenuItem>
-                                                ))}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-
-                                    <div className="inp-group mt-2">
-                                        <label className="inp-label">Ghi chú (Nội bộ)</label>
-                                        <textarea
-                                            className="inp-area text-[13px]"
-                                            placeholder="..."
-                                            value={form.ghiChu}
-                                            onChange={(e) => setForm(p => ({ ...p, ghiChu: e.target.value }))}
-                                        />
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
                                     </div>
 
                                 </div>
@@ -380,7 +349,7 @@ export default function QuotationRequestCreate() {
                                         <div className="sec-icon-wrap"><ClipboardList size={16} /></div>
                                         <span className="sec-title">Danh sách sản phẩm</span>
                                     </div>
-                                    {selectedPR && <span className="badge-tag gold">#{selectedPR.soDonMua || selectedPR.id}</span>}
+                                    {selectedPR && <span className="badge-tag gold">#{selectedPR.soYeuCauMuaHang || selectedPR.id}</span>}
                                 </div>
                                 <div className="flex-1 overflow-x-auto">
                                     {!selectedPR ? (
@@ -398,11 +367,11 @@ export default function QuotationRequestCreate() {
                                                 </tr>
                                             </thead>
                                             <tbody className="wh-tbody">
-                                                {selectedPR.chiTietDonMuaHangs?.map(ct => (
-                                                    <tr key={ct.id}>
+                                                {selectedPR.chiTietYeuCauMuaHangs?.map((ct, idx) => (
+                                                    <tr key={ct.id || idx}>
                                                         <td className="wh-td">
                                                             <div className="font-bold text-[#1a1612]">
-                                                                {ct.bienTheSanPham?.tenSanPham || 'Tên sản phẩm'}
+                                                                {ct.bienTheSanPham?.tenSanPham || ct.bienTheSanPham?.tenBienThe || 'Tên sản phẩm'}
                                                             </div>
                                                             <div className="font-mono text-[11px] text-[#b8860b] mt-0.5 flex gap-2">
                                                                 <span>{ct.bienTheSanPham?.maSku}</span>
@@ -411,21 +380,21 @@ export default function QuotationRequestCreate() {
                                                             </div>
                                                         </td>
                                                         <td className="wh-td text-center">
-                                                            <span className="font-black text-[#1a1612] text-base">
+                                                            <span className="font-black text-[#1a1612] text-base bg-slate-100 px-2 py-1 rounded-md">
                                                                 {ct.soLuongDat || 0}
                                                             </span>
                                                         </td>
                                                         <td className="wh-td text-right">
                                                             <span className="badge-tag gold flex items-center gap-1 justify-end w-max ml-auto">
-                                                                <CheckCircle2 size={12} /> Approved
+                                                                <CheckCircle2 size={12} /> Ready
                                                             </span>
                                                         </td>
                                                     </tr>
                                                 ))}
-                                                {(!selectedPR.chiTietDonMuaHangs || selectedPR.chiTietDonMuaHangs.length === 0) && (
+                                                {(!selectedPR.chiTietYeuCauMuaHangs || selectedPR.chiTietYeuCauMuaHangs.length === 0) && (
                                                     <tr>
-                                                        <td colSpan="3" className="text-center py-8 text-sm text-gray-400 italic">
-                                                            PR này không có sản phẩm nào
+                                                        <td colSpan="3" className="text-center py-10 text-sm text-gray-400 italic">
+                                                            Yêu cầu này không có sản phẩm nào
                                                         </td>
                                                     </tr>
                                                 )}
@@ -441,11 +410,11 @@ export default function QuotationRequestCreate() {
                     <div className="flex justify-end gap-3 mt-4">
                         <Button 
                             onClick={handleCreate} 
-                            disabled={actionLoading || !form.prId} 
-                            className="flex items-center justify-center h-11 rounded-xl px-6 gap-2 bg-gradient-to-r from-[#b8860b] to-[#d4af37] hover:from-[#a07409] hover:to-[#b8860b] text-white font-bold shadow-md border-0 transition-all duration-300"
+                            disabled={actionLoading || !form.prId || selectedSupplierIds.length === 0} 
+                            className="flex items-center justify-center h-12 rounded-xl px-8 gap-2 bg-gradient-to-r from-[#b8860b] to-[#d4af37] hover:from-[#a07409] hover:to-[#b8860b] text-white font-bold shadow-[0_4px_14px_rgba(184,134,11,0.25)] border-0 transition-all duration-300"
                         >
                             {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                            Tạo & Gửi báo giá
+                            Tạo & Gửi {selectedSupplierIds.length > 0 ? `(${selectedSupplierIds.length})` : ''} báo giá
                         </Button>
                     </div>
                 </div>
@@ -453,32 +422,28 @@ export default function QuotationRequestCreate() {
 
             {/* ── Confirm Dialog ── */}
             <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-                <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border border-[#b8860b]/20 shadow-2xl">
+                <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border border-[#b8860b]/20 shadow-2xl bg-white">
                     <div className="bg-gradient-to-r from-[#b8860b] to-[#d4af37] p-6 flex items-center gap-3">
                         <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center shrink-0 shadow-inner">
                             <Send className="h-5 w-5 text-white" />
                         </div>
                         <DialogTitle className="text-xl font-bold text-white m-0 tracking-wide font-['Playfair_Display']">
-                            Xác nhận gửi yêu cầu báo giá
+                            Xác nhận gửi yêu cầu
                         </DialogTitle>
                     </div>
                     <div className="p-6 bg-[#faf8f3]">
                         <DialogDescription className="text-[15px] text-slate-700 mb-6 leading-relaxed">
-                            Hệ thống sẽ gửi email yêu cầu báo giá đến nhà cung cấp và cập nhật trạng thái đơn hàng.
+                            Hệ thống sẽ tạo <strong>{selectedSupplierIds.length} đơn báo giá</strong> và gửi email thông báo đồng loạt đến các nhà cung cấp đã chọn.
                         </DialogDescription>
 
                         <div className="bg-white border border-[#b8860b]/20 shadow-sm rounded-xl p-4 space-y-3 mb-6 text-[14px]">
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Số đơn:</span>
-                                <span className="font-mono font-bold text-[#b8860b] text-[15px]">{form.soDonMua?.replace(/^PO/, 'RFQ')}</span>
+                            <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <span className="text-slate-500 font-medium">Mã yêu cầu gốc:</span>
+                                <span className="font-bold text-[#1a1612] text-[15px]">{selectedPR?.soYeuCauMuaHang || `#${selectedPR?.id}`}</span>
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Nhà cung cấp:</span>
-                                <span className="font-bold text-slate-800">{selectedSupplier?.tenNhaCungCap}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Email gửi đến:</span>
-                                <span className="font-semibold text-blue-600">{selectedSupplier?.email || '—'}</span>
+                            <div className="flex justify-between items-center pt-1">
+                                <span className="text-slate-500 font-medium flex items-center gap-1.5"><Users className="h-4 w-4"/> Số lượng gửi:</span>
+                                <span className="font-black text-[#b8860b] bg-[#b8860b]/10 px-2 py-0.5 rounded-lg text-[16px]">{selectedSupplierIds.length} NCC</span>
                             </div>
                         </div>
 
@@ -487,7 +452,7 @@ export default function QuotationRequestCreate() {
                                 variant="outline"
                                 onClick={() => setShowConfirmDialog(false)}
                                 disabled={sending}
-                                className="h-11 rounded-xl font-semibold w-full sm:w-auto border-slate-300 text-slate-600 hover:bg-slate-100"
+                                className="h-11 rounded-xl font-semibold w-full sm:w-auto border-slate-300 text-slate-600 hover:bg-slate-100 bg-white"
                             >
                                 Hủy bỏ
                             </Button>
@@ -498,7 +463,7 @@ export default function QuotationRequestCreate() {
                             >
                                 {sending
                                     ? <><Loader2 className="h-5 w-5 animate-spin mr-2" />Đang gửi...</>
-                                    : <><Send className="h-4 w-4 mr-2" />Xác nhận gửi</>
+                                    : <><Send className="h-4 w-4 mr-2" />Tiến hành gửi</>
                                 }
                             </Button>
                         </DialogFooter>

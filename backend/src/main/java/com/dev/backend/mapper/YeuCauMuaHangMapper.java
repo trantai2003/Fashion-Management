@@ -7,7 +7,8 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
+        uses = {BienTheSanPhamMapper.class})
 public interface YeuCauMuaHangMapper {
     YeuCauMuaHangDto toDto(YeuCauMuaHang yeuCauMuaHang);
     List<YeuCauMuaHangDto> toDtoList(List<YeuCauMuaHang> list);

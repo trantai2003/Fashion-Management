@@ -405,7 +405,7 @@ export default function PurchaseRequestDetail() {
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <p className="font-bold text-[15px] text-slate-900 leading-tight">{item.bienTheSanPham?.tenBienThe || item.bienTheSanPham?.maSku}</p>
+                                                    <p className="font-bold text-[15px] text-slate-900 leading-tight">{item.bienTheSanPham?.tenSanPham || item.bienTheSanPham?.maSku}</p>
                                                     <p className="text-[13px] text-slate-500 font-medium mt-1 uppercase tracking-wider flex items-center gap-1">
                                                         Mã: <span className="font-mono text-slate-700 bg-slate-100 px-1 py-0.5 rounded">{item.bienTheSanPham?.maSku}</span>
                                                     </p>

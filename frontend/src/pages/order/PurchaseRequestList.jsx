@@ -9,23 +9,18 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-    Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter,
-} from '@/components/ui/dialog';
-import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
     AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-    Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
     ChevronLeft, ChevronRight, ChevronDown, Search, Calendar,
     Filter, Eye, Plus, RefreshCw, Warehouse, CheckCircle,
     XCircle, Clock, FileText, Loader2, AlertCircle, Send,
-    Package, Building2,
+    Package
 } from 'lucide-react';
 import purchaseRequestService from '@/services/purchaseRequestService';
 import apiClient from '@/services/apiClient';
+import { getMineKhoList } from '@/services/khoService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function parseJwt(token) {
@@ -34,12 +29,11 @@ function parseJwt(token) {
         return JSON.parse(atob(b64.replace(/-/g, '+').replace(/_/g, '/')));
     } catch { return null; }
 }
+
 function parseRoles(vaiTro) {
     if (!vaiTro) return [];
     return vaiTro.includes(' ') ? vaiTro.split(' ') : [vaiTro];
 }
-
-const MANAGER_ROLES = ['quan_tri_vien', 'quan_ly_kho', 'nhan_vien_mua_hang'];
 
 const statusConfig = {
     1: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
@@ -54,118 +48,6 @@ const formatDate = (d) => {
     return new Date(d).toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' });
 };
 
-// ─── SendToSupplierDialog ─────────────────────────────────────────────────────
-function SendToSupplierDialog({ open, onClose, request, suppliers, onConfirm, submitting }) {
-    const [selectedSupplierIds, setSelectedSupplierIds] = useState([]);
-    const [ghiChu, setGhiChu] = useState('');
-
-    useEffect(() => {
-        if (open) { setSelectedSupplierIds([]); setGhiChu(''); }
-    }, [open]);
-
-    const toggleSupplier = (id) => {
-        setSelectedSupplierIds(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-        );
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="rounded-2xl sm:max-w-lg p-0 overflow-hidden border-0 shadow-2xl">
-                <div className="bg-blue-600 p-6 flex items-center gap-3">
-                    <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
-                        <Send className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                        <DialogTitle className="text-xl font-bold text-white m-0">Gửi yêu cầu báo giá</DialogTitle>
-                        <DialogDescription className="text-blue-100 text-[12px] mt-0.5">
-                            Chọn nhà cung cấp để gửi email báo giá
-                        </DialogDescription>
-                    </div>
-                </div>
-                <div className="p-6 space-y-4">
-                    {/* Thông tin yêu cầu */}
-                    {request && (
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-[13px] space-y-1.5">
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Kho nhập:</span>
-                                <span className="font-bold text-slate-800">{request.khoNhap?.tenKho || '—'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Số sản phẩm:</span>
-                                <span className="font-bold text-slate-800">{request.chiTietYeuCauMuaHangs?.length || 0} biến thể</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Ngày giao dự kiến:</span>
-                                <span className="font-bold text-slate-800">{formatDate(request.ngayGiaoDuKien)}</span>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Chọn nhà cung cấp */}
-                    <div className="space-y-2">
-                        <Label className="text-[13px] font-bold text-slate-700 flex items-center gap-1.5">
-                            <Building2 className="h-3.5 w-3.5" />
-                            Nhà cung cấp <span className="text-rose-500">*</span>
-                            {selectedSupplierIds.length > 0 && (
-                                <span className="ml-1 text-[11px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded-full">
-                                    {selectedSupplierIds.length} đã chọn
-                                </span>
-                            )}
-                        </Label>
-                        <div className="max-h-[200px] overflow-y-auto space-y-1.5 rounded-xl border border-slate-200 p-2 bg-slate-50">
-                            {suppliers.length === 0
-                                ? <p className="text-center text-[13px] text-slate-400 py-4 italic">Chưa có nhà cung cấp</p>
-                                : suppliers.map(s => {
-                                    const isSelected = selectedSupplierIds.includes(s.id);
-                                    return (
-                                        <button key={s.id} type="button" onClick={() => toggleSupplier(s.id)}
-                                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all text-left ${isSelected ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200 hover:border-blue-200'}`}>
-                                            <div className={`h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-blue-600 border-blue-600' : 'bg-white border-slate-300'}`}>
-                                                {isSelected && <CheckCircle className="h-3 w-3 text-white" strokeWidth={3} />}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-[13px] text-slate-800 truncate">{s.tenNhaCungCap}</p>
-                                                <p className="text-[11px] text-slate-400 truncate">{s.email || s.maNhaCungCap}</p>
-                                            </div>
-                                        </button>
-                                    );
-                                })
-                            }
-                        </div>
-                    </div>
-
-                    {/* Ghi chú */}
-                    <div className="space-y-1.5">
-                        <Label className="text-[13px] font-bold text-slate-700">Ghi chú (tuỳ chọn)</Label>
-                        <Input value={ghiChu} onChange={e => setGhiChu(e.target.value)}
-                            placeholder="Ghi chú kèm theo email..."
-                            className="h-10 rounded-xl border-slate-200 text-[13px]" />
-                    </div>
-
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5">
-                        <p className="text-[12px] text-amber-800">
-                            <strong>Lưu ý:</strong> Hệ thống sẽ gửi email đến từng nhà cung cấp đã chọn và tạo đơn báo giá tương ứng.
-                        </p>
-                    </div>
-                </div>
-                <div className="px-6 pb-6 flex gap-2 justify-end">
-                    <Button variant="outline" onClick={onClose} disabled={submitting}
-                        className="h-11 rounded-xl font-semibold">Hủy</Button>
-                    <Button onClick={() => onConfirm({ yeuCauMuaHangId: request?.id, nhaCungCapIds: selectedSupplierIds, ghiChu })}
-                        disabled={submitting || selectedSupplierIds.length === 0}
-                        className="h-11 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white gap-2 shadow-md disabled:opacity-40">
-                        {submitting
-                            ? <><Loader2 className="h-4 w-4 animate-spin" />Đang gửi...</>
-                            : <><Send className="h-4 w-4" />Gửi đến {selectedSupplierIds.length || ''} NCC</>
-                        }
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -174,11 +56,12 @@ export default function PurchaseRequestList() {
 
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [suppliers, setSuppliers] = useState([]);
 
-    // Auth
+    // Auth & Permission Data
     const [userRoles, setUserRoles] = useState([]);
-    const [loadingAuth, setLoadingAuth] = useState(true);
+    const [loadingInitial, setLoadingInitial] = useState(true);
+    const [warehouses, setWarehouses] = useState([]);
+    const [isRestrictedWarehouse, setIsRestrictedWarehouse] = useState(false);
 
     // Pagination
     const [pagination, setPagination] = useState({ pageNumber: 0, pageSize: 10, totalElements: 0, totalPages: 0 });
@@ -186,58 +69,56 @@ export default function PurchaseRequestList() {
     // Filters
     const [filters, setFilters] = useState({ trangThai: '', khoId: '' });
     const [dateRange, setDateRange] = useState({ from: '', to: '' });
-    const [warehouses, setWarehouses] = useState([]);
 
-    // Dialogs
-    const [sendRequest, setSendRequest] = useState(null);
+    // Action Dialogs
     const [approvingId, setApprovingId] = useState(null);  // { id, action: 'approve'|'reject' }
     const [submitting, setSubmitting] = useState(false);
 
-    const isManager = MANAGER_ROLES.some(r => userRoles.includes(r));
+    // Quyền thao tác
+    const canApprove = userRoles.some(r => ['quan_tri_vien', 'quan_ly_kho'].includes(r));
+    const canCreateQuotation = userRoles.some(r => ['quan_tri_vien', 'nhan_vien_mua_hang'].includes(r));
 
-    // ── Load auth ──
+    // ── Load Auth & Warehouses ──
     useEffect(() => {
-        const load = async () => {
-            setLoadingAuth(true);
+        const loadInitialData = async () => {
+            setLoadingInitial(true);
             try {
                 const token = localStorage.getItem('access_token');
                 if (!token) return;
                 const payload = parseJwt(token);
                 if (!payload?.id) return;
-                const res = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${payload.id}`);
-                const userData = res.data?.data;
-                if (userData?.vaiTro) setUserRoles(parseRoles(userData.vaiTro));
-            } catch { } finally {
-                setLoadingAuth(false);
+
+                // 1. Lấy vai trò user
+                const resUser = await apiClient.get(`/api/v1/nguoi-dung/get-by-id/${payload.id}`);
+                const roles = parseRoles(resUser.data?.data?.vaiTro);
+                setUserRoles(roles);
+
+                // 2. Xác định giới hạn truy cập kho
+                const isAdminOrBuyer = roles.includes('quan_tri_vien') || roles.includes('nhan_vien_mua_hang');
+                const isKho = roles.includes('quan_ly_kho') || roles.includes('nhan_vien_kho');
+                const restricted = !isAdminOrBuyer && isKho;
+                setIsRestrictedWarehouse(restricted);
+
+                // 3. Tải danh sách kho tương ứng
+                let fetchedWarehouses = [];
+                if (restricted) {
+                    fetchedWarehouses = await getMineKhoList();
+                } else {
+                    const resKho = await apiClient.post('/api/v1/kho/filter', {
+                        filters: [], sorts: [{ fieldName: 'tenKho', direction: 'ASC' }], page: 0, size: 100,
+                    });
+                    fetchedWarehouses = resKho.data?.data?.content || resKho.data?.content || [];
+                }
+                setWarehouses(fetchedWarehouses);
+
+            } catch (error) {
+                console.error('Lỗi khi tải thông tin phân quyền:', error);
+            } finally {
+                setLoadingInitial(false);
             }
         };
-        load();
-    }, []);
 
-    // ── Load warehouses ──
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await apiClient.post('/api/v1/kho/filter', {
-                    filters: [], sorts: [{ fieldName: 'tenKho', direction: 'ASC' }], page: 0, size: 100,
-                });
-                setWarehouses(res.data?.data?.content || res.data?.content || []);
-            } catch { }
-        };
-        load();
-    }, []);
-
-    // ── Load suppliers ──
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await apiClient.post('/api/v1/nha-cung-cap/filter', {
-                    filters: [], sorts: [{ fieldName: 'tenNhaCungCap', direction: 'ASC' }], page: 0, size: 200,
-                });
-                setSuppliers(res.data?.data?.content || res.data?.content || []);
-            } catch { }
-        };
-        load();
+        loadInitialData();
     }, []);
 
     // ── Fetch list ──
@@ -245,12 +126,27 @@ export default function PurchaseRequestList() {
         setLoading(true);
         try {
             const filterArray = [];
+
+            // Filter trạng thái
             if (filters.trangThai && filters.trangThai !== 'all') {
                 filterArray.push({ fieldName: 'trangThai', operation: 'EQUALS', value: parseInt(filters.trangThai), logicType: 'AND' });
             }
+
+            // Filter kho
             if (filters.khoId && filters.khoId !== 'all') {
                 filterArray.push({ fieldName: 'khoNhap.id', operation: 'EQUALS', value: parseInt(filters.khoId), logicType: 'AND' });
+            } else if (isRestrictedWarehouse) {
+                // Áp dụng giới hạn cứng nếu user không chọn kho và bị hạn chế quyền
+                const myIds = warehouses.map(w => w.id);
+                if (myIds.length > 0) {
+                    filterArray.push({ fieldName: 'khoNhap.id', operation: 'IN', value: myIds, logicType: 'AND' });
+                } else {
+                    // Nếu user bị hạn chế mà chưa gán kho nào -> trả về rỗng
+                    filterArray.push({ fieldName: 'khoNhap.id', operation: 'EQUALS', value: -1, logicType: 'AND' });
+                }
             }
+
+            // Filter ngày
             if (dateRange.from) filterArray.push({ fieldName: 'ngayTao', operation: 'GREATER_THAN_OR_EQUAL', value: dateRange.from, logicType: 'AND' });
             if (dateRange.to) filterArray.push({ fieldName: 'ngayTao', operation: 'LESS_THAN_OR_EQUAL', value: dateRange.to + 'T23:59:59', logicType: 'AND' });
 
@@ -275,8 +171,8 @@ export default function PurchaseRequestList() {
     };
 
     useEffect(() => {
-        if (!loadingAuth) fetchRequests(pagination.pageNumber, pagination.pageSize);
-    }, [filters, dateRange, pagination.pageNumber, pagination.pageSize, loadingAuth]);
+        if (!loadingInitial) fetchRequests(pagination.pageNumber, pagination.pageSize);
+    }, [filters, dateRange, pagination.pageNumber, pagination.pageSize, loadingInitial, isRestrictedWarehouse, warehouses.length]);
 
     // ── Approve / Reject ──
     const handleApprove = async (id, trangThai) => {
@@ -288,21 +184,6 @@ export default function PurchaseRequestList() {
             fetchRequests(pagination.pageNumber, pagination.pageSize);
         } catch (err) {
             toast.error(err.response?.data?.message || 'Thao tác thất bại');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    // ── Send to supplier ──
-    const handleSendToSupplier = async (payload) => {
-        setSubmitting(true);
-        try {
-            await purchaseRequestService.sendQuotationRequest(payload);
-            toast.success('Đã gửi yêu cầu báo giá đến nhà cung cấp!');
-            setSendRequest(null);
-            fetchRequests(pagination.pageNumber, pagination.pageSize);
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Gửi báo giá thất bại');
         } finally {
             setSubmitting(false);
         }
@@ -339,14 +220,7 @@ export default function PurchaseRequestList() {
 
     return (
         <div className="lux-sync warehouse-unified p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
-            {/* Header */}
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Yêu cầu nhập hàng</h1>
-                    <p className="text-sm text-slate-500 mt-0.5">Nhân viên kho tạo yêu cầu → <strong>Quản lý kho duyệt</strong> → Nhân viên mua hàng tạo đơn mua</p>
-                </div>
-            </div>
-
+            
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
@@ -386,7 +260,7 @@ export default function PurchaseRequestList() {
                             <Label className="text-gray-700 font-medium">Kho nhập {warehouses.length > 0 && `(${warehouses.length})`}</Label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-between font-normal bg-white border-gray-200">
+                                    <Button variant="outline" className="w-full justify-between font-normal bg-white border-gray-200" disabled={loadingInitial}>
                                         <div className="flex items-center overflow-hidden gap-2">
                                             <Warehouse className="h-4 w-4 text-gray-400 shrink-0" />
                                             <span className="truncate">{getSelectedWarehouseName()}</span>
@@ -499,7 +373,7 @@ export default function PurchaseRequestList() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {loading ? (
+                            {loading || loadingInitial ? (
                                 <tr><td colSpan={7} className="py-16 text-center">
                                     <div className="flex flex-col items-center gap-3">
                                         <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
@@ -646,16 +520,6 @@ export default function PurchaseRequestList() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            {/* ── Send to Supplier Dialog ── */}
-            <SendToSupplierDialog
-                open={!!sendRequest}
-                onClose={() => setSendRequest(null)}
-                request={sendRequest}
-                suppliers={suppliers}
-                onConfirm={handleSendToSupplier}
-                submitting={submitting}
-            />
         </div>
     );
 }

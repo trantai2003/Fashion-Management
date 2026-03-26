@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-    ArrowLeft, Search, Send, Loader2, CheckCircle, Building2,
-    Phone, Mail, MapPin, User, Package, AlertCircle, ChevronRight,
-    X, Layers, ShoppingBag, Check, Sparkles,
+    ArrowLeft, Search, Send, Loader2, Building2,
+    Phone, Mail, User, Package, AlertCircle,
+    X, Sparkles, ClipboardList, Check, ShoppingBag, Warehouse, Calendar, ListChecks
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,20 +23,18 @@ const formatDate = (d) => {
 const getInitials = (name = '') =>
     name.split(' ').filter(Boolean).slice(-2).map(w => w[0].toUpperCase()).join('');
 
-// Pastel avatar colors keyed by first char
 const AVATAR_PALETTES = [
-    'from-sky-400 to-blue-600',
-    'from-violet-400 to-purple-600',
-    'from-emerald-400 to-teal-600',
-    'from-rose-400 to-pink-600',
-    'from-amber-400 to-orange-500',
-    'from-cyan-400 to-indigo-500',
+    'from-sky-500 to-blue-600',
+    'from-violet-500 to-purple-600',
+    'from-emerald-500 to-teal-600',
+    'from-rose-500 to-pink-600',
+    'from-amber-500 to-orange-500',
+    'from-cyan-500 to-indigo-600',
 ];
-const avatarColor = (name = '') =>
-    AVATAR_PALETTES[(name.charCodeAt(0) || 0) % AVATAR_PALETTES.length];
+const avatarColor = (name = '') => AVATAR_PALETTES[(name.charCodeAt(0) || 0) % AVATAR_PALETTES.length];
 
-/* ─── SupplierCard ───────────────────────────────────────────────────────────── */
-function SupplierCard({ supplier, isSelected, onToggle }) {
+/* ─── SupplierListItem (Dạng List mới) ───────────────────────────────────────── */
+function SupplierListItem({ supplier, isSelected, onToggle }) {
     const active = supplier.trangThai === 1;
     return (
         <button
@@ -44,151 +42,165 @@ function SupplierCard({ supplier, isSelected, onToggle }) {
             onClick={() => active && onToggle(supplier.id)}
             disabled={!active}
             className={`
-                group relative w-full text-left rounded-2xl border-2 p-4 transition-all duration-200 focus:outline-none
+                w-full flex items-center gap-4 px-5 py-4 text-left transition-all duration-200 focus:outline-none
                 ${isSelected
-                    ? 'border-blue-500 bg-blue-50/60 shadow-[0_0_0_4px_rgba(59,130,246,0.12)]'
+                    ? 'bg-blue-50/60'
                     : active
-                        ? 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md hover:bg-blue-50/20'
-                        : 'border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed'
+                        ? 'bg-white hover:bg-slate-50'
+                        : 'bg-slate-50 opacity-60 cursor-not-allowed grayscale-[20%]'
                 }
             `}
         >
-            {/* Selection indicator */}
-            <div className={`
-                absolute top-3 right-3 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all duration-150 shrink-0
-                ${isSelected ? 'bg-blue-500 border-blue-500' : 'border-slate-300 bg-white group-hover:border-blue-300'}
-            `}>
-                {isSelected && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
-            </div>
-
-            {/* Avatar + Name */}
-            <div className="flex items-start gap-3 mb-3 pr-7">
+            {/* Checkbox */}
+            <div className="shrink-0 flex items-center justify-center">
                 <div className={`
-                    h-10 w-10 rounded-xl bg-gradient-to-br ${avatarColor(supplier.tenNhaCungCap)}
-                    flex items-center justify-center shrink-0 text-white font-black text-[13px] shadow-sm
+                    h-5 w-5 rounded border flex items-center justify-center transition-colors
+                    ${isSelected ? 'bg-blue-600 border-blue-600' : 'border-slate-300 bg-white group-hover:border-blue-400'}
                 `}>
-                    {getInitials(supplier.tenNhaCungCap)}
-                </div>
-                <div className="min-w-0">
-                    <p className="font-bold text-[14px] text-slate-900 leading-tight truncate">{supplier.tenNhaCungCap}</p>
-                    <p className="font-mono text-[11px] text-amber-600 font-semibold mt-0.5">{supplier.maNhaCungCap}</p>
+                    {isSelected && <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />}
                 </div>
             </div>
 
-            {/* Details */}
-            <div className="space-y-1.5">
-                {supplier.nguoiLienHe && (
-                    <div className="flex items-center gap-2 text-[12px] text-slate-600">
-                        <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                        <span className="truncate">{supplier.nguoiLienHe}</span>
-                    </div>
-                )}
-                {supplier.email && (
-                    <div className="flex items-center gap-2 text-[12px] text-slate-600">
-                        <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                        <span className="truncate text-blue-600 font-medium">{supplier.email}</span>
-                    </div>
-                )}
-                {supplier.soDienThoai && (
-                    <div className="flex items-center gap-2 text-[12px] text-slate-600">
-                        <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                        <span className="font-mono">{supplier.soDienThoai}</span>
-                    </div>
-                )}
+            {/* Avatar */}
+            <div className={`h-11 w-11 rounded-full bg-gradient-to-br ${avatarColor(supplier.tenNhaCungCap)} flex items-center justify-center shrink-0 text-white font-bold text-[14px] shadow-sm`}>
+                {getInitials(supplier.tenNhaCungCap)}
+            </div>
+
+            {/* Info Col 1: Name & Code */}
+            <div className="flex-1 min-w-0 pr-4">
+                <p className="font-bold text-[15px] text-slate-800 truncate">{supplier.tenNhaCungCap}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                    <span className="font-mono text-[12px] text-slate-500 font-medium uppercase tracking-wider">{supplier.maNhaCungCap}</span>
+                </div>
+            </div>
+
+            {/* Info Col 2: Contact (Hidden on very small screens) */}
+            <div className="hidden sm:flex flex-col w-56 shrink-0 pr-4 border-l border-slate-100 pl-4 space-y-1.5">
+                <div className="flex items-center gap-2 text-[13px] text-slate-600">
+                    <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <span className="truncate">{supplier.nguoiLienHe || '—'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-[13px] text-slate-600">
+                    <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <span className="truncate text-blue-600">{supplier.email || '—'}</span>
+                </div>
             </div>
 
             {/* Status */}
-            <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span className={`
-                    text-[10px] font-bold px-2 py-0.5 rounded-full
-                    ${active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}
-                `}>
-                    {active ? '● Hoạt động' : '● Ngừng'}
+            <div className="shrink-0 w-28 text-right hidden md:block">
+                <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 ${active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${active ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                    {active ? 'Hoạt động' : 'Ngừng GD'}
                 </span>
-                {isSelected && (
-                    <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <Check className="h-2.5 w-2.5" />Đã chọn
-                    </span>
-                )}
             </div>
         </button>
     );
 }
 
-/* ─── OrderSummaryPanel ──────────────────────────────────────────────────────── */
-function OrderSummaryPanel({ request, loading }) {
+/* ─── RequestInfoPanel (Mở rộng & Rõ ràng) ──────────────────────────────────── */
+function RequestInfoPanel({ request, loading, id }) {
     if (loading) return (
-        <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+        <div className="flex items-center justify-center py-12 bg-white rounded-2xl border border-slate-200">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
         </div>
     );
     if (!request) return (
-        <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
-            <AlertCircle className="h-8 w-8 opacity-40" />
-            <p className="text-sm">Không tìm thấy yêu cầu</p>
+        <div className="flex flex-col items-center justify-center py-10 bg-white rounded-2xl border border-slate-200 text-slate-400 gap-2">
+            <AlertCircle className="h-8 w-8 opacity-40 text-rose-400" />
+            <p className="text-[13px] font-medium">Không tìm thấy yêu cầu</p>
         </div>
     );
 
     return (
-        <div className="space-y-4">
-            {/* Meta */}
-            <div className="grid grid-cols-2 gap-3">
-                <div className="bg-slate-50 rounded-xl border border-slate-100 p-3">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Kho nhập</p>
-                    <p className="font-bold text-[13px] text-slate-800 truncate">{request.khoNhap?.tenKho || '—'}</p>
-                    <p className="text-[11px] text-slate-400 font-mono">{request.khoNhap?.maKho}</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl border border-slate-100 p-3">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ngày giao DK</p>
-                    <p className="font-bold text-[13px] text-slate-800">{formatDate(request.ngayGiaoDuKien)}</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl border border-slate-100 p-3">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Người tạo</p>
-                    <p className="font-semibold text-[13px] text-slate-800 truncate">{request.nguoiTao?.hoTen || '—'}</p>
-                </div>
-                <div className="bg-slate-50 rounded-xl border border-slate-100 p-3">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Số biến thể</p>
-                    <p className="font-bold text-[13px] text-blue-600">{request.chiTietYeuCauMuaHangs?.length || 0}</p>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                        <ClipboardList className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                        <h2 className="font-bold text-[18px] text-slate-800">Thông tin yêu cầu <span className="text-blue-600">#{id}</span></h2>
+                        <p className="text-[13px] text-slate-500 mt-0.5">Xác nhận thông tin trước khi gửi báo giá đến nhà cung cấp.</p>
+                    </div>
                 </div>
             </div>
 
-            {/* Ghi chú */}
-            {request.ghiChu && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-                    <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-1">Ghi chú</p>
-                    <p className="text-[12px] text-slate-700">{request.ghiChu}</p>
-                </div>
-            )}
-
-            {/* Product list */}
-            <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                    Sản phẩm yêu cầu
-                </p>
-                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                    {(request.chiTietYeuCauMuaHangs || []).map((item, i) => {
-                        const img = item.bienTheSanPham?.anhBienThe?.tepTin?.duongDan;
-                        return (
-                            <div key={i} className="flex items-center gap-3 bg-white rounded-xl border border-slate-100 px-3 py-2.5">
-                                {img
-                                    ? <img src={img} alt="" className="h-9 w-9 rounded-lg object-cover border border-slate-200 shrink-0" />
-                                    : <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0"><Package className="h-4 w-4 text-slate-400" /></div>
-                                }
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-[12px] text-slate-800 truncate">
-                                        {item.bienTheSanPham?.tenBienThe || item.bienTheSanPham?.maSku}
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="font-mono text-[10px] text-amber-600">{item.bienTheSanPham?.maSku}</span>
-                                        {item.bienTheSanPham?.mauSac?.tenMau && (
-                                            <span className="text-[10px] text-slate-400">{item.bienTheSanPham.mauSac.tenMau}</span>
-                                        )}
-                                    </div>
-                                </div>
-                                <span className="font-bold text-slate-600 text-[13px] shrink-0">×{item.soLuongDat}</span>
+            <div className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Meta Info (Left) */}
+                    <div className="lg:col-span-5 space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Warehouse className="h-3.5 w-3.5" /> Kho nhập</p>
+                                <p className="font-bold text-[14px] text-slate-800">{request.khoNhap?.tenKho || '—'}</p>
+                                <p className="text-[12px] text-slate-500 font-mono">{request.khoNhap?.maKho}</p>
                             </div>
-                        );
-                    })}
+                            <div className="space-y-1.5">
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Ngày giao dự kiến</p>
+                                <p className="font-bold text-[14px] text-slate-800">{formatDate(request.ngayGiaoDuKien)}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> Người tạo</p>
+                            <p className="font-semibold text-[14px] text-slate-800">{request.nguoiTao?.hoTen || '—'}</p>
+                        </div>
+
+                        {request.ghiChu && (
+                            <div className="bg-amber-50/80 border border-amber-100 rounded-xl p-4 mt-2">
+                                <p className="text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-1.5">Ghi chú từ kho</p>
+                                <p className="text-[13px] text-slate-700 leading-relaxed">{request.ghiChu}</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Product List (Right) */}
+                    <div className="lg:col-span-7">
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <ShoppingBag className="h-3.5 w-3.5" /> Sản phẩm yêu cầu
+                            </p>
+                            <span className="text-[12px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md border border-blue-100">
+                                {request.chiTietYeuCauMuaHangs?.length || 0} biến thể
+                            </span>
+                        </div>
+                        <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                            {(request.chiTietYeuCauMuaHangs || []).map((item, i) => {
+                                const img = item.bienTheSanPham?.anhBienThe?.tepTin?.duongDan;
+                                console.log(item);
+                                return (
+                                    <div key={i} className="flex items-center gap-3 bg-slate-50/50 rounded-xl border border-slate-100 px-3 py-2.5 hover:bg-white hover:border-slate-200 transition-colors">
+                                        {img ? (
+                                            <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 border border-slate-200">
+                                                <img src={img} alt="" className="h-full w-full object-cover" />
+                                            </div>
+                                        ) : (
+                                            <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
+                                                <Package className="h-5 w-5 text-slate-300" />
+                                            </div>
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-[13px] text-slate-800 truncate" title={item.bienTheSanPham?.tenSanPham}>
+                                                {item.bienTheSanPham?.tenSanPham || item.bienTheSanPham?.tenBienThe || item.bienTheSanPham?.maSku}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                                <span className="font-mono text-[10px] text-slate-500">{item.bienTheSanPham?.maSku}</span>
+                                                {item.bienTheSanPham?.mauSac?.tenMau && (
+                                                    <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                                                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: item.bienTheSanPham.mauSac.maMauHex }}></span>
+                                                        {item.bienTheSanPham.mauSac.tenMau}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="shrink-0 bg-blue-100 text-blue-700 font-bold text-[13px] px-2.5 py-1 rounded-lg">
+                                            SL: {item.soLuongDat}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -200,59 +212,39 @@ function OrderSummaryPanel({ request, loading }) {
 ═══════════════════════════════════════════════════════════════════════════════ */
 export default function SendQuotationRequestPage() {
     const navigate = useNavigate();
-    const { id } = useParams(); // yeuCauMuaHangId
+    const { id } = useParams();
 
-    // Suppliers
+    // State
     const [suppliers, setSuppliers] = useState([]);
     const [loadingSuppliers, setLoadingSuppliers] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // Request detail
     const [request, setRequest] = useState(null);
     const [loadingRequest, setLoadingRequest] = useState(true);
-
-    // Selection
     const [selectedIds, setSelectedIds] = useState(new Set());
-
-    // Submit
     const [submitting, setSubmitting] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
-    /* ── Load suppliers via GET /api/supplier ── */
+    /* ── Load Data ── */
     useEffect(() => {
-        const load = async () => {
-            setLoadingSuppliers(true);
+        const loadData = async () => {
             try {
-                const res = await apiClient.get('/api/supplier');
-                const list = res.data?.data || [];
-                setSuppliers(list);
+                const [resSup, resReq] = await Promise.all([
+                    apiClient.get('/api/supplier'),
+                    apiClient.get(`/api/v1/yeu-cau-mua-hang/get-by-id/${id}`)
+                ]);
+                setSuppliers(resSup.data?.data || []);
+                setRequest(resReq.data?.data || null);
             } catch {
-                toast.error('Không thể tải danh sách nhà cung cấp');
+                toast.error('Lỗi khi tải dữ liệu. Vui lòng thử lại!');
             } finally {
                 setLoadingSuppliers(false);
-            }
-        };
-        load();
-    }, []);
-
-    /* ── Load yêu cầu mua hàng ── */
-    useEffect(() => {
-        if (!id) return;
-        const load = async () => {
-            setLoadingRequest(true);
-            try {
-                const res = await apiClient.get(`/api/v1/yeu-cau-mua-hang/get-by-id/${id}`);
-                setRequest(res.data?.data || null);
-            } catch {
-                toast.error('Không thể tải thông tin yêu cầu');
-            } finally {
                 setLoadingRequest(false);
             }
         };
-        load();
+        if (id) loadData();
     }, [id]);
 
-    /* ── Filtered suppliers ── */
+    /* ── Derived State ── */
     const filteredSuppliers = useMemo(() => {
         const term = searchTerm.trim().toLowerCase();
         if (!term) return suppliers;
@@ -265,8 +257,10 @@ export default function SendQuotationRequestPage() {
     }, [suppliers, searchTerm]);
 
     const activeSuppliers = useMemo(() => suppliers.filter(s => s.trangThai === 1), [suppliers]);
+    const selectedSuppliersList = useMemo(() => suppliers.filter(s => selectedIds.has(s.id)), [suppliers, selectedIds]);
+    const selectedCount = selectedIds.size;
 
-    /* ── Toggle ── */
+    /* ── Handlers ── */
     const toggleSupplier = (supplierId) => {
         setSelectedIds(prev => {
             const next = new Set(prev);
@@ -279,14 +273,10 @@ export default function SendQuotationRequestPage() {
         setSelectedIds(new Set(activeSuppliers.filter(s => {
             const term = searchTerm.trim().toLowerCase();
             if (!term) return true;
-            return s.tenNhaCungCap?.toLowerCase().includes(term) ||
-                s.maNhaCungCap?.toLowerCase().includes(term);
+            return s.tenNhaCungCap?.toLowerCase().includes(term) || s.maNhaCungCap?.toLowerCase().includes(term);
         }).map(s => s.id)));
     };
 
-    const clearAll = () => setSelectedIds(new Set());
-
-    /* ── Submit ── */
     const handleSend = async () => {
         setSubmitting(true);
         try {
@@ -295,7 +285,7 @@ export default function SendQuotationRequestPage() {
                 nhaCungCapIds: Array.from(selectedIds),
                 ghiChu: '',
             });
-            toast.success(`Đã gửi yêu cầu báo giá đến ${selectedIds.size} nhà cung cấp!`);
+            toast.success(`Đã gửi yêu cầu báo giá đến ${selectedCount} nhà cung cấp!`);
             setShowConfirm(false);
             setTimeout(() => navigate('/purchase-requests'), 1200);
         } catch (err) {
@@ -305,267 +295,172 @@ export default function SendQuotationRequestPage() {
         }
     };
 
-    const selectedSuppliersList = suppliers.filter(s => selectedIds.has(s.id));
-
-    /* ── Stats ── */
-    const activeCount = activeSuppliers.length;
-    const selectedCount = selectedIds.size;
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-100">
+        <div className="lux-sync p-6 md:p-8 bg-slate-50/50 min-h-[calc(100vh-64px)] pb-24">
 
-            {/* ── Top bar ── */}
-            <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
-                <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
-                    <button type="button" onClick={() => navigate('/purchase-requests')}
-                        className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors shrink-0">
-                        <ArrowLeft className="h-4 w-4" />
-                        Quay lại danh sách
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                        {selectedCount > 0 && (
-                            <span className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-bold text-blue-700 bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-full">
-                                <Check className="h-3.5 w-3.5" />
-                                {selectedCount} nhà cung cấp đã chọn
-                            </span>
-                        )}
-                        <Button
-                            onClick={() => selectedCount > 0 && setShowConfirm(true)}
-                            disabled={selectedCount === 0 || loadingRequest || !request}
-                            className="h-9 px-4 rounded-xl gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-semibold shadow-md text-[13px] transition-all"
-                        >
-                            <Send className="h-4 w-4" />
-                            Gửi báo giá
-                            {selectedCount > 0 && <span className="bg-white/25 rounded-full px-1.5 text-[11px]">{selectedCount}</span>}
-                        </Button>
-                    </div>
-                </div>
+            {/* ── Header ── */}
+            <div className="mb-6 flex flex-col gap-4">
+                <button type="button" onClick={() => navigate('/purchase-requests')} className="inline-flex items-center gap-1.5 text-[14px] font-medium text-slate-500 hover:text-blue-600 transition-colors duration-200 w-fit">
+                    <ArrowLeft className="h-4 w-4" /> Quay lại
+                </button>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col lg:flex-row gap-6 items-start">
+            {/* ── Main Layout: 2 Columns ── */}
+            <div className="flex flex-col xl:flex-row gap-6 items-start">
 
-                {/* ══════════════════════════════════════
-                    LEFT: Supplier Selection (70%)
-                ══════════════════════════════════════ */}
-                <div className="flex-1 min-w-0 space-y-4">
+                {/* ════ LEFT COLUMN (Main Content) ════ */}
+                <div className="flex-1 min-w-0 space-y-6 w-full">
+                    {/* 1. Request Info */}
+                    <RequestInfoPanel request={request} loading={loadingRequest} id={id} />
 
-                    {/* Page title */}
-                    <div>
-                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gửi yêu cầu báo giá</h1>
-                        <p className="text-sm text-slate-500 mt-0.5">
-                            Chọn nhà cung cấp để gửi email yêu cầu báo giá · Yêu cầu #{id}
-                        </p>
-                    </div>
-
-                    {/* Search + controls */}
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                            <Input
-                                placeholder="Tìm nhà cung cấp theo tên, mã, email..."
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                                className="pl-9 h-10 rounded-xl border-slate-200 bg-white text-[13px] focus:border-blue-400 focus:ring-blue-400"
-                            />
-                            {searchTerm && (
-                                <button type="button" onClick={() => setSearchTerm('')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-300 hover:bg-slate-400 flex items-center justify-center transition-colors">
-                                    <X className="h-2.5 w-2.5 text-white" />
-                                </button>
-                            )}
-                        </div>
-                        <div className="flex gap-2">
-                            <button type="button" onClick={selectAll}
-                                className="h-10 px-4 rounded-xl border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-[12px] font-semibold text-slate-600 hover:text-blue-700 transition-all whitespace-nowrap">
-                                Chọn tất cả
-                            </button>
-                            {selectedCount > 0 && (
-                                <button type="button" onClick={clearAll}
-                                    className="h-10 px-4 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-[12px] font-semibold text-slate-600 hover:text-rose-600 transition-all whitespace-nowrap">
-                                    Bỏ chọn tất cả
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Stats bar */}
-                    <div className="flex items-center gap-3 text-[12px] text-slate-500 flex-wrap">
-                        <span className="font-semibold text-slate-700">{filteredSuppliers.length} nhà cung cấp</span>
-                        {searchTerm && <span>· phù hợp tìm kiếm</span>}
-                        <span>·</span>
-                        <span className="text-emerald-600 font-semibold">{activeCount} hoạt động</span>
-                        {selectedCount > 0 && (
-                            <>
-                                <span>·</span>
-                                <span className="text-blue-600 font-bold">{selectedCount} đã chọn</span>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Supplier grid */}
-                    {loadingSuppliers ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-3">
-                            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                            <p className="text-slate-500 text-sm font-medium">Đang tải nhà cung cấp...</p>
-                        </div>
-                    ) : filteredSuppliers.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-4 rounded-2xl border-2 border-dashed border-slate-200 bg-white">
-                            <div className="h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center">
-                                <Building2 className="h-8 w-8 text-slate-400" />
+                    {/* 2. Supplier Selection */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-2">
+                                <ListChecks className="h-5 w-5 text-slate-700" />
+                                <h2 className="font-bold text-[16px] text-slate-800">Chọn Nhà cung cấp</h2>
                             </div>
-                            <div className="text-center">
-                                <p className="font-bold text-slate-700">Không tìm thấy nhà cung cấp</p>
-                                <p className="text-sm text-slate-400 mt-1">Thử thay đổi từ khoá tìm kiếm</p>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                            {filteredSuppliers.map(supplier => (
-                                <SupplierCard
-                                    key={supplier.id}
-                                    supplier={supplier}
-                                    isSelected={selectedIds.has(supplier.id)}
-                                    onToggle={toggleSupplier}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
 
-                {/* ══════════════════════════════════════
-                    RIGHT: Order Summary Panel (30%)
-                ══════════════════════════════════════ */}
-                <div className="w-full lg:w-[340px] shrink-0 sticky top-20 space-y-4">
-
-                    {/* Order info card */}
-                    <div className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="flex items-center gap-2.5 px-5 py-4 border-b border-slate-100 bg-slate-50">
-                            <div className="h-7 w-7 rounded-lg bg-violet-100 flex items-center justify-center">
-                                <ShoppingBag className="h-4 w-4 text-violet-600" />
-                            </div>
-                            <p className="font-bold text-[13px] text-slate-800">Thông tin yêu cầu #{id}</p>
-                        </div>
-                        <div className="p-5">
-                            <OrderSummaryPanel request={request} loading={loadingRequest} />
-                        </div>
-                    </div>
-
-                    {/* Selected suppliers preview */}
-                    {selectedCount > 0 && (
-                        <div className="rounded-2xl bg-white border border-blue-200 shadow-sm overflow-hidden">
-                            <div className="flex items-center justify-between px-5 py-3.5 border-b border-blue-100 bg-blue-50">
-                                <div className="flex items-center gap-2">
-                                    <Sparkles className="h-4 w-4 text-blue-500" />
-                                    <p className="font-bold text-[13px] text-blue-800">Sẽ gửi đến</p>
+                            <div className="flex items-center gap-3">
+                                <div className="relative w-full sm:w-64">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                    <Input
+                                        placeholder="Tìm tên, mã, email..."
+                                        value={searchTerm}
+                                        onChange={e => setSearchTerm(e.target.value)}
+                                        className="pl-9 h-10 rounded-xl bg-slate-50 border-slate-200 text-[13px] w-full"
+                                    />
                                 </div>
-                                <span className="text-[12px] font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">{selectedCount}</span>
-                            </div>
-                            <div className="p-3 space-y-2 max-h-[220px] overflow-y-auto">
-                                {selectedSuppliersList.map(s => (
-                                    <div key={s.id} className="flex items-center gap-2.5 rounded-xl bg-slate-50 border border-slate-100 px-3 py-2">
-                                        <div className={`h-7 w-7 rounded-lg bg-gradient-to-br ${avatarColor(s.tenNhaCungCap)} flex items-center justify-center text-white font-black text-[10px] shrink-0`}>
-                                            {getInitials(s.tenNhaCungCap)}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-[12px] text-slate-800 truncate">{s.tenNhaCungCap}</p>
-                                            <p className="text-[11px] text-slate-400 truncate">{s.email || s.maNhaCungCap}</p>
-                                        </div>
-                                        <button type="button" onClick={() => toggleSupplier(s.id)}
-                                            className="h-5 w-5 rounded-full bg-slate-200 hover:bg-rose-200 flex items-center justify-center transition-colors shrink-0">
-                                            <X className="h-2.5 w-2.5 text-slate-600" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="px-4 pb-4 pt-2">
-                                <Button
-                                    onClick={() => setShowConfirm(true)}
-                                    disabled={loadingRequest || !request}
-                                    className="w-full h-10 rounded-xl gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] shadow-md disabled:opacity-40"
-                                >
-                                    <Send className="h-4 w-4" />
-                                    Gửi đến {selectedCount} NCC
+                                <Button variant="outline" onClick={selectAll} className="h-10 px-4 rounded-xl text-[13px] font-bold text-slate-700 hidden sm:flex shrink-0">
+                                    Chọn tất cả
                                 </Button>
                             </div>
                         </div>
-                    )}
+
+                        {loadingSuppliers ? (
+                            <div className="flex flex-col items-center justify-center py-20">
+                                <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-3" />
+                                <p className="text-slate-500 text-[14px]">Đang tải dữ liệu...</p>
+                            </div>
+                        ) : filteredSuppliers.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+                                <Building2 className="h-10 w-10 text-slate-300 mb-3" />
+                                <p className="text-[14px] font-medium">Không tìm thấy nhà cung cấp phù hợp.</p>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto custom-scrollbar">
+                                {filteredSuppliers.map(supplier => (
+                                    <SupplierListItem
+                                        key={supplier.id}
+                                        supplier={supplier}
+                                        isSelected={selectedIds.has(supplier.id)}
+                                        onToggle={toggleSupplier}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                        <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 text-[12px] text-slate-500 font-medium">
+                            Hiển thị {filteredSuppliers.length} đối tác. Nhấn vào từng dòng để chọn/bỏ chọn.
+                        </div>
+                    </div>
+                </div>
+
+                {/* ════ RIGHT COLUMN (Sticky Cart) ════ */}
+                <div className="w-full xl:w-[380px] shrink-0 sticky top-6">
+                    <div className="rounded-2xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-slate-200 flex flex-col max-h-[calc(100vh-100px)]">
+                        <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="h-5 w-5 text-blue-600" />
+                                <p className="font-bold text-[16px] text-slate-900">Danh sách sẽ gửi</p>
+                            </div>
+                            <span className="text-[13px] font-black bg-blue-100 text-blue-700 px-3 py-1 rounded-lg">
+                                {selectedCount} NCC
+                            </span>
+                        </div>
+
+                        <div className="p-4 overflow-y-auto flex-1 custom-scrollbar min-h-[250px]">
+                            {selectedCount === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-3 py-10">
+                                    <div className="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center">
+                                        <Send className="h-6 w-6 opacity-30" />
+                                    </div>
+                                    <p className="text-[13px] text-center px-4 leading-relaxed">Bạn chưa chọn đối tác nào.<br />Tích chọn ở danh sách bên trái để thêm vào đây.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between mb-3 px-1">
+                                        <p className="text-[12px] font-bold text-slate-500 uppercase tracking-widest">Đã chọn</p>
+                                        <button onClick={() => setSelectedIds(new Set())} className="text-[12px] text-rose-500 hover:text-rose-700 font-semibold">Bỏ chọn tất cả</button>
+                                    </div>
+                                    {selectedSuppliersList.map(s => (
+                                        <div key={s.id} className="flex items-center gap-3 rounded-xl bg-white border border-slate-200 px-3 py-3 shadow-sm">
+                                            <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${avatarColor(s.tenNhaCungCap)} flex items-center justify-center text-white font-bold text-[12px] shrink-0`}>
+                                                {getInitials(s.tenNhaCungCap)}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-bold text-[13px] text-slate-800 truncate">{s.tenNhaCungCap}</p>
+                                                <p className="text-[11px] text-slate-500 truncate">{s.email || 'Không có email'}</p>
+                                            </div>
+                                            <button type="button" onClick={() => toggleSupplier(s.id)} className="h-7 w-7 rounded-full hover:bg-rose-100 flex items-center justify-center transition-colors shrink-0 group">
+                                                <X className="h-3.5 w-3.5 text-slate-400 group-hover:text-rose-600" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-5 border-t border-slate-100 bg-white shrink-0">
+                            <Button
+                                onClick={() => setShowConfirm(true)}
+                                disabled={selectedCount === 0 || loadingRequest || !request}
+                                className="w-full h-12 rounded-xl gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-[15px] shadow-md transition-all"
+                            >
+                                <Send className="h-4 w-4" /> Gửi báo giá {selectedCount > 0 ? `(${selectedCount})` : ''}
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* ── Confirm Dialog ── */}
             <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
-                <DialogContent className="rounded-2xl sm:max-w-md p-0 overflow-hidden border-0 shadow-2xl">
-                    <div className="bg-blue-600 p-6 flex items-center gap-3">
-                        <div className="h-11 w-11 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+                <DialogContent className="rounded-3xl sm:max-w-md p-0 overflow-hidden border-0 shadow-2xl">
+                    <div className="bg-blue-600 p-6 flex items-center gap-4">
+                        <div className="h-12 w-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
                             <Send className="h-6 w-6 text-white" />
                         </div>
                         <div>
                             <DialogTitle className="text-xl font-black text-white m-0">Xác nhận gửi báo giá</DialogTitle>
-                            <DialogDescription className="text-blue-100 text-[12px] mt-0.5">
-                                Email sẽ được gửi đến từng nhà cung cấp đã chọn
-                            </DialogDescription>
+                            <DialogDescription className="text-blue-100 text-[13px] mt-1">Hệ thống sẽ tự động tạo đơn và gửi email</DialogDescription>
                         </div>
                     </div>
 
-                    <div className="p-6 space-y-4">
-                        {/* Summary */}
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-[14px]">
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Yêu cầu mua hàng:</span>
-                                <span className="font-bold text-slate-800">#{id}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Kho nhập:</span>
-                                <span className="font-bold text-slate-800">{request?.khoNhap?.tenKho || '—'}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Số biến thể:</span>
-                                <span className="font-bold text-slate-800">{request?.chiTietYeuCauMuaHangs?.length || 0}</span>
-                            </div>
+                    <div className="p-6 space-y-5">
+                        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3 text-[14px]">
+                            <div className="flex justify-between items-center"><span className="text-slate-500 font-medium">Yêu cầu nhập hàng:</span><span className="font-black text-slate-800 text-[15px]">#{id}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-slate-500 font-medium">Kho nhập:</span><span className="font-bold text-slate-800">{request?.khoNhap?.tenKho || '—'}</span></div>
                             <div className="h-px bg-slate-200" />
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Số NCC nhận email:</span>
-                                <span className="font-black text-blue-600 text-[16px]">{selectedCount}</span>
-                            </div>
+                            <div className="flex justify-between items-center"><span className="text-slate-500 font-medium">Số đối tác nhận:</span><span className="font-black text-blue-600 text-[18px] bg-blue-100 px-2 py-0.5 rounded-lg">{selectedCount}</span></div>
                         </div>
 
-                        {/* NCC list */}
                         <div className="rounded-xl border border-slate-200 overflow-hidden">
-                            <div className="bg-slate-50 px-3 py-2 border-b border-slate-200">
-                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Nhà cung cấp sẽ nhận</p>
-                            </div>
-                            <div className="divide-y divide-slate-100 max-h-[160px] overflow-y-auto">
+                            <div className="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200"><p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Gửi đến ({selectedCount})</p></div>
+                            <div className="divide-y divide-slate-100 max-h-[160px] overflow-y-auto custom-scrollbar">
                                 {selectedSuppliersList.map(s => (
-                                    <div key={s.id} className="flex items-center gap-2.5 px-3 py-2.5">
-                                        <div className={`h-6 w-6 rounded-md bg-gradient-to-br ${avatarColor(s.tenNhaCungCap)} flex items-center justify-center text-white font-black text-[9px] shrink-0`}>
-                                            {getInitials(s.tenNhaCungCap)}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-[12px] text-slate-800 truncate">{s.tenNhaCungCap}</p>
-                                        </div>
-                                        <p className="text-[11px] text-blue-600 font-medium truncate max-w-[140px]">{s.email || '—'}</p>
+                                    <div key={s.id} className="flex items-center gap-3 px-3.5 py-2.5">
+                                        <div className={`h-6 w-6 rounded-full bg-gradient-to-br ${avatarColor(s.tenNhaCungCap)} flex items-center justify-center text-white font-bold text-[9px] shrink-0`}>{getInitials(s.tenNhaCungCap)}</div>
+                                        <p className="font-semibold text-[13px] text-slate-800 truncate flex-1">{s.tenNhaCungCap}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
-
-                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5">
-                            <p className="text-[12px] text-amber-800">
-                                <strong>Lưu ý:</strong> Hệ thống sẽ tạo đơn mua hàng và gửi email tự động đến từng nhà cung cấp. Thao tác này không thể hoàn tác.
-                            </p>
-                        </div>
                     </div>
 
-                    <div className="px-6 pb-6 flex gap-2">
-                        <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={submitting}
-                            className="flex-1 h-11 rounded-xl font-semibold">Hủy bỏ</Button>
-                        <Button onClick={handleSend} disabled={submitting}
-                            className="flex-1 h-11 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md gap-2">
-                            {submitting
-                                ? <><Loader2 className="h-5 w-5 animate-spin" />Đang gửi...</>
-                                : <><Send className="h-4 w-4" />Xác nhận gửi</>
-                            }
+                    <div className="px-6 pb-6 flex gap-3">
+                        <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={submitting} className="flex-1 h-12 rounded-xl font-bold border-slate-200 text-slate-700">Hủy bỏ</Button>
+                        <Button onClick={handleSend} disabled={submitting} className="flex-1 h-12 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md gap-2">
+                            {submitting ? <><Loader2 className="h-5 w-5 animate-spin" />Đang gửi...</> : <><Send className="h-4 w-4" />Tiến hành gửi</>}
                         </Button>
                     </div>
                 </DialogContent>

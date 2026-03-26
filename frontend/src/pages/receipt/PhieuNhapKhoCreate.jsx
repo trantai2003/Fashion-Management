@@ -220,7 +220,7 @@ export default function PhieuNhapKhoCreate() {
             const [poRes, transferRes3, transferRes4, allReceiptsRes, allIssuesRes, returnSoRes] = await Promise.all([
                 purchaseOrderService.filter({
                     page: 0, size: 1000,
-                    filters: [{ fieldName: "trangThai", operator: "IN", value: [6, 7] }],
+                    filters: [{ fieldName: "trangThai", operator: "IN", value: [3, 5] }],
                     sorts: [{ fieldName: "id", direction: "DESC" }]
                 }).catch(() => ({ content: [] })),
 
@@ -251,7 +251,7 @@ export default function PhieuNhapKhoCreate() {
             // === 1. XỬ LÝ PO (Logic nguyên gốc) ===
             const rawPoList = poRes.data?.content || poRes.content || [];
             const validPoList = rawPoList.filter(po => {
-                if (po.trangThai !== 6 && po.trangThai !== 7) return false;
+                if (po.trangThai !== 3 && po.trangThai !== 5) return false;
                 const targetKhoId = po.khoNhap?.id || po.khoNhapId;
                 if (!targetKhoId) return false;
 

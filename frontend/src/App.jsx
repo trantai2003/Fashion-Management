@@ -81,6 +81,8 @@ import PurchaseRequestList from "./pages/order/PurchaseRequestList";
 import CreatePurchaseRequestPage from "./pages/order/CreatePurchaseRequestPage";
 import SendQuotationRequestPage from "./pages/order/SendQuotationRequestPage";
 import PurchaseRequestDetail from "./pages/order/PurchaseRequestDetail";
+import QuotationRequestDetail from "./pages/order/QuotationRequestDetail";
+import QuotationDetail from "./pages/order/QuotationDetail";
 
 export default function App() {
   return (
@@ -151,6 +153,8 @@ export default function App() {
           <Route path="/purchase-requests/:id/gui-bao-gia" element={<SendQuotationRequest />} />
           <Route path="/quotation-requests" element={<QuotationRequestList />} />
           <Route path="/quotation-requests/create" element={<QuotationRequestCreate />} />
+          <Route path="/quotation-requests/:id" element={<QuotationRequestDetail />} />
+          <Route path="/quotation/:id" element={<QuotationDetail />} />
           <Route path="/purchase-orders/create" element={<PurchaseOrderCreateManual />} />
           <Route path="/purchase-requests/:id" element={<PurchaseRequestDetail />} />
           
