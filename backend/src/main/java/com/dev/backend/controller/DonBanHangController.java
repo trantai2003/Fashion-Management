@@ -184,4 +184,80 @@ public class DonBanHangController {
                         .build()
         );
     }
+    @PutMapping("/{id}/convert-to-order")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> convertToOrder(
+            @PathVariable Integer id,
+            @RequestBody java.util.Map<String, Object> body
+    ) {
+        Integer khoXuatId = body.get("khoXuatId") != null ? Integer.valueOf(body.get("khoXuatId").toString()) : null;
+        String ghiChu = body.get("ghiChu") != null ? body.get("ghiChu").toString() : null;
+        String diaChi = body.get("diaChiGiaoHang") != null ? body.get("diaChiGiaoHang").toString() : null;
+        java.math.BigDecimal phiVanChuyen = body.get("phiVanChuyen") != null ? new java.math.BigDecimal(body.get("phiVanChuyen").toString()) : null;
+
+        donBanHangService.convertToOrder(id, khoXuatId, ghiChu, diaChi, phiVanChuyen);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(200)
+                        .data("Success")
+                        .message("Đã chấp nhận báo giá và chuyển thành đơn bán hàng")
+                        .error(null)
+                        .build()
+        );
+    }
+
+    @PutMapping("/{id}/reject-quote")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> rejectQuote(
+            @PathVariable Integer id,
+            @RequestBody java.util.Map<String, String> body
+    ) {
+        String reason = body.get("reason");
+        donBanHangService.rejectQuote(id, reason);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(200)
+                        .data("Success")
+                        .message("Đã từ chối báo giá thành công")
+                        .error(null)
+                        .build()
+        );
+    }
+
+    @PutMapping("/{id}/return")
+    @RequireAuth(
+            roles = {
+                    IRoleType.quan_tri_vien,
+                    IRoleType.nhan_vien_ban_hang
+            },
+            rolesLogic = RequireAuth.LogicType.OR
+    )
+    public ResponseEntity<ResponseData<String>> returnOrder(
+            @PathVariable Integer id
+    ) {
+        donBanHangService.returnOrder(id);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(200)
+                        .data("Success")
+                        .message("Đã chuyển trạng thái đơn hàng thành Bị hoàn trả")
+                        .error(null)
+                        .build()
+        );
+    }
 }

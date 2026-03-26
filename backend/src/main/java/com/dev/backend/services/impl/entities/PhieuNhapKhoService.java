@@ -54,6 +54,9 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     @Autowired
     private SanPhamQuanAoService sanPhamQuanAoService;
 
+    @Autowired
+    private DonBanHangRepository donBanHangRepository;
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
@@ -193,6 +196,8 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         List<ChiTietPhieuNhapKho> danhSachNhapTheoLo = chiTietPhieuNhapKhoRepository.findAllByPhieuNhapKhoIdAndCoLo(phieuNhapKhoId);
         Kho kho = phieu.getKho();
         BigDecimal tongTien = BigDecimal.ZERO;
+
+        // donMuaHang sẽ là null nếu đây là phiếu Nhập Hoàn Trả (Return)
         DonMuaHang donMuaHang = phieu.getDonMuaHang();
 
         // Khởi tạo Set để lưu các ID Sản phẩm cha cần cập nhật giá
@@ -218,14 +223,22 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
             tonKho.setLanCapNhatCuoi(Instant.now());
             tonKhoTheoLoRepository.save(tonKho);
 
-            ChiTietDonMuaHang ctPo = donMuaHang.getChiTietDonMuaHangs().stream()
-                    .filter(item -> item.getBienTheSanPham().getId().equals(ct.getBienTheSanPham().getId()))
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Sản phẩm " + ct.getBienTheSanPham().getMaSku() + " không có trong PO"));
+            // BỔ SUNG FIX: Chỉ xử lý cập nhật số lượng Đã Nhận nếu có PO
+            if (donMuaHang != null) {
+                ChiTietDonMuaHang ctPo = donMuaHang.getChiTietDonMuaHangs().stream()
+                        .filter(item -> item.getBienTheSanPham().getId().equals(ct.getBienTheSanPham().getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Sản phẩm " + ct.getBienTheSanPham().getMaSku() + " không có trong PO"));
 
-            BigDecimal daNhanHienTai = ctPo.getSoLuongDaNhan() != null ? ctPo.getSoLuongDaNhan() : BigDecimal.ZERO;
-            ctPo.setSoLuongDaNhan(daNhanHienTai.add(soLuongNhap));
-            chiTietDonMuaHangRepository.save(ctPo);
+                BigDecimal daNhanHienTai = ctPo.getSoLuongDaNhan() != null ? ctPo.getSoLuongDaNhan() : BigDecimal.ZERO;
+                ctPo.setSoLuongDaNhan(daNhanHienTai.add(soLuongNhap));
+                chiTietDonMuaHangRepository.save(ctPo);
+            }
+
+            // Ghi lịch sử giao dịch (Đổi ghi chú tùy theo phiếu PO hay phiếu Hoàn trả)
+            String ghiChuLS = donMuaHang != null
+                    ? "Nhập kho từ phiếu: " + phieu.getSoPhieuNhap()
+                    : "Nhập hoàn trả (Return) từ phiếu: " + phieu.getSoPhieuNhap();
 
             LichSuGiaoDichKho history = LichSuGiaoDichKho.builder()
                     .ngayGiaoDich(Instant.now())
@@ -240,7 +253,7 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
                     .soLuongSau(soLuongSau)
                     .giaVon(ct.getDonGia())
                     .nguoiDung(nguoiNhap)
-                    .ghiChu("Nhập kho từ phiếu: " + phieu.getSoPhieuNhap())
+                    .ghiChu(ghiChuLS)
                     .build();
             lichSuGiaoDichKhoRepository.save(history);
             sanPhamIdsCanCapNhat.add(ct.getBienTheSanPham().getSanPham().getId());
@@ -253,7 +266,11 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         phieu.setNguoiNhap(nguoiNhap);
         phieu.setNgayNhap(Instant.now());
         repository.save(phieu);
-        donMuaHangRepository.save(donMuaHang);
+
+        if (donMuaHang != null) {
+            donMuaHangRepository.save(donMuaHang);
+        }
+
         entityManager.flush();
         for (Integer spId : sanPhamIdsCanCapNhat) {
             sanPhamQuanAoService.recalculatePriceAndStatus(spId);
@@ -264,6 +281,10 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     public void huyPhieuNhap(Integer id) {
         PhieuNhapKho phieu = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
+
+        if (phieu.getSoPhieuNhap().startsWith("PN-RET-")) {
+            throw new RuntimeException("Đây là phiếu nhập hoàn trả bắt buộc, hệ thống không cho phép hủy!");
+        }
 
         if (phieu.getTrangThai() == TrangThaiPhieuNhap.COMPLETED.getValue()) {
             throw new RuntimeException("Phiếu đã hoàn thành, không thể huỷ");
@@ -277,6 +298,10 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     public void khaiBaoLo(Integer phieuNhapKhoId, KhaiBaoLoRequest request) {
         PhieuNhapKho phieu = repository.findById(phieuNhapKhoId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu nhập"));
+
+        if (phieu.getSoPhieuNhap().startsWith("PN-RET-")) {
+            throw new RuntimeException("Phiếu nhập hoàn trả đã được hệ thống cố định lô hàng, không thể chỉnh sửa!");
+        }
 
         if (phieu.getTrangThai() != TrangThaiPhieuNhap.DRAFT.getValue()) {
             throw new RuntimeException("Chỉ được khai báo lô ở trạng thái Nháp");
@@ -346,6 +371,11 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
     public void xoaLo(Integer phieuNhapKhoId, Integer chiTietId) {
         PhieuNhapKho phieu = repository.findById(phieuNhapKhoId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu"));
+
+        if (phieu.getSoPhieuNhap().startsWith("PN-RET-")) {
+            throw new RuntimeException("Phiếu nhập hoàn trả đã được hệ thống cố định lô hàng, không thể xóa!");
+        }
+
         if (phieu.getTrangThai() != TrangThaiPhieuNhap.DRAFT.getValue()) {
             throw new RuntimeException("Chỉ được xóa lô ở trạng thái Nháp");
         }
@@ -608,6 +638,67 @@ public class PhieuNhapKhoService extends BaseServiceImpl<PhieuNhapKho, Integer> 
         }
 
         pn.setTongTien(tongTien);
+        return repository.save(pn);
+    }
+
+    @Transactional
+    public PhieuNhapKho createReturnImportDraft(Integer phieuXuatKhoId, String ghiChu) {
+        PhieuXuatKho px = phieuXuatKhoRepository.findById(phieuXuatKhoId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu xuất kho"));
+
+        DonBanHang donBanHang = px.getDonBanHang();
+        if (donBanHang == null || donBanHang.getTrangThai() != 6) {
+            throw new RuntimeException("Phiếu xuất này không thuộc Đơn hàng bị hoàn trả!");
+        }
+
+        Kho khoNhan = px.getKho() != null ? px.getKho() : donBanHang.getKhoXuat();
+        if (khoNhan == null) {
+            throw new RuntimeException("Không xác định được kho nhận trả hàng");
+        }
+
+        // Tạo số phiếu
+        String dateStr = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+        String prefix = "PN-RET-" + dateStr;
+        long countToday = ((PhieuNhapKhoRepository) repository).countBySoPhieuPrefix(prefix);
+        String soPhieuNhap = prefix + (countToday + 1);
+
+        // Tạo phiếu nhập Nháp
+        PhieuNhapKho pn = PhieuNhapKho.builder()
+                .soPhieuNhap(soPhieuNhap)
+                .kho(khoNhan)
+                .ngayNhap(null)
+                .trangThai(TrangThaiPhieuNhap.DRAFT.getValue())
+                .ghiChu(ghiChu != null ? ghiChu : "Nhập hoàn trả từ phiếu xuất: " + px.getSoPhieuXuat())
+                .tongTien(BigDecimal.ZERO)
+                .build();
+        pn = repository.save(pn);
+
+        BigDecimal tongTienNhap = BigDecimal.ZERO;
+
+        // Lấy chi tiết xuất kho có gắn Lô Hàng
+        List<ChiTietPhieuXuatKho> dsChiTietXuat = entityManager.createQuery(
+                        "SELECT ct FROM ChiTietPhieuXuatKho ct WHERE ct.phieuXuatKho.id = :pxId AND ct.loHang IS NOT NULL", ChiTietPhieuXuatKho.class)
+                .setParameter("pxId", px.getId())
+                .getResultList();
+
+        for (ChiTietPhieuXuatKho ctXuat : dsChiTietXuat) {
+            BigDecimal slHoanTra = ctXuat.getSoLuongXuat();
+            BigDecimal donGia = ctXuat.getGiaVon() != null ? ctXuat.getGiaVon() : BigDecimal.ZERO;
+
+            ChiTietPhieuNhapKho ctNhap = ChiTietPhieuNhapKho.builder()
+                    .phieuNhapKho(pn)
+                    .bienTheSanPham(ctXuat.getBienTheSanPham())
+                    .loHang(ctXuat.getLoHang())
+                    .soLuongNhap(slHoanTra)
+                    .donGia(donGia)
+                    .ghiChu("Hoàn trả từ lô: " + ctXuat.getLoHang().getMaLo())
+                    .build();
+            chiTietPhieuNhapKhoRepository.save(ctNhap);
+
+            tongTienNhap = tongTienNhap.add(donGia.multiply(slHoanTra));
+        }
+
+        pn.setTongTien(tongTienNhap);
         return repository.save(pn);
     }
 }

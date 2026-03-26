@@ -282,11 +282,15 @@ export default function PhieuNhapKhoPrint() {
     );
   }
 
-  const isInternal = data.soPhieuNhap?.startsWith("PN-TRF-") ||
-                     (data.loaiNhap || "").toLowerCase().includes("chuyển kho");
+  // Xác định các luồng nghiệp vụ
+  const isInternal = data.soPhieuNhap?.startsWith("PN-TRF-") || 
+                     data.phieuXuatGocId != null;
+  const isReturn = data.soPhieuNhap?.startsWith("PN-RET-") && data.phieuXuatGocId == null;
+
+  const isAutoInherit = isInternal || isReturn;
 
   const totalQty = data.items.reduce(
-    (acc, item) => acc + (Number(item.soLuongDaKhaiBao) || 0),
+    (acc, item) => acc + (isAutoInherit ? (Number(item.soLuongCanNhap) || 0) : (Number(item.soLuongDaKhaiBao) || 0)),
     0
   );
 
@@ -309,7 +313,9 @@ export default function PhieuNhapKhoPrint() {
         </div>
 
         <div className="print-container">
-          <h1 className="title-main">PHIẾU NHẬP KHO</h1>
+          <h1 className="title-main">
+            {isReturn ? "PHIẾU NHẬP KHO (HOÀN TRẢ)" : "PHIẾU NHẬP KHO"}
+          </h1>
           <div className="subtitle">
             Mã phiếu: {data.soPhieuNhap || "—"} • Ngày nhập: {data.ngayNhap
               ? new Date(data.ngayNhap).toLocaleDateString("vi-VN")
@@ -326,7 +332,7 @@ export default function PhieuNhapKhoPrint() {
             <div style={{ textAlign: "right" }}>
               <div className="info-label">ĐỐI TÁC / NGUỒN</div>
               <div className="info-value">
-                {isInternal ? "Kho nội bộ" : (data.tenNhaCungCap || "—")}
+                {isInternal ? "Kho nội bộ" : isReturn ? "Khách hàng hoàn trả" : (data.tenNhaCungCap || "—")}
               </div>
             </div>
           </div>
@@ -335,7 +341,7 @@ export default function PhieuNhapKhoPrint() {
             <div>
               <div className="info-label">LOẠI NGHIỆP VỤ</div>
               <div className="info-value">
-                {isInternal ? "Chuyển kho nội bộ" : "Nhập từ nhà cung cấp"}
+                {isInternal ? "Chuyển kho nội bộ" : isReturn ? "Nhập hàng hoàn trả" : "Nhập từ nhà cung cấp"}
               </div>
             </div>
           </div>
@@ -375,7 +381,7 @@ export default function PhieuNhapKhoPrint() {
                           ))
                         ) : (
                           <div className="lot-item" style={{ color: "#c2410c", fontStyle: "italic" }}>
-                            Chưa khai báo
+                            {isAutoInherit ? "Kế thừa tự động" : "Chưa khai báo"}
                           </div>
                         )}
                       </td>
@@ -406,7 +412,7 @@ export default function PhieuNhapKhoPrint() {
                         )}
                       </td>
                       <td style={{ textAlign: "right", fontWeight: 700 }}>
-                        {item.soLuongDaKhaiBao || 0}
+                        {isAutoInherit ? (item.soLuongCanNhap || 0) : (item.soLuongDaKhaiBao || 0)}
                       </td>
                     </tr>
                   );

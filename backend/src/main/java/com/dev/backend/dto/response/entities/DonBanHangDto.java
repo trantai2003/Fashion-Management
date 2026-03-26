@@ -22,6 +22,7 @@ import java.time.Instant;
 public class DonBanHangDto implements Serializable {
     Integer id;
     String soDonHang;
+    String loaiChungTu;
     KhachHangDto khachHang;
     KhoDto khoXuat;
     Instant ngayDatHang;
@@ -33,6 +34,7 @@ public class DonBanHangDto implements Serializable {
     String trangThaiThanhToan;
     String diaChiGiaoHang;
     String ghiChu;
+    String lyDoTuChoi;
     NguoiDungDto nguoiTao;
     NguoiDungDto nguoiDuyet;
     Instant ngayTao;

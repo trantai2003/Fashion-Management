@@ -76,6 +76,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     @Transactional
     public ResponseEntity<ResponseData<String>> register(RegisterRequest registerRequest) {
+        //Lấy thông tin người dùng
         Optional<NguoiDung> findingNguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
                 registerRequest.getTenDangNhap(),
                 registerRequest.getEmail(),
@@ -96,6 +97,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         nguoiDung = create(nguoiDung);
 
         String otp = calcService.getRandomActiveCode(6L);
+        //Khởi tạo OTP
         GlobalCache.OTP_SCHEDULE_OBJS.add(
                 OtpScheduleObj.builder()
                         .email(registerRequest.getEmail())
@@ -105,6 +107,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                         .build()
         );
 
+        //Truyền dữ liệu vào mail
         Map<String, Object> params = new HashMap<>();
 
         params.put("userName", registerRequest.getHoTen());
@@ -174,10 +177,10 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
             throw new CommonException("Mật khẩu không chính xác");
         }
 
-
+        // check danh sách phân quyền người dùng để truyền ra token
         List<PhanQuyenNguoiDungKho> phanQuyenNguoiDungKhos = phanQuyenNguoiDungKhoService.findByNguoiDungIdAndActive(nguoiDung.getId());
 
-
+        // lấy ra danh sách vai trò cho người dùng
         Set<String> vaiTros = new HashSet<>();
         vaiTros.add(nguoiDung.getVaiTro());
         String token = jwtService.generateTokenWithPermissions(

@@ -57,6 +57,7 @@ public class ThongKeHeThongServiceImpl implements ThongKeHeThongService {
         );
     }
 
+    //dùng dể search theo SKU, mã SP, tên sản phẩm (truyền ID kho vào)
     @Override
     public ResponseEntity<ResponseData<List<TonKhoProjection>>> tonKhoTongHop(Integer khoId, String keyword) {
         return ResponseEntity.ok(
@@ -69,6 +70,7 @@ public class ThongKeHeThongServiceImpl implements ThongKeHeThongService {
         );
     }
 
+    // lấy toàn bộ danh sách các biến thể để show ra tồn kho tổng hợp
     @Override
     public List<TonKhoProjection> getTonKhoTongHop(Integer khoId, String keyword) {
         return tonKhoTongHopRepository.findTonKhoTongHop(khoId, keyword);

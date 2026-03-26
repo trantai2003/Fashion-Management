@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 public class DonBanHangCreating {
     private String soDonHang;
+    private String loaiChungTu;
     private Integer khachHangId;
     Integer khoXuatId;
     private String diaChiGiaoHang;

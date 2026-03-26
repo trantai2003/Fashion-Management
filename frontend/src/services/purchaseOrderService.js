@@ -1,189 +1,175 @@
 import apiClient from './apiClient';
 
+// ─── Yêu Cầu Mua Hàng (YeuCauMuaHang) ───────────────────────────────────────
+
+export const purchaseRequestService = {
+    /**
+     * Lấy chi tiết yêu cầu mua hàng theo ID
+     * GET /api/v1/yeu-cau-mua-hang/get-by-id/{id}
+     */
+    getById: async (id) => {
+        const response = await apiClient.get(`/api/v1/yeu-cau-mua-hang/get-by-id/${id}`);
+        return response.data;
+    },
+
+    /**
+     * Lọc và phân trang danh sách yêu cầu mua hàng
+     * POST /api/v1/yeu-cau-mua-hang/filter
+     */
+    filter: async (filterRequest) => {
+        const response = await apiClient.post(`/api/v1/yeu-cau-mua-hang/filter`, filterRequest);
+        return response.data;
+    },
+
+    buildFilterRequest: (filters = [], page = 0, size = 10, sorts = []) => ({
+        filters,
+        sorts: sorts.length > 0 ? sorts : [{ fieldName: 'ngayTao', direction: 'DESC' }],
+        page,
+        size,
+    }),
+
+    /**
+     * Tạo yêu cầu mua hàng mới (nhân viên kho/bán hàng/mua hàng)
+     * POST /api/v1/nghiep-vu/yeu-cau-mua-hang/create
+     */
+    create: async (creating) => {
+        const response = await apiClient.post(`/api/v1/nghiep-vu/yeu-cau-mua-hang/create`, creating);
+        return response.data;
+    },
+
+    /**
+     * Quản lý kho duyệt hoặc từ chối yêu cầu mua hàng
+     * PUT /api/v1/nghiep-vu/yeu-cau-mua-hang/duyet-tu-choi/{id}/{trangThai}
+     *
+     * trangThai:
+     *   0 = Từ chối / hủy
+     *   1 = Chờ duyệt (mặc định khi tạo)
+     *   2 = Đã duyệt
+     */
+    duyetYeuCau: async (id, trangThai) => {
+        const response = await apiClient.put(
+            `/api/v1/nghiep-vu/yeu-cau-mua-hang/duyet-tu-choi/${id}/${trangThai}`
+        );
+        return response.data;
+    },
+
+    /** Duyệt yêu cầu → trangThai = 2 */
+    duyet: async (id) => purchaseRequestService.duyetYeuCau(id, 2),
+
+    /** Từ chối yêu cầu → trangThai = 0 */
+    tuChoi: async (id) => purchaseRequestService.duyetYeuCau(id, 0),
+};
+
+// ─── Đơn Mua Hàng (DonMuaHang) ───────────────────────────────────────────────
+
 const purchaseOrderService = {
     /**
      * Lấy chi tiết đơn mua hàng theo ID
-     * @param {number} id 
-     * @returns Promise<ResponseData<DonMuaHangDto>>
+     * GET /api/v1/don-mua-hang/get-by-id/{id}
      */
     getById: async (id) => {
-        try {
-            const response = await apiClient.get(`/api/v1/don-mua-hang/get-by-id/${id}`);
-            return response.data;
-        } catch (error) {
-            console.error(`Error fetching purchase order ${id}:`, error);
-            throw error;
-        }
+        const response = await apiClient.get(`/api/v1/don-mua-hang/get-by-id/${id}`);
+        return response.data;
     },
 
     /**
      * Lọc và phân trang danh sách đơn mua hàng
-     * @param {Object} filterRequest - Đối tượng BaseFilterRequest (filters, sorts, page, size)
-     * @returns Promise<ResponseData<Page<DonMuaHangDto>>>
+     * POST /api/v1/don-mua-hang/filter
      */
     filter: async (filterRequest) => {
-        try {
-            const response = await apiClient.post(`/api/v1/don-mua-hang/filter`, filterRequest);
-            return response.data;
-        } catch (error) {
-            console.error('Error filtering purchase orders:', error);
-            throw error;
-        }
+        const response = await apiClient.post(`/api/v1/don-mua-hang/filter`, filterRequest, { needToken: false, needKho: false });
+        return response.data;
     },
 
-    /**
-     * (Optional) Helper để build nhanh object filter nếu bạn muốn dùng ở nhiều nơi
-     */
-    buildFilterRequest: (filters = [], page = 0, size = 10, sorts = []) => {
-        return {
-            filters: filters,
-            sorts: sorts.length > 0 ? sorts : [{ fieldName: "ngayTao", direction: "DESC" }],
-            page: page,
-            size: size
-        };
-    },
+    buildFilterRequest: (filters = [], page = 0, size = 10, sorts = []) => ({
+        filters,
+        sorts: sorts.length > 0 ? sorts : [{ fieldName: 'ngayTao', direction: 'DESC' }],
+        page,
+        size,
+    }),
 
-    /**
-     * Lấy danh sách nhà cung cấp unique từ các đơn mua hàng
-     * @returns Promise<Array<NhaCungCap>>
-     */
+    /** Lấy danh sách nhà cung cấp unique từ các đơn mua hàng */
     getUniqueSuppliers: async () => {
-        try {
-            const response = await apiClient.post(`/api/v1/don-mua-hang/filter`, {
-                filters: [],
-                sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
-                page: 0,
-                size: 1000 // Lấy nhiều để có đủ suppliers
-            });
+        const response = await apiClient.post(`/api/v1/don-mua-hang/filter`, {
+            filters: [],
+            sorts: [{ fieldName: 'ngayTao', direction: 'DESC' }],
+            page: 0,
+            size: 1000,
+        });
+        const orders = response.data?.data?.content || [];
+        const map = new Map();
+        orders.forEach(o => { if (o.nhaCungCap?.id) map.set(o.nhaCungCap.id, o.nhaCungCap); });
+        return Array.from(map.values()).sort((a, b) =>
+            (a.tenNhaCungCap || '').localeCompare(b.tenNhaCungCap || '')
+        );
+    },
 
-            const orders = response.data?.data?.content || [];
-
-            // Lọc unique suppliers
-            const suppliersMap = new Map();
-            orders.forEach(order => {
-                if (order.nhaCungCap && order.nhaCungCap.id) {
-                    suppliersMap.set(order.nhaCungCap.id, order.nhaCungCap);
-                }
-            });
-
-            // Convert Map to Array và sort theo tên
-            return Array.from(suppliersMap.values()).sort((a, b) =>
-                (a.tenNhaCungCap || '').localeCompare(b.tenNhaCungCap || '')
-            );
-        } catch (error) {
-            console.error('Error fetching unique suppliers:', error);
-            throw error;
-        }
+    /** Lấy danh sách kho unique từ các đơn mua hàng */
+    getUniqueWarehouses: async () => {
+        const response = await apiClient.post(`/api/v1/don-mua-hang/filter`, {
+            filters: [],
+            sorts: [{ fieldName: 'ngayTao', direction: 'DESC' }],
+            page: 0,
+            size: 1000,
+        });
+        const orders = response.data?.data?.content || [];
+        const map = new Map();
+        orders.forEach(o => { if (o.khoNhap?.id) map.set(o.khoNhap.id, o.khoNhap); });
+        return Array.from(map.values()).sort((a, b) =>
+            (a.tenKho || '').localeCompare(b.tenKho || '')
+        );
     },
 
     /**
-     * Lấy danh sách kho unique từ các đơn mua hàng
-     * @returns Promise<Array<Kho>>
+     * Nhân viên mua hàng gửi yêu cầu báo giá đến nhà cung cấp
+     * POST /api/v1/nghiep-vu/don-mua-hang/gui-yeu-cau-bao-gia
+     *
+     * @param {Object} yeuCau - YeuCauDenNhaCungCapCreating
      */
-    getUniqueWarehouses: async () => {
-        try {
-            const response = await apiClient.post(`/api/v1/don-mua-hang/filter`, {
-                filters: [],
-                sorts: [{ fieldName: "ngayTao", direction: "DESC" }],
-                page: 0,
-                size: 1000 // Lấy nhiều để có đủ warehouses
-            });
-
-            const orders = response.data?.data?.content || [];
-
-            // Lọc unique warehouses
-            const warehousesMap = new Map();
-            orders.forEach(order => {
-                if (order.khoNhap && order.khoNhap.id) {
-                    warehousesMap.set(order.khoNhap.id, order.khoNhap);
-                }
-            });
-
-            // Convert Map to Array và sort theo tên
-            return Array.from(warehousesMap.values()).sort((a, b) =>
-                (a.tenKho || '').localeCompare(b.tenKho || '')
-            );
-        } catch (error) {
-            console.error('Error fetching unique warehouses:', error);
-            throw error;
-        }
+    guiYeuCauBaoGia: async (yeuCau) => {
+        const response = await apiClient.post(
+            `/api/v1/nghiep-vu/don-mua-hang/gui-yeu-cau-bao-gia`,
+            yeuCau
+        );
+        return response.data;
     },
 
     /**
      * Cập nhật trạng thái đơn mua hàng
-     * @param {number} id 
-     * @param {number} trangThai 
-     * @returns Promise<ResponseData<string>>
+     * PUT /api/v1/nghiep-vu/don-mua-hang/duyet-don/{id}/{trangThai}
+     *
+     * trangThai theo DonMuaHang.java:
+     *   0  = Đã xóa / hủy
+     *   1  = Đã gửi yêu cầu báo giá đến NCC
+     *   2  = Nhà cung cấp đã báo giá
+     *   3  = Chấp nhận báo giá — chờ vận chuyển
+     *   4  = Không chấp nhận báo giá
+     *   5  = Đã thanh toán
      */
     duyetDon: async (id, trangThai) => {
-        try {
-            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/${trangThai}`);
-            return response.data;
-        } catch (error) {
-            console.error(`Error updating purchase order status ${id}:`, error);
-            throw error;
-        }
+        const response = await apiClient.put(
+            `/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/${trangThai}`
+        );
+        return response.data;
     },
 
-    /**
-     * Gửi email yêu cầu báo giá đến nhà cung cấp
-     * @param {number} id - ID của đơn mua hàng
-     * @returns Promise<ResponseData<string>>
-     */
-    guiMailYeuCauBaoGia: async (id) => {
-        try {
-            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/3`);
-            return response.data;
-        } catch (error) {
-            console.error(`Error sending quotation request email for purchase order ${id}:`, error);
-            throw error;
-        }
-    },
+    /** Chấp nhận báo giá → trạng thái 3 */
+    chapNhanBaoGia: async (id) => purchaseOrderService.duyetDon(id, 3),
+
+    /** Từ chối báo giá → trạng thái 4 */
+    tuChoiBaoGia: async (id) => purchaseOrderService.duyetDon(id, 4),
+
+    /** Hủy đơn mua hàng → trạng thái 0 */
+    huyDon: async (id) => purchaseOrderService.duyetDon(id, 0),
 
     /**
-     * Chấp nhận báo giá từ nhà cung cấp (trạng thái 4 -> 6)
-     * @param {number} id - ID của đơn mua hàng
-     * @returns Promise<ResponseData<string>>
+     * Lấy thông tin giao dịch thanh toán
+     * GET /api/v1/nghiep-vu/don-mua-hang/thanh-toan/{id}
      */
-    chapNhanBaoGia: async (id) => {
-        try {
-            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/6`);
-            return response.data;
-        } catch (error) {
-            console.error(`Error accepting quotation for purchase order ${id}:`, error);
-            throw error;
-        }
+    layGiaoDich: async (id) => {
+        const response = await apiClient.get(`/api/v1/nghiep-vu/don-mua-hang/thanh-toan/${id}`);
+        return response.data;
     },
-
-    /**
-     * Từ chối báo giá từ nhà cung cấp (trạng thái 4 -> 5)
-     * @param {number} id - ID của đơn mua hàng
-     * @returns Promise<ResponseData<string>>
-     */
-    tuChoiBaoGia: async (id) => {
-        try {
-            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/5`);
-            return response.data;
-        } catch (error) {
-            console.error(`Error rejecting quotation for purchase order ${id}:`, error);
-            throw error;
-        }
-    },
-
-    /**
-     * Thanh toán đơn hàng (trạng thái 6 -> 7)
-     * @param {number} id - ID của đơn mua hàng
-     * @returns Promise<ResponseData<string>>
-     */
-    thanhToanDonHang: async (id) => {
-        try {
-            const response = await apiClient.put(`/api/v1/nghiep-vu/don-mua-hang/duyet-don/${id}/7`);
-            return response.data;
-        } catch (error) {
-            console.error(`Error processing payment for purchase order ${id}:`, error);
-            throw error;
-        }
-    }
 };
 
 export default purchaseOrderService;

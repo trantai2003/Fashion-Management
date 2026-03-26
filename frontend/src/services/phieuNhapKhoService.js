@@ -37,4 +37,8 @@ export const phieuNhapKhoService = {
     completeTransferReceipt: (id) => {
         return apiClient.put(`/api/v1/phieu-nhap-kho/${id}/complete-transfer`);
     },
+    async createFromSalesReturn(phieuXuatId, payload = {}) {
+        const res = await apiClient.post(`/api/v1/phieu-nhap-kho/from-sales-return/${phieuXuatId}`, payload);
+        return res.data;
+    }
 };

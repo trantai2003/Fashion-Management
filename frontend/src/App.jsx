@@ -73,6 +73,16 @@ import LichSuGiaoDichKhoList from "./pages/lich-su-giao-dich-kho/LichSuGiaoDichK
 import QuotationRequestList from "./pages/order/QuotationRequestList";
 import QuotationRequestCreate from "./pages/order/QuotationRequestCreate";
 import PurchaseOrderCreateManual from "./pages/order/PurchaseOrderCreateManual";
+import BaoGiaList from "./pages/sales-orders/Bao-gia/BaoGiaList";
+import BaoGiaCreate from "./pages/sales-orders/Bao-gia/BaoGiaCreate";
+import BaoGiaDetail from "./pages/sales-orders/Bao-gia/BaoGiaDetail";
+import BaoGiaPrint from "./pages/sales-orders/Bao-gia/BaoGiaPrint";
+import PurchaseRequestList from "./pages/order/PurchaseRequestList";
+import CreatePurchaseRequestPage from "./pages/order/CreatePurchaseRequestPage";
+import SendQuotationRequestPage from "./pages/order/SendQuotationRequestPage";
+import PurchaseRequestDetail from "./pages/order/PurchaseRequestDetail";
+import QuotationRequestDetail from "./pages/order/QuotationRequestDetail";
+import QuotationDetail from "./pages/order/QuotationDetail";
 
 export default function App() {
   return (
@@ -134,15 +144,20 @@ export default function App() {
           <Route path="/material/:id" element={<ChatLieuDetail />} /> */}
 
           {/* Purchase Order */}
-          <Route path="/purchase-requests" element={<PurchaseRequest />} />
+          <Route path="/purchase-requests" element={<PurchaseRequestList />} />
           <Route path="/purchase-orders" element={<PurchaseOrder />} />
-          <Route path="/purchase-requests/create" element={<PurchaseOrderCreate />} />
+          <Route path="/purchase-requests/create" element={<CreatePurchaseRequestPage />} />
+          <Route path="/purchase-requests/:id/send-quotation" element={<SendQuotationRequestPage />} />
           <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
           <Route path="/purchase-orders/:id/payment" element={<PurchaseOrderPayment />} />
           <Route path="/purchase-requests/:id/gui-bao-gia" element={<SendQuotationRequest />} />
           <Route path="/quotation-requests" element={<QuotationRequestList />} />
           <Route path="/quotation-requests/create" element={<QuotationRequestCreate />} />
+          <Route path="/quotation-requests/:id" element={<QuotationRequestDetail />} />
+          <Route path="/quotation/:id" element={<QuotationDetail />} />
           <Route path="/purchase-orders/create" element={<PurchaseOrderCreateManual />} />
+          <Route path="/purchase-requests/:id" element={<PurchaseRequestDetail />} />
+          
 
           {/* Supplier */}
           <Route path="/supplier" element={<SupplierList />} />
@@ -175,6 +190,10 @@ export default function App() {
           <Route path="/sales-orders/:id" element={<DonBanHangDetail />} />
           <Route path="/sales-orders/:id/invoice" element={<DonBanHangInvoice />} />
           <Route path="/sales-orders/create" element={<DonBanHangCreate />} />
+          <Route path="/sales-quotations" element={<BaoGiaList />} />
+          <Route path="/sales-quotations/create" element={<BaoGiaCreate />} />
+          <Route path="/sales-quotations/:id" element={<BaoGiaDetail />} />
+          <Route path="/sales-quotations/:id/print" element={<BaoGiaPrint />} />
 
           {/* Chuyen kho noi bo */}
           <Route path="/transfer-tickets" element={<PhieuChuyenKhoList />} />

@@ -38,7 +38,7 @@ public interface TonKhoTongHopRepository extends JpaRepository<BienTheSanPham, I
                 FROM ChiTietDonMuaHang ctdmh
                 WHERE ctdmh.bienTheSanPham = bt
                   AND ctdmh.donMuaHang.khoNhap = k
-                  AND ctdmh.donMuaHang.trangThai IN (6, 7)
+                  AND ctdmh.donMuaHang.trangThai IN (3, 5)
                   AND (ctdmh.soLuongDat - ctdmh.soLuongDaNhan) > 0
             ), 0
         )                                                              AS incoming,
@@ -60,7 +60,7 @@ public interface TonKhoTongHopRepository extends JpaRepository<BienTheSanPham, I
                         FROM ChiTietDonMuaHang ctdmh2
                         WHERE ctdmh2.bienTheSanPham = bt
                           AND ctdmh2.donMuaHang.khoNhap = k
-                          AND ctdmh2.donMuaHang.trangThai IN (6, 7)
+                          AND ctdmh2.donMuaHang.trangThai IN (3, 5)
                           AND (ctdmh2.soLuongDat - ctdmh2.soLuongDaNhan) > 0
                     ), 0
                 )

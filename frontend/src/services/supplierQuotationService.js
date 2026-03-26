@@ -8,7 +8,7 @@ const supplierQuotationService = {
      */
     requestOtp: async (data) => {
         try {
-            const response = await apiClient.post('/api/v1/nghiep-vu/don-mua-hang/lay-otp', data);
+            const response = await apiClient.post('/api/v1/nghiep-vu/don-mua-hang/lay-otp', data, { needToken: false, needKho: false }  );
             return response.data;
         } catch (error) {
             console.error('Error requesting OTP:', error);
@@ -23,7 +23,7 @@ const supplierQuotationService = {
      */
     verifyOtp: async (data) => {
         try {
-            const response = await apiClient.post('/api/v1/nghiep-vu/don-mua-hang/xac-nhan-otp', data);
+            const response = await apiClient.post('/api/v1/nghiep-vu/don-mua-hang/xac-nhan-otp', data, { needToken: false, needKho: false });
             return response.data;
         } catch (error) {
             console.error('Error verifying OTP:', error);
@@ -38,7 +38,7 @@ const supplierQuotationService = {
      */
     submitQuote: async (data) => {
         try {
-            const response = await apiClient.post('/api/v1/nghiep-vu/don-mua-hang/bao-gia', data);
+            const response = await apiClient.post('/api/v1/nghiep-vu/don-mua-hang/bao-gia', data, { needToken: false, needKho: false });
             return response.data;
         } catch (error) {
             console.error('Error submitting quote:', error);
