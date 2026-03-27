@@ -24,6 +24,12 @@ import java.util.List;
 @RequestMapping("/api/v1/san-pham-quan-ao")
 public class SanPhamQuanAoController {
 
+        // ==========================================================
+        // PRODUCT MANAGEMENT CONTROLLER
+        // Vai trò: nhận request từ FE, kiểm tra quyền, gọi service,
+        // và trả ResponseData thống nhất về cho UI.
+        // ==========================================================
+
         @Autowired
         private SanPhamQuanAoService sanPhamQuanAoService;
         @Autowired
@@ -35,6 +41,7 @@ public class SanPhamQuanAoController {
                 @RequestPart("creating") SanPhamQuanAoCreating creating,
                 @RequestPart(value = "anhSanPhams", required = false) List<MultipartFile> anhSanPhams,
                 @RequestPart(value = "anhBienThes", required = false) List<MultipartFile> anhBienThes) {
+                // FE gửi multipart gồm JSON "creating" + ảnh sản phẩm + ảnh biến thể.
                 return sanPhamQuanAoService.create(creating, anhSanPhams, anhBienThes);
 
         }
@@ -45,6 +52,7 @@ public class SanPhamQuanAoController {
                 @RequestPart SanPhamQuanAoUpdating updating,
                 @RequestPart(value = "anhSanPhams", required = false) List<MultipartFile> anhSanPhams,
                 @RequestPart(value = "anhBienThes", required = false) List<MultipartFile> anhBienThes) {
+                // Cập nhật thông tin sản phẩm/biến thể và ảnh tương ứng.
                 return sanPhamQuanAoService.update(updating, anhSanPhams, anhBienThes);
         }
 
@@ -74,6 +82,7 @@ public class SanPhamQuanAoController {
                 IRoleType.nhan_vien_mua_hang
         })
         public ResponseEntity<ResponseData<Page<SanPhamQuanAoDto>>> filter(@RequestBody BaseFilterRequest filter) {
+                // Luồng chính cho màn danh sách: lọc + sort + phân trang.
                 return ResponseEntity.ok(
                         ResponseData.<Page<SanPhamQuanAoDto>>builder()
                                 .status(HttpStatus.OK.value())
@@ -91,6 +100,7 @@ public class SanPhamQuanAoController {
                 IRoleType.nhan_vien_mua_hang
         })
         public ResponseEntity<ResponseData<String>> softDelete(@PathVariable Integer id) {
+                // Xóa mềm: đổi trạng thái sang 2 (ngừng hoạt động), không xóa vật lý.
                 sanPhamQuanAoService.changeStatus(id, 2);
                 return ResponseEntity.ok(
                         ResponseData.<String>builder()
@@ -104,6 +114,7 @@ public class SanPhamQuanAoController {
         @RequireAuth(roles = { IRoleType.quan_tri_vien, IRoleType.quan_ly_kho })
         public ResponseEntity<ResponseData<String>> updateStatus(@PathVariable Integer id,
                                                                  @RequestParam Integer status) {
+                // API đổi trạng thái nhanh cho sản phẩm.
                 sanPhamQuanAoService.changeStatus(id, status);
                 return ResponseEntity.ok(ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())
@@ -118,6 +129,7 @@ public class SanPhamQuanAoController {
                 @PathVariable Integer id,
                 @RequestParam(required = false) java.math.BigDecimal price,
                 @RequestParam(required = false) java.math.BigDecimal cost) {
+                // API cập nhật giá theo SKU (biến thể), dùng trong luồng quản lý giá.
                 sanPhamQuanAoService.updateSkuPrice(id, price, cost);
                 return ResponseEntity.ok(ResponseData.<String>builder()
                         .status(HttpStatus.OK.value())

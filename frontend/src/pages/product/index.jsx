@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 function buildProductFilterPayload(filters) {
+    // Chuan hoa bo loc tu UI -> payload backend filter API.
+    // Payload nay duoc ProductController.filter nhan vao de xu ly phan trang + dieu kien tim kiem.
     const filterList = [];
 
     if (filters.keyword?.trim()) {
@@ -81,6 +83,7 @@ function buildProductFilterPayload(filters) {
 }
 
 export default function ProductList() {
+    // Du lieu danh sach hien thi tren bang Quan ly san pham.
     const [products, setProducts] = useState([]);
     const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
@@ -125,6 +128,8 @@ export default function ProductList() {
     const [globalStats, setGlobalStats] = useState({ conHang: 0, hetHang: 0, ngungHoatDong: 0 });
 
     const fetchGlobalStats = useCallback(async () => {
+        // Luong thong ke tong quan:
+        // Frontend goi 3 lan filterProducts theo trangThai -> backend filter/page query -> lay totalElements.
         try {
             const makePayload = (trangThai) => ({
                 page: 0,
@@ -152,6 +157,10 @@ export default function ProductList() {
     const fetchProducts = useCallback(async () => {
         try {
             setIsLoading(true);
+            // [User thao tac bo loc/tim kiem]
+            // -> buildProductFilterPayload
+            // -> productService.filterProducts
+            // -> ProductController.filter -> ProductService.filter -> ProductRepository
             const payload = buildProductFilterPayload(filters);
             const res = await productService.filterProducts(payload);
             const serverResponse = res.data;
@@ -178,6 +187,7 @@ export default function ProductList() {
 
 
     useEffect(() => {
+        // Debounce keyword tim kiem de tranh goi API lien tuc khi user dang go phim.
         if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
         searchTimeoutRef.current = setTimeout(fetchProducts, filters.keyword ? 500 : 0);
         return () => { if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current); };
@@ -195,6 +205,7 @@ export default function ProductList() {
     }, []);
 
     const handleDeleteClick = useCallback((product) => {
+        // Mo modal xac nhan xoa mem san pham.
         setProductToDelete(product);
         openConfirm();
     }, [openConfirm]);
@@ -203,6 +214,10 @@ export default function ProductList() {
         if (!productToDelete) return;
         try {
             setIsDeleting(true);
+            // Luong xoa mem:
+            // Frontend -> productService.deleteProduct
+            // -> ProductController.softDelete -> ProductService.softDelete -> Repository.save(status)
+            // -> reload lai danh sach o frontend.
             await productService.deleteProduct(productToDelete.id);
             toast.success("Xóa sản phẩm thành công");
             closeConfirm();
@@ -221,6 +236,7 @@ export default function ProductList() {
     }, [isDeleting, closeConfirm]);
 
     const updateFilter = useCallback((field, value, resetPage = true) => {
+        // Dong bo gia tri bo loc, mac dinh quay ve trang dau khi bo loc thay doi.
         const actualValue = value?.target ? value.target.value : value;
         setFilters(prev => ({ ...prev, [field]: actualValue, ...(resetPage && { page: 0 }) }));
     }, []);
@@ -236,6 +252,7 @@ export default function ProductList() {
     }), [updateFilter]);
 
     const handleModalSuccess = useCallback(() => { fetchProducts(); fetchGlobalStats(); }, [fetchProducts, fetchGlobalStats]);
+    // Sau khi Them/Sua thanh cong, refresh lai danh sach va thong ke de UI phan anh du lieu moi nhat.
 
     // ── Handlers Inventory Drawer ────────────────────────────────────────────
     const handleOpenInventory = useCallback((product) => {
@@ -363,6 +380,7 @@ export default function ProductList() {
                                         {STATUS_OPTIONS.map((s) => (
                                             <DropdownMenuItem
                                                 key={s.value}
+                                                /*[User chọn trạng thái trên bộ lọc*/
                                                 onClick={() => handleFilterChange.trangThai(s.value)}
                                                 className="flex items-center justify-between cursor-pointer hover:bg-purple-50"
                                             >
@@ -457,146 +475,146 @@ export default function ProductList() {
                             <div className="overflow-x-auto overflow-y-auto max-h-[520px]">
                                 <table className="w-full text-sm">
                                     <thead className="sticky top-0 z-10">
-                                        <tr className="border-b border-slate-200 bg-slate-50">
-                                            <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-14">
-                                                STT
-                                            </th>
-                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                                Hình ảnh
-                                            </th>
-                                            <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                                Tên sản phẩm
-                                            </th>
-                                            <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                                Giá bán
-                                            </th>
-                                            <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                                Trạng thái
-                                            </th>
-                                            <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                                Ngày tạo
-                                            </th>
-                                            <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                                Thao tác
-                                            </th>
-                                        </tr>
+                                    <tr className="border-b border-slate-200 bg-slate-50">
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-14">
+                                            STT
+                                        </th>
+                                        <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            Hình ảnh
+                                        </th>
+                                        <th className="h-12 px-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            Tên sản phẩm
+                                        </th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            Giá bán
+                                        </th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            Trạng thái
+                                        </th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            Ngày tạo
+                                        </th>
+                                        <th className="h-12 px-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            Thao tác
+                                        </th>
+                                    </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
-                                        {products.map((product, index) => (
-                                            <tr
-                                                key={product.id}
-                                                className="transition-colors duration-150 hover:bg-violet-50/50"
-                                            >
-                                                {/* STT */}
-                                                <td className="px-4 py-3.5 align-middle text-center w-14 text-slate-500 text-xs">
-                                                    {filters.page * filters.size + index + 1}
-                                                </td>
+                                    {products.map((product, index) => (
+                                        <tr
+                                            key={product.id}
+                                            className="transition-colors duration-150 hover:bg-violet-50/50"
+                                        >
+                                            {/* STT */}
+                                            <td className="px-4 py-3.5 align-middle text-center w-14 text-slate-500 text-xs">
+                                                {filters.page * filters.size + index + 1}
+                                            </td>
 
-                                                {/* Hình ảnh */}
-                                                <td className="px-4 py-3.5 align-middle">
-                                                    <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border border-gray-200">
-                                                        {product.anhQuanAos?.[0]?.tepTin?.duongDan ? (
-                                                            <img
-                                                                src={product.anhQuanAos[0].tepTin.duongDan}
-                                                                alt={product.tenSanPham}
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <Package className="h-5 w-5 text-gray-300" />
-                                                        )}
-                                                    </div>
-                                                </td>
-
-                                                {/* Tên sản phẩm */}
-                                                <td className="px-4 py-3.5 align-middle max-w-[260px]">
-                                                    <Link
-                                                        to={`/products/${product.id}`}
-                                                        title={product.tenSanPham}
-                                                        className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-slate-900 hover:underline cursor-pointer"
-                                                    >
-                                                        {product.tenSanPham}
-                                                    </Link>
-                                                    {product.moTa && (
-                                                        <p className="mt-0.5 text-xs text-slate-500 line-clamp-1">
-                                                            {product.moTa}
-                                                        </p>
+                                            {/* Hình ảnh */}
+                                            <td className="px-4 py-3.5 align-middle">
+                                                <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border border-gray-200">
+                                                    {product.anhQuanAos?.[0]?.tepTin?.duongDan ? (
+                                                        <img
+                                                            src={product.anhQuanAos[0].tepTin.duongDan}
+                                                            alt={product.tenSanPham}
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <Package className="h-5 w-5 text-gray-300" />
                                                     )}
-                                                </td>
+                                                </div>
+                                            </td>
 
-                                                {/* Giá bán */}
-                                                <td className="px-4 py-3.5 align-middle text-center">
+                                            {/* Tên sản phẩm */}
+                                            <td className="px-4 py-3.5 align-middle max-w-[260px]">
+                                                <Link
+                                                    to={`/products/${product.id}`}
+                                                    title={product.tenSanPham}
+                                                    className="block w-full text-left font-semibold text-slate-900 leading-snug truncate hover:text-slate-900 hover:underline cursor-pointer"
+                                                >
+                                                    {product.tenSanPham}
+                                                </Link>
+                                                {product.moTa && (
+                                                    <p className="mt-0.5 text-xs text-slate-500 line-clamp-1">
+                                                        {product.moTa}
+                                                    </p>
+                                                )}
+                                            </td>
+
+                                            {/* Giá bán */}
+                                            <td className="px-4 py-3.5 align-middle text-center">
                                                     <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1">
                                                         <span className="text-xs font-semibold text-emerald-700">
                                                             {product.giaBanMacDinh ? formatCurrency(product.giaBanMacDinh) : "N/A"}
                                                         </span>
                                                     </span>
-                                                </td>
+                                            </td>
 
-                                                {/* Trạng thái */}
-                                                <td className="px-4 py-3.5 align-middle text-center">
-                                                    {product.trangThai === 1 ? (
-                                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                            {/* Trạng thái */}
+                                            <td className="px-4 py-3.5 align-middle text-center">
+                                                {product.trangThai === 1 ? (
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                                                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                                             Còn hàng
                                                         </span>
-                                                    ) : product.trangThai === 0 ? (
-                                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600">
+                                                ) : product.trangThai === 0 ? (
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600">
                                                             <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
                                                             Hết hàng
                                                         </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
                                                             <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
                                                             Ngừng hoạt động
                                                         </span>
-                                                    )}
-                                                </td>
+                                                )}
+                                            </td>
 
-                                                {/* Ngày tạo */}
-                                                <td className="px-4 py-3.5 align-middle text-center">
+                                            {/* Ngày tạo */}
+                                            <td className="px-4 py-3.5 align-middle text-center">
                                                     <span className="text-sm text-slate-500">
                                                         {formatDate(product.ngayTao) !== "N/A" ? formatDate(product.ngayTao) : "-"}
                                                     </span>
-                                                </td>
+                                            </td>
 
-                                                {/* Thao tác */}
-                                                <td className="px-4 py-3.5 align-middle">
-                                                    <div className="flex items-center justify-center gap-1">
-                                                        <Link
-                                                            to={`/products/${product.id}`}
-                                                            title="Xem chi tiết"
-                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-violet-600 hover:bg-violet-50 hover:border-violet-200"
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                        </Link>
-                                                        <button
-                                                            type="button"
-                                                            title="Tồn kho biến thể"
-                                                            onClick={() => handleOpenInventory(product)}
-                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-blue-600 hover:bg-blue-50 hover:border-blue-200"
-                                                        >
-                                                            <Layers className="h-4 w-4" />
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            title="Chỉnh sửa"
-                                                            onClick={() => { setSelectedProductId(product.id); openEditModal(); }}
-                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-blue-600 hover:bg-blue-50 hover:border-blue-200"
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            title="Xóa sản phẩm"
-                                                            onClick={() => handleDeleteClick(product)}
-                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-red-500 hover:bg-red-50 hover:border-red-200"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                            {/* Thao tác */}
+                                            <td className="px-4 py-3.5 align-middle">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <Link
+                                                        to={`/products/${product.id}`}
+                                                        title="Xem chi tiết"
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-violet-600 hover:bg-violet-50 hover:border-violet-200"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </Link>
+                                                    <button
+                                                        type="button"
+                                                        title="Tồn kho biến thể"
+                                                        onClick={() => handleOpenInventory(product)}
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-blue-600 hover:bg-blue-50 hover:border-blue-200"
+                                                    >
+                                                        <Layers className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        title="Chỉnh sửa"
+                                                        onClick={() => { setSelectedProductId(product.id); openEditModal(); }}
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-blue-600 hover:bg-blue-50 hover:border-blue-200"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        title="Xóa sản phẩm"
+                                                        onClick={() => handleDeleteClick(product)}
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-red-500 hover:bg-red-50 hover:border-red-200"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                             </div>
