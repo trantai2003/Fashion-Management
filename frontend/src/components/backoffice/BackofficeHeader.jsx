@@ -79,7 +79,10 @@ export default function BackofficeHeader({
     "PURCHASE_REQUEST_DETAIL",
     "QUOTATION_REQUEST_DETAIL",
     "QUOTATION_DETAIL",
-    "PURCHASE_ORDER_DETAIL"
+    "PURCHASE_ORDER_DETAIL",
+    "SALE_QUOTATION",
+    "SALE_QUOTATION_CREATE",
+    "SALE_QUOTATION_DETAIL"
   ]);
 
   const isLuxuryDetailHeader = routeKey ? luxuryDetailHeaderKeys.has(routeKey) : false;
