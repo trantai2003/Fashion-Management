@@ -76,6 +76,7 @@ public class NghiepVuSanPhamController {
         );
 
         yeuCauMuaHang.setTrangThai(trangThai);
+        //dung update san truyen ID ( base, jpa hỗ trợ)
         yeuCauMuaHangService.update(yeuCauMuaHang.getId(), yeuCauMuaHang);
         return ResponseEntity.ok(
                 ResponseData.<String>builder()
