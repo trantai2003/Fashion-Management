@@ -587,14 +587,14 @@ export default function ProductList() {
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </Link>
-                                                    <button
-                                                        type="button"
-                                                        title="Tồn kho biến thể"
-                                                        onClick={() => handleOpenInventory(product)}
-                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-blue-600 hover:bg-blue-50 hover:border-blue-200"
-                                                    >
-                                                        <Layers className="h-4 w-4" />
-                                                    </button>
+                                                    {/*<button*/}
+                                                    {/*    type="button"*/}
+                                                    {/*    title="Tồn kho biến thể"*/}
+                                                    {/*    onClick={() => handleOpenInventory(product)}*/}
+                                                    {/*    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent transition-all duration-150 hover:scale-110 active:scale-95 text-blue-600 hover:bg-blue-50 hover:border-blue-200"*/}
+                                                    {/*>*/}
+                                                    {/*    <Layers className="h-4 w-4" />*/}
+                                                    {/*</button>*/}
                                                     <button
                                                         type="button"
                                                         title="Chỉnh sửa"
