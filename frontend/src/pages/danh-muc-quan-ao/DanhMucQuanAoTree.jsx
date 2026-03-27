@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   ChevronRight,
   ChevronDown,
-  ChevronsDown,
-  ChevronsUp,
   Folder,
   FolderOpen,
   GripVertical,
@@ -16,8 +14,6 @@ import {
   Tag,
   Layers,
   RefreshCcw,
-  Lock,
-  LockOpen,
 } from 'lucide-react';
 import { danhMucQuanAoService } from '@/services/danhMucQuanAoService';
 import { toast } from 'sonner';
@@ -39,7 +35,6 @@ const DanhMucQuanAoTree = () => {
   const [createForm, setCreateForm] = useState({ maDanhMuc: '', tenDanhMuc: '', moTa: '', trangThai: 1 }); // dữ liệu form tạo mới
   const [deleteModal, setDeleteModal] = useState({ show: false, nodeId: null, nodeName: '' }); // trạng thái modal xác nhận xóa
   const [isLoading, setIsLoading] = useState(false);                        // cờ loading khi tải/reload dữ liệu
-  const [hideInactiveOnCollapseAll, setHideInactiveOnCollapseAll] = useState(false); // ẩn node ngừng HĐ khi nhấn "Ẩn tất cả"
 
   // ── STATS ──────────────────────────────────────────────────────────────────
   const [stats, setStats] = useState({ total: 0, root: 0, sub: 0 });       // số liệu thống kê hiển thị dashboard card
@@ -101,14 +96,6 @@ const DanhMucQuanAoTree = () => {
     return ids;
   };
 
-  // Thu thập id các node có con – dùng cho nút "Mở tất cả" chỉ expand node thực sự có nhánh
-  const collectExpandableNodeIds = (nodes) => {
-    const ids = new Set();
-    const walk = (list) => { (list || []).forEach((item) => { if ((item.danhMucCons || []).length > 0) ids.add(item.id); if (item.danhMucCons?.length) walk(item.danhMucCons); }); };
-    walk(nodes);
-    return ids;
-  };
-
   // Tải dữ liệu khi component mount lần đầu
   useEffect(() => { fetchTreeData(); }, []);
 
@@ -121,14 +108,23 @@ const DanhMucQuanAoTree = () => {
         danhMucQuanAoService.getCayDanhMuc(), // GET /get-cay-danh-muc – chỉ trả node đang hoạt động
         danhMucQuanAoService.getAll(),         // GET /all – trả toàn bộ kể cả trangThai=0
       ]);
-      const canUseAll = allResponse.status === 'fulfilled' && allResponse.value.data.status === 200
-          && Array.isArray(allResponse.value.data.data) && allResponse.value.data.data.length > 0;
 
       let data = [];
-      if (canUseAll) {
-        data = buildTreeFromAll(allResponse.value.data.data); // ưu tiên getAll() vì đầy đủ cả node khoá
-      } else if (treeResponse.status === 'fulfilled' && treeResponse.value.data.status === 200) {
-        data = treeResponse.value.data.data || []; // fallback getCayDanhMuc nếu getAll() lỗi
+
+      // Ưu tiên getAll() vì đầy đủ cả node khoá
+      if (allResponse.status === 'fulfilled' && allResponse.value?.data?.status === 200) {
+        const allData = allResponse.value.data.data;
+        if (Array.isArray(allData) && allData.length > 0) {
+          data = buildTreeFromAll(allData);
+        }
+      }
+
+      // Fallback sang getCayDanhMuc nếu getAll() lỗi hoặc không có dữ liệu
+      if (data.length === 0 && treeResponse.status === 'fulfilled' && treeResponse.value?.data?.status === 200) {
+        const treeDataRaw = treeResponse.value.data.data;
+        if (Array.isArray(treeDataRaw) && treeDataRaw.length > 0) {
+          data = buildTreeFromAll(treeDataRaw); // Sử dụng buildTreeFromAll cho nhất quán
+        }
       }
 
       if (Array.isArray(data)) {
@@ -141,9 +137,17 @@ const DanhMucQuanAoTree = () => {
           prev.forEach((id) => { if (availableIds.has(id)) next.add(id); });
           return next;
         });
+      } else {
+        // Cả 2 API đều không trả về dữ liệu hợp lệ
+        setTreeData([]);
+        setStats({ total: 0, root: 0, sub: 0 });
+        toast.warning('Không có danh mục nào được tải');
       }
-    } catch {
+    } catch (error) {
+      console.error('Lỗi khi tải danh mục:', error);
       toast.error('Không thể tải dữ liệu danh mục');
+      setTreeData([]);
+      setStats({ total: 0, root: 0, sub: 0 });
     } finally {
       setIsLoading(false);
     }
@@ -153,12 +157,6 @@ const DanhMucQuanAoTree = () => {
   const toggleExpand = (nodeId) => {
     setExpandedNodes((prev) => { const next = new Set(prev); if (next.has(nodeId)) next.delete(nodeId); else next.add(nodeId); return next; });
   };
-
-  // Mở tất cả node có con và hiển thị lại node ngừng hoạt động
-  const handleExpandAll = () => { setHideInactiveOnCollapseAll(false); setExpandedNodes(collectExpandableNodeIds(treeData)); };
-
-  // Đóng tất cả node và ẩn tạm node ngừng hoạt động
-  const handleCollapseAll = () => { setExpandedNodes(new Set()); setHideInactiveOnCollapseAll(true); };
 
   // ── DRAG & DROP ────────────────────────────────────────────────────────────
 
@@ -253,20 +251,6 @@ const DanhMucQuanAoTree = () => {
       if (response.data.status === 200) { toast.success(`Đã chuyển "${deleteModal.nodeName}" sang ngừng hoạt động`); fetchTreeData(); }
     } catch { toast.error('Lỗi khi xóa danh mục'); }
     finally { setDeleteModal({ show: false, nodeId: null, nodeName: '' }); }
-  };
-
-  // LUỒNG KHOÁ/MỞ KHOÁ: đảo trangThai (0↔1) → Axios PUT /update → Service.update → UPDATE trang_thai=? WHERE id=?
-  const handleToggleStatus = async (node, parentId) => {
-    try {
-      const nextStatus = Number(node.trangThai) === 0 ? 1 : 0; // 0→1 mở khoá, 1→0 khoá
-      const response = await danhMucQuanAoService.update({ id: node.id, tenDanhMuc: node.tenDanhMuc, moTa: node.moTa, trangThai: nextStatus, danhMucChaId: parentId });
-      if (response.data.status === 200) {
-        toast.success(nextStatus === 1 ? `Đã kích hoạt lại "${node.tenDanhMuc}"` : `Đã chuyển "${node.tenDanhMuc}" sang ngừng hoạt động`);
-        fetchTreeData();
-      } else {
-        toast.error(response.data.message || 'Cập nhật trạng thái thất bại');
-      }
-    } catch { toast.error('Không thể chuyển trạng thái danh mục'); }
   };
 
   // ── CREATE ─────────────────────────────────────────────────────────────────
@@ -392,8 +376,8 @@ const DanhMucQuanAoTree = () => {
   /**
    * Render đệ quy từng node trong cây danh mục.
    * - level: độ sâu hiện tại → margin-left = level × 20px để thể hiện cấp bậc.
-   * - parentId: id cha của node hiện tại (dùng cho edit và toggleStatus).
-   * - Trạng thái isInactive: node trangThai=0 hiển thị mờ với badge "Ngừng hoạt động".
+   * - parentId: id cha của node hiện tại (dùng cho edit).
+   * - isInactive: node trangThai=0 hiển thị mờ.
    * - isEditing: render Input thay vì text thuần để sửa inline.
    * - isCreating: mở form tạo con ngay dưới node này khi đang expanded.
    * - Chỉ render con khi isExpanded = true → giảm số DOM node, cải thiện hiệu năng.
@@ -407,7 +391,6 @@ const DanhMucQuanAoTree = () => {
     const isCreating = creatingNode === node.id;
     const isInactive = Number(node.trangThai) === 0;
 
-    if (hideInactiveOnCollapseAll && isInactive) return null;
 
     return (
         <div key={node.id} style={{ marginLeft: level * 20 }}>
@@ -467,13 +450,6 @@ const DanhMucQuanAoTree = () => {
 
                 <span className="text-xs text-slate-400 font-mono flex-shrink-0">({node.maDanhMuc})</span>
 
-                {isInactive && (
-                    // Badge giup phan biet nhanh danh muc dang bi khoa/ngung hoat dong.
-                    <span className="inline-flex items-center rounded-full bg-slate-200 border border-slate-300 px-2 py-0.5 text-[10px] font-semibold text-slate-600 flex-shrink-0">
-                  Ngừng hoạt động
-                </span>
-                )}
-
                 {level === 0 && (
                     <span className="ml-1 inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-semibold text-indigo-600 flex-shrink-0">
                   Gốc
@@ -502,17 +478,6 @@ const DanhMucQuanAoTree = () => {
                     </>
                 ) : (
                     <>
-                      <button
-                          onClick={() => handleToggleStatus(node, parentId)}
-                          className={`inline-flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
-                              isInactive
-                                  ? 'text-emerald-600 hover:bg-emerald-50'
-                                  : 'text-amber-600 hover:bg-amber-50'
-                          }`}
-                          title={isInactive ? 'Mở khóa/Kích hoạt' : 'Chuyển ngừng hoạt động'}
-                      >
-                        {isInactive ? <LockOpen className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
-                      </button>
                       <button
                           onClick={() => handleAddChild(node)}
                           className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-purple-600 hover:bg-purple-50 transition-colors"
@@ -545,13 +510,13 @@ const DanhMucQuanAoTree = () => {
             )}
             {isEditing && (
                 <div className="mt-1 ml-[72px] pr-3">
-              <textarea
-                  value={editForm.moTa || ''}
-                  onChange={(e) => setEditForm({ ...editForm, moTa: e.target.value })}
-                  placeholder="Mô tả..."
-                  rows={2}
-                  className="w-full rounded-md border border-purple-300 bg-white px-3 py-1.5 text-xs outline-none focus:border-purple-500 resize-none"
-              />
+                  <textarea
+                      value={editForm.moTa || ''}
+                      onChange={(e) => setEditForm({ ...editForm, moTa: e.target.value })}
+                      placeholder="Mô tả..."
+                      rows={2}
+                      className="w-full rounded-md border border-purple-300 bg-white px-3 py-1.5 text-xs outline-none focus:border-purple-500 resize-none"
+                  />
                 </div>
             )}
           </div>
@@ -671,24 +636,6 @@ const DanhMucQuanAoTree = () => {
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleExpandAll}
-                    className="gap-1.5 border-gray-300 hover:bg-gray-50"
-                >
-                  <ChevronsDown className="h-4 w-4" />
-                  Mở tất cả
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCollapseAll}
-                    className="gap-1.5 border-gray-300 hover:bg-gray-50"
-                >
-                  <ChevronsUp className="h-4 w-4" />
-                  Ẩn tất cả
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
                     onClick={fetchTreeData}
                     disabled={isLoading}
                     className="gap-1.5 border-gray-300 hover:bg-gray-50"
@@ -713,7 +660,7 @@ const DanhMucQuanAoTree = () => {
             >
               {creatingNode === 'root' && renderCreateForm('root')}
 
-              {treeData.length === 0 && creatingNode !== 'root' ? (
+              {treeData.filter(node => node.trangThai !== 0).length === 0 && creatingNode !== 'root' ? (
                   <div className="flex flex-col items-center justify-center py-20 text-center">
                     <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
                       <Tag className="h-8 w-8 text-slate-300" />
@@ -724,7 +671,8 @@ const DanhMucQuanAoTree = () => {
               ) : (
                   // Render toàn bộ node gốc (level=0, parentId=null).
                   // Mỗi node tự đệ quy render node con thông qua renderNode(child, level+1, node.id).
-                  treeData.map((node) => renderNode(node, 0, null))
+                  // Chỉ hiển thị danh mục gốc đang hoạt động (trangThai !== 0)
+                  treeData.filter(node => node.trangThai !== 0).map((node) => renderNode(node, 0, null))
               )}
             </div>
           </CardContent>
