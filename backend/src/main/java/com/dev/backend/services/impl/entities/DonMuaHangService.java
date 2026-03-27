@@ -3,6 +3,7 @@ package com.dev.backend.services.impl.entities;
 import com.dev.backend.config.SecurityContextHolder;
 import com.dev.backend.constant.GlobalCache;
 import com.dev.backend.constant.enums.OtpType;
+import com.dev.backend.constant.variables.ConstantVariables;
 import com.dev.backend.constant.variables.IRoleType;
 import com.dev.backend.dto.ApplicationRequestObj;
 import com.dev.backend.dto.OtpScheduleObj;
@@ -496,6 +497,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         params.put("ngayDatHang", donMuaHang.getNgayDatHang());
         params.put("ngayGiaoDuKien", donMuaHang.getNgayGiaoDuKien());
         params.put("hanPheDuyet", donMuaHang.getNgayGiaoDuKien());
+        params.put("loginHref", ConstantVariables.SUPPLIER_MAIL_LOGIN_HREF);
 
         emailService.sendHtmlEmailFromTemplate(
                 nhaCungCap.getEmail(),

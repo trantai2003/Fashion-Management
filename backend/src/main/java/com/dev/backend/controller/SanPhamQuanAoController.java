@@ -57,13 +57,13 @@ public class SanPhamQuanAoController {
         }
 
         @GetMapping("/get-by-id/{id}")
-        @RequireAuth(roles = {
-                IRoleType.quan_tri_vien,
-                IRoleType.quan_ly_kho,
-                IRoleType.nhan_vien_kho,
-                IRoleType.nhan_vien_ban_hang,
-                IRoleType.nhan_vien_mua_hang
-        })
+//        @RequireAuth(roles = {
+//                IRoleType.quan_tri_vien,
+//                IRoleType.quan_ly_kho,
+//                IRoleType.nhan_vien_kho,
+//                IRoleType.nhan_vien_ban_hang,
+//                IRoleType.nhan_vien_mua_hang
+//        })
         public ResponseEntity<ResponseData<SanPhamQuanAoDto>> getById(@PathVariable Integer id) {
                 return ResponseEntity.ok(
                         ResponseData.<SanPhamQuanAoDto>builder()
