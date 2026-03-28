@@ -175,7 +175,7 @@ public class NghiepVuSanPhamController {
 
     // Api kiểm tra trạng thái giao dịch
     @GetMapping("/don-mua-hang/kiem-tra-thanh-toan/{id}")
-    public ResponseEntity<ResponseData<String>> kiemTraThanhToan(@RequestParam Integer id) {
+    public ResponseEntity<ResponseData<String>> kiemTraThanhToan(@PathVariable Integer id) {
         return donMuaHangService.kiemTraThanhToan(id);
     }
 
