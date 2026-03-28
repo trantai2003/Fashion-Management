@@ -33,7 +33,7 @@ export default function KhachHangDetails() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await getKhachHangById(id);
+        const data = await getKhachHangById(id); // Gọi API lấy thông tin khách hàng
         setKhachHang(data);
       } catch (error) {
         toast.error(error.response?.data?.message || "Không thể tải thông tin khách hàng");

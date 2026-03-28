@@ -94,26 +94,29 @@ function StatusToggle({ value, onChange }) {
 export default function SupplierDetail() {
     const { id }   = useParams();
     const navigate = useNavigate();
-    const isEdit   = !!id;
+    const isEdit   = !!id; // Nếu có id → Edit, không có id → Create
 
     const [loading,   setLoading]   = useState(false);
-    const [trangThai, setTrangThai] = useState(true);
+    const [trangThai, setTrangThai] = useState(true); //mặc định khi tạo mới sẽ là "Hoạt động"
 
-    const form = useForm({
+    //khởi tạo form 
+    const form = useForm({ 
         resolver: zodResolver(formSchema),
+        //tất cả là trường trống khi tạo mới, còn khi edit sẽ được điền dữ liệu từ API vào form.reset() trong useEffect phía dưới
         defaultValues: {
             maNhaCungCap: "", tenNhaCungCap: "",
             nguoiLienHe: "", soDienThoai: "", email: "", diaChi: "",
         },
     });
 
+    // ==================== LOAD DỮ LIỆU KHI EDIT ====================
     useEffect(() => {
-        if (!isEdit) return;
+        if (!isEdit) return; // ← BỎ QUA khi Create
         const fetchData = async () => {
             setLoading(true);
             try {
-                const data = await getSupplierById(id);
-                form.reset({
+                const data = await getSupplierById(id); // Gọi API GET /api/supplier/{id} lấy chi tiết nhà cung cấp theo ID 
+                form.reset({ // Điền dữ liệu vào form
                     maNhaCungCap:  data.maNhaCungCap  || "",
                     tenNhaCungCap: data.tenNhaCungCap  || "",
                     nguoiLienHe:   data.nguoiLienHe    || "",
@@ -132,14 +135,17 @@ export default function SupplierDetail() {
         fetchData();
     }, [id, form, navigate, isEdit]);
 
+    // ── Hàm submit ────────────────────────────────────────────────────────────────
     const onSubmit = async (values) => {
         setLoading(true);
         try {
-            const payload = { ...values, trangThai: trangThai ? 1 : 0 };
+            const payload = { ...values, trangThai: trangThai ? 1 : 0 }; // ← thêm trạng thái vào payload gửi lên API
+            // Cập nhật nhà cung cấp
             if (isEdit) {
-                await updateSupplier(id, payload);
+                await updateSupplier(id, payload); // ← GỌI UPDATE khi ở chế độ Edit, gửi payload đã bao gồm trạng thái lên API
                 toast.success("Cập nhật nhà cung cấp thành công");
-            } else {
+            // Create nhà cung cấp mới
+            } else { 
                 await createSupplier(payload);
                 toast.success("Thêm nhà cung cấp mới thành công");
             }
@@ -197,7 +203,7 @@ export default function SupplierDetail() {
                                                     placeholder="VD: SUP001"
                                                     className="h-12 rounded-xl border-slate-200 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 disabled:bg-slate-50 disabled:text-slate-400 font-mono text-[14px] px-4 shadow-sm"
                                                     {...field}
-                                                    disabled={isEdit}
+                                                    disabled={isEdit}  // Mã định danh không được phép chỉnh sửa khi ở chế độ Edit
                                                 />
                                             </FormControl>
                                             <FormMessage className="text-red-500 text-xs" />

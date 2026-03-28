@@ -419,9 +419,9 @@ public class DonBanHangService extends BaseServiceImpl<DonBanHang, Integer> {
     @Transactional(readOnly = true)
     public List<BienTheSanPhamSelectDto> getActiveVariantsForSale() {
         return bienTheSanPhamRepository
-                .findByTrangThai(1)
+                .findByTrangThai(1) //tìm những biến thể trạng thái là 1 (đang hoạt động)
                 .stream()
-                .map(v -> BienTheSanPhamSelectDto.builder()
+                .map(v -> BienTheSanPhamSelectDto.builder() //trả qua response dto
                         .id(v.getId())
                         .maBienThe(v.getMaSku())
                         .tenSanPham(v.getSanPham().getTenSanPham())

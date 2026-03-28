@@ -49,7 +49,7 @@ export default function KhachHangEdit() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await getKhachHangById(id);
+        const data = await getKhachHangById(id); // Gọi API lấy thông tin khách hàng
         form.reset({
           tenKhachHang: data.tenKhachHang || "",
           nguoiLienHe:  data.nguoiLienHe  || "",
@@ -72,7 +72,7 @@ export default function KhachHangEdit() {
   const onSubmit = async (values) => {
     setLoading(true);
     try {
-      await updateKhachHang(id, values);
+      await updateKhachHang(id, values); // Gọi API cập nhật
       toast.success("Cập nhật khách hàng thành công!");
       navigate(`/customers/${id}`);
     } catch (error) {

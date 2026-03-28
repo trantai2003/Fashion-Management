@@ -92,7 +92,7 @@ public class NhaCungCapService extends BaseServiceImpl<NhaCungCap, Integer> {
     @Transactional
     public NhaCungCapDto create(NhaCungCapCreating creating) {
 
-        // Kiểm tra mã nhà cung cấp đã tồn tại chưa
+        // Kiểm tra trùng mã (gọi Repository)
         if (repository.existsByMaNhaCungCap(creating.getMaNhaCungCap())) {
             throw new IllegalArgumentException(
                     "Mã nhà cung cấp '" + creating.getMaNhaCungCap() + "' đã tồn tại. Vui lòng chọn mã khác."
@@ -117,18 +117,19 @@ public class NhaCungCapService extends BaseServiceImpl<NhaCungCap, Integer> {
     @Transactional
     public NhaCungCapDto update(Integer id, NhaCungCapUpdating updating) {
 
-        // Lấy entity hiện tại
+        // Lấy entity hiện tại từ db
         NhaCungCap entity = repository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Không tìm thấy nhà cung cấp với ID: " + id)
                 );
 
-        // Update từng field (null sẽ không ghi đè)
+        // Cập nhật từng trường từ DTO vào Entity (partial update)
         mapper.partialUpdate(updating, entity);
 
         // Lưu lại entity sau khi update
         entity = repository.save(entity);
 
+        //Trả về DTO
         return mapper.toDto(entity);
     }
 
