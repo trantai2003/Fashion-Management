@@ -26,10 +26,11 @@ export default function ChatLieuList() {
     const [pageSize,     setPageSize]     = useState(10);
     const navigate = useNavigate();
 
+    // Hàm tải danh sách chất liệu từ API
     const fetchChatLieus = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getAllChatLieu(search);
+            const data = await getAllChatLieu(search); // Gọi API lấy danh sách chất liệu, có thể truyền tham số tìm kiếm nếu API hỗ trợ
             setChatLieus(data);
         } catch {
             toast.error("Không thể tải danh sách chất liệu");
@@ -38,8 +39,9 @@ export default function ChatLieuList() {
         }
     }, [search]);
 
-    useEffect(() => { fetchChatLieus(); }, [fetchChatLieus]);
+    useEffect(() => { fetchChatLieus(); }, [fetchChatLieus]); //Tải luôn danh sách chất liệu khi nhập search
 
+    // Hàm xử lý xác nhận xóa chất liệu
     const handleConfirmDelete = async () => {
         if (!deleteTarget) return;
         setIsDeleting(true);
@@ -55,6 +57,7 @@ export default function ChatLieuList() {
         }
     };
 
+    // Lọc và phân trang dữ liệu
     const filtered = useMemo(() => chatLieus.filter(item => {
         const matchSearch = !search.trim()
             || item.maChatLieu?.toLowerCase().includes(search.toLowerCase())

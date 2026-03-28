@@ -77,10 +77,11 @@ export default function StockTakeList() {
   // Reset về trang 0 khi filter/search thay đổi
   useEffect(() => { setPageNumber(0); }, [searchTerm, filterStatus]);
 
+  // Hàm tải danh sách đợt kiểm kê từ API
   const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await getStockTakes();
+      const data = await getStockTakes(); // Gọi API lấy danh sách đợt kiểm kê
       setStockTakes(data);
     } catch (error) {
       toast.error(error.response?.data?.message || "Không thể tải danh sách kiểm kê");
@@ -89,12 +90,14 @@ export default function StockTakeList() {
     }
   };
 
+  // Hàm đặt lại bộ lọc và tìm kiếm về mặc định
   const handleReset = () => {
     setSearchTerm("");
     setFilterStatus("all");
   };
 
   // ── Client-side filter ────────────────────────────────────────────────
+  // Lọc dữ liệu dựa trên searchTerm và filterStatus
   const filtered = useMemo(() => {
     return stockTakes.filter((item) => {
       const matchSearch =
@@ -103,6 +106,7 @@ export default function StockTakeList() {
         item.tenDotKiemKe?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.kho?.tenKho?.toLowerCase().includes(searchTerm.toLowerCase());
 
+        // Lọc theo trạng thái
       const matchStatus =
         filterStatus === "all" ||
         (filterStatus === "ongoing" && item.trangThai === 0) ||
