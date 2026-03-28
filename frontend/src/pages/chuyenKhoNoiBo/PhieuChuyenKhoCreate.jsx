@@ -25,7 +25,7 @@ export default function PhieuChuyenKhoCreate() {
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ khoXuatId: "", khoNhapId: "", ghiChu: "" });
-    const [transferItems, setTransferItems] = useState([]);
+    const [transferItems, setTransferItems] = useState([]); // Danh sách sản phẩm + số lượng cần điều chuyển
 
     useEffect(() => { loadInitialData(); }, []);
 
@@ -54,11 +54,14 @@ export default function PhieuChuyenKhoCreate() {
         );
     }, [searchTerm, variants]);
 
+    // Thêm sản phẩm vào danh sách điều chuyển, mặc định số lượng là 1. Nếu sản phẩm đã tồn tại trong danh sách thì sẽ hiển thị thông báo và không thêm nữa
     const handleAddProduct = (product) => {
         if (transferItems.some(i => i.variantId === product.id)) {
             toast("Sản phẩm này đã có trong danh sách", { icon: "⚠️" });
             return;
         }
+
+        // Thêm sản phẩm mới vào danh sách điều chuyển
         setTransferItems(prev => [...prev, {
             variantId: product.id,
             sku: product.maBienThe,
@@ -68,10 +71,11 @@ export default function PhieuChuyenKhoCreate() {
             material: product.tenChatLieu,
             quantity: 1,
         }]);
-        setShowProductDialog(false);
-        setSearchTerm("");
+        setShowProductDialog(false); // Đóng dialog sau khi chọn sản phẩm
+        setSearchTerm(""); // Reset lại search term để lần mở dialog tiếp theo sẽ hiển thị tất cả sản phẩm
     };
 
+    // Hàm xử lý khi bấm nút tạo phiếu điều chuyển
     async function handleCreate() {
         if (!formData.khoXuatId || !formData.khoNhapId)
             return toast.error("Vui lòng chọn đầy đủ kho gửi và kho nhận");

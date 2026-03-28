@@ -164,6 +164,7 @@ public class PhieuKiemKeService {
             ChiTietKiemKe chiTiet = chiTietRepository.findById(update.getChiTietId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết ID: " + update.getChiTietId()));
 
+            // === TÍNH CHÊNH LỆCH ===
             BigDecimal soLuongHeThong = chiTiet.getSoLuongHeThong() != null
                     ? chiTiet.getSoLuongHeThong() : BigDecimal.ZERO;
             BigDecimal soLuongThucTe = BigDecimal.valueOf(update.getSoLuongThucTe());
@@ -183,18 +184,22 @@ public class PhieuKiemKeService {
             chiTiet.setNgayCapNhat(Instant.now());
             chiTietRepository.save(chiTiet);
 
-            // Cập nhật tồn kho thực tế trong bảng tồn kho theo lô
+            // ==================== CÂN BẰNG KHO ====================
+            // Tìm tồn kho theo kho + lô hàng
             TonKhoTheoLo tonKho = tonKhoRepository
                     .findByKho_IdAndLoHang_Id(khoId, chiTiet.getLoHang().getId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy tồn kho cho lô: " + chiTiet.getLoHang().getId()));
-            tonKho.setSoLuongTon(soLuongThucTe); // Cập nhật tồn mới = thực tế
-            tonKhoRepository.save(tonKho);
 
-            // Ghi lịch sử chỉ khi có chênh lệch
+            //**Phần quan trọng trong việc cập nhật tồn kho**
+            tonKho.setSoLuongTon(soLuongThucTe); // Ghi đè tồn kho bằng số thực tế
+            tonKhoRepository.save(tonKho); //lưu lại vào db
+
+            // ==================== GHI LỊCH SỬ ====================
+            // Chỉ ghi lịch sử khi CÓ CHÊNH LỆCH
             if (chenhLech.compareTo(BigDecimal.ZERO) != 0) {
                 LichSuGiaoDichKho lichSu = LichSuGiaoDichKho.builder()
-                        .loaiGiaoDich("dieu_chinh") // Điều chỉnh tồn kho
-                        .soLuong(chenhLech)
+                        .loaiGiaoDich("dieu_chinh") // Loại điều chỉnh
+                        .soLuong(chenhLech)  //Số lượng chênh
                         .soLuongTruoc(soLuongHeThong)
                         .soLuongSau(soLuongThucTe)
                         .bienTheSanPham(chiTiet.getBienTheSanPham())
@@ -205,7 +210,7 @@ public class PhieuKiemKeService {
                         .nguoiDung(nguoiKiemDem)
                         .ngayGiaoDich(Instant.now())
                         .build();
-                lichSuService.create(lichSu); // Gọi service lịch sử
+                lichSuService.create(lichSu); // Gọi service lịch sử giao dịch kho
             }
         }
 

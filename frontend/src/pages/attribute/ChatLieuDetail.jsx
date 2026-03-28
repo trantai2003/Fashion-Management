@@ -49,7 +49,7 @@ function StatusToggle({ value, onChange }) {
 export default function ChatLieuDetail() {
     const { id }     = useParams();
     const navigate   = useNavigate();
-    const isEdit     = !!id;
+    const isEdit     = !!id; // Nếu có ID thì là edit, không có là create
     const [loading,  setLoading]  = useState(false);
     const [trangThai, setTrangThai] = useState(1);
 
@@ -59,17 +59,19 @@ export default function ChatLieuDetail() {
     });
 
     useEffect(() => {
-        if (!isEdit) return;
+        if (!isEdit) return; // Nếu không phải edit thì không cần fetch dữ liệu
+        
+        // Fetch dữ liệu chất liệu để điền vào form
         const fetchData = async () => {
             setLoading(true);
             try {
-                const data = await getChatLieuById(id);
-                form.reset({
+                const data = await getChatLieuById(id); // Gọi API lấy thông tin chất liệu
+                form.reset({ 
                     maChatLieu:  data.maChatLieu  || "",
                     tenChatLieu: data.tenChatLieu || "",
                     moTa:        data.moTa        || "",
                 });
-                setTrangThai(data.trangThai === 1 || data.trangThai === true ? 1 : 0);
+                setTrangThai(data.trangThai === 1 || data.trangThai === true ? 1 : 0); // Đảm bảo trạng thái là 1 hoặc 0
             } catch {
                 toast.error("Không thể tải thông tin chất liệu");
                 navigate("/material");
@@ -84,14 +86,17 @@ export default function ChatLieuDetail() {
         setLoading(true);
         try {
             const payload = { ...values, trangThai };
+
+            // Nếu đang edit thì gọi API cập nhật, nếu không thì gọi API tạo mới
             if (isEdit) {
-                await updateChatLieu(id, payload);
+                await updateChatLieu(id, payload); // Gọi API cập nhật
                 toast.success("Cập nhật chất liệu thành công");
             } else {
                 await createChatLieu(payload);
                 toast.success("Thêm chất liệu mới thành công");
             }
-            navigate("/material");
+
+            navigate("/material"); // Quay về trang danh sách sau khi thành công
         } catch {
             toast.error("Có lỗi xảy ra khi lưu. Vui lòng thử lại!");
         } finally {

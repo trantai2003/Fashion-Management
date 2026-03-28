@@ -118,6 +118,7 @@ export default function StockTakeCreate() {
     init();
   }, [dotKiemKeId]);
 
+  // Xử lý tạo đợt kiểm kê mới
   const onCreate = async (values) => {
     setLoading(true);
     try {
@@ -140,20 +141,20 @@ export default function StockTakeCreate() {
   const handleSoLuongChange = (chiTietId, value) => {
     setUpdates((prev) => ({
       ...prev,
-      [chiTietId]: parseInt(value) >= 0 ? parseInt(value) : 0,
+      [chiTietId]: parseInt(value) >= 0 ? parseInt(value) : 0, // đảm bảo không nhập số âm (soLuongThucTe ở backend)
     }));
   };
 
-  // Xử lý hoàn thành kiểm kê
+  // Hoàn thành kiểm kê và gửi cập nhật về server
   const onComplete = async () => {
-    if (!dotKiemKeId || !selectedKhoId) {
+    if (!dotKiemKeId || !selectedKhoId) { 
       toast.error("Thiếu thông tin đợt kiểm kê");
       return;
     }
     setLoading(true);
     try {
       // Chuẩn bị danh sách cập nhật
-      const updateList = chiTiets.map((ct) => ({
+      const updateList = chiTiets.map((ct) => ({ // Lấy số lượng thực tế từ map cập nhật, nếu không có thì dùng số lượng cũ
         chiTietId: ct.id,
         soLuongThucTe: updates[ct.id] !== undefined
           ? updates[ct.id]
