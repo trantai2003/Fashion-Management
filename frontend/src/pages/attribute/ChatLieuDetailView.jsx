@@ -24,11 +24,11 @@ export default function ChatLieuDetailView() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const result = await getChatLieuById(id);
+                const result = await getChatLieuById(id); // Gọi API lấy thông tin chất liệu theo ID
                 setData(result);
             } catch {
                 toast.error("Không thể tải thông tin chất liệu");
-                navigate("/material");
+                navigate("/material"); // Quay về trang danh sách nếu có lỗi (ví dụ: ID không tồn tại)
             } finally {
                 setLoading(false);
             }

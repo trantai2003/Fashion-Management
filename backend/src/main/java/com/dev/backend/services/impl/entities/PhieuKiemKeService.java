@@ -79,9 +79,10 @@ public class PhieuKiemKeService {
 
     @Transactional
     public Integer create(PhieuKiemKeCreate create) {
-        // FIX: Lấy người dùng đang login từ SecurityContext
+        // Lấy người dùng đang đăng nhập
         NguoiDung nguoiChuTri = getCurrentUser();
 
+        //Kiểm tra kho tồn tại
         var kho = khoRepository.findById(create.getKhoId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy kho ID: " + create.getKhoId()));
 
@@ -107,20 +108,21 @@ public class PhieuKiemKeService {
             throw new RuntimeException("Kho không có hàng tồn để kiểm kê");
         }
 
+        //TẠO CHI TIẾT KIỂM KÊ cho từng lô hàng
         for (TonKhoTheoLo tonKho : tonKhos) {
             ChiTietKiemKe chiTiet = ChiTietKiemKe.builder()
                     .dotKiemKeId(dot.getId())
                     .bienTheSanPham(tonKho.getLoHang().getBienTheSanPham())
                     .loHang(tonKho.getLoHang())
-                    .soLuongHeThong(tonKho.getSoLuongTon())
-                    .soLuongThucTe(BigDecimal.ZERO)
+                    .soLuongHeThong(tonKho.getSoLuongTon())  // Lấy tồn hệ thống hiện tại
+                    .soLuongThucTe(BigDecimal.ZERO) //Ban đầu = 0
                     .trangThai((byte) 0)
                     .ngayTao(Instant.now())
                     .build();
             chiTietRepository.save(chiTiet);
         }
 
-        return dot.getId();
+        return dot.getId(); // Trả về ID cho frontend
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -144,6 +146,8 @@ public class PhieuKiemKeService {
 
     @Transactional
     public void complete(Integer dotKiemKeId, Integer khoId, List<ChiTietKiemKeUpdate> updates) {
+
+        //Kiểm tra đợt kiểm kê tồn tại và chưa hoàn thành
         DotKiemKe dot = dotKiemKeRepository.findById(dotKiemKeId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đợt kiểm kê ID: " + dotKiemKeId));
 
@@ -151,17 +155,22 @@ public class PhieuKiemKeService {
             throw new RuntimeException("Đợt kiểm kê này đã hoàn thành");
         }
 
+        //Lấy người đang thực hiện kiểm kê
         NguoiDung nguoiKiemDem = getCurrentUser();
 
+        //Duyệt qua từng chi tiết cập nhật
         for (ChiTietKiemKeUpdate update : updates) {
+            // Tìm chi tiết kiểm kê
             ChiTietKiemKe chiTiet = chiTietRepository.findById(update.getChiTietId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy chi tiết ID: " + update.getChiTietId()));
 
+            // === TÍNH CHÊNH LỆCH ===
             BigDecimal soLuongHeThong = chiTiet.getSoLuongHeThong() != null
                     ? chiTiet.getSoLuongHeThong() : BigDecimal.ZERO;
             BigDecimal soLuongThucTe = BigDecimal.valueOf(update.getSoLuongThucTe());
             BigDecimal chenhLech = soLuongThucTe.subtract(soLuongHeThong);
 
+            // Cập nhật thông tin chi tiết kiểm kê
             chiTiet.setSoLuongThucTe(soLuongThucTe);
             chiTiet.setChenhLechSoLuong(chenhLech);
             chiTiet.setLoaiChenhLech(
@@ -171,22 +180,26 @@ public class PhieuKiemKeService {
             );
             chiTiet.setNguoiKiemDem(nguoiKiemDem);
             chiTiet.setNgayKiemDem(Instant.now());
-            chiTiet.setTrangThai((byte) 1);
+            chiTiet.setTrangThai((byte) 1); // Đánh dấu đã kiểm kê
             chiTiet.setNgayCapNhat(Instant.now());
             chiTietRepository.save(chiTiet);
 
-            // Cập nhật tồn kho
+            // ==================== CÂN BẰNG KHO ====================
+            // Tìm tồn kho theo kho + lô hàng
             TonKhoTheoLo tonKho = tonKhoRepository
                     .findByKho_IdAndLoHang_Id(khoId, chiTiet.getLoHang().getId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy tồn kho cho lô: " + chiTiet.getLoHang().getId()));
-            tonKho.setSoLuongTon(soLuongThucTe);
-            tonKhoRepository.save(tonKho);
 
-            // Ghi lịch sử chỉ khi có chênh lệch
+            //**Phần quan trọng trong việc cập nhật tồn kho**
+            tonKho.setSoLuongTon(soLuongThucTe); // Ghi đè tồn kho bằng số thực tế
+            tonKhoRepository.save(tonKho); //lưu lại vào db
+
+            // ==================== GHI LỊCH SỬ ====================
+            // Chỉ ghi lịch sử khi CÓ CHÊNH LỆCH
             if (chenhLech.compareTo(BigDecimal.ZERO) != 0) {
                 LichSuGiaoDichKho lichSu = LichSuGiaoDichKho.builder()
-                        .loaiGiaoDich("dieu_chinh")
-                        .soLuong(chenhLech)
+                        .loaiGiaoDich("dieu_chinh") // Loại điều chỉnh
+                        .soLuong(chenhLech)  //Số lượng chênh
                         .soLuongTruoc(soLuongHeThong)
                         .soLuongSau(soLuongThucTe)
                         .bienTheSanPham(chiTiet.getBienTheSanPham())
@@ -197,7 +210,7 @@ public class PhieuKiemKeService {
                         .nguoiDung(nguoiKiemDem)
                         .ngayGiaoDich(Instant.now())
                         .build();
-                lichSuService.create(lichSu);
+                lichSuService.create(lichSu); // Gọi service lịch sử giao dịch kho
             }
         }
 

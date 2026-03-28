@@ -66,7 +66,7 @@ export default function SupplierDetailView() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const data = await getSupplierById(id);
+                const data = await getSupplierById(id); // Gọi API GET /api/supplier/{id} lấy chi tiết nhà cung cấp theo ID 
                 setSupplier(data);
             } catch (error) {
                 toast.error(error.response?.data?.message || "Không thể tải thông tin nhà cung cấp");
@@ -133,6 +133,7 @@ export default function SupplierDetailView() {
                     <h2 className="text-lg font-bold text-slate-800">Thông tin cơ bản</h2>
                 </div>
                 
+                {/* Thông tin cơ bản */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
                     <InfoField label="Mã định danh">
                         <span className="font-semibold text-[#8b6a21] font-mono text-[15px] bg-[#fff3d9] px-2 py-1 rounded-md border border-[#efd9ad]">

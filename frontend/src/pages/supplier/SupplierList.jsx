@@ -382,7 +382,7 @@ export default function SupplierList() {
                     {/* ── Action buttons ── */}
                     <div className="flex items-center justify-end">
                         <Button
-                            onClick={() => navigate("/supplier/new")}
+                            onClick={() => navigate("/supplier/new")} //chuyển sang route /supplier/new và component SupplierDetail được render ở chế độ Create.
                             className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
                         >
                             <Plus className="w-4 h-4 mr-2" />
@@ -468,10 +468,10 @@ export default function SupplierList() {
                                                 {/* Thao tác */}
                                                 <td className="px-4 py-3.5 align-middle">
                                                     <div className="flex items-center justify-center gap-1">
-                                                        <ActionBtn title="Xem chi tiết" onClick={() => navigate(`/supplier/view/${item.id}`)} color="violet">
+                                                        <ActionBtn title="Xem chi tiết" onClick={() => navigate(`/supplier/view/${item.id}`)} color="violet"> ////chuyển sang route /supplier/view/:id và component SupplierDetailView được render
                                                             <Eye className="h-4 w-4" />
                                                         </ActionBtn>
-                                                        <ActionBtn title="Chỉnh sửa" onClick={() => navigate(`/supplier/${item.id}`)} color="blue">
+                                                        <ActionBtn title="Chỉnh sửa" onClick={() => navigate(`/supplier/${item.id}`)} color="blue"> //chuyển sang route /supplier/:id và component SupplierDetail được render ở chế độ Edit với dữ liệu nhà cung cấp được điền sẵn vào form.
                                                             <Edit className="h-4 w-4" />
                                                         </ActionBtn>
                                                         <ActionBtn

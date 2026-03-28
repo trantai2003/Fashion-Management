@@ -683,8 +683,8 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
     @Transactional
     public PhieuXuatKho createTransfer(PhieuChuyenKhoCreating request) {
         // Kiểm tra cơ bản
-        NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser();
-        boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien);
+        NguoiDungAuthInfo currentUser = SecurityContextHolder.getUser(); //lấy thông tin người dùng hiện tại
+        boolean isAdmin = currentUser.getVaiTro().contains(IRoleType.quan_tri_vien); //kiểm tra role (admin)
 
         if (!isAdmin) {
             // Lấy danh sách ID các kho mà user này được quyền quản lý
@@ -693,6 +693,7 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                     .stream()
                     .map(pq -> pq.getKho().getId())
                     .toList();
+            //validate
             if (!assignedWarehouseIds.contains(request.getKhoNhapId())) {
                 throw new AccessDeniedException("Bạn chỉ có quyền tạo yêu cầu nhập hàng cho kho của mình");
             }
@@ -717,14 +718,14 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                         .ngayTao(Instant.now())
                         .ghiChu(request.getGhiChu())
                         .build();
-                phieu = repository.save(phieu);
+                phieu = repository.save(phieu); //lưu vào db qua repository
                 for (ChiTietPhieuXuatKhoCreating reqCt : request.getChiTietXuat()) {
                     BienTheSanPham bt = Optional.ofNullable(entityManager.find(BienTheSanPham.class, reqCt.getBienTheSanPhamId()))
                             .orElseThrow(() -> new CommonException("Sản phẩm ID " + reqCt.getBienTheSanPhamId() + " không tồn tại"));
 
                     // check tồn kho
                     BigDecimal qtyYeuCau = reqCt.getSoLuongXuat();
-                    BigDecimal qtyKhaDung = tonKhoTheoLoRepository.sumSoLuongKhaDungByKhoAndBienThe(khoA.getId(), bt.getId());
+                    BigDecimal qtyKhaDung = tonKhoTheoLoRepository.sumSoLuongKhaDungByKhoAndBienThe(khoA.getId(), bt.getId()); //lấy số lượng khả dụng của biến thể trong kho đó
 
                     if (qtyKhaDung.compareTo(qtyYeuCau) < 0) {
                         throw new CommonException("Sản phẩm [" + bt.getMaSku() + "] không đủ tồn kho tại kho " + khoA.getTenKho() +
@@ -735,9 +736,11 @@ public class PhieuXuatKhoService extends BaseServiceImpl<PhieuXuatKho, Integer> 
                             .bienTheSanPham(bt)
                             .soLuongXuat(qtyYeuCau)
                             .build();
-                    entityManager.persist(ct); // Dùng persist trong vòng lặp Transactional sẽ hiệu quả hơn
+                    entityManager.persist(ct); // lưu trường thông tin vào db ChiTietPhieuXuatKho
                 }
                 return phieu;
+
+              //validate duplicate mã phiếu, cho phép retry tối đa 5 lần
             } catch (org.springframework.dao.DataIntegrityViolationException ex) {
                 if (isDuplicateSoPhieu(ex) && retry < maxRetry) {
                     retry++;

@@ -91,14 +91,18 @@ export default function StockTakeCreate() {
       try {
         const khoData = await getKhoList();
         setKhos(khoData);
+
+        // Nếu có ID trong URL, tải thông tin đợt kiểm kê và chi tiết lô hàng
         if (dotKiemKeId) {
           const [dot, details] = await Promise.all([
-            getStockTake(dotKiemKeId),
-            getStockTakeDetails(dotKiemKeId),
+            getStockTake(dotKiemKeId), // gọi service để lấy thông tin tổng quát đợt kiểm kê
+            getStockTakeDetails(dotKiemKeId), // gọi service để lấy chi tiết lô hàng trong đợt kiểm kê
           ]);
           setSelectedKhoId(dot.kho?.id);
-          setIsCompleted(dot.trangThai === 1);
-          setChiTiets(details);
+          setIsCompleted(dot.trangThai === 1); // Kiểm tra đã hoàn thành chưa
+          setChiTiets(details);   //Lưu danh sách lô để hiển thị bảng
+
+          // Khởi tạo map cập nhật với số lượng thực tế hiện tại (nếu có) hoặc tồn hệ thống
           const initMap = {};
           details.forEach((ct) => {
             initMap[ct.id] = parseFloat(ct.soLuongThucTe ?? ct.soLuongHeThong ?? 0);
@@ -114,13 +118,16 @@ export default function StockTakeCreate() {
     init();
   }, [dotKiemKeId]);
 
+  // Xử lý tạo đợt kiểm kê mới
   const onCreate = async (values) => {
     setLoading(true);
     try {
-      const newId = await createStockTake(values);
-      setDotKiemKeId(newId);
-      setSelectedKhoId(values.khoId);
-      const details = await getStockTakeDetails(newId);
+      const newId = await createStockTake(values); // values = { khoId: 5, ghiChu: "..." }
+
+      setDotKiemKeId(newId); // Lưu ID để chuyển bước
+      setSelectedKhoId(values.khoId); // Lưu kho đã chọn để tải chi tiết
+
+      const details = await getStockTakeDetails(newId); //lấy danh sách lô hàng để hiển thị bước 2
       setChiTiets(details);
       toast.success("Tạo đợt kiểm kê thành công! Hãy nhập số lượng thực tế.");
     } catch (err) {
@@ -130,29 +137,33 @@ export default function StockTakeCreate() {
     }
   };
 
+  // Cập nhật số lượng thực tế khi người dùng nhập
   const handleSoLuongChange = (chiTietId, value) => {
     setUpdates((prev) => ({
       ...prev,
-      [chiTietId]: parseInt(value) >= 0 ? parseInt(value) : 0,
+      [chiTietId]: parseInt(value) >= 0 ? parseInt(value) : 0, // đảm bảo không nhập số âm (soLuongThucTe ở backend)
     }));
   };
 
+  // Hoàn thành kiểm kê và gửi cập nhật về server
   const onComplete = async () => {
-    if (!dotKiemKeId || !selectedKhoId) {
+    if (!dotKiemKeId || !selectedKhoId) { 
       toast.error("Thiếu thông tin đợt kiểm kê");
       return;
     }
     setLoading(true);
     try {
-      const updateList = chiTiets.map((ct) => ({
+      // Chuẩn bị danh sách cập nhật
+      const updateList = chiTiets.map((ct) => ({ // Lấy số lượng thực tế từ map cập nhật, nếu không có thì dùng số lượng cũ
         chiTietId: ct.id,
         soLuongThucTe: updates[ct.id] !== undefined
           ? updates[ct.id]
           : parseFloat(ct.soLuongThucTe ?? 0),
       }));
+      // Gọi API hoàn thành kiểm kê
       await completeStockTake(dotKiemKeId, selectedKhoId, updateList);
       toast.success("Hoàn thành kiểm kê thành công!");
-      navigate("/stock-take");
+      navigate("/stock-take");// Quay về danh sách sau khi hoàn thành
     } catch (err) {
       toast.error(err.response?.data?.message || "Hoàn thành kiểm kê thất bại");
     } finally {

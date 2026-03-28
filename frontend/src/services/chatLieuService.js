@@ -6,10 +6,10 @@ const CHAT_LIEU_API = '/api/v1/chat-lieu';
 
 /**
  * Lấy danh sách chất liệu (có search)
- * Pattern: GIỐNG HỆT supplierService - trả về response.data.data || []
  * @param {string} search - Từ khóa tìm kiếm (mã hoặc tên chất liệu)
  * @returns {Promise<Array>} - Danh sách chất liệu
  */
+
 export const getAllChatLieu = async (search = '') => {
     try {
         const response = await apiClient.get(CHAT_LIEU_API, {

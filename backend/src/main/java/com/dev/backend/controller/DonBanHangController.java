@@ -156,7 +156,7 @@ public class DonBanHangController {
         return ResponseEntity.ok(
                 ResponseData.<List<BienTheSanPhamSelectDto>>builder()
                         .status(200)
-                        .data(donBanHangService.getActiveVariantsForSale())
+                        .data(donBanHangService.getActiveVariantsForSale()) //gọi hàm bên service
                         .message("Success")
                         .error(null)
                         .build()

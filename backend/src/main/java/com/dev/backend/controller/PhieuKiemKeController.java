@@ -46,7 +46,7 @@ public class PhieuKiemKeController {
     // POST /api/phieu-kiem-ke → tạo đợt kiểm kê mới, trả về dotKiemKeId
     @PostMapping
     public ResponseEntity<ResponseData<Integer>> create(@RequestBody PhieuKiemKeCreate create) {
-        Integer dotKiemKeId = service.create(create);
+        Integer dotKiemKeId = service.create(create); //gọi service
         return ResponseEntity.ok(ResponseData.<Integer>builder()
                 .status(200)
                 .data(dotKiemKeId)
@@ -57,7 +57,7 @@ public class PhieuKiemKeController {
     // GET /api/phieu-kiem-ke/{id}/chi-tiet → lấy danh sách chi tiết
     @GetMapping("/{id}/chi-tiet")
     public ResponseEntity<ResponseData<List<ChiTietKiemKeDto>>> getChiTiet(@PathVariable Integer id) {
-        List<ChiTietKiemKeDto> list = service.getChiTiet(id);
+        List<ChiTietKiemKeDto> list = service.getChiTiet(id); //gọi service
         return ResponseEntity.ok(ResponseData.<List<ChiTietKiemKeDto>>builder()
                 .status(200)
                 .data(list)
@@ -71,7 +71,7 @@ public class PhieuKiemKeController {
             @PathVariable Integer id,
             @RequestParam Integer khoId,
             @RequestBody List<ChiTietKiemKeUpdate> updates) {
-        service.complete(id, khoId, updates);
+        service.complete(id, khoId, updates); // Gọi service
         return ResponseEntity.ok(ResponseData.<String>builder()
                 .status(200)
                 .data("Success")
