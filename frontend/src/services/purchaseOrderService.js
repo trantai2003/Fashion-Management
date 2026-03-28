@@ -168,7 +168,7 @@ const purchaseOrderService = {
      */
     layGiaoDich: async (id) => {
         const response = await apiClient.get(`/api/v1/nghiep-vu/don-mua-hang/thanh-toan/${id}`);
-        return response.data;
+        return response.data.data;
     },
 
     /**
