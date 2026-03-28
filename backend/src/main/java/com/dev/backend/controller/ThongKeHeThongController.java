@@ -97,6 +97,7 @@ public class ThongKeHeThongController {
         return thongKeHeThongService.findTonKhoChiTietByBienTheAndKho(bienTheId, khoId);
     }
 
+    //api của màn hình BCTK
     @GetMapping("/ton-kho-tong-quan")
     @RequireAuth(
             roles = {

@@ -10,6 +10,8 @@ import java.util.List;
 
 @Component
 @Mapper(componentModel = "spring", uses = {PhanQuyenNguoiDungKhoMapper.class})
+
+// từ domain entities chuyển thành dto
 public interface NguoiDungMapper {
     NguoiDungDto toDto(NguoiDung entity);
     List<NguoiDungDto> toDtoList(List<NguoiDung> list);

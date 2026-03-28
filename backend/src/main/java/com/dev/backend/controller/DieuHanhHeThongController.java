@@ -67,6 +67,7 @@ class DieuHanhHeThongController {
         return dieuHanhHeThongService. ganQuyenNhanVienKho(pqndkCreating);
     }
 
+    //xoá quyền hạn của 1 user nào đó
     @DeleteMapping("/quyen-han/xoa-quyen/{id}")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho},
@@ -90,6 +91,7 @@ class DieuHanhHeThongController {
         );
     }
 
+    //gán vai trò của người dùng
     @PutMapping("/vai-tro/gan-vai-tro")
     @RequireAuth(
             roles = {IRoleType.quan_tri_vien, IRoleType.quan_ly_kho}

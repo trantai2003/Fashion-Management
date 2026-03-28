@@ -74,7 +74,7 @@ public class NghiepVuSanPhamController {
         YeuCauMuaHang yeuCauMuaHang = yeuCauMuaHangService.getOne(id).orElseThrow(
                 () -> new CommonException("Không tìm thấy yêu cầu mua hàng id: " + id)
         );
-
+        // duyệt hoặc không duyệt
         yeuCauMuaHang.setTrangThai(trangThai);
         //dung update san truyen ID ( base, jpa hỗ trợ)
         yeuCauMuaHangService.update(yeuCauMuaHang.getId(), yeuCauMuaHang);
@@ -114,28 +114,6 @@ public class NghiepVuSanPhamController {
         if(trangThai == 3){
             YeuCauMuaHang yeuCauMuaHang = donMuaHang.getYeuCauMuaHang();
             yeuCauMuaHangService.changeStatus(yeuCauMuaHang.getId(), 5);
-//            for (DonMuaHang dmh: yeuCauMuaHang.getDonMuaHangs()){
-//                if(!dmh.getId().equals(donMuaHang.getId())){
-//                    yeuCauMuaHangService.changeStatus(dmh.getId(),4);
-//                    Date now = new Date();
-//                    HashMap<String, Object> params = new HashMap<>();
-//                    params.put("ngay", now.getDate());
-//                    params.put("thang", now.getMonth() + 1);
-//                    params.put("year", now.getYear() + 1900);
-//                    params.put("soDonHang", dmh.getSoDonMua());
-//                    params.put("tenNhaCungCap", dmh.getNhaCungCap().getTenNhaCungCap());
-//                    params.put("ngayGui", now);
-//                    params.put("nguoiPhuTrach", dmh.getNguoiTao().getHoTen());
-//                    params.put("ngayDatHang", dmh.getNgayDatHang());
-//                    params.put("lyDoHuy", "Giá cả chưa phù hợp");
-//                    emailService.sendHtmlEmailFromTemplate(
-//                            dmh.getNhaCungCap().getEmail(),
-//                            "Phiếu huỷ hàng",
-//                            "don_huy_mua.html",
-//                            params
-//                    );
-//                }
-//            }
         }
         if (trangThai == 4) {
             Date now = new Date();

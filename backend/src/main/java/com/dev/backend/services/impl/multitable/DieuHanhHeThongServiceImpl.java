@@ -71,10 +71,14 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
             throw new CommonException("Không tìm thấy người dùng id: " + pqndkCreating.getNguoiDungId());
         }
 
+        //lấy thông tin người dùng mà admin đang sửa(tk đang bị sửa)
         NguoiDung nguoiDung = findingNguoiDung.get();
 
+        //truyền giá trị cũ của người dùng dưới dạng JSON
+        //(trước khi sửa là giá trị nào thì lưu nó dưới dạng JSON) lưu trong bảng lịch sử thay đổi
         String giaTriCuJson;
 
+        //viết giá trị cũ chưa thay đổi của người dùng dưới dạng JSON
         try {
             giaTriCuJson = objectMapper.writeValueAsString(nguoiDungMapper.toDto(nguoiDung));
         } catch (JsonProcessingException e) {
@@ -87,14 +91,16 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
         if (findingKho.isEmpty()) {
             throw new CommonException("Không tìm thấy kho id: " + pqndkCreating.getKhoId());
         }
+
+        //kiểm tra xem user đã được gán với kho này hay chưa
         boolean firstTimeInWorkSpace = true;
         PhanQuyenNguoiDungKho phanQuyenNguoiDungKho = new PhanQuyenNguoiDungKho();
 
-        // Kiểm tra xem nhân viên đã từng có bản ghi tại kho này chưa
+        // Kiểm tra xem nhân viên đã nằm trong kho này chưa
         Optional<PhanQuyenNguoiDungKho> findingPQNDK = phanQuyenNguoiDungKhoService
                 .findByNguoiDungIdAndKhoId(pqndkCreating.getNguoiDungId(), pqndkCreating.getKhoId());
 
-        // Nếu có rồi thì lấy ra để cập nhật
+        //nếu tìm được phân quyền người dùng kho thì chuyển thành FALSE
         if (findingPQNDK.isPresent()) {
             phanQuyenNguoiDungKho = findingPQNDK.get();
             firstTimeInWorkSpace = false;
@@ -102,13 +108,14 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
 
         // Cập nhật các thông tin cơ bản về vai trò trong kho
         phanQuyenNguoiDungKho.setLaQuanLyKho(pqndkCreating.getLaQuanLyKho());
+        // 0: không hoạt động 1: hoạt động
         phanQuyenNguoiDungKho.setTrangThai(1);
         phanQuyenNguoiDungKho.setNgayBatDau(pqndkCreating.getNgayBatDau());
         phanQuyenNguoiDungKho.setNgayKetThuc(pqndkCreating.getNgayKetThuc());
         phanQuyenNguoiDungKho.setNguoiCapQuyen(findingCurrentUser.get());
         phanQuyenNguoiDungKho.setGhiChu(pqndkCreating.getGhiChu());
 
-        // Nếu lần đầu vào kho: set thêm liên kết User và Kho rồi Create mới
+        // Nếu lần đầu vào kho: thêm User vào phân quyền người dùng vào kho rồi tạo mới
         if (firstTimeInWorkSpace) {
             phanQuyenNguoiDungKho.setNguoiDung(findingNguoiDung.get());
             phanQuyenNguoiDungKho.setKho(findingKho.get());
@@ -118,7 +125,7 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
         }
 
         Instant now = Instant.now();
-        // 5. XỬ LÝ CHI TIẾT TỪNG QUYỀN HẠN (Vòng lặp danh sách quyền từ Request)
+        // xử lý chi tiết từng quyền hạn
         for (ChiTietQuyenKhoCreating chiTietQuyenKhoCreating : pqndkCreating.getChiTietQuyenKhos()) {
             Optional<QuyenHan> findingQuyenHan = quyenHanService.getOne(chiTietQuyenKhoCreating.getQuyenHanId());
             if (findingQuyenHan.isEmpty()) {
@@ -170,6 +177,7 @@ public class DieuHanhHeThongServiceImpl implements DieuHanhHeThongService {
                     chiTietQuyenKho = chiTietQuyenKhoService.update(chiTietQuyenKho.getId(), chiTietQuyenKho);
 
                 }
+                //lưu giá trị mới vào giá trị cũ của quyền hạn
                 try {
                     gtMoiJson = objectMapper.writeValueAsString(chiTietQuyenKhoMapper.toDto(chiTietQuyenKho));
                 } catch (JsonProcessingException e) {

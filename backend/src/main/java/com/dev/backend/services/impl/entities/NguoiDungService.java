@@ -165,6 +165,7 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
 
     @Transactional
     public ResponseEntity<ResponseData<LoginResponse>> login(LoginRequest loginRequest) {
+        //check thông tin user đã có trong hệ thống hay chưa
         Optional<NguoiDung> findingNguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
                 loginRequest.getUsername(),
                 loginRequest.getUsername(),
@@ -177,12 +178,14 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
             throw new CommonException("Mật khẩu không chính xác");
         }
 
-        // check danh sách phân quyền người dùng để truyền ra token
+        // lấy danh sách phân quyền người dùng để truyền ra token
         List<PhanQuyenNguoiDungKho> phanQuyenNguoiDungKhos = phanQuyenNguoiDungKhoService.findByNguoiDungIdAndActive(nguoiDung.getId());
 
         // lấy ra danh sách vai trò cho người dùng
         Set<String> vaiTros = new HashSet<>();
         vaiTros.add(nguoiDung.getVaiTro());
+
+        //tạo token người dùng
         String token = jwtService.generateTokenWithPermissions(
                 nguoiDung.getId(),
                 nguoiDung.getTenDangNhap(),
@@ -250,6 +253,8 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                 fpRequest.getUsername()).orElseThrow(
                 () -> new CommonException("Không tìm thấy tài khoản")
         );
+
+        //Tạo OTP
         String otp = calcService.getRandomActiveCode(6L);
         GlobalCache.OTP_SCHEDULE_OBJS.add(
                 OtpScheduleObj.builder()
@@ -260,12 +265,14 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
                         .build()
         );
 
+        //truyền dữ liệu qua email
         Map<String, Object> params = new HashMap<>();
 
         params.put("userName", nguoiDung.getHoTen());
         params.put("otp", otp);
         params.put("expiryTime", "5 phút");
 
+        //gửi email
         emailService.sendHtmlEmailFromTemplate(nguoiDung.getEmail(), "Lấy lại mật khẩu", "activation.html", params);
 
         return ResponseEntity.ok(
@@ -279,12 +286,15 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
     }
 
     public ResponseEntity<ResponseData<String>> resetPassword(ResetPasswordRequest rpRequest) {
+       // tìm xem thông tin người dùng có trong hệ thống hay chưa
         NguoiDung nguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
                 rpRequest.getUsername(),
                 rpRequest.getUsername(),
                 rpRequest.getUsername()).orElseThrow(
                 () -> new CommonException("Không tìm thấy tài khoản")
         );
+
+        //tìm otp của người dùng có tồn tại trong danh sách OTP đã gửi hay ko
         OtpScheduleObj findingResetOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->
                 otpScheduleObj.getEmail().equals(nguoiDung.getEmail()) && otpScheduleObj.getType().equals(OtpType.RESET_PASSWORD)).findFirst().orElseThrow(
                 () -> new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn")
@@ -295,12 +305,15 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         }
 
         Instant now = Instant.now();
+        //kiểm tra otp còn hạn hay không(trong vòng 5p)
         if (now.isAfter(findingResetOtp.getCreatedAt().plusSeconds(300))) {
             throw new CommonException("Mã xác nhận không tồn tại hoặc đã hết hạn");
         }
 
+        //sau khi thoả mãn các dk trên thì cho phép đặt lại MK
         nguoiDung.setMatKhauHash(passwordEncoder.encode(rpRequest.getPassword()));
 
+        //Xoá OTP của người dùng khỏi danh sách OTP trong bộ nhớ đệm
         GlobalCache.OTP_SCHEDULE_OBJS.remove(findingResetOtp);
 
         return ResponseEntity.ok(

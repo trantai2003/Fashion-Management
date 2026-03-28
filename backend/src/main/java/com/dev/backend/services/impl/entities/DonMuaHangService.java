@@ -153,13 +153,15 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
     @Transactional
     public ResponseEntity<ResponseData<String>> getOtpForSupplier(OtpDonMuaHangGetting getting) {
+        //kiểm tra đơn mua hàng có tồn tại hay k
         DonMuaHang donMuaHang = getOne(getting.getDonMuaHangId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy đơn mua hàng id: " + getting.getDonMuaHangId())
         );
+        //kiểm tra mail NCC có giống email trong hệ thống hay k
         if (!getting.getEmail().equals(donMuaHang.getNhaCungCap().getEmail())) {
             throw new CommonException("Email nhà cung cấp không hợp lệ email: " + getting.getEmail());
         }
-
+        // kiểm tra trạng thái đơn hàng(đã duyệt và gửi mail)
         if (donMuaHang.getTrangThai() != 2) {
             throw new CommonException("Đơn mua hàng không tồn tại id: " + getting.getDonMuaHangId());
         }
@@ -177,6 +179,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                 .build();
         GlobalCache.OTP_SCHEDULE_OBJS.add(otpScheduleObj);
 
+        //khai báo params truyền qua mail
         HashMap<String, Object> params = new HashMap<>();
 
         params.put("userName", donMuaHang.getNhaCungCap().getTenNhaCungCap());
@@ -197,8 +200,10 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
     @Transactional
     public ResponseEntity<ResponseData<DonMuaHangDto>> confirmOtpForSupplier(OtpDonMuaHangConfirming confirming) {
+        //tìm otp bên trong danh sách otp lưu ở bộ nhớ đệm
         for (OtpScheduleObj otpScheduleObj : GlobalCache.OTP_SCHEDULE_OBJS) {
             if (otpScheduleObj.getEmail().equals(confirming.getEmail()) && otpScheduleObj.getOtp().equals(confirming.getOtp())) {
+                //tìm đơn hàng có tồn tại trong DB ko
                 DonMuaHang donMuaHang = getOne(confirming.getDonMuaHangId()).orElseThrow(
                         () -> new CommonException("Không tìm thấy đơn mua hàng id: " + confirming.getDonMuaHangId())
                 );
@@ -220,6 +225,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
     @Transactional
     public ResponseEntity<ResponseData<String>> baoGiaDonMuaHang(DonMuaHangBaoGia baoGia) {
+        //tìm xem đơn hàng có tồn tại hay ko
         DonMuaHang donMuaHang = getOne(baoGia.getId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy đơn mua hàng id: " + baoGia.getId())
         );
@@ -227,17 +233,19 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
             throw new CommonException("Đơn báo giá không hợp lệ");
         }
 
+        //độ dài chi tiết đơn mua hàng để duyệt qua danh sách của nó
         int l = donMuaHang.getChiTietDonMuaHangs().size();
         List<ChiTietDonMuaHang> chiTietDonMuaHangs = donMuaHang.getChiTietDonMuaHangs();
         List<ChiTietDonMuaHangBaoGia> chiTietDonMuaHangBaoGias = baoGia.getChiTietDonMuaHangBaoGias();
-// Tính toán tổng tiền để so sánh
+
+        // Tính toán tổng tiền để so sánh
         BigDecimal tongTienTinhToan = BigDecimal.ZERO;
         for (int i = 0; i < l; i++) {
+            //xét giá cho từng mặt hàng
             chiTietDonMuaHangs.get(i).setDonGia(chiTietDonMuaHangBaoGias.get(i).getDonGia());
             // so sánh thành tiền
-
+            //tính toán tổng tiền
             BigDecimal thanhTienTinToan = chiTietDonMuaHangs.get(i).getSoLuongDat().multiply(baoGia.getChiTietDonMuaHangBaoGias().get(i).getDonGia());
-
             chiTietDonMuaHangs.get(i).setThanhTien(thanhTienTinToan);
             chiTietDonMuaHangService.update(chiTietDonMuaHangs.get(i).getId(), chiTietDonMuaHangs.get(i));
             tongTienTinhToan = tongTienTinhToan.add(thanhTienTinToan);
@@ -338,85 +346,28 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
     }
 
     @Transactional
-    public ResponseEntity<ResponseData<String>> guiYeuCauBaoGia(YeuCauBaoGiaCreating yeuCau) {
-        DonMuaHang donMuaHang = getOne(yeuCau.getId()).orElseThrow(
-                () -> new CommonException("Không tìm thấy báo giá id: " + yeuCau.getId())
-        );
-        NhaCungCap nhaCungCap = nhaCungCapService.getOne(yeuCau.getNhaCungCapId()).orElseThrow(
-                () -> new CommonException("Không tìm thấy nhà cung cấp id: " + yeuCau.getNhaCungCapId())
-        );
-        donMuaHang.setTrangThai(3);
-        donMuaHang.setNhaCungCap(nhaCungCap);
-        donMuaHang.setSoDonMua(yeuCau.getSoDonMua());
-
-        Date now = new Date();
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("ngay", now.getDate());
-        params.put("thang", now.getMonth() + 1);
-        params.put("nam", now.getYear() + 1900);
-        params.put("soDonMua", donMuaHang.getSoDonMua());
-
-        String trangThaiText = " Quản lý đã duyệt và gửi mail";
-        BigDecimal tongSoLuong = BigDecimal.ZERO;
-        // tính tổng số lượng
-        for (ChiTietDonMuaHang chiTietDonMuaHang : donMuaHang.getChiTietDonMuaHangs()) {
-            tongSoLuong = tongSoLuong.add(chiTietDonMuaHang.getSoLuongDat());
-        }
-        params.put("trangThaiText", trangThaiText);
-        params.put("tenKho", donMuaHang.getKhoNhap().getTenKho());
-        params.put("diaChiKho", donMuaHang.getKhoNhap().getDiaChi());
-        params.put("tenNhaCungCap", nhaCungCap.getTenNhaCungCap());
-        params.put("maNhaCungCap", nhaCungCap.getMaNhaCungCap());
-        params.put("nguoiLienHe", nhaCungCap.getNguoiLienHe());
-        params.put("soDienThoai", nhaCungCap.getSoDienThoai());
-        params.put("email", nhaCungCap.getEmail());
-        params.put("tongSoMatHang", donMuaHang.getChiTietDonMuaHangs().size());
-        params.put("tongSoLuong", tongSoLuong);
-        params.put("tongTien", donMuaHang.getTongTien());
-        params.put("ghiChu", donMuaHang.getGhiChu());
-        params.put("ngayDatHang", donMuaHang.getNgayDatHang());
-        params.put("ngayGiaoDuKien", donMuaHang.getNgayGiaoDuKien());
-        params.put("hanPheDuyet", donMuaHang.getNgayGiaoDuKien());
-
-        emailService.sendHtmlEmailFromTemplate(
-                nhaCungCap.getEmail(),
-                "Phiếu xác nhận nhập hàng",
-                "don_mua.html",
-                params
-        );
-        update(donMuaHang.getId(), donMuaHang);
-        return ResponseEntity.ok(
-                ResponseData.<String>builder()
-                        .status(HttpStatus.OK.value())
-                        .data("Success")
-                        .message("Success")
-                        .error(null)
-                        .build()
-        );
-    }
-
-    @Transactional
     public ResponseEntity<ResponseData<String>> guiYeuCauBaoGiaDenNhaCungCap(YeuCauDenNhaCungCapCreating yeuCau) {
-
+        // lấy thông tin người dùng đang đăng nhập
         NguoiDungAuthInfo nguoiDungAuthInfo = SecurityContextHolder.getUser();
         NguoiDung nguoiDung = nguoiDungService.getOne(nguoiDungAuthInfo.getId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy người tạo: id"+ nguoiDungAuthInfo.getId())
         );
+        //lấy yêu cầu
         YeuCauMuaHang yeuCauMuaHang = yeuCauMuaHangService.getOne(yeuCau.getYeuCauMuaHangId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy yêu cầu id: " + yeuCau.getYeuCauMuaHangId())
         );
-
+        //kiểm tra xem yêu cầu đã dc duyệt hay chưa
         if(yeuCauMuaHang.getTrangThai() != 2){
             throw new CommonException("Đơn mua hàng chưa được duyệt");
         }
 
         Instant now = Instant.now();
-        // 4. Vòng lặp: Duyệt qua danh sách các ID Nhà cung cấp mà người dùng đã chọn
+        //duyệt qua danh sách ID nhà cung cấp
         for (Integer nhaCungCapId : yeuCau.getNhaCungCapIds()) {
             NhaCungCap nhaCungCap = nhaCungCapService.getOne(nhaCungCapId).orElseThrow(
                     () -> new CommonException("Không tìm thấy nhà cung cấp id: " + nhaCungCapId)
             );
-            //4. Đơn báo giá
+            //tạo đơn báo giá cho từng nhà cung cấp
             DonMuaHang donMuaHang = DonMuaHang.builder()
                     .yeuCauMuaHang(yeuCauMuaHang)
                     .soDonMua(calcService.getRandomProductCode("PO"))
@@ -428,21 +379,29 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                     .ngayGiaoDuKien(yeuCauMuaHang.getNgayGiaoDuKien())
                     .build();
 
-            // Lưu đơn mua hàng
+            //lưu đơn mua hàng
             donMuaHang = create(donMuaHang);
-            // 5. Lấy danh sách sản phẩm từ Yêu cầu gốc sang Đơn mua hàng mới
+
+            /*
+            lấy danh sách sản phẩm từ Yêu cầu gốc sang Đơn mua hàng mới
+            lấy thoong tin yêu cầu gốc mà NVK gửi cho QLK duyệt
+            số lượng, sản phẩm, kho, ngày giao dự kiến
+             */
             List<ChiTietDonMuaHang> chiTietDonMuaHangs = new ArrayList<>();
             for (ChiTietYeuCauMuaHang chiTietYeuCauMuaHang : yeuCauMuaHang.getChiTietYeuCauMuaHangs()) {
-                // Chuyển đổi từ thông tin của Yêu cầu sang thông tin của Đơn hàng
+                //chuyển đổi từ thông tin của Yêu cầu sang thông tin của Đơn hàng
                 ChiTietDonMuaHang chiTietDonMuaHang = fromChiTietYeuCauToChiTietBaoGia(donMuaHang, chiTietYeuCauMuaHang);
                 chiTietDonMuaHang = chiTietDonMuaHangService.create(chiTietDonMuaHang);
                 chiTietDonMuaHangs.add(chiTietDonMuaHang);
             }
+
+            //truyền chi tiết danh sách đơn mua hàng vào đơn mua hàng
             donMuaHang.setChiTietDonMuaHangs(chiTietDonMuaHangs);
-            // 6. Gửi Email thông báo cho nhà cung cấp để họ vào báo giá
+            //gửi Email thông báo cho nhà cung cấp để họ vào báo giá
             guiMailYeuCauBaoGiaChoNhaCungCap(donMuaHang);
-            // 7. Cập nhật thông tin Yêu cầu mua hàng gốc
+            //tạo mã yêu cầu mua hàng
             yeuCauMuaHang.setSoYeuCauMuaHang(calcService.getRandomProductCode("RFQ"));
+            //trạng thái đã gửi báo giá
             yeuCauMuaHang.setTrangThai(3);
             yeuCauMuaHangService.update(yeuCauMuaHang.getId(), yeuCauMuaHang);
         }
@@ -456,6 +415,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         );
     }
 
+    //hàm hỗ trợ chi tiết yêu cầu đến chi tiết báo giá
     private ChiTietDonMuaHang fromChiTietYeuCauToChiTietBaoGia(DonMuaHang donMuaHang,ChiTietYeuCauMuaHang chiTietYeuCauMuaHang){
         return ChiTietDonMuaHang.builder()
                 .bienTheSanPham(chiTietYeuCauMuaHang.getBienTheSanPham())
@@ -468,6 +428,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
     }
 
     private void guiMailYeuCauBaoGiaChoNhaCungCap(DonMuaHang donMuaHang){
+        //l
         NhaCungCap nhaCungCap = donMuaHang.getNhaCungCap();
         Date now = new Date();
         HashMap<String, Object> params = new HashMap<>();

@@ -49,24 +49,27 @@ public class YeuCauMuaHangService extends BaseServiceImpl<YeuCauMuaHang, Integer
         return this.entityManager;
     }
 
+    // nhân viên kho yêu cầu nhập hàng
     @Transactional
     public ResponseEntity<ResponseData<YeuCauMuaHangDto>> create(YeuCauMuaHangCreating creating) {
-
+        // kiểm tra xem NVK có quyền hạn kho này ko
         Kho khoNhap = khoService.getOne(creating.getKhoNhapId()).orElseThrow(
                 () -> new CommonException("Không tìm thấy kho id: " + creating.getKhoNhapId())
         );
 
+        // lấy người dùng đang đăng nhập
         NguoiDungAuthInfo authInfo = SecurityContextHolder.getUser();
-
         if (authInfo == null) throw new CommonException("Bạn phải đănh nhập");
 
+        // lấy người dùng đang đăng nhập trong DB
+        // người dùng đăng nhập thì để lại ID cho mình và mình lấy ID check trong DB
         NguoiDung nguoiTao = nguoiDungService.getOne(authInfo.getId()).orElseThrow(
                 () -> new CommonException("Người dùng không tồn tại trong hệ thống id:" + authInfo.getId())
         );
 
         Instant now = Instant.now();
 
-        // 6. Khởi tạo đối tượng Yêu cầu mua hàng (Parent) bằng Design Pattern Builder.
+        //tạo phiếu yêu cầu nhập hàng( build ra entities)
         YeuCauMuaHang yeuCauMuaHang = YeuCauMuaHang.builder()
                 .khoNhap(khoNhap)
                 .ngayGiaoDuKien(creating.getNgayGiaoDuKien())
@@ -76,28 +79,28 @@ public class YeuCauMuaHangService extends BaseServiceImpl<YeuCauMuaHang, Integer
                 .ngayTao(now)
                 .build();
 
-        // 7. Lưu "phần đầu" của phiếu vào DB để lấy được ID chính thức.
+        //lưu vào DB
         yeuCauMuaHang = create(yeuCauMuaHang);
 
-        // 8. Tạo danh sách rỗng để chứa các dòng chi tiết hàng hóa (Items).
+        //khởi tạo danh sách chi tiết YCMH
         List<ChiTietYeuCauMuaHang> chiTietYeuCauMuaHangs = new ArrayList<>();
 
-        // 9. Duyệt qua danh sách mặt hàng
+        //duyệt qua danh sách mặt hàng để kiểm tra xem biến thể có tổn tại hay ko
         for (ChiTietYeuCauMuaHangCreating ycmhCreating : creating.getChiTietYeuCauMuaHangs()) {
-            // 9.1. Với mỗi mặt hàng, kiểm tra xem "Biến thể sản phẩm" có tồn tại không.
+            //với mỗi mặt hàng, kiểm tra xem "Biến thể sản phẩm" có tồn tại không.
             BienTheSanPham bienTheSanPham = bienTheSanPhamService.getOne(ycmhCreating.getBienTheSanPhamId()).orElseThrow(
                     () -> new CommonException("Không tìm thấy biến thể sản phẩm id: " + ycmhCreating.getBienTheSanPhamId())
             );
-            // 9.2. Tạo đối tượng chi tiết, liên kết nó với phiếu tổng (yeuCauMuaHang) vừa tạo ở bước 7.
+            //tạo chi tiết yêu cầu mua hàng của biến thể, liên kết nó với phiếu tổng (yeuCauMuaHang)
             ChiTietYeuCauMuaHang chiTietYeuCauMuaHang = ChiTietYeuCauMuaHang.builder()
                     .yeuCauMuaHang(yeuCauMuaHang)
                     .bienTheSanPham(bienTheSanPham)
                     .soLuongDat(ycmhCreating.getSoLuongDat())
                     .build();
-            // 9.3. Thêm vào danh sách tạm.
+            //thêm vào danh sách
             chiTietYeuCauMuaHangs.add(chiTietYeuCauMuaHang);
         }
-        // 10. Lưu hàng loạt danh sách chi tiết xuống DB và cập nhật ngược lại vào đối tượng cha.
+        //lưu hàng loạt danh sách chi tiết xuống DB
         yeuCauMuaHang.setChiTietYeuCauMuaHangs(chiTietYeuCauMuaHangService.create(chiTietYeuCauMuaHangs));
         return ResponseEntity.ok(
                 ResponseData.<YeuCauMuaHangDto>builder()

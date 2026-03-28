@@ -46,35 +46,40 @@ public class NguoiDungController {
         );
     }
 
-
+    //đăng ký
     @PostMapping("/register")
     public ResponseEntity<ResponseData<String>> register(@Valid @RequestBody RegisterRequest registerRequest) {
         return nguoiDungService.register(registerRequest);
     }
 
+    //sau khi đăng ký thì active account
     @PostMapping("/active-account")
     public ResponseEntity<ResponseData<String>> activeAccount(@RequestBody VerifyAccount verifyDto) {
         return nguoiDungService.activeAccount(verifyDto);
     }
 
 
+    //đăng nhập hệ thống
     @PostMapping("/login")
     public ResponseEntity<ResponseData<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
         return nguoiDungService.login(loginRequest);
     }
 
+    //update thông tin người dùng
     @PutMapping("/update")
     @RequireAuth(roles = {IRoleType.all})
     public ResponseEntity<ResponseData<NguoiDungDto>> update(@Valid @RequestBody UpdateNguoiDungRequest request) {
         return nguoiDungService.update(request);
     }
 
+    // gửi yêu cầu đổi mật khẩu
     @PostMapping("/forgot-password")
     public ResponseEntity<ResponseData<String >> forgotPassword(@RequestBody ForgotPasswordRequest fpRequest) {
         return nguoiDungService.forgotPassword(fpRequest);
 
     }
 
+    // sau khi gửi yêu cầu đổi mk thì api này để đổi mk với otp
     @PostMapping("reset-password")
     public ResponseEntity<ResponseData<String >> resetPassword(@RequestBody ResetPasswordRequest rpRequest){
         return nguoiDungService.resetPassword(rpRequest);
