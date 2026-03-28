@@ -356,8 +356,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto overflow-x-visible px-1 min-h-0">
-                    /* Form nhập thông tin thêm sản phẩm mới*/
-                    <form
+                  
+                    <form   /* Form nhập thông tin thêm sản phẩm mới*/
                         onSubmit={handleSubmit(onSubmit)}
                         className="space-y-6 py-1 [&_[data-slot=input]]:bg-white [&_[data-slot=input]]:text-amber-950 [&_[data-slot=textarea]]:bg-white [&_[data-slot=textarea]]:text-amber-950 [&_[data-slot=select-trigger]]:bg-white [&_[data-slot=select-trigger]]:text-amber-950 [&_[data-slot=select-content]]:bg-white [&_[data-slot=select-content]]:text-amber-950 dark:[&_[data-slot=input]]:bg-white dark:[&_[data-slot=textarea]]:bg-white dark:[&_[data-slot=select-trigger]]:bg-white dark:[&_[data-slot=select-content]]:bg-white"
                     >
