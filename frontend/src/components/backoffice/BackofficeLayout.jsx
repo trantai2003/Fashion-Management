@@ -345,7 +345,22 @@ export default function BackofficeLayout() {
             key: "PURCHASE_ORDER_DETAIL",
             match: (path) => /^\/purchase-orders\/\d+$/.test(path),
             title: "Chi tiết đơn mua hàng",
-        }
+        },
+        {
+            key: "SALE_QUOTATION",
+            match: (path) => path === "/sales-quotations",
+            title: "Danh sách báo giá bán hàng",
+        },
+        {
+            key: "SALE_QUOTATION_CREATE",
+            match: (path) => path === "/sales-quotations/create",
+            title: "Tạo báo giá bán hàng",
+        },
+        {
+            key: "SALE_QUOTATION_DETAIL",
+            match: (path) => /^\/sales-quotations\/\d+$/.test(path),
+            title: "Chi tiết báo giá bán hàng",
+        },
     ];
 
     const pageMeta = PAGE_META_CONFIG.find((item) =>

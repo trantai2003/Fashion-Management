@@ -14,6 +14,7 @@ import java.util.List;
 @Component
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface SanPhamQuanAoMapper {
+    // Map entity -> DTO để trả response an toàn cho FE (không lộ toàn bộ graph entity).
     @Mapping(source = "danhMuc", target = "danhMuc")
     @Mapping(target = "danhMuc.danhMucCons", ignore = true) // Ngắt không cho map danh sách con của danh mục trong sản phẩm
     @Mapping(target = "danhMuc.danhMucCha", ignore = true)
@@ -22,6 +23,7 @@ public interface SanPhamQuanAoMapper {
     List<SanPhamQuanAoDto> toDtoList(List<SanPhamQuanAo> list);
 
     default Page<SanPhamQuanAoDto> toDtoPage(Page<SanPhamQuanAo> page){
+        // Preserve metadata phân trang (totalElements/totalPages/pageable) khi map sang DTO.
         if(page.isEmpty()) return Page.empty();
         return page.map(this::toDto);
     }

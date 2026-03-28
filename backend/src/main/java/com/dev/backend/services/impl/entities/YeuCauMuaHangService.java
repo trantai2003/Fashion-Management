@@ -66,6 +66,7 @@ public class YeuCauMuaHangService extends BaseServiceImpl<YeuCauMuaHang, Integer
 
         Instant now = Instant.now();
 
+        // 6. Khởi tạo đối tượng Yêu cầu mua hàng (Parent) bằng Design Pattern Builder.
         YeuCauMuaHang yeuCauMuaHang = YeuCauMuaHang.builder()
                 .khoNhap(khoNhap)
                 .ngayGiaoDuKien(creating.getNgayGiaoDuKien())
@@ -74,21 +75,29 @@ public class YeuCauMuaHangService extends BaseServiceImpl<YeuCauMuaHang, Integer
                 .nguoiTao(nguoiTao)
                 .ngayTao(now)
                 .build();
+
+        // 7. Lưu "phần đầu" của phiếu vào DB để lấy được ID chính thức.
         yeuCauMuaHang = create(yeuCauMuaHang);
 
+        // 8. Tạo danh sách rỗng để chứa các dòng chi tiết hàng hóa (Items).
         List<ChiTietYeuCauMuaHang> chiTietYeuCauMuaHangs = new ArrayList<>();
 
+        // 9. Duyệt qua danh sách mặt hàng
         for (ChiTietYeuCauMuaHangCreating ycmhCreating : creating.getChiTietYeuCauMuaHangs()) {
+            // 9.1. Với mỗi mặt hàng, kiểm tra xem "Biến thể sản phẩm" có tồn tại không.
             BienTheSanPham bienTheSanPham = bienTheSanPhamService.getOne(ycmhCreating.getBienTheSanPhamId()).orElseThrow(
                     () -> new CommonException("Không tìm thấy biến thể sản phẩm id: " + ycmhCreating.getBienTheSanPhamId())
             );
+            // 9.2. Tạo đối tượng chi tiết, liên kết nó với phiếu tổng (yeuCauMuaHang) vừa tạo ở bước 7.
             ChiTietYeuCauMuaHang chiTietYeuCauMuaHang = ChiTietYeuCauMuaHang.builder()
                     .yeuCauMuaHang(yeuCauMuaHang)
                     .bienTheSanPham(bienTheSanPham)
                     .soLuongDat(ycmhCreating.getSoLuongDat())
                     .build();
+            // 9.3. Thêm vào danh sách tạm.
             chiTietYeuCauMuaHangs.add(chiTietYeuCauMuaHang);
         }
+        // 10. Lưu hàng loạt danh sách chi tiết xuống DB và cập nhật ngược lại vào đối tượng cha.
         yeuCauMuaHang.setChiTietYeuCauMuaHangs(chiTietYeuCauMuaHangService.create(chiTietYeuCauMuaHangs));
         return ResponseEntity.ok(
                 ResponseData.<YeuCauMuaHangDto>builder()

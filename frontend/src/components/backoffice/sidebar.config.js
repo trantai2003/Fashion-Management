@@ -165,16 +165,6 @@ export const SIDEBAR_MENU = [
         ],
       },
       {
-        label: "Báo cáo nhập – xuất",
-        to: "/bao-cao/xuat-nhap",
-        roles: ["quan_tri_vien", "quan_ly_kho"],
-      },
-      {
-        label: "Cảnh báo sắp hết hàng",
-        to: "/warnings/low-stock",
-        roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_mua_hang"],
-      },
-      {
         label: "Lịch sử giao dịch kho",
         to: "/lich-su-giao-dich-kho",
         roles: ["quan_tri_vien", "quan_ly_kho", "nhan_vien_kho"],

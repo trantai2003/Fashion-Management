@@ -21,6 +21,7 @@ export default function ProductDetail() {
     const totalImages = product?.anhQuanAos?.length || 0;
 
     useEffect(() => {
+        // Dam bao selectedImageIndex luon hop le khi so anh thay doi.
         if (totalImages === 0) {
             if (selectedImageIndex !== 0) setSelectedImageIndex(0);
             return;
@@ -34,6 +35,10 @@ export default function ProductDetail() {
         const fetchData = async () => {
             try {
                 setIsLoading(true);
+                // Luong tai du lieu chi tiet san pham:
+                // Frontend -> productService.getProductById
+                // -> ProductController.getById -> ProductService.getById -> ProductRepository.findById.
+                // Dong thoi tai cay danh muc de dung breadcrumb cha-con.
                 const [productRes, categoryRes] = await Promise.all([
                     productService.getProductById(id),
                     danhMucQuanAoService.getCayDanhMuc()
@@ -62,6 +67,8 @@ export default function ProductDetail() {
     const canGoNext = selectedImageIndex < totalImages - 1;
 
     const breadcrumbs = useMemo(() => {
+        // Dung DFS tim duong dan danh muc tu root -> danh muc hien tai cua san pham.
+        // Muc dich: hien breadcrumb dung theo cau truc cay danh muc.
         if (!product?.danhMuc || !allCategories || allCategories.length === 0) return [];
         const targetId = product.danhMuc.id;
         const findPath = (categories, idToFind, currentPath = []) => {
@@ -79,6 +86,7 @@ export default function ProductDetail() {
     }, [product, allCategories]);
 
     const statusMeta = useMemo(() => {
+        // Map trang thai backend sang giao dien badge/trang thai mau.
         const configs = {
             1: {
                 label: "Còn hàng",
@@ -251,31 +259,31 @@ export default function ProductDetail() {
                                 <div className="max-h-[340px] overflow-y-auto">
                                     <table className="w-full text-sm">
                                         <thead className="sticky top-0 bg-amber-50 border-b border-amber-200 text-slate-600">
-                                            <tr>
-                                                <th className="px-4 py-3 text-left font-semibold">Chi tiết màu sắc & size</th>
-                                                <th className="px-4 py-3 text-right font-semibold">Giá bán lẻ</th>
-                                            </tr>
+                                        <tr>
+                                            <th className="px-4 py-3 text-left font-semibold">Chi tiết màu sắc & size</th>
+                                            <th className="px-4 py-3 text-right font-semibold">Giá bán lẻ</th>
+                                        </tr>
                                         </thead>
                                         <tbody className="divide-y divide-amber-100">
-                                            {product.bienTheSanPhams?.map((variant) => (
-                                                <tr key={variant.id} className="hover:bg-amber-50/50 transition-colors">
-                                                    <td className="px-4 py-3">
-                                                        <div className="flex items-center gap-3">
-                                                            <div
-                                                                className="w-5 h-5 rounded-full border border-white ring-2 ring-amber-100 shadow-sm flex-shrink-0"
-                                                                style={{ backgroundColor: variant.mauSac?.maMauHex || variant.mauSac?.maMau }}
-                                                            />
-                                                            <div className="flex flex-col">
-                                                                <span className="font-semibold text-slate-800">{variant.mauSac?.tenMau || "-"}</span>
-                                                                <span className="text-xs text-slate-500">Kích cỡ: {variant.size?.tenSize || "-"}</span>
-                                                            </div>
+                                        {product.bienTheSanPhams?.map((variant) => (
+                                            <tr key={variant.id} className="hover:bg-amber-50/50 transition-colors">
+                                                <td className="px-4 py-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div
+                                                            className="w-5 h-5 rounded-full border border-white ring-2 ring-amber-100 shadow-sm flex-shrink-0"
+                                                            style={{ backgroundColor: variant.mauSac?.maMauHex || variant.mauSac?.maMau }}
+                                                        />
+                                                        <div className="flex flex-col">
+                                                            <span className="font-semibold text-slate-800">{variant.mauSac?.tenMau || "-"}</span>
+                                                            <span className="text-xs text-slate-500">Kích cỡ: {variant.size?.tenSize || "-"}</span>
                                                         </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right">
-                                                        <span className="font-bold text-slate-900">{formatCurrency(variant.giaBan)}</span>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <span className="font-bold text-slate-900">{formatCurrency(variant.giaBan)}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
                                         </tbody>
                                     </table>
                                 </div>

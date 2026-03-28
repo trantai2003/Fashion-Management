@@ -256,7 +256,7 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
 
     }
 
-
+    //lấy giao dịch thanh toán(QR code)
     @Transactional
     public ResponseEntity<ResponseData<GiaoDichDto>> layGiaoDich(Integer id) {
 
@@ -410,10 +410,12 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
         }
 
         Instant now = Instant.now();
+        // 4. Vòng lặp: Duyệt qua danh sách các ID Nhà cung cấp mà người dùng đã chọn
         for (Integer nhaCungCapId : yeuCau.getNhaCungCapIds()) {
             NhaCungCap nhaCungCap = nhaCungCapService.getOne(nhaCungCapId).orElseThrow(
                     () -> new CommonException("Không tìm thấy nhà cung cấp id: " + nhaCungCapId)
             );
+            //4. Đơn báo giá
             DonMuaHang donMuaHang = DonMuaHang.builder()
                     .yeuCauMuaHang(yeuCauMuaHang)
                     .soDonMua(calcService.getRandomProductCode("PO"))
@@ -425,15 +427,20 @@ public class DonMuaHangService extends BaseServiceImpl<DonMuaHang, Integer> {
                     .ngayGiaoDuKien(yeuCauMuaHang.getNgayGiaoDuKien())
                     .build();
 
+            // Lưu đơn mua hàng
             donMuaHang = create(donMuaHang);
+            // 5. Lấy danh sách sản phẩm từ Yêu cầu gốc sang Đơn mua hàng mới
             List<ChiTietDonMuaHang> chiTietDonMuaHangs = new ArrayList<>();
             for (ChiTietYeuCauMuaHang chiTietYeuCauMuaHang : yeuCauMuaHang.getChiTietYeuCauMuaHangs()) {
+                // Chuyển đổi từ thông tin của Yêu cầu sang thông tin của Đơn hàng
                 ChiTietDonMuaHang chiTietDonMuaHang = fromChiTietYeuCauToChiTietBaoGia(donMuaHang, chiTietYeuCauMuaHang);
                 chiTietDonMuaHang = chiTietDonMuaHangService.create(chiTietDonMuaHang);
                 chiTietDonMuaHangs.add(chiTietDonMuaHang);
             }
             donMuaHang.setChiTietDonMuaHangs(chiTietDonMuaHangs);
+            // 6. Gửi Email thông báo cho nhà cung cấp để họ vào báo giá
             guiMailYeuCauBaoGiaChoNhaCungCap(donMuaHang);
+            // 7. Cập nhật thông tin Yêu cầu mua hàng gốc
             yeuCauMuaHang.setSoYeuCauMuaHang(calcService.getRandomProductCode("RFQ"));
             yeuCauMuaHang.setTrangThai(3);
             yeuCauMuaHangService.update(yeuCauMuaHang.getId(), yeuCauMuaHang);

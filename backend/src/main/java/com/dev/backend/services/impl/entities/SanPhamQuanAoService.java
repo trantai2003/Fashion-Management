@@ -42,6 +42,13 @@ import java.util.*;
 @Slf4j
 public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer> {
 
+        // ==========================================================
+        // PRODUCT SERVICE (Nghiệp vụ chính của màn Quản lý sản phẩm)
+        // - Tạo/cập nhật sản phẩm + biến thể + ảnh.
+        // - Tính lại giá và trạng thái theo tồn kho thực tế.
+        // - Trả DTO cho controller.
+        // ==========================================================
+
         //Core bussiness logic
         @Autowired
         private EntityManager entityManager;
@@ -89,6 +96,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
 
         @Transactional
         public void recalculatePriceAndStatus(Integer sanPhamId) {
+                // Đồng bộ giá và trạng thái sản phẩm dựa trên dữ liệu tồn kho theo lô.
                 // 1. Ép Hibernate đẩy dữ liệu xuống DB để đảm bảo Query Native đọc được số mới nhất
                 entityManager.flush();
 
@@ -174,6 +182,8 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 List<MultipartFile> anhSanPhams,
                 List<MultipartFile> anhBienThes) {
 
+                // Bước 1: Validate nghiệp vụ (không trùng tổ hợp thuộc tính biến thể).
+
                 Set<String> checkDuplicateSet = new HashSet<>();
                 for (BienTheSanPhamCreating bt : creating.getBienTheSanPhams()) {
                         String key = bt.getMauSacId() + "-" + bt.getSizeId() + "-" + bt.getChatLieuId();
@@ -209,9 +219,10 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 sanPhamQuanAo.setNguoiTao(nguoiTao);
                 sanPhamQuanAo.setNgayTao(instantNow);
 
-                // Lưu sản phẩm vào DB trước
+                // Bước 2: Lưu sản phẩm cha trước để lấy id tham chiếu.
                 sanPhamQuanAo = create(sanPhamQuanAo);
 
+                // Bước 3: Upload ảnh sản phẩm chính (nếu có) và lưu metadata ảnh.
                 if (anhSanPhams != null && !anhSanPhams.isEmpty()) {
                         try {
                                 int i = 0;
@@ -247,6 +258,8 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 }
 
                 int imageCount = 0;
+
+                // Bước 4: Tạo biến thể + upload ảnh biến thể tương ứng.
                 for (BienTheSanPhamCreating btspCreating : creating.getBienTheSanPhams()) {
 
                         MauSac mauSac = mauSacService.getOne(btspCreating.getMauSacId()).orElseThrow(
@@ -307,6 +320,8 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                 }
                         }
                 }
+
+                // Bước 5: Tính lại giá/trạng thái theo tồn kho và ghi lịch sử thao tác.
                 recalculatePriceAndStatus(sanPhamQuanAo.getId());
 
                 sanPhamQuanAo = getOne(sanPhamQuanAo.getId()).get();
@@ -364,6 +379,9 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 List<MultipartFile> anhSanPhams,
                 List<MultipartFile> anhBienThes) {
 
+                // Luồng cập nhật gồm: validate biến thể -> update thông tin chính -> cập nhật ảnh
+                // -> cập nhật biến thể -> tính lại giá/trạng thái.
+
                 List<BienTheSanPhamUpdating> list = new ArrayList<>(updating.getBienTheSanPhams());
                 Set<BienTheSanPhamUpdating> set = new HashSet<>(updating.getBienTheSanPhams());
 
@@ -409,15 +427,15 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                         String objectName = minioService.upload(file, ITable.san_pham_quan_ao + "_" + sanPhamQuanAo.getMaSanPham() + "_" + now.getTime() + "_" + i++);
 
                                         TepTin tepTin = tepTinService.create(TepTin.builder()
-                                                        .tenTepGoc(objectName)
-                                                        .tenTaiLen(objectName)
-                                                        .tenLuuTru(objectName)
-                                                        .duongDan(minioService.getPublicUrl(objectName))
-                                                        .loaiTepTin(FileType.IMAGE.toString())
-                                                        .duoiTep(minioService.getObjectInfo(objectName).getUserMetadata().get("file-extension"))
-                                                        .trangThai(1)
-                                                        .ngayTao(sanPhamQuanAo.getNgayCapNhat())
-                                                        .build()
+                                                .tenTepGoc(objectName)
+                                                .tenTaiLen(objectName)
+                                                .tenLuuTru(objectName)
+                                                .duongDan(minioService.getPublicUrl(objectName))
+                                                .loaiTepTin(FileType.IMAGE.toString())
+                                                .duoiTep(minioService.getObjectInfo(objectName).getUserMetadata().get("file-extension"))
+                                                .trangThai(1)
+                                                .ngayTao(sanPhamQuanAo.getNgayCapNhat())
+                                                .build()
                                         );
 
                                         //Thêm ảnh mới trực tiếp vào list của sản phẩm
@@ -505,6 +523,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
 
         @Transactional
         public SanPhamQuanAo changeStatus(Integer id, Integer status) {
+                // Đổi trạng thái nhanh cho sản phẩm (1/0/2).
                 SanPhamQuanAo sanPhamQuanAo = getOne(id).orElseThrow(
                         () -> new CommonException("Không tìm thấy sản phẩm id: " + id));
                 sanPhamQuanAo.setTrangThai(status);
@@ -513,6 +532,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
 
         @Transactional
         public void updateSkuPrice(Integer skuId, BigDecimal newPrice, BigDecimal newCost) {
+                // Cập nhật giá theo SKU ở mức biến thể.
                 BienTheSanPham bienThe = bienTheSanPhamService.getOne(skuId).orElseThrow(
                         () -> new CommonException("Không tìm thấy biến thể id: " + skuId));
                 if (newPrice != null)

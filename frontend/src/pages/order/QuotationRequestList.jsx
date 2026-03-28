@@ -425,14 +425,14 @@ export default function QuotationRequestList() {
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" className="w-full h-10 justify-between font-medium border-slate-200 bg-white text-[13px] rounded-xl">
                                         <span className="truncate">
-                                            {filters.trangThai && filters.trangThai !== 'all' ? PR_STATUS[filters.trangThai]?.label : "Tất cả (3 & 5)"}
+                                            {filters.trangThai && filters.trangThai !== 'all' ? PR_STATUS[filters.trangThai]?.label : "Tất cả"}
                                         </span>
                                         <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[240px] bg-white shadow-lg border border-slate-100 z-50 rounded-xl">
                                     <DropdownMenuItem onClick={() => handleFilterChange('trangThai', 'all')} className="font-bold text-[13px] py-2.5 hover:bg-indigo-50 cursor-pointer">
-                                        Tất cả (3 & 5)
+                                        Tất cả
                                     </DropdownMenuItem>
                                     {Object.entries(PR_STATUS).map(([key, cfg]) => {
                                         const Icon = cfg.icon;

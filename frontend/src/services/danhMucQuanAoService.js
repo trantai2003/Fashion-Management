@@ -6,6 +6,11 @@ export const danhMucQuanAoService = {
         return apiClient.get("/api/v1/danh-muc-quan-ao/get-cay-danh-muc");
     },
 
+    // Lấy toàn bộ danh mục
+    getAll: () => {
+        return apiClient.get("/api/v1/danh-muc-quan-ao/all");
+    },
+
     // Lấy danh mục theo ID
     getById: (id) => {
         return apiClient.get(`/api/v1/danh-muc-quan-ao/get-by-id/${id}`);
