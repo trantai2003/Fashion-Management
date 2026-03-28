@@ -176,7 +176,7 @@ const purchaseOrderService = {
      * GET /api/v1/nghiep-vu/don-mua-hang/kiem-tra-thanh-toan/id
      */
     kiemTraThanhToan: async (id) => {
-        const response = await apiClient.get(`/api/v1/nghiep-vu/don-mua-hang/kiem-tra-thanh-toan/id?id=${id}`);
+        const response = await apiClient.get(`/api/v1/nghiep-vu/don-mua-hang/kiem-tra-thanh-toan/${id}`);
         return response.data?.status === 200;
     },
 };
