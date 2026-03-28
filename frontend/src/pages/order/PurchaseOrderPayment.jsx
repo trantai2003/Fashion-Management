@@ -1,17 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-const fetchGiaoDich = async (id) => {
-  const res = await fetch(`http://localhost:8080/api/v1/nghiep-vu/don-mua-hang/thanh-toan/${id}`);
-  const json = await res.json();
-  return json.data;
-};
-
-const kiemTraThanhToan = async (id) => {
-  const res = await fetch(`http://localhost:8080/api/v1/nghiep-vu/don-mua-hang/kiem-tra-thanh-toan/id?id=${id}`);
-  const json = await res.json();
-  return json.status === 200;
-};
+import purchaseOrderService from "../../services/purchaseOrderService";
 
 const buildVietQRUrl = (data) => {
   if (!data) return null;
@@ -37,14 +26,14 @@ export default function PurchaseOrderPayment() {
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    fetchGiaoDich(orderId)
+    purchaseOrderService.layGiaoDich(orderId)
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [orderId]);
   //gọi lần đầu
   useEffect(() => {
-    kiemTraThanhToan(orderId)
+    purchaseOrderService.kiemTraThanhToan(orderId)
       .then((ok) => {
         if (ok) {
           setPaid(true);
@@ -59,7 +48,7 @@ export default function PurchaseOrderPayment() {
     intervalRef.current = setInterval(async () => {
       setChecking(true);
       try {
-        const ok = await kiemTraThanhToan(orderId);
+        const ok = await purchaseOrderService.kiemTraThanhToan(orderId);
         if (ok) {
           clearInterval(intervalRef.current);
           setPaid(true);

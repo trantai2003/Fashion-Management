@@ -170,6 +170,15 @@ const purchaseOrderService = {
         const response = await apiClient.get(`/api/v1/nghiep-vu/don-mua-hang/thanh-toan/${id}`);
         return response.data;
     },
+
+    /**
+     * Kiểm tra trạng thái thanh toán của đơn mua hàng
+     * GET /api/v1/nghiep-vu/don-mua-hang/kiem-tra-thanh-toan/id
+     */
+    kiemTraThanhToan: async (id) => {
+        const response = await apiClient.get(`/api/v1/nghiep-vu/don-mua-hang/kiem-tra-thanh-toan/id?id=${id}`);
+        return response.data?.status === 200;
+    },
 };
 
 export default purchaseOrderService;
