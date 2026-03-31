@@ -82,6 +82,44 @@ function buildProductFilterPayload(filters) {
     };
 }
 
+function parseJwt(token) {
+    try {
+        const b64 = token.split(".")[1];
+        return JSON.parse(atob(b64.replace(/-/g, "+").replace(/_/g, "/")));
+    } catch {
+        return null;
+    }
+}
+
+// Lay role tu nhieu claim pho bien trong JWT: vaiTro, role, roles, authority, authorities, scope
+function parseRoles(payload) {
+    if (!payload) return [];
+
+    const raw =
+        payload.vaiTro ??
+        payload.role ??
+        payload.roles ??
+        payload.authority ??
+        payload.authorities ??
+        payload.scope ??
+        [];
+
+    let roles = [];
+    if (Array.isArray(raw)) {
+        roles = raw;
+    } else if (typeof raw === "string") {
+        // Ho tro: "a b", "a,b", "a;b"
+        roles = raw.split(/[\s,;]+/).filter(Boolean);
+    } else {
+        roles = [];
+    }
+
+    // Loai bo trung lap sau khi normalize
+    return [...new Set(roles.map(normalizeRole).filter(Boolean))];
+}
+
+const CREATE_PRODUCT_ROLES = ["quan_tri_vien", "quan_ly_kho"];
+
 export default function ProductList() {
     // Du lieu danh sach hien thi tren bang Quan ly san pham.
     const [products, setProducts] = useState([]);
@@ -267,6 +305,27 @@ export default function ProductList() {
 
     const totalPages = Math.max(1, Math.ceil(total / filters.size));
 
+    const [userRoles, setUserRoles] = useState([]);
+
+    useEffect(() => {
+        // Backend lưu token vào localStorage với key "access_token" (xem Login.jsx)
+        // Role được lưu riêng vào key "role" dạng chuỗi "quan_tri_vien" hoặc "quan_tri_vien quan_ly_kho"
+        const roleRaw = localStorage.getItem("role");
+        if (!roleRaw) {
+            setUserRoles([]);
+            return;
+        }
+
+        // Role có thể là 1 role hoặc nhiều role cách nhau bởi khoảng trắng/dấu phẩy
+        const parsed = roleRaw.split(/[\s,;]+/).map(r => r.trim()).filter(Boolean);
+        setUserRoles(parsed);
+    }, []);
+
+    const canCreateProduct = useMemo(
+        () => userRoles.some((role) => CREATE_PRODUCT_ROLES.includes(role)),
+        [userRoles]
+    );
+
     return (
         <div className="lux-sync warehouse-unified gold-text-sync p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 min-h-screen">
             <div className="space-y-6 w-full">
@@ -438,13 +497,15 @@ export default function ProductList() {
 
                 {/* ══ ACTION BUTTONS (dưới bộ lọc) ════════════════════════════════ */}
                 <div className="flex items-center justify-end gap-3">
-                    <Button
-                        onClick={openAddModal}
-                        className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
-                    >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Thêm sản phẩm
-                    </Button>
+                    {canCreateProduct && (
+                        <Button
+                            onClick={openAddModal}
+                            className="bg-slate-900 text-white border border-slate-900 hover:bg-white hover:text-slate-900 shadow-sm transition-all duration-200"
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Thêm sản phẩm
+                        </Button>
+                    )}
                 </div>
 
                 {/* ══ TABLE / LOADING / EMPTY ══════════════════════════════════════ */}
@@ -772,3 +833,5 @@ export default function ProductList() {
         </div>
     );
 }
+
+
