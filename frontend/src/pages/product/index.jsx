@@ -57,21 +57,27 @@ function buildProductFilterPayload(filters) {
     }
 
     if (filters.giaTu && filters.giaTu !== "") {
-        filterList.push({
-            fieldName: "giaBanMacDinh",
-            operation: "GREATER_THAN_OR_EQUAL",
-            value: Number(filters.giaTu),
-            logicType: "AND",
-        });
+        const giaTuNum = Number(filters.giaTu);
+        if (!isNaN(giaTuNum) && giaTuNum >= 0) {
+            filterList.push({
+                fieldName: "giaBanMacDinh",
+                operation: "GREATER_THAN_OR_EQUAL",
+                value: giaTuNum,
+                logicType: "AND",
+            });
+        }
     }
 
     if (filters.giaDen && filters.giaDen !== "") {
-        filterList.push({
-            fieldName: "giaBanMacDinh",
-            operation: "LESS_THAN_OR_EQUAL",
-            value: Number(filters.giaDen),
-            logicType: "AND",
-        });
+        const giaDenNum = Number(filters.giaDen);
+        if (!isNaN(giaDenNum) && giaDenNum >= 0) {
+            filterList.push({
+                fieldName: "giaBanMacDinh",
+                operation: "LESS_THAN_OR_EQUAL",
+                value: giaDenNum,
+                logicType: "AND",
+            });
+        }
     }
 
     return {
@@ -140,6 +146,7 @@ export default function ProductList() {
     const toastShownRef = useRef(false);
     const navigate = useNavigate();
     const searchTimeoutRef = useRef(null);
+    const firstLoadRef = useRef(true); // Để tracking lần đầu load, không auto-fetch ngay
 
     const [isAddModalOpen, openAddModal, closeAddModal] = useToggle(false);
     const [isEditModalOpen, openEditModal, closeEditModal] = useToggle(false);
@@ -190,7 +197,10 @@ export default function ProductList() {
         }
     }, []);
 
-    useEffect(() => { fetchGlobalStats(); }, [fetchGlobalStats]);
+    useEffect(() => {
+        // Gọi stats khi user click "Đặt lại" hoặc load lần đầu (bỏ comment nếu cần)
+        // fetchGlobalStats();
+    }, [fetchGlobalStats]);
 
     const fetchProducts = useCallback(async () => {
         try {
@@ -225,9 +235,19 @@ export default function ProductList() {
 
 
     useEffect(() => {
-        // Debounce keyword tim kiem de tranh goi API lien tuc khi user dang go phim.
+        // Lần đầu load: KHÔNG fetch tự động, chỉ chờ user nhập filter
+        if (firstLoadRef.current) {
+            firstLoadRef.current = false;
+            return;
+        }
+
+        // Sau đó: debounce 800ms - chỉ fetch khi user NGỪNG nhập
         if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-        searchTimeoutRef.current = setTimeout(fetchProducts, filters.keyword ? 500 : 0);
+
+        searchTimeoutRef.current = setTimeout(() => {
+            fetchProducts();
+        }, 800); // Chờ 800ms sau lần cuối cùng user thay đổi filter
+
         return () => { if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current); };
     }, [filters, fetchProducts]);
 
@@ -240,7 +260,9 @@ export default function ProductList() {
 
     const handleReset = useCallback(() => {
         setFilters({ keyword: "", danhMuc: "ALL", trangThai: "ALL", giaTu: "", giaDen: "", page: 0, size: 10 });
-    }, []);
+        // Gọi fetch stats khi user click "Đặt lại"
+        fetchGlobalStats();
+    }, [fetchGlobalStats]);
 
     const handleDeleteClick = useCallback((product) => {
         // Mo modal xac nhan xoa mem san pham.
@@ -455,11 +477,10 @@ export default function ProductList() {
                             <div className="space-y-2">
                                 <Label className="text-gray-700 font-medium">Giá từ</Label>
                                 <Input
-                                    type="number"
+                                    type="text"
                                     value={filters.giaTu}
                                     onChange={handleFilterChange.giaTu}
                                     placeholder="Giá từ"
-                                    min="0"
                                     className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                                     disabled={isLoading}
                                 />
@@ -469,11 +490,10 @@ export default function ProductList() {
                             <div className="space-y-2">
                                 <Label className="text-gray-700 font-medium">Giá đến</Label>
                                 <Input
-                                    type="number"
+                                    type="text"
                                     value={filters.giaDen}
                                     onChange={handleFilterChange.giaDen}
                                     placeholder="Đến"
-                                    min="0"
                                     className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                                     disabled={isLoading}
                                 />
