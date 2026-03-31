@@ -25,7 +25,7 @@ public class NhaCungCapController {
     @RequireAuth(
     )
     public ResponseEntity<ResponseData> getAll(@RequestParam(required = false) String search) {
-        List<NhaCungCapDto> dtos = service.findAll(search);
+        List<NhaCungCapDto> dtos = service.findAll(search); // ← Truyền search vào Service
         return ResponseEntity.ok(ResponseData.builder()
                 .status(200)
                 .data(dtos)

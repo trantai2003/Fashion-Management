@@ -80,16 +80,18 @@ export default function StockTakeCreate() {
   const [updates,       setUpdates]       = useState({});
   const [isCompleted,   setIsCompleted]   = useState(false);
 
+  // Khởi tạo form
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: { khoId: 0, ghiChu: "" },
   });
 
+  // Load dữ liệu khi có ID 
   useEffect(() => {
     const init = async () => {
       setLoading(true);
       try {
-        const khoData = await getKhoList();
+        const khoData = await getKhoList(); // Gọi API lấy danh sách kho để chọn
         setKhos(khoData);
 
         // Nếu có ID trong URL, tải thông tin đợt kiểm kê và chi tiết lô hàng
@@ -408,9 +410,9 @@ export default function StockTakeCreate() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {chiTiets.map((ct) => {
-                      const tonHeThong = parseFloat(ct.soLuongHeThong ?? 0);
-                      const thucTe     = updates[ct.id] !== undefined
-                        ? updates[ct.id]
+                      const tonHeThong = parseFloat(ct.soLuongHeThong ?? 0); // Lấy số lượng thực tế từ map cập nhật, nếu không có thì dùng số lượng cũ (nếu đã nhập trước đó) hoặc tồn hệ thống
+                      const thucTe     = updates[ct.id] !== undefined 
+                        ? updates[ct.id] // Lấy số người dùng vừa nhập
                         : parseFloat(ct.soLuongThucTe ?? 0);
                       const chenhLech  = thucTe - tonHeThong;
                       const hasInput   = updates[ct.id] !== undefined;
@@ -452,6 +454,7 @@ export default function StockTakeCreate() {
                                 </span>
                               </span>
                             ) : (
+                              // Hiển thị input để nhập số lượng thực tế
                               <Input
                                 type="number"
                                 min="0"

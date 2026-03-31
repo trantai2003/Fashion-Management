@@ -161,7 +161,7 @@ export default function SupplierList() {
     const fetchSuppliers = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getAllSupplier(search);
+            const data = await getAllSupplier(search); // Gọi API lấy danh sách nhà cung cấp với search (API đã handle search trên backend)
             setSuppliers(data);
             setPageNumber(0);
         } catch {
@@ -210,20 +210,24 @@ export default function SupplierList() {
     };
 
     // ── Client-side filter ─────────────────────────────────────────────
+    // Lọc theo search + status trên client để có trải nghiệm nhanh, không phải gọi API nhiều lần khi đổi filter
     const filtered = useMemo(() => {
         return suppliers.filter((item) => {
+
+            // Search: tìm trong mã, tên, người liên hệ (không phân biệt hoa thường)
             const matchSearch =
                 !search.trim() ||
                 item.maNhaCungCap?.toLowerCase().includes(search.toLowerCase()) ||
                 item.tenNhaCungCap?.toLowerCase().includes(search.toLowerCase()) ||
                 item.nguoiLienHe?.toLowerCase().includes(search.toLowerCase());
 
+            // Status filter
             const matchStatus =
                 filterStatus === "all"      ||
                 (filterStatus === "active"   && item.trangThai === 1) ||
                 (filterStatus === "inactive" && item.trangThai === 0);
 
-            return matchSearch && matchStatus;
+            return matchSearch && matchStatus; // Kết hợp cả 2 điều kiện
         });
     }, [suppliers, search, filterStatus]);
 

@@ -91,6 +91,7 @@ export default function ChatLieuDetail() {
             if (isEdit) {
                 await updateChatLieu(id, payload); // Gọi API cập nhật
                 toast.success("Cập nhật chất liệu thành công");
+                
             } else {
                 await createChatLieu(payload);
                 toast.success("Thêm chất liệu mới thành công");
