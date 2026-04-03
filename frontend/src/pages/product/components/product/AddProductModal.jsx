@@ -20,48 +20,377 @@ import { productService } from "@/services/productService.js";
 import { danhMucQuanAoService } from "@/services/danhMucQuanAoService.js";
 import * as yup from "yup";
 
+// ==========================================
+// HELPER FUNCTIONS FOR VALIDATION
+// ==========================================
+
+/**
+ * Chuẩn hóa khoảng trắng trong chuỗi
+ * - Xóa khoảng trắng ở đầu và cuối (trim)
+ * - Thay 2 hoặc nhiều khoảng trắng liên tiếp thành 1 khoảng trắng
+ * Ví dụ: "  Áo   sơ  mi  " → "Áo sơ mi"
+ */
+const normalizeSpaces = (value) =>
+  typeof value === "string" ? value.trim().replace(/\s{2,}/g, " ") : value;
+
+/**
+ * Chuyển chuỗi rỗng thành null
+ * - Nếu originalValue là string rỗng hoặc chỉ có khoảng trắng → trả về null
+ * - Nếu không, trả về giá trị đã transform
+ * Dùng để tính toán với giá (null = không nhập, khác 0)
+ */
+const emptyToNull = (value, originalValue) => {
+  if (typeof originalValue === "string" && originalValue.trim() === "") return null;
+  return value;
+};
+
+/**
+ * Regex kiểm tra số thập phân tối đa 2 chữ số
+ * Ví dụ hợp lệ: 100, 99.9, 99.99
+ * Ví dụ không hợp lệ: 99.999, 99.9999
+ */
+const decimal2Regex = /^\d+(\.\d{1,2})?$/;
+
+/**
+ * Regex kiểm tra định dạng mã vạch
+ * Chỉ cho phép: chữ cái (A-Z, a-z), số (0-9), dấu gạch ngang (-), dấu gạch dưới (_)
+ * KHÔNG cho phép: khoảng trắng, ký tự đặc biệt khác
+ * Ví dụ hợp lệ: ABC-123_XYZ, SKU001-ABC
+ */
+const barcodeRegex = /^[A-Za-z0-9_-]+$/;
+
+// ==========================================
+// YUP VALIDATION SCHEMA
+// ==========================================
+/**
+ * Schema define các rule validate cho form "Thêm sản phẩm mới"
+ * Sử dụng Yup library để validate toàn bộ form trước khi submit
+ * Mode "onChange" sẽ kiểm tra realtime khi người dùng nhập/thay đổi dữ liệu
+ */
 const addProductSchema = yup.object({
-    tenSanPham: yup.string().required("Tên sản phẩm là bắt buộc"),
-    maSanPham: yup.string().nullable(),
-    maVach: yup.string(),
-    danhMucId: yup.number().required("Danh mục là bắt buộc").typeError("Vui lòng chọn danh mục"),
-    moTa: yup.string(),
-    giaVonMacDinh: yup.number().transform(value => (isNaN(value) ? 0 : value)).nullable(),
-    giaBanMacDinh: yup.number().transform(value => (isNaN(value) ? 0 : value)).nullable(),
-    mucTonToiThieu: yup.number().min(0, "Mức tồn phải >= 0"),
-    trangThai: yup.number().required(),
-    bienTheSanPhams: yup.array().of(
-        yup.object({
-            mauSacId: yup.number().required("Màu sắc là bắt buộc").nullable(),
-            sizeId: yup.number().required("Size là bắt buộc").nullable(),
-            chatLieuId: yup.number().required("Chất liệu là bắt buộc").nullable(),
-            maSku: yup.string().nullable(),
-            maVachSku: yup.string(),
-            giaVon: yup.number().transform(value => (isNaN(value) ? 0 : value)).nullable(),
-            giaBan: yup.number().transform(value => (isNaN(value) ? 0 : value)).nullable(),
-            trangThai: yup.number().required(),
-        })
-    ).min(1, "Phải có ít nhất 1 biến thể")
+  // ===== THÔNG TIN CƠ BẢN =====
+
+  /**
+   * TÊN SẢN PHẨM (tenSanPham)
+   * Status: Bắt buộc nhập (*)
+   * Rules:
+   *  1. Bắt buộc nhập (required)
+   *  2. Tự động chuẩn hóa: trim khoảng trắng đầu/cuối + gộp khoảng trắng liên tiếp
+   *  3. Kiểm tra không rỗng (chỉ khoảng trắng)
+   *  4. Độ dài tối thiểu 3 ký tự
+   *  5. Độ dài tối đa 150 ký tự
+   *  6. KHÔNG cho phép 2 khoảng trắng liên tiếp
+   * Ví dụ:
+   *  - Input: "  Áo   sơ   mi  " → Lưu: "Áo sơ mi" ✅
+   *  - Input: "AB" → Error: "Tên sản phẩm phải từ 3 ký tự trở lên" ❌
+   *  - Input: "" → Error: "Vui lòng nhập tên sản phẩm" ❌
+   */
+  tenSanPham: yup
+    .string()
+    .transform((_, originalValue) => normalizeSpaces(originalValue))
+    .required("Vui lòng nhập tên sản phẩm")
+    .test("not-blank", "Vui lòng nhập tên sản phẩm", (value) => !!value && value.trim().length > 0)
+    .min(3, "Tên sản phẩm phải từ 3 ký tự trở lên")
+    .max(150, "Tên sản phẩm không được vượt quá 150 ký tự")
+    .test("no-double-space", "Tên sản phẩm không được chứa 2 khoảng trắng liên tiếp", (value) =>
+      value ? !/\s{2,}/.test(value) : true
+    ),
+
+  /**
+   * MÃ SẢN PHẨM (maSanPham)
+   * Status: Không bắt buộc, tự động sinh (hệ thống tạo)
+   * Rules:
+   *  - Chỉ cho phép null hoặc string
+   *  - Không cần validate vì hệ thống tự động sinh
+   */
+  maSanPham: yup.string().nullable(),
+
+  /**
+   * MÃ VẠCH SẢN PHẨM (maVach)
+   * Status: Không bắt buộc nhập
+   * Rules:
+   *  1. Không bắt buộc (nullable)
+   *  2. Nếu nhập: tự động trim khoảng trắng
+   *  3. Định dạng: chỉ cho phép chữ, số, -, _ (không khoảng trắng)
+   *  4. Độ dài: 8-50 ký tự
+   * Ví dụ:
+   *  - Input: "" → OK (không bắt buộc) ✅
+   *  - Input: "ABC-123_XYZ" → OK ✅
+   *  - Input: "ABC XYZ" (có space) → Error: "Mã vạch không đúng định dạng" ❌
+   *  - Input: "ABC" (< 8 ký tự) → Error: "Mã vạch không đúng định dạng" ❌
+   */
+  maVach: yup
+    .string()
+    .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
+    .nullable()
+    .test("barcode-format", "Mã vạch không đúng định dạng", (value) => {
+      if (!value) return true;
+      return barcodeRegex.test(value) && value.length >= 8 && value.length <= 50;
+    }),
+
+  /**
+   * DANH MỤC (danhMucId)
+   * Status: Bắt buộc chọn (*)
+   * Rules:
+   *  1. Bắt buộc chọn danh mục
+   *  2. Phải là số (number)
+   * Ví dụ:
+   *  - Không chọn → Error: "Danh mục là bắt buộc" ❌
+   *  - Chọn danh mục → OK ✅
+   */
+  danhMucId: yup.number().required("Danh mục là bắt buộc").typeError("Vui lòng chọn danh mục"),
+
+  /**
+   * MÔ TẢ (moTa)
+   * Status: Không bắt buộc
+   * Rules:
+   *  1. Không bắt buộc nhập
+   *  2. Nếu nhập: tự động trim khoảng trắng đầu/cuối
+   *  3. Độ dài tối đa 1000 ký tự
+   * Ví dụ:
+   *  - Input: "" → OK ✅
+   *  - Input: "   Áo sơ mi chất lượng cao   " → Lưu: "Áo sơ mi chất lượng cao" ✅
+   *  - Input: text > 1000 ký tự → Error: "Mô tả không được vượt quá 1000 ký tự" ❌
+   */
+  moTa: yup
+    .string()
+    .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
+    .nullable()
+    .max(1000, "Mô tả không được vượt quá 1000 ký tự"),
+
+  /**
+   * GIÁ VỐN MẶC ĐỊNH (giaVonMacDinh)
+   * Status: Không bắt buộc
+   * Rules:
+   *  1. Không bắt buộc nhập (nullable)
+   *  2. Nếu để trống → xem như null (không validate giá trị)
+   *  3. Nếu nhập: phải >= 0
+   *  4. Nếu nhập: tối đa 2 chữ số thập phân (VD: 99.99, 100.50)
+   * Ví dụ:
+   *  - Input: "" → OK ✅
+   *  - Input: "100" → OK ✅
+   *  - Input: "99.99" → OK ✅
+   *  - Input: "99.999" → Error: "Giá vốn chỉ được tối đa 2 chữ số thập phân" ❌
+   *  - Input: "-10" → Error: "Giá vốn phải là số lớn hơn hoặc bằng 0" ❌
+   */
+  giaVonMacDinh: yup
+    .number()
+    .transform(emptyToNull)
+    .nullable()
+    .test("default-cost-format", "Giá vốn phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+    .test(
+      "default-cost-decimal",
+      "Giá vốn chỉ được tối đa 2 chữ số thập phân",
+      (value) => value == null || decimal2Regex.test(String(value))
+    ),
+
+  /**
+   * GIÁ BÁN MẶC ĐỊNH (giaBanMacDinh)
+   * Status: Không bắt buộc
+   * Rules:
+   *  1. Không bắt buộc nhập (nullable)
+   *  2. Nếu để trống → xem như null
+   *  3. Nếu nhập: phải >= 0
+   *  4. Nếu nhập: tối đa 2 chữ số thập phân
+   *  5. CẢNH BÁO MỀM: nếu giá bán < giá vốn → hiển thị warning (không chặn submit)
+   * Ví dụ:
+   *  - Input: "50" (giá vốn = 100) → Warning: "Giá bán đang nhỏ hơn giá vốn" ⚠️ (vẫn cho submit)
+   *  - Input: "150" (giá vốn = 100) → OK ✅
+   */
+  giaBanMacDinh: yup
+    .number()
+    .transform(emptyToNull)
+    .nullable()
+    .test("default-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+    .test(
+      "default-price-decimal",
+      "Giá bán chỉ được tối đa 2 chữ số thập phân",
+      (value) => value == null || decimal2Regex.test(String(value))
+    ),
+
+  /**
+   * MỨC TỒN TỐI THIỂU (mucTonToiThieu)
+   * Status: Bắt buộc nhập (*)
+   * Rules:
+   *  1. Bắt buộc nhập
+   *  2. Phải là số nguyên (không có phần thập phân)
+   *  3. Phải >= 0 (không âm)
+   *  4. Tối đa 999999
+   * Ví dụ:
+   *  - Input: "" → Error: "Vui lòng nhập mức tồn tối thiểu" ❌
+   *  - Input: "10.5" → Error: "Mức tồn tối thiểu phải là số nguyên" ❌
+   *  - Input: "-5" → Error: "Mức tồn tối thiểu không được nhỏ hơn 0" ❌
+   *  - Input: "100" → OK ✅
+   */
+  mucTonToiThieu: yup
+    .number()
+    .typeError("Mức tồn tối thiểu phải là số nguyên")
+    .required("Vui lòng nhập mức tồn tối thiểu")
+    .integer("Mức tồn tối thiểu phải là số nguyên")
+    .min(0, "Mức tồn tối thiểu không được nhỏ hơn 0")
+    .max(999999, "Mức tồn tối thiểu không được vượt quá 999999"),
+
+  /**
+   * TRẠNG THÁI MẶC ĐỊNH (trangThai)
+   * Status: Bắt buộc chọn
+   * Rules:
+   *  - Bắt buộc chọn (1 = Còn hàng, 0 = Hết hàng)
+   */
+  trangThai: yup.number().required(),
+
+  // ===== BIẾN THỂ SẢN PHẨM =====
+  /**
+   * DANH SÁCH BIẾN THỂ (bienTheSanPhams)
+   * Status: Bắt buộc có ít nhất 1 biến thể (*)
+   * Rules:
+   *  1. Là mảng (array)
+   *  2. Mỗi item phải validate theo object schema dưới đây
+   *  3. Phải có ít nhất 1 phần tử
+   */
+  bienTheSanPhams: yup
+    .array()
+    .of(
+      yup.object({
+        /**
+         * MÀU SẮC (mauSacId)
+         * Status: Bắt buộc chọn (*)
+         * Rules:
+         *  - Bắt buộc chọn màu sắc
+         *  - Phải là số (ID của màu)
+         */
+        mauSacId: yup.number().required("Màu sắc là bắt buộc").nullable(),
+
+        /**
+         * SIZE (sizeId)
+         * Status: Bắt buộc chọn (*)
+         * Rules:
+         *  - Bắt buộc chọn size
+         *  - Phải là số (ID của size)
+         */
+        sizeId: yup.number().required("Size là bắt buộc").nullable(),
+
+        /**
+         * CHẤT LIỆU (chatLieuId)
+         * Status: Bắt buộc chọn (*)
+         * Rules:
+         *  - Bắt buộc chọn chất liệu
+         *  - Phải là số (ID của chất liệu)
+         */
+        chatLieuId: yup.number().required("Chất liệu là bắt buộc").nullable(),
+
+        /**
+         * MÃ SKU (maSku)
+         * Status: Không bắt buộc, tự động sinh
+         * Rules:
+         *  - Hệ thống tự động ghép mã: [mã sản phẩm] + [màu] + [size] + [chất liệu]
+         *  - Ví dụ: AT260331-CL001-S-M002
+         */
+        maSku: yup.string().nullable(),
+
+        /**
+         * MÃ VẠCH SKU (maVachSku)
+         * Status: Không bắt buộc
+         * Rules: Giống như mã vạch sản phẩm
+         *  1. Không bắt buộc
+         *  2. Nếu nhập: trim khoảng trắng
+         *  3. Định dạng: chỉ chữ, số, -, _
+         *  4. Độ dài: 8-50 ký tự
+         */
+        maVachSku: yup
+          .string()
+          .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
+          .nullable()
+          .test("barcode-sku-format", "Mã vạch SKU không đúng định dạng", (value) => {
+            if (!value) return true;
+            return barcodeRegex.test(value) && value.length >= 8 && value.length <= 50;
+          }),
+
+        /**
+         * GIÁ VỐN BIẾN THỂ (giaVon)
+         * Status: Không bắt buộc
+         * Rules: Giống như giá vốn mặc định
+         *  1. Không bắt buộc
+         *  2. Nếu để trống → null
+         *  3. Nếu nhập: >= 0
+         *  4. Nếu nhập: tối đa 2 chữ số thập phân
+         */
+        giaVon: yup
+          .number()
+          .transform(emptyToNull)
+          .nullable()
+          .test("variant-cost-format", "Giá vốn phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+          .test(
+            "variant-cost-decimal",
+            "Giá vốn chỉ được tối đa 2 chữ số thập phân",
+            (value) => value == null || decimal2Regex.test(String(value))
+          ),
+
+        /**
+         * GIÁ BÁN BIẾN THỂ (giaBan)
+         * Status: Không bắt buộc
+         * Rules: Giống như giá bán mặc định
+         *  1. Không bắt buộc
+         *  2. Nếu để trống → null
+         *  3. Nếu nhập: >= 0
+         *  4. Nếu nhập: tối đa 2 chữ số thập phân
+         */
+        giaBan: yup
+          .number()
+          .transform(emptyToNull)
+          .nullable()
+          .test("variant-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+          .test(
+            "variant-price-decimal",
+            "Giá bán chỉ được tối đa 2 chữ số thập phân",
+            (value) => value == null || decimal2Regex.test(String(value))
+          ),
+
+        /**
+         * TRẠNG THÁI BIẾN THỂ (trangThai)
+         * Status: Bắt buộc chọn
+         * Rules:
+         *  - Bắt buộc chọn (1 = Hoạt động, 0 = Tạm ngừng)
+         */
+        trangThai: yup.number().required(),
+      })
+    )
+    .min(1, "Phải có ít nhất 1 biến thể"),
 });
 
 export default function AddProductModal({ isOpen, onClose, onSuccess }) {
-    const [categories, setCategories] = useState([]);
-    const [colors, setColors] = useState([]);
-    const [sizes, setSizes] = useState([]);
-    const [materials, setMaterials] = useState([]);
-    const [productImages, setProductImages] = useState([]);
-    const [variantImages, setVariantImages] = useState({});
+    // ===== STATE QUẢN LÝ DỮ LIỆU CẮM CHỌN =====
+    const [categories, setCategories] = useState([]);    // Danh sách danh mục
+    const [colors, setColors] = useState([]);            // Danh sách màu sắc
+    const [sizes, setSizes] = useState([]);              // Danh sách size
+    const [materials, setMaterials] = useState([]);      // Danh sách chất liệu
+    const [productImages, setProductImages] = useState([]); // Mảng ảnh sản phẩm chính
+    const [variantImages, setVariantImages] = useState({});  // Object { indexVariant: file } của ảnh biến thể
 
+    // ===== REACT HOOK FORM - QUẢN LÝ FORM DATA =====
+    /**
+     * useForm: Hook chính quản lý trạng thái form và validation
+     *
+     * Cấu hình:
+     * - resolver: yupResolver(addProductSchema) → dùng schema Yup để validate
+     * - mode: "onChange" → validate realtime khi người dùng nhập/thay đổi
+     * - reValidateMode: "onChange" → validate lại realtime sau khi có lỗi
+     * - criteriaMode: "firstError" → chỉ hiển thị lỗi đầu tiên của mỗi field
+     * - defaultValues: giá trị khởi tạo ban đầu của form
+     */
     const {
-        control,
-        handleSubmit,
-        reset,
-        formState: { errors, isSubmitting },
-        watch
+        control,                           // Dùng để quản lý Controller
+        handleSubmit,                       // Wrapper function cho form submit
+        reset,                              // Hàm reset form về trạng thái khởi tạo
+        formState: { errors, isSubmitting }, // errors = object lỗi, isSubmitting = đang submit
+        watch,                              // Hàm theo dõi giá trị field cụ thể realtime
+        setValue                            // Hàm set giá trị field
     } = useForm({
-        // Client-side schema validation truoc khi goi backend create.
         resolver: yupResolver(addProductSchema),
+        mode: "onChange",
+        reValidateMode: "onChange",
+        criteriaMode: "firstError",
         defaultValues: {
+            // Thông tin cơ bản
             tenSanPham: "",
             maSanPham: "",
             maVach: "",
@@ -71,6 +400,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
             giaBanMacDinh: 0,
             mucTonToiThieu: 0,
             trangThai: 1,
+            // Biến thể - khởi tạo 1 biến thể trống
             bienTheSanPhams: [{
                 mauSacId: null,
                 sizeId: null,
@@ -84,10 +414,51 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
         }
     });
 
+    /**
+     * useFieldArray: Hook quản lý mảng field động (biến thể)
+     * - control: liên kết với form control
+     * - name: "bienTheSanPhams" → tên field mảng
+     * - fields: danh sách các field trong mảng (với ID động)
+     * - append: thêm 1 item mới vào mảng
+     * - remove: xóa item theo index
+     */
     const { fields, append, remove } = useFieldArray({
         control,
         name: "bienTheSanPhams"
     });
+
+    // ===== CẢNH BÁO MỀM: GIÁ BÁN < GIÁ VỐN =====
+    /**
+     * Watch giá vốn và giá bán mặc định
+     * - Mỗi khi giá trị thay đổi → tự động chạy useEffect dưới
+     * - watch() không trigger re-render toàn component, chỉ cập nhật giá trị
+     */
+    const giaVonMacDinh = watch("giaVonMacDinh");
+    const giaBanMacDinh = watch("giaBanMacDinh");
+
+    /**
+     * useEffect kiểm tra logic giá bán < giá vốn
+     * Nếu điều kiện đúng → hiển thị warning toast (không chặn submit)
+     *
+     * Điều kiện:
+     *  1. giá vốn không rỗng
+     *  2. giá bán không rỗng
+     *  3. giá bán < giá vốn
+     *  4. giá bán > 0 (để tránh warning lúc chưa nhập giá bán)
+     */
+    useEffect(() => {
+        if (
+            giaVonMacDinh !== null &&
+            giaVonMacDinh !== undefined &&
+            giaBanMacDinh !== null &&
+            giaBanMacDinh !== undefined &&
+            Number(giaBanMacDinh) < Number(giaVonMacDinh) &&
+            Number(giaBanMacDinh) > 0
+        ) {
+            // Hiển thị warning (không chặn submit, người dùng vẫn có thể lưu)
+            toast.warning("Giá bán đang nhỏ hơn giá vốn");
+        }
+    }, [giaVonMacDinh, giaBanMacDinh]);
 
     const handleResetForm = useCallback(() => {
         // Reset ve state ban dau sau khi tao thanh cong hoac khi dong modal.
@@ -191,6 +562,16 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
 
     const onSubmit = async (data) => {
         // [User nhan Luu trong modal Them san pham]
+        // Buoc 0: Normalize du lieu truoc khi submit
+        data.tenSanPham = normalizeSpaces(data.tenSanPham);
+        data.moTa = data.moTa ? data.moTa.trim() : "";
+        data.maVach = data.maVach ? data.maVach.trim() : "";
+
+        data.bienTheSanPhams = data.bienTheSanPhams.map((v) => ({
+            ...v,
+            maVachSku: v.maVachSku ? v.maVachSku.trim() : "",
+        }));
+
         // Buoc 1: Validate bo sung o client cho anh san pham va anh bien the.
         if (productImages.length === 0) {
             toast.error("Vui lòng thêm ít nhất một ảnh sản phẩm chính");
@@ -376,11 +757,16 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                 name="tenSanPham"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Input {...field} placeholder="VD: Áo sơ mi nam cổ tròn" disabled={isSubmitting} />
+                                                    <Input
+                                                        {...field}
+                                                        placeholder="VD: Áo sơ mi nam cổ tròn"
+                                                        disabled={isSubmitting}
+                                                        className={`${errors.tenSanPham ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                    />
                                                 )}
                                             />
                                             {errors.tenSanPham && (
-                                                <p className="text-xs text-red-500">{errors.tenSanPham.message}</p>
+                                                <p className="text-xs text-red-500 font-medium">{errors.tenSanPham.message}</p>
                                             )}
                                         </div>
 
@@ -450,9 +836,17 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                 name="maVach"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Input {...field} placeholder="Mã vạch (Nếu có)" disabled={isSubmitting} />
+                                                    <Input
+                                                        {...field}
+                                                        placeholder="Mã vạch (Nếu có)"
+                                                        disabled={isSubmitting}
+                                                        className={`${errors.maVach ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                    />
                                                 )}
                                             />
+                                            {errors.maVach && (
+                                                <p className="text-xs text-red-500 font-medium">{errors.maVach.message}</p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">
@@ -479,14 +873,24 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="mucTonToiThieu">Mức tồn tối thiểu</Label>
+                                            <Label htmlFor="mucTonToiThieu">Mức tồn tối thiểu <span className="text-red-500">*</span></Label>
                                             <Controller
                                                 name="mucTonToiThieu"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Input {...field} type="number" min="0" placeholder="0" disabled={isSubmitting} />
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder="0"
+                                                        disabled={isSubmitting}
+                                                        className={`${errors.mucTonToiThieu ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                    />
                                                 )}
                                             />
+                                            {errors.mucTonToiThieu && (
+                                                <p className="text-xs text-red-500 font-medium">{errors.mucTonToiThieu.message}</p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">
@@ -495,9 +899,19 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                 name="giaVonMacDinh"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Input {...field} type="number" min="0" placeholder="0 (Tự động cập nhật)" disabled={isSubmitting} />
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder="0 (Tự động cập nhật)"
+                                                        disabled={isSubmitting}
+                                                        className={`${errors.giaVonMacDinh ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                    />
                                                 )}
                                             />
+                                            {errors.giaVonMacDinh && (
+                                                <p className="text-xs text-red-500 font-medium">{errors.giaVonMacDinh.message}</p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">
@@ -506,9 +920,19 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                 name="giaBanMacDinh"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Input {...field} type="number" min="0" placeholder="0 (Tự động cập nhật)" disabled={isSubmitting} />
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder="0 (Tự động cập nhật)"
+                                                        disabled={isSubmitting}
+                                                        className={`${errors.giaBanMacDinh ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                    />
                                                 )}
                                             />
+                                            {errors.giaBanMacDinh && (
+                                                <p className="text-xs text-red-500 font-medium">{errors.giaBanMacDinh.message}</p>
+                                            )}
                                         </div>
 
                                         {/* Mô tả */}
@@ -518,9 +942,18 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                 name="moTa"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Textarea {...field} placeholder="Nhập mô tả chi tiết về sản phẩm..." rows={3} disabled={isSubmitting} />
+                                                    <Textarea
+                                                        {...field}
+                                                        placeholder="Nhập mô tả chi tiết về sản phẩm..."
+                                                        rows={3}
+                                                        disabled={isSubmitting}
+                                                        className={`resize-none ${errors.moTa ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                    />
                                                 )}
                                             />
+                                            {errors.moTa && (
+                                                <p className="text-xs text-red-500 font-medium">{errors.moTa.message}</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -715,9 +1148,17 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         name={`bienTheSanPhams.${index}.maVachSku`}
                                                         control={control}
                                                         render={({ field }) => (
-                                                            <Input {...field} placeholder="Mã vạch SKU" className="bg-white" disabled={isSubmitting} />
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="Mã vạch SKU"
+                                                                disabled={isSubmitting}
+                                                                className={`bg-white ${errors.bienTheSanPhams?.[index]?.maVachSku ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                            />
                                                         )}
                                                     />
+                                                    {errors.bienTheSanPhams?.[index]?.maVachSku && (
+                                                        <p className="text-xs text-red-500 font-medium">{errors.bienTheSanPhams[index].maVachSku.message}</p>
+                                                    )}
                                                 </div>
 
                                                 <div className="space-y-2">
@@ -726,9 +1167,19 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         name={`bienTheSanPhams.${index}.giaVon`}
                                                         control={control}
                                                         render={({ field }) => (
-                                                            <Input {...field} type="number" min="0" placeholder="0 (Tự động)" className="bg-white" disabled={isSubmitting} />
+                                                            <Input
+                                                                {...field}
+                                                                type="number"
+                                                                min="0"
+                                                                placeholder="0 (Tự động)"
+                                                                disabled={isSubmitting}
+                                                                className={`bg-white ${errors.bienTheSanPhams?.[index]?.giaVon ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                            />
                                                         )}
                                                     />
+                                                    {errors.bienTheSanPhams?.[index]?.giaVon && (
+                                                        <p className="text-xs text-red-500 font-medium">{errors.bienTheSanPhams[index].giaVon.message}</p>
+                                                    )}
                                                 </div>
 
                                                 <div className="space-y-2">
@@ -737,9 +1188,19 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         name={`bienTheSanPhams.${index}.giaBan`}
                                                         control={control}
                                                         render={({ field }) => (
-                                                            <Input {...field} type="number" min="0" placeholder="0 (Tự động)" className="bg-white" disabled={isSubmitting} />
+                                                            <Input
+                                                                {...field}
+                                                                type="number"
+                                                                min="0"
+                                                                placeholder="0 (Tự động)"
+                                                                disabled={isSubmitting}
+                                                                className={`bg-white ${errors.bienTheSanPhams?.[index]?.giaBan ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                            />
                                                         )}
                                                     />
+                                                    {errors.bienTheSanPhams?.[index]?.giaBan && (
+                                                        <p className="text-xs text-red-500 font-medium">{errors.bienTheSanPhams[index].giaBan.message}</p>
+                                                    )}
                                                 </div>
 
                                                 <div className="space-y-2">
