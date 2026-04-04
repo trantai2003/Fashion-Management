@@ -436,7 +436,10 @@ const ProductAttributeHub = () => {
             }
             setModalConfig({ open: false, mode: 'add', item: null });
             fetchData();
-        } catch { toast.error("Thao tác thất bại"); }
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || "Thao tác thất bại. Vui lòng thử lại!";
+            toast.error(errorMsg);
+        }
     };
 
     const confirmDelete = async () => {
@@ -911,44 +914,162 @@ const ProductAttributeHub = () => {
                 onEdit={(item) => handleOpenModal('edit', item)}
             />
 
-            {/* ── Delete Modal ── */}
-            {deleteConfig.open && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isDeleting && setDeleteConfig({ open: false, item: null })} />
-                    <div className="relative z-10 w-full max-w-sm rounded-[32px] bg-white shadow-2xl overflow-hidden animate-in zoom-in duration-200">
-                        <div className="p-8 pb-4 text-center">
-                            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <AlertTriangle size={32} />
+            {/* ── Delete Confirm Modal (Luxury Gold Sync Final) ── */}
+            <Dialog 
+                open={deleteConfig.open} 
+                onOpenChange={(open) => !open && !isDeleting && setDeleteConfig({ open: false, item: null })}
+            >
+                <DialogContent
+                    className="max-w-sm p-0 overflow-hidden border-0 shadow-2xl"
+                    style={{
+                        background: '#fffdf8',
+                        borderRadius: '24px',
+                        border: '1px solid rgba(184,134,11,0.18)',
+                        boxShadow: '0 24px 64px rgba(100,80,20,0.16), 0 0 0 1px rgba(184,134,11,0.1)',
+                    }}
+                >
+                    {/* ── Header strip (Luxury Gold Gradient) ── */}
+                    <div style={{
+                        background: 'linear-gradient(135deg, #fdf3d8 0%, #fff8e8 60%, #fdf0cc 100%)',
+                        borderBottom: '1.5px solid rgba(184,134,11,0.15)',
+                        padding: '22px 28px 18px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                    }}>
+                        {/* Decorative circles from ViewModal */}
+                        <div style={{
+                            position: 'absolute', top: -20, right: -20,
+                            width: 100, height: 100, borderRadius: '50%',
+                            background: 'rgba(184,134,11,0.07)',
+                            pointerEvents: 'none',
+                        }} />
+                        <div style={{
+                            position: 'absolute', bottom: -30, right: 40,
+                            width: 60, height: 60, borderRadius: '50%',
+                            background: 'rgba(184,134,11,0.05)',
+                            pointerEvents: 'none',
+                        }} />
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative' }}>
+                            {/* Danger Icon Badge */}
+                            <div style={{
+                                width: 42, height: 42, borderRadius: 12,
+                                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.35)',
+                                flexShrink: 0,
+                            }}>
+                                <AlertTriangle size={20} color="#fff" />
                             </div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-2">Xác nhận <span className="text-red-500">xóa</span></h3>
-                            <p className="text-xs uppercase tracking-wide text-slate-500">Cẩn trọng: Thao tác này không thể hoàn tác</p>
-                        </div>
-                        <div className="px-8 py-4 text-center">
-                            <p className="text-sm text-slate-600">
-                                Bạn có chắc chắn muốn xóa vĩnh viễn {TAB_LABELS[activeTab]}
-                                <span className="block font-black text-slate-900 text-lg mt-1">"{deleteConfig.item.tenMau || deleteConfig.item.tenSize || deleteConfig.item.tenChatLieu}"</span>?
-                            </p>
-                        </div>
-                        <div className="p-8 pt-4 flex flex-col gap-2">
-                            <button
-                                className="h-12 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 flex items-center justify-center gap-2"
-                                onClick={confirmDelete}
-                                disabled={isDeleting}
-                            >
-                                {isDeleting ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
-                                Xóa dữ liệu
-                            </button>
-                            <button
-                                className="h-12 rounded-xl text-slate-500 font-bold hover:bg-slate-50 transition-all"
-                                onClick={() => setDeleteConfig({ open: false, item: null })}
-                                disabled={isDeleting}
-                            >
-                                Hủy bỏ
-                            </button>
+                            <div>
+                                <p style={{
+                                    fontFamily: "'DM Mono', monospace",
+                                    fontSize: 10, fontWeight: 700,
+                                    letterSpacing: '0.18em', textTransform: 'uppercase',
+                                    color: 'rgba(184,134,11,0.65)', marginBottom: 2,
+                                }}>
+                                    Hành động hệ thống
+                                </p>
+                                <DialogTitle style={{
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontSize: 20, fontWeight: 800,
+                                    color: '#1a1612', margin: 0,
+                                }}>
+                                    Xác nhận <span className="text-red-600">xóa</span>
+                                </DialogTitle>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+
+                    {/* ── Body (Card Style like ViewModal) ── */}
+                    <div style={{ padding: '24px 28px', background: '#f5f5f5' }}>
+                        <div style={{
+                            background: '#fff',
+                            border: '1.5px solid rgba(184,134,11,0.12)',
+                            borderRadius: 14,
+                            padding: '20px 18px',
+                            textAlign: 'center',
+                        }}>
+                             <p style={{
+                                fontSize: 13, color: 'rgba(184,134,11,0.8)', 
+                                fontFamily: "'DM Mono', monospace", fontWeight: 700,
+                                textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12
+                            }}>Cảnh báo xóa dữ liệu</p>
+                            
+                            <p style={{
+                                fontSize: 14, color: '#1a1612', lineHeight: 1.6,
+                                wordBreak: 'break-word', margin: 0
+                            }}>
+                                Bạn chắc chắn muốn xóa vĩnh viễn {TAB_LABELS[activeTab]}
+                            </p>
+                            <p style={{
+                                fontSize: 18, fontWeight: 900,
+                                color: '#b8860b', letterSpacing: '0.04em',
+                                marginTop: 4, fontFamily: "'DM Mono', monospace"
+                            }}>
+                                "{deleteConfig.item ? (deleteConfig.item.tenMau || deleteConfig.item.tenSize || deleteConfig.item.tenChatLieu) : ''}"
+                            </p>
+                            
+                            <div style={{
+                                marginTop: 16, paddingTop: 16,
+                                borderTop: '1px dashed rgba(184,134,11,0.2)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                color: '#ef4444', fontSize: 11, fontWeight: 700,
+                                textTransform: 'uppercase', letterSpacing: '0.05em'
+                            }}>
+                                <AlertCircle size={12} />
+                                Không thể hoàn tác hành động này
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Footer (Synced with ViewModal style) ── */}
+                    <div style={{
+                        padding: '16px 28px',
+                        background: 'linear-gradient(135deg, #fdf3d8 0%, #fff8e8 100%)',
+                        borderTop: '1.5px solid rgba(184,134,11,0.12)',
+                        display: 'flex', justifyContent: 'flex-end', gap: 10,
+                    }}>
+                        <button
+                            onClick={() => setDeleteConfig({ open: false, item: null })}
+                            disabled={isDeleting}
+                            style={{
+                                height: 44, padding: '0 20px', borderRadius: 10,
+                                background: '#fff', border: '1.5px solid rgba(184,134,11,0.2)',
+                                color: '#111111', fontSize: 13, fontWeight: 700,
+                                cursor: 'pointer', transition: 'all 0.18s',
+                                flex: 1,
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#111111'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(184,134,11,0.2)'; }}
+                        >
+                            Hủy bỏ
+                        </button>
+                        <button
+                            onClick={confirmDelete}
+                            disabled={isDeleting}
+                            style={{
+                                height: 44, padding: '0 24px', borderRadius: 10,
+                                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                                color: '#fff', fontSize: 13, fontWeight: 800,
+                                cursor: 'pointer', transition: 'all 0.18s',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                boxShadow: '0 4px 14px rgba(239, 68, 68, 0.3)',
+                                flex: 2,
+                            }}
+                            onMouseEnter={e => { if(!isDeleting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.45)'; } }}
+                            onMouseLeave={e => { if(!isDeleting) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(239, 68, 68, 0.3)'; } }}
+                        >
+                            {isDeleting ? (
+                                <Loader2 className="animate-spin" size={18} />
+                            ) : (
+                                <Trash2 size={18} />
+                            )}
+                            Xác nhận xóa
+                        </button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

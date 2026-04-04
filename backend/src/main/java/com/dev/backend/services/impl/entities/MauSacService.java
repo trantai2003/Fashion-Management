@@ -6,18 +6,52 @@ import com.dev.backend.services.impl.BaseServiceImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import com.dev.backend.exception.customize.CommonException;
 
 @Service
 public class MauSacService extends BaseServiceImpl<MauSac, Integer> {
+    private final MauSacRepository mauSacRepository;
+    private final EntityManager entityManager;
+
     @Autowired
-    private EntityManager entityManager;
+    public MauSacService(MauSacRepository repository, EntityManager entityManager) {
+        super(repository);
+        this.mauSacRepository = repository;
+        this.entityManager = entityManager;
+    }
 
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
     }
 
-    public MauSacService(MauSacRepository repository) {
-        super(repository);
+    @Override
+    @Transactional
+    public MauSac create(MauSac mauSac) {
+        if (mauSacRepository.existsByMaMau(mauSac.getMaMau())) {
+            throw new CommonException(HttpStatus.BAD_REQUEST, "Mã màu sắc " + mauSac.getMaMau() + " đã tồn tại trong hệ thống");
+        }
+        if (mauSacRepository.existsByTenMau(mauSac.getTenMau())) {
+            throw new CommonException(HttpStatus.BAD_REQUEST, "Tên màu sắc '" + mauSac.getTenMau() + "' đã tồn tại trong hệ thống");
+        }
+        return super.create(mauSac);
+    }
+
+    @Override
+    @Transactional
+    public MauSac update(Integer id, MauSac mauSac) {
+        MauSac existing = repository.findById(id)
+                .orElseThrow(() -> new CommonException("Không tìm thấy màu sắc để cập nhật"));
+        
+        if (!existing.getMaMau().equalsIgnoreCase(mauSac.getMaMau()) && mauSacRepository.existsByMaMau(mauSac.getMaMau())) {
+            throw new CommonException(HttpStatus.BAD_REQUEST, "Mã màu sắc " + mauSac.getMaMau() + " đã tồn tại trong hệ thống");
+        }
+        if (!existing.getTenMau().equalsIgnoreCase(mauSac.getTenMau()) && mauSacRepository.existsByTenMau(mauSac.getTenMau())) {
+            throw new CommonException(HttpStatus.BAD_REQUEST, "Tên màu sắc '" + mauSac.getTenMau() + "' đã tồn tại trong hệ thống");
+        }
+        
+        return super.update(id, mauSac);
     }
 }

@@ -13,9 +13,9 @@ import { toast } from "sonner";
 import { sizeService } from "@/services/attributeService";
 
 const formSchema = z.object({
-    maSize:       z.string().min(1, "Mã size không được để trống").max(50, "Mã tối đa 50 ký tự"),
-    tenSize:      z.string().min(1, "Tên size không được để trống").max(100, "Tên tối đa 100 ký tự"),
-    loaiSize:     z.string().max(100, "Loại size tối đa 100 ký tự").optional(),
+    maSize:       z.string().trim().min(1, "Mã size không được để trống").max(50, "Mã tối đa 50 ký tự"),
+    tenSize:      z.string().trim().min(1, "Tên size không được để trống").max(100, "Tên tối đa 100 ký tự"),
+    loaiSize:     z.string().trim().max(100, "Loại size tối đa 100 ký tự").optional(),
     thuTuSapXep:  z.coerce.number().int().min(0, "Thứ tự sắp xếp phải là số nguyên dương"),
 });
 
@@ -66,8 +66,9 @@ export default function SizeDetail() {
                 toast.success("Thêm kích cỡ mới thành công");
             }
             navigate("/attribute"); 
-        } catch {
-            toast.error("Có lỗi xảy ra khi lưu. Vui lòng thử lại!");
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || "Có lỗi xảy ra khi lưu. Vui lòng thử lại!";
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }

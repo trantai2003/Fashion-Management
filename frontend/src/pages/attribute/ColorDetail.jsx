@@ -13,9 +13,9 @@ import { toast } from "sonner";
 import { mauSacService } from "@/services/attributeService";
 
 const formSchema = z.object({
-    maMau:    z.string().min(1, "Mã màu không được để trống").max(50, "Mã tối đa 50 ký tự"),
-    tenMau:   z.string().min(1, "Tên màu không được để trống").max(100, "Tên tối đa 100 ký tự"),
-    maMauHex: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Mã HEX không hợp lệ (VD: #FFFFFF)"),
+    maMau:    z.string().trim().min(2, "Mã màu tối thiểu 2 ký tự").max(50, "Mã tối đa 50 ký tự"),
+    tenMau:   z.string().trim().min(2, "Tên màu tối thiểu 2 ký tự").max(100, "Tên tối đa 100 ký tự"),
+    maMauHex: z.string().trim().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Mã HEX không hợp lệ (VD: #FFFFFF)"),
 });
 
 export default function ColorDetail() {
@@ -64,8 +64,9 @@ export default function ColorDetail() {
                 toast.success("Thêm màu sắc mới thành công");
             }
             navigate("/attribute"); 
-        } catch {
-            toast.error("Có lỗi xảy ra khi lưu. Vui lòng thử lại!");
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || "Có lỗi xảy ra khi lưu. Vui lòng thử lại!";
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }

@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SizeRepository extends JpaRepository<Size, Integer>, JpaSpecificationExecutor<Size> {
+    boolean existsByMaSize(String maSize);
+    boolean existsByTenSize(String tenSize);
 }
