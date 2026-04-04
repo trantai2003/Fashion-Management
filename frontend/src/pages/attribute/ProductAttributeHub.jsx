@@ -817,7 +817,8 @@ const ProductAttributeHub = () => {
                                         <input
                                             type="color"
                                             className="h-10 w-16 rounded-lg border border-[#e5d4b2] p-1 cursor-pointer bg-[#fffdf8]"
-                                            {...form.register("maMauHex")}
+                                            value={form.watch('maMauHex') || '#000000'}
+                                            onChange={(e) => form.setValue('maMauHex', e.target.value.toUpperCase())}
                                         />
                                         <Input
                                             {...form.register("maMauHex")}

@@ -20,6 +20,10 @@ import ResetUserPasswordByAdmin from "@/pages/admin/ResetUserPasswordByAdmin.jsx
 import EditUserRoleByAdmin from "@/pages/admin/EditUserRoleByAdmin.jsx";
 import DashboardByAdmin from "@/pages/admin/DashboardByAdmin.jsx";
 import ColorSizeManagement from "@/pages/attribute/ColorSizeManagement.jsx";
+import ColorDetail from "./pages/attribute/ColorDetail";
+import ColorDetailView from "./pages/attribute/ColorDetailView";
+import SizeDetail from "./pages/attribute/SizeDetail";
+import SizeDetailView from "./pages/attribute/SizeDetailView";
 import PhieuNhapKhoList from "./pages/receipt/PhieuNhapKhoList";
 import PhieuNhapKhoCreate from "./pages/receipt/PhieuNhapKhoCreate";
 import PhieuNhapKhoDetail from "./pages/receipt/PhieuNhapKhoDetail.jsx";
@@ -127,6 +131,12 @@ export default function App() {
 
           {/* Attributes */}
           <Route path="/attribute" element={<ColorSizeManagement />} />
+          <Route path="/attribute/color/new" element={<ColorDetail />} />
+          <Route path="/attribute/color/:id" element={<ColorDetail />} />
+          <Route path="/attribute/color/view/:id" element={<ColorDetailView />} />
+          <Route path="/attribute/size/new" element={<SizeDetail />} />
+          <Route path="/attribute/size/:id" element={<SizeDetail />} />
+          <Route path="/attribute/size/view/:id" element={<SizeDetailView />} />
           <Route path="/attributes" element={<ProductAttributeHub />} />
 
           {/* Product */}

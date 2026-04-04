@@ -25,6 +25,11 @@ export const mauSacService = {
     const res = await apiClient.delete(`/api/v1/mau-sac/delete/${id}`);
     return res.data; // ResponseData<String>
   },
+
+  async getById(id) {
+    const res = await apiClient.get(`/api/v1/mau-sac/get-by-id/${id}`);
+    return res.data; // ResponseData<MauSacDto>
+  },
 };
 
 export const sizeService = {
@@ -46,5 +51,10 @@ export const sizeService = {
   async delete(id) {
     const res = await apiClient.delete(`/api/v1/size/delete/${id}`);
     return res.data; // ResponseData<String>
+  },
+
+  async getById(id) {
+    const res = await apiClient.get(`/api/v1/size/get-by-id/${id}`);
+    return res.data; // ResponseData<SizeDto>
   },
 };
