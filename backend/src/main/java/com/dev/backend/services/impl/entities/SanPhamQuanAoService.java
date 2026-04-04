@@ -622,7 +622,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
         public SanPhamQuanAo changeStatus(Integer id, Integer status) {
                 SanPhamQuanAo sanPhamQuanAo = getOne(id).orElseThrow(
                         () -> new CommonException("Không tìm thấy sản phẩm id: " + id));
-                sanPhamQuanAo.setTrangThai(status);
+                sanPhamQuanAo.setTrangThai(status);  // ← Đổi trạng thái (2 = Ngừng hoạt động)
                 return repository.save(sanPhamQuanAo);
         }
 

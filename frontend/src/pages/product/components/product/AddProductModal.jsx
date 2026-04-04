@@ -561,7 +561,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
 
     const onSubmit = async (data) => {
         // [User nhan Luu trong modal Them san pham]
-        // Buoc 0: Normalize du lieu truoc khi submit
+        // Buoc 0: Chuẩn hóa du lieu truoc khi submit
         data.tenSanPham = normalizeSpaces(data.tenSanPham);
         data.moTa = data.moTa ? data.moTa.trim() : "";
         data.maVach = data.maVach ? data.maVach.trim() : "";
@@ -903,8 +903,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                         type="number"
                                                         min="0"
                                                         placeholder="0 (Tự động cập nhật)"
-                                                        disabled={isSubmitting}
-                                                        className={`${errors.giaVonMacDinh ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                       disabled={true}
+                                                        className="bg-yellow-50 text-gray-600 cursor-not-allowed border-yellow-300 italic"
                                                     />
                                                 )}
                                             />
@@ -1171,8 +1171,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                                                                 type="number"
                                                                 min="0"
                                                                 placeholder="0 (Tự động)"
-                                                                disabled={isSubmitting}
-                                                                className={`bg-white ${errors.bienTheSanPhams?.[index]?.giaVon ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
+                                                               disabled={true}
+                                                        className="bg-yellow-50 text-gray-600 cursor-not-allowed border-yellow-300 italic"
                                                             />
                                                         )}
                                                     />

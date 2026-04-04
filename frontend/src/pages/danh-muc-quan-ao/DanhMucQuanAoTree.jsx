@@ -313,7 +313,7 @@ const DanhMucQuanAoTree = () => {
   // Huỷ tạo mới, reset form về mặc định
   const handleCancelCreate = () => { setCreatingNode(null); setCreateForm({ maDanhMuc: '', tenDanhMuc: '', moTa: '', trangThai: 1 }); };
 
-  // Mở form tạo danh mục cấp gốc (danhMucChaId = null)
+  // Mở form tạo danh mục cấp gốc (danhMucChaId = null) 320 --> 282
   const handleAddRoot = () => { setCreatingNode('root'); setCreateForm({ maDanhMuc: '', tenDanhMuc: '', moTa: '', trangThai: 1, danhMucChaId: null }); };
 
   // ── Render create form ────────────────────────────────────────────────────
@@ -511,7 +511,7 @@ const DanhMucQuanAoTree = () => {
                       <button
                           onClick={() => confirmDelete(node)}
                           className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-red-500 hover:bg-red-50 transition-colors"
-                          title="Xóa mềm"
+                          title="Xóa danh mục"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

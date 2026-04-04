@@ -33,7 +33,7 @@ export const productService = {
     },
 
 
-    // Cập nhật sản phẩm:
+    // Chỉnh sửa sản phẩm:
     // Frontend -> ProductController.update -> ProductService.update -> Repository.findById/save
     updateProduct: (id, formData) => {
         return apiClient.put("/api/v1/san-pham-quan-ao/update", formData, {
