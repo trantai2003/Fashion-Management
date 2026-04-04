@@ -34,14 +34,9 @@ public class Size {
     @Column(name = "ten_size", nullable = false, length = 50)
     String tenSize;
 
-    @ColumnDefault("'chu'")
-    @Generated(event = EventType.INSERT)
-    @Lob
-    @Column(name = "loai_size")
+    @Column(name = "loai_size", length = 20)
     String loaiSize;
 
-    @ColumnDefault("0")
-    @Generated(event = EventType.INSERT)
     @Column(name = "thu_tu_sap_xep")
     Integer thuTuSapXep;
 

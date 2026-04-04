@@ -31,10 +31,13 @@ public class MauSacService extends BaseServiceImpl<MauSac, Integer> {
     @Transactional
     public MauSac create(MauSac mauSac) {
         if (mauSacRepository.existsByMaMau(mauSac.getMaMau())) {
-            throw new CommonException(HttpStatus.BAD_REQUEST, "Mã màu sắc " + mauSac.getMaMau() + " đã tồn tại trong hệ thống");
+            throw new CommonException("Mã màu sắc " + mauSac.getMaMau() + " đã tồn tại trong hệ thống");
         }
         if (mauSacRepository.existsByTenMau(mauSac.getTenMau())) {
-            throw new CommonException(HttpStatus.BAD_REQUEST, "Tên màu sắc '" + mauSac.getTenMau() + "' đã tồn tại trong hệ thống");
+            throw new CommonException("Tên màu sắc '" + mauSac.getTenMau() + "' đã tồn tại trong hệ thống");
+        }
+        if (mauSac.getMaMauHex() != null && mauSacRepository.existsByMaMauHex(mauSac.getMaMauHex())) {
+            throw new CommonException("Mã màu Hex '" + mauSac.getMaMauHex() + "' đã tồn tại trong hệ thống");
         }
         return super.create(mauSac);
     }
@@ -46,10 +49,14 @@ public class MauSacService extends BaseServiceImpl<MauSac, Integer> {
                 .orElseThrow(() -> new CommonException("Không tìm thấy màu sắc để cập nhật"));
         
         if (!existing.getMaMau().equalsIgnoreCase(mauSac.getMaMau()) && mauSacRepository.existsByMaMau(mauSac.getMaMau())) {
-            throw new CommonException(HttpStatus.BAD_REQUEST, "Mã màu sắc " + mauSac.getMaMau() + " đã tồn tại trong hệ thống");
+            throw new CommonException("Mã màu sắc " + mauSac.getMaMau() + " đã tồn tại trong hệ thống");
         }
         if (!existing.getTenMau().equalsIgnoreCase(mauSac.getTenMau()) && mauSacRepository.existsByTenMau(mauSac.getTenMau())) {
-            throw new CommonException(HttpStatus.BAD_REQUEST, "Tên màu sắc '" + mauSac.getTenMau() + "' đã tồn tại trong hệ thống");
+            throw new CommonException("Tên màu sắc '" + mauSac.getTenMau() + "' đã tồn tại trong hệ thống");
+        }
+        if (mauSac.getMaMauHex() != null && !existing.getMaMauHex().equalsIgnoreCase(mauSac.getMaMauHex()) 
+                && mauSacRepository.existsByMaMauHex(mauSac.getMaMauHex())) {
+            throw new CommonException("Mã màu Hex '" + mauSac.getMaMauHex() + "' đã tồn tại trong hệ thống");
         }
         
         return super.update(id, mauSac);

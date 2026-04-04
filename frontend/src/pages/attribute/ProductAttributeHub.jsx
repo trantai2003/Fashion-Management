@@ -366,7 +366,7 @@ const ProductAttributeHub = () => {
 
     const form = useForm({
         resolver: zodResolver(formSchema),
-        defaultValues: { ten: "", ma: "", maMauHex: "#000000", loaiSize: "", thuTuSapXep: 0, moTa: "" },
+        defaultValues: { ten: "", ma: "", maMauHex: "#000000", loaiSize: "SO", thuTuSapXep: 0, moTa: "" },
     });
 
     const mapToForm = (item) => {
@@ -419,7 +419,7 @@ const ProductAttributeHub = () => {
         if (item) form.reset(mapToForm(item));
         else {
             const autoCode = mode === 'add' && (activeTab === 'color' || activeTab === 'material') ? generateAutoCode() : '';
-            form.reset({ ten: "", ma: autoCode, maMauHex: "#000000", loaiSize: "", thuTuSapXep: 0, moTa: "" });
+            form.reset({ ten: "", ma: autoCode, maMauHex: "#000000", loaiSize: "SO", thuTuSapXep: 0, moTa: "" });
         }
     };
 
@@ -437,7 +437,8 @@ const ProductAttributeHub = () => {
             setModalConfig({ open: false, mode: 'add', item: null });
             fetchData();
         } catch (error) {
-            const errorMsg = error.response?.data?.message || "Thao tác thất bại. Vui lòng thử lại!";
+            const data = error.response?.data;
+            const errorMsg = data?.message || (typeof data?.data === 'string' ? data.data : null) || "Thao tác thất bại. Vui lòng thử lại!";
             toast.error(errorMsg);
         }
     };
@@ -836,11 +837,35 @@ const ProductAttributeHub = () => {
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                                     <div style={{ background: '#fff', border: '1.5px solid rgba(184,134,11,0.12)', borderRadius: 14, padding: '14px 16px' }}>
                                         <Label className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#b8860b]/70">Loại kích cỡ</Label>
-                                        <Input
-                                            {...form.register("loaiSize")}
-                                            className="mt-2 h-10 bg-[#fffdf8] text-black border-[#eadcc4] focus-visible:ring-[#b8860b]/30 focus-visible:border-[#b8860b]"
-                                            placeholder="VD: Số, Chữ"
-                                        />
+                                        <div className="mt-2">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button 
+                                                        type="button"
+                                                        className="w-full h-10 px-4 flex items-center justify-between bg-[#fffdf8] text-black border border-[#eadcc4] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#b8860b]/30"
+                                                    >
+                                                        <span className="font-semibold uppercase text-sm">
+                                                            {form.watch('loaiSize') === 'SO' ? 'Số' : form.watch('loaiSize') === 'CHU' ? 'Chữ' : 'Phân loại'}
+                                                        </span>
+                                                        <ChevronDown size={14} className="text-[#b8860b]" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent className="w-48 bg-white border-[#e8dcc0] rounded-xl shadow-xl">
+                                                    <DropdownMenuItem 
+                                                        onClick={() => form.setValue('loaiSize', 'SO')}
+                                                        className="py-2.5 px-4 cursor-pointer hover:bg-[#fff9ef] focus:bg-[#fff9ef] text-[#7a6e5f] focus:text-[#b8860b]"
+                                                    >
+                                                        <span className="font-bold mr-2">SO</span> (Số)
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem 
+                                                        onClick={() => form.setValue('loaiSize', 'CHU')}
+                                                        className="py-2.5 px-4 cursor-pointer hover:bg-[#fff9ef] focus:bg-[#fff9ef] text-[#7a6e5f] focus:text-[#b8860b]"
+                                                    >
+                                                        <span className="font-bold mr-2">CHU</span> (Chữ)
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
                                     </div>
                                     <div style={{ background: '#fff', border: '1.5px solid rgba(184,134,11,0.12)', borderRadius: 14, padding: '14px 16px' }}>
                                         <Label className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#b8860b]/70">Thứ tự ưu tiên</Label>

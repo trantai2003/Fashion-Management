@@ -31,10 +31,10 @@ public class SizeService extends BaseServiceImpl<Size, Integer> {
     @Transactional
     public Size create(Size size) {
         if (sizeRepository.existsByMaSize(size.getMaSize())) {
-            throw new CommonException(HttpStatus.BAD_REQUEST, "Mã kích cỡ '" + size.getMaSize() + "' đã tồn tại trong hệ thống");
+            throw new CommonException("Mã kích cỡ '" + size.getMaSize() + "' đã tồn tại trong hệ thống");
         }
         if (sizeRepository.existsByTenSize(size.getTenSize())) {
-            throw new CommonException(HttpStatus.BAD_REQUEST, "Tên kích cỡ '" + size.getTenSize() + "' đã tồn tại trong hệ thống");
+            throw new CommonException("Tên kích cỡ '" + size.getTenSize() + "' đã tồn tại trong hệ thống");
         }
         return super.create(size);
     }
@@ -46,10 +46,10 @@ public class SizeService extends BaseServiceImpl<Size, Integer> {
                 .orElseThrow(() -> new CommonException("Không tìm thấy kích cỡ để cập nhật"));
         
         if (!existing.getMaSize().equalsIgnoreCase(size.getMaSize()) && sizeRepository.existsByMaSize(size.getMaSize())) {
-            throw new CommonException(HttpStatus.BAD_REQUEST, "Mã kích cỡ '" + size.getMaSize() + "' đã tồn tại trong hệ thống");
+            throw new CommonException("Mã kích cỡ '" + size.getMaSize() + "' đã tồn tại trong hệ thống");
         }
         if (!existing.getTenSize().equalsIgnoreCase(size.getTenSize()) && sizeRepository.existsByTenSize(size.getTenSize())) {
-            throw new CommonException(HttpStatus.BAD_REQUEST, "Tên kích cỡ '" + size.getTenSize() + "' đã tồn tại trong hệ thống");
+            throw new CommonException("Tên kích cỡ '" + size.getTenSize() + "' đã tồn tại trong hệ thống");
         }
         
         return super.update(id, size);
