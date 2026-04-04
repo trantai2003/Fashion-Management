@@ -96,6 +96,20 @@ const DanhMucQuanAoTree = () => {
     return ids;
   };
 
+  // Lọc danh mục: loại bỏ hoàn toàn danh mục ngừng hoạt động (trangThai === 0)
+  // - Nếu danh mục cha ngừng hoạt động → ẩn cả cha và con
+  // - Nếu danh mục con ngừng hoạt động → ẩn chỉ cái con đó, giữ lại cha
+  const filterActiveNodes = (nodes) => {
+    if (!Array.isArray(nodes)) return [];
+    return nodes
+        .filter((node) => Number(node.trangThai) !== 0) // loại bỏ node ngừng hoạt động
+        .map((node) => ({
+          ...node,
+          danhMucCons: filterActiveNodes(node.danhMucCons || []), // lọc đệ quy con
+        }))
+        .filter((node) => node.danhMucCons.length > 0 || !node.hasChildren); // giữ node không có con hoặc có con hoạt động
+  };
+
   // Tải dữ liệu khi component mount lần đầu
   useEffect(() => { fetchTreeData(); }, []);
 
@@ -384,7 +398,9 @@ const DanhMucQuanAoTree = () => {
    */
   const renderNode = (node, level = 0, parentId = null) => {
     const allChildren = node.danhMucCons || [];
-    const hasChildren = allChildren.length > 0;
+    // Chỉ tính những danh mục con hoạt động (trangThai !== 0)
+    const activeChildren = allChildren.filter(child => Number(child.trangThai) !== 0);
+    const hasChildren = activeChildren.length > 0;
     const isExpanded = expandedNodes.has(node.id);
     const isDragOver = dragOverNode === node.id;
     const isEditing = editingNode === node.id;
@@ -524,9 +540,8 @@ const DanhMucQuanAoTree = () => {
           {/* ── Danh sách con & form tạo con ── */}
           {isExpanded && (
               <div className="mt-1">
-                {/* Chỉ render danh sách con khi node đang mở (isExpanded=true)
-                → tránh render toàn bộ cây cùng lúc, tối ưu hiệu năng DOM. */}
-                {allChildren.map((child) => renderNode(child, level + 1, node.id))}
+                {/* Chỉ render danh mục con đang hoạt động (trangThai !== 0), ẩn hoàn toàn danh mục ngừng hoạt động */}
+                {allChildren.filter(child => Number(child.trangThai) !== 0).map((child) => renderNode(child, level + 1, node.id))}
                 {/* Form tạo con xuất hiện ngay dưới cùng của danh sách con khi đang tạo mới. */}
                 {isCreating && renderCreateForm(node.id)}
               </div>

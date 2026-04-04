@@ -31,7 +31,7 @@ import * as yup from "yup";
  * Ví dụ: "  Áo   sơ  mi  " → "Áo sơ mi"
  */
 const normalizeSpaces = (value) =>
-  typeof value === "string" ? value.trim().replace(/\s{2,}/g, " ") : value;
+    typeof value === "string" ? value.trim().replace(/\s{2,}/g, " ") : value;
 
 /**
  * Chuyển chuỗi rỗng thành null
@@ -40,8 +40,8 @@ const normalizeSpaces = (value) =>
  * Dùng để tính toán với giá (null = không nhập, khác 0)
  */
 const emptyToNull = (value, originalValue) => {
-  if (typeof originalValue === "string" && originalValue.trim() === "") return null;
-  return value;
+    if (typeof originalValue === "string" && originalValue.trim() === "") return null;
+    return value;
 };
 
 /**
@@ -68,293 +68,324 @@ const barcodeRegex = /^[A-Za-z0-9_-]+$/;
  * Mode "onChange" sẽ kiểm tra realtime khi người dùng nhập/thay đổi dữ liệu
  */
 const addProductSchema = yup.object({
-  // ===== THÔNG TIN CƠ BẢN =====
+    // ===== THÔNG TIN CƠ BẢN =====
 
-  /**
-   * TÊN SẢN PHẨM (tenSanPham)
-   * Status: Bắt buộc nhập (*)
-   * Rules:
-   *  1. Bắt buộc nhập (required)
-   *  2. Tự động chuẩn hóa: trim khoảng trắng đầu/cuối + gộp khoảng trắng liên tiếp
-   *  3. Kiểm tra không rỗng (chỉ khoảng trắng)
-   *  4. Độ dài tối thiểu 3 ký tự
-   *  5. Độ dài tối đa 150 ký tự
-   *  6. KHÔNG cho phép 2 khoảng trắng liên tiếp
-   * Ví dụ:
-   *  - Input: "  Áo   sơ   mi  " → Lưu: "Áo sơ mi" ✅
-   *  - Input: "AB" → Error: "Tên sản phẩm phải từ 3 ký tự trở lên" ❌
-   *  - Input: "" → Error: "Vui lòng nhập tên sản phẩm" ❌
-   */
-  tenSanPham: yup
-    .string()
-    .transform((_, originalValue) => normalizeSpaces(originalValue))
-    .required("Vui lòng nhập tên sản phẩm")
-    .test("not-blank", "Vui lòng nhập tên sản phẩm", (value) => !!value && value.trim().length > 0)
-    .min(3, "Tên sản phẩm phải từ 3 ký tự trở lên")
-    .max(150, "Tên sản phẩm không được vượt quá 150 ký tự")
-    .test("no-double-space", "Tên sản phẩm không được chứa 2 khoảng trắng liên tiếp", (value) =>
-      value ? !/\s{2,}/.test(value) : true
-    ),
+    /**
+     * TÊN SẢN PHẨM (tenSanPham)
+     * Status: Bắt buộc nhập (*)
+     * Rules:
+     *  1. Bắt buộc nhập (required)
+     *  2. Tự động chuẩn hóa: trim khoảng trắng đầu/cuối + gộp khoảng trắng liên tiếp
+     *  3. Kiểm tra không rỗng (chỉ khoảng trắng)
+     *  4. Độ dài tối thiểu 3 ký tự
+     *  5. Độ dài tối đa 150 ký tự
+     *  6. KHÔNG cho phép 2 khoảng trắng liên tiếp
+     * Ví dụ:
+     *  - Input: "  Áo   sơ   mi  " → Lưu: "Áo sơ mi" ✅
+     *  - Input: "AB" → Error: "Tên sản phẩm phải từ 3 ký tự trở lên" ❌
+     *  - Input: "" → Error: "Vui lòng nhập tên sản phẩm" ❌
+     */
+    tenSanPham: yup
+        .string()
+        .transform((_, originalValue) => normalizeSpaces(originalValue))
+        .required("Vui lòng nhập tên sản phẩm")
+        .test("not-blank", "Vui lòng nhập tên sản phẩm", (value) => !!value && value.trim().length > 0)
+        .min(3, "Tên sản phẩm phải từ 3 ký tự trở lên")
+        .max(150, "Tên sản phẩm không được vượt quá 150 ký tự")
+        .test("no-double-space", "Tên sản phẩm không được chứa 2 khoảng trắng liên tiếp", (value) =>
+            value ? !/\s{2,}/.test(value) : true
+        ),
 
-  /**
-   * MÃ SẢN PHẨM (maSanPham)
-   * Status: Không bắt buộc, tự động sinh (hệ thống tạo)
-   * Rules:
-   *  - Chỉ cho phép null hoặc string
-   *  - Không cần validate vì hệ thống tự động sinh
-   */
-  maSanPham: yup.string().nullable(),
+    /**
+     * MÃ SẢN PHẨM (maSanPham)
+     * Status: Không bắt buộc, tự động sinh (hệ thống tạo)
+     * Rules:
+     *  - Chỉ cho phép null hoặc string
+     *  - Không cần validate vì hệ thống tự động sinh
+     */
+    maSanPham: yup.string().nullable(),
 
-  /**
-   * MÃ VẠCH SẢN PHẨM (maVach)
-   * Status: Không bắt buộc nhập
-   * Rules:
-   *  1. Không bắt buộc (nullable)
-   *  2. Nếu nhập: tự động trim khoảng trắng
-   *  3. Định dạng: chỉ cho phép chữ, số, -, _ (không khoảng trắng)
-   *  4. Độ dài: 8-50 ký tự
-   * Ví dụ:
-   *  - Input: "" → OK (không bắt buộc) ✅
-   *  - Input: "ABC-123_XYZ" → OK ✅
-   *  - Input: "ABC XYZ" (có space) → Error: "Mã vạch không đúng định dạng" ❌
-   *  - Input: "ABC" (< 8 ký tự) → Error: "Mã vạch không đúng định dạng" ❌
-   */
-  maVach: yup
-    .string()
-    .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
-    .nullable()
-    .test("barcode-format", "Mã vạch không đúng định dạng", (value) => {
-      if (!value) return true;
-      return barcodeRegex.test(value) && value.length >= 8 && value.length <= 50;
-    }),
-
-  /**
-   * DANH MỤC (danhMucId)
-   * Status: Bắt buộc chọn (*)
-   * Rules:
-   *  1. Bắt buộc chọn danh mục
-   *  2. Phải là số (number)
-   * Ví dụ:
-   *  - Không chọn → Error: "Danh mục là bắt buộc" ❌
-   *  - Chọn danh mục → OK ✅
-   */
-  danhMucId: yup.number().required("Danh mục là bắt buộc").typeError("Vui lòng chọn danh mục"),
-
-  /**
-   * MÔ TẢ (moTa)
-   * Status: Không bắt buộc
-   * Rules:
-   *  1. Không bắt buộc nhập
-   *  2. Nếu nhập: tự động trim khoảng trắng đầu/cuối
-   *  3. Độ dài tối đa 1000 ký tự
-   * Ví dụ:
-   *  - Input: "" → OK ✅
-   *  - Input: "   Áo sơ mi chất lượng cao   " → Lưu: "Áo sơ mi chất lượng cao" ✅
-   *  - Input: text > 1000 ký tự → Error: "Mô tả không được vượt quá 1000 ký tự" ❌
-   */
-  moTa: yup
-    .string()
-    .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
-    .nullable()
-    .max(1000, "Mô tả không được vượt quá 1000 ký tự"),
-
-  /**
-   * GIÁ VỐN MẶC ĐỊNH (giaVonMacDinh)
-   * Status: Không bắt buộc
-   * Rules:
-   *  1. Không bắt buộc nhập (nullable)
-   *  2. Nếu để trống → xem như null (không validate giá trị)
-   *  3. Nếu nhập: phải >= 0
-   *  4. Nếu nhập: tối đa 2 chữ số thập phân (VD: 99.99, 100.50)
-   * Ví dụ:
-   *  - Input: "" → OK ✅
-   *  - Input: "100" → OK ✅
-   *  - Input: "99.99" → OK ✅
-   *  - Input: "99.999" → Error: "Giá vốn chỉ được tối đa 2 chữ số thập phân" ❌
-   *  - Input: "-10" → Error: "Giá vốn phải là số lớn hơn hoặc bằng 0" ❌
-   */
-  giaVonMacDinh: yup
-    .number()
-    .transform(emptyToNull)
-    .nullable()
-    .test("default-cost-format", "Giá vốn phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
-    .test(
-      "default-cost-decimal",
-      "Giá vốn chỉ được tối đa 2 chữ số thập phân",
-      (value) => value == null || decimal2Regex.test(String(value))
-    ),
-
-  /**
-   * GIÁ BÁN MẶC ĐỊNH (giaBanMacDinh)
-   * Status: Không bắt buộc
-   * Rules:
-   *  1. Không bắt buộc nhập (nullable)
-   *  2. Nếu để trống → xem như null
-   *  3. Nếu nhập: phải >= 0
-   *  4. Nếu nhập: tối đa 2 chữ số thập phân
-   *  5. CẢNH BÁO MỀM: nếu giá bán < giá vốn → hiển thị warning (không chặn submit)
-   * Ví dụ:
-   *  - Input: "50" (giá vốn = 100) → Warning: "Giá bán đang nhỏ hơn giá vốn" ⚠️ (vẫn cho submit)
-   *  - Input: "150" (giá vốn = 100) → OK ✅
-   */
-  giaBanMacDinh: yup
-    .number()
-    .transform(emptyToNull)
-    .nullable()
-    .test("default-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
-    .test(
-      "default-price-decimal",
-      "Giá bán chỉ được tối đa 2 chữ số thập phân",
-      (value) => value == null || decimal2Regex.test(String(value))
-    ),
-
-  /**
-   * MỨC TỒN TỐI THIỂU (mucTonToiThieu)
-   * Status: Bắt buộc nhập (*)
-   * Rules:
-   *  1. Bắt buộc nhập
-   *  2. Phải là số nguyên (không có phần thập phân)
-   *  3. Phải >= 0 (không âm)
-   *  4. Tối đa 999999
-   * Ví dụ:
-   *  - Input: "" → Error: "Vui lòng nhập mức tồn tối thiểu" ❌
-   *  - Input: "10.5" → Error: "Mức tồn tối thiểu phải là số nguyên" ❌
-   *  - Input: "-5" → Error: "Mức tồn tối thiểu không được nhỏ hơn 0" ❌
-   *  - Input: "100" → OK ✅
-   */
-  mucTonToiThieu: yup
-    .number()
-    .typeError("Mức tồn tối thiểu phải là số nguyên")
-    .required("Vui lòng nhập mức tồn tối thiểu")
-    .integer("Mức tồn tối thiểu phải là số nguyên")
-    .min(0, "Mức tồn tối thiểu không được nhỏ hơn 0")
-    .max(999999, "Mức tồn tối thiểu không được vượt quá 999999"),
-
-  /**
-   * TRẠNG THÁI MẶC ĐỊNH (trangThai)
-   * Status: Bắt buộc chọn
-   * Rules:
-   *  - Bắt buộc chọn (1 = Còn hàng, 0 = Hết hàng)
-   */
-  trangThai: yup.number().required(),
-
-  // ===== BIẾN THỂ SẢN PHẨM =====
-  /**
-   * DANH SÁCH BIẾN THỂ (bienTheSanPhams)
-   * Status: Bắt buộc có ít nhất 1 biến thể (*)
-   * Rules:
-   *  1. Là mảng (array)
-   *  2. Mỗi item phải validate theo object schema dưới đây
-   *  3. Phải có ít nhất 1 phần tử
-   */
-  bienTheSanPhams: yup
-    .array()
-    .of(
-      yup.object({
-        /**
-         * MÀU SẮC (mauSacId)
-         * Status: Bắt buộc chọn (*)
-         * Rules:
-         *  - Bắt buộc chọn màu sắc
-         *  - Phải là số (ID của màu)
-         */
-        mauSacId: yup.number().required("Màu sắc là bắt buộc").nullable(),
-
-        /**
-         * SIZE (sizeId)
-         * Status: Bắt buộc chọn (*)
-         * Rules:
-         *  - Bắt buộc chọn size
-         *  - Phải là số (ID của size)
-         */
-        sizeId: yup.number().required("Size là bắt buộc").nullable(),
-
-        /**
-         * CHẤT LIỆU (chatLieuId)
-         * Status: Bắt buộc chọn (*)
-         * Rules:
-         *  - Bắt buộc chọn chất liệu
-         *  - Phải là số (ID của chất liệu)
-         */
-        chatLieuId: yup.number().required("Chất liệu là bắt buộc").nullable(),
-
-        /**
-         * MÃ SKU (maSku)
-         * Status: Không bắt buộc, tự động sinh
-         * Rules:
-         *  - Hệ thống tự động ghép mã: [mã sản phẩm] + [màu] + [size] + [chất liệu]
-         *  - Ví dụ: AT260331-CL001-S-M002
-         */
-        maSku: yup.string().nullable(),
-
-        /**
-         * MÃ VẠCH SKU (maVachSku)
-         * Status: Không bắt buộc
-         * Rules: Giống như mã vạch sản phẩm
-         *  1. Không bắt buộc
-         *  2. Nếu nhập: trim khoảng trắng
-         *  3. Định dạng: chỉ chữ, số, -, _
-         *  4. Độ dài: 8-50 ký tự
-         */
-        maVachSku: yup
-          .string()
-          .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
-          .nullable()
-          .test("barcode-sku-format", "Mã vạch SKU không đúng định dạng", (value) => {
+    /**
+     * MÃ VẠCH SẢN PHẨM (maVach)
+     * Status: Không bắt buộc nhập
+     * Rules:
+     *  1. Không bắt buộc (nullable)
+     *  2. Nếu nhập: tự động trim khoảng trắng
+     *  3. Định dạng: chỉ cho phép chữ, số, -, _ (không khoảng trắng)
+     *  4. Độ dài: 8-50 ký tự
+     * Ví dụ:
+     *  - Input: "" → OK (không bắt buộc) ✅
+     *  - Input: "ABC-123_XYZ" → OK ✅
+     *  - Input: "ABC XYZ" (có space) → Error: "Mã vạch không đúng định dạng" ❌
+     *  - Input: "ABC" (< 8 ký tự) → Error: "Mã vạch không đúng định dạng" ❌
+     */
+    maVach: yup
+        .string()
+        .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
+        .nullable()
+        .test("barcode-format", "Mã vạch không đúng định dạng", (value) => {
             if (!value) return true;
             return barcodeRegex.test(value) && value.length >= 8 && value.length <= 50;
-          }),
+        }),
 
-        /**
-         * GIÁ VỐN BIẾN THỂ (giaVon)
-         * Status: Không bắt buộc
-         * Rules: Giống như giá vốn mặc định
-         *  1. Không bắt buộc
-         *  2. Nếu để trống → null
-         *  3. Nếu nhập: >= 0
-         *  4. Nếu nhập: tối đa 2 chữ số thập phân
-         */
-        giaVon: yup
-          .number()
-          .transform(emptyToNull)
-          .nullable()
-          .test("variant-cost-format", "Giá vốn phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
-          .test(
-            "variant-cost-decimal",
+    /**
+     * DANH MỤC (danhMucId)
+     * Status: Bắt buộc chọn (*)
+     * Rules:
+     *  1. Bắt buộc chọn danh mục
+     *  2. Phải là số (number)
+     * Ví dụ:
+     *  - Không chọn → Error: "Danh mục là bắt buộc" ❌
+     *  - Chọn danh mục → OK ✅
+     */
+    danhMucId: yup.number().required("Danh mục là bắt buộc").typeError("Vui lòng chọn danh mục"),
+
+    /**
+     * MÔ TẢ (moTa)
+     * Status: Không bắt buộc
+     * Rules:
+     *  1. Không bắt buộc nhập
+     *  2. Nếu nhập: tự động trim khoảng trắng đầu/cuối
+     *  3. Độ dài tối đa 1000 ký tự
+     * Ví dụ:
+     *  - Input: "" → OK ✅
+     *  - Input: "   Áo sơ mi chất lượng cao   " → Lưu: "Áo sơ mi chất lượng cao" ✅
+     *  - Input: text > 1000 ký tự → Error: "Mô tả không được vượt quá 1000 ký tự" ❌
+     */
+    moTa: yup
+        .string()
+        .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
+        .nullable()
+        .max(1000, "Mô tả không được vượt quá 1000 ký tự"),
+
+    /**
+     * GIÁ VỐN MẶC ĐỊNH (giaVonMacDinh)
+     * Status: Không bắt buộc
+     * Rules:
+     *  1. Không bắt buộc nhập (nullable)
+     *  2. Nếu để trống → xem như null (không validate giá trị)
+     *  3. Nếu nhập: phải >= 0
+     *  4. Nếu nhập: tối đa 2 chữ số thập phân (VD: 99.99, 100.50)
+     * Ví dụ:
+     *  - Input: "" → OK ✅
+     *  - Input: "100" → OK ✅
+     *  - Input: "99.99" → OK ✅
+     *  - Input: "99.999" → Error: "Giá vốn chỉ được tối đa 2 chữ số thập phân" ❌
+     *  - Input: "-10" → Error: "Giá vốn phải là số lớn hơn hoặc bằng 0" ❌
+     */
+    giaVonMacDinh: yup
+        .number()
+        .transform(emptyToNull)
+        .nullable()
+        .test("default-cost-format", "Giá vốn phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+        .test(
+            "default-cost-decimal",
             "Giá vốn chỉ được tối đa 2 chữ số thập phân",
             (value) => value == null || decimal2Regex.test(String(value))
-          ),
+        ),
 
-        /**
-         * GIÁ BÁN BIẾN THỂ (giaBan)
-         * Status: Không bắt buộc
-         * Rules: Giống như giá bán mặc định
-         *  1. Không bắt buộc
-         *  2. Nếu để trống → null
-         *  3. Nếu nhập: >= 0
-         *  4. Nếu nhập: tối đa 2 chữ số thập phân
-         */
-        giaBan: yup
-          .number()
-          .transform(emptyToNull)
-          .nullable()
-          .test("variant-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
-          .test(
-            "variant-price-decimal",
+    /**
+     * GIÁ BÁN MẶC ĐỊNH (giaBanMacDinh)
+     * Status: Không bắt buộc
+     * Rules:
+     *  1. Không bắt buộc nhập (nullable)
+     *  2. Nếu để trống → xem như null
+     *  3. Nếu nhập: phải >= 0
+     *  4. Nếu nhập: tối đa 2 chữ số thập phân
+     *  5. ⭐ BẮת BUỘC: Nếu cả giá bán và giá vốn đều nhập → giá bán phải > 70% giá vốn
+     *     (Không được ≤ 70% giá vốn)
+     * Ví dụ:
+     *  - Input: "50" (giá vốn = 100) → 50 ≤ 70 → Error: "Giá bán phải cao hơn 70% giá vốn" ❌
+     *  - Input: "75" (giá vốn = 100) → 75 > 70 → OK ✅
+     *  - Input: "150" (giá vốn = 100) → OK ✅
+     */
+    giaBanMacDinh: yup
+        .number()
+        .transform(emptyToNull)
+        .nullable()
+        .test("default-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+        .test(
+            "default-price-decimal",
             "Giá bán chỉ được tối đa 2 chữ số thập phân",
             (value) => value == null || decimal2Regex.test(String(value))
-          ),
+        )
+        .test(
+            "price-range-validation",
+            function(value) {
+                // Kiểm tra: Giá bán phải trong khoảng (giá vốn, giá vốn * 1.7]
+                // Tức là: Giá vốn < Giá bán <= Giá vốn * 1.7 (+ 70%)
+                const { giaVonMacDinh } = this.parent;
 
-        /**
-         * TRẠNG THÁI BIẾN THỂ (trangThai)
-         * Status: Bắt buộc chọn
-         * Rules:
-         *  - Bắt buộc chọn (1 = Hoạt động, 0 = Tạm ngừng)
-         */
-        trangThai: yup.number().required(),
-      })
-    )
-    .min(1, "Phải có ít nhất 1 biến thể"),
+                if (value != null && giaVonMacDinh != null && giaVonMacDinh > 0) {
+                    const minPrice = giaVonMacDinh; // Tối thiểu phải > giá vốn
+                    const maxPrice = giaVonMacDinh * 1.7; // Tối đa không vượt quá giá vốn + 70%
+
+                    // Kiểm tra giá bán < giá vốn
+                    if (value <= minPrice) {
+                        return this.createError({
+                            message: `Giá bán phải cao hơn giá vốn (${minPrice.toFixed(2)}đ)`,
+                        });
+                    }
+
+                    // Kiểm tra giá bán > giá vốn + 70%
+                    if (value > maxPrice) {
+                        return this.createError({
+                            message: `Giá bán không được vượt quá 70% so với giá vốn (${maxPrice.toFixed(2)}đ)`,
+                        });
+                    }
+                }
+
+                return true;
+            }
+        ),
+
+    /**
+     * MỨC TỒN TỐI THIỂU (mucTonToiThieu)
+     * Status: Bắt buộc nhập (*)
+     * Rules:
+     *  1. Bắt buộc nhập
+     *  2. Phải là số nguyên (không có phần thập phân)
+     *  3. Phải >= 0 (không âm)
+     *  4. Tối đa 999999
+     * Ví dụ:
+     *  - Input: "" → Error: "Vui lòng nhập mức tồn tối thiểu" ❌
+     *  - Input: "10.5" → Error: "Mức tồn tối thiểu phải là số nguyên" ❌
+     *  - Input: "-5" → Error: "Mức tồn tối thiểu không được nhỏ hơn 0" ❌
+     *  - Input: "100" → OK ✅
+     */
+    mucTonToiThieu: yup
+        .number()
+        .typeError("Mức tồn tối thiểu phải là số nguyên")
+        .required("Vui lòng nhập mức tồn tối thiểu")
+        .integer("Mức tồn tối thiểu phải là số nguyên")
+        .min(0, "Mức tồn tối thiểu không được nhỏ hơn 0")
+        .max(999999, "Mức tồn tối thiểu không được vượt quá 999999"),
+
+    /**
+     * TRẠNG THÁI MẶC ĐỊNH (trangThai)
+     * Status: Bắt buộc chọn
+     * Rules:
+     *  - Bắt buộc chọn (1 = Còn hàng, 0 = Hết hàng)
+     */
+    trangThai: yup.number().required(),
+
+    // ===== BIẾN THỂ SẢN PHẨM =====
+    /**
+     * DANH SÁCH BIẾN THỂ (bienTheSanPhams)
+     * Status: Bắt buộc có ít nhất 1 biến thể (*)
+     * Rules:
+     *  1. Là mảng (array)
+     *  2. Mỗi item phải validate theo object schema dưới đây
+     *  3. Phải có ít nhất 1 phần tử
+     */
+    bienTheSanPhams: yup
+        .array()
+        .of(
+            yup.object({
+                /**
+                 * MÀU SẮC (mauSacId)
+                 * Status: Bắt buộc chọn (*)
+                 * Rules:
+                 *  - Bắt buộc chọn màu sắc
+                 *  - Phải là số (ID của màu)
+                 */
+                mauSacId: yup.number().required("Màu sắc là bắt buộc").nullable(),
+
+                /**
+                 * SIZE (sizeId)
+                 * Status: Bắt buộc chọn (*)
+                 * Rules:
+                 *  - Bắt buộc chọn size
+                 *  - Phải là số (ID của size)
+                 */
+                sizeId: yup.number().required("Size là bắt buộc").nullable(),
+
+                /**
+                 * CHẤT LIỆU (chatLieuId)
+                 * Status: Bắt buộc chọn (*)
+                 * Rules:
+                 *  - Bắt buộc chọn chất liệu
+                 *  - Phải là số (ID của chất liệu)
+                 */
+                chatLieuId: yup.number().required("Chất liệu là bắt buộc").nullable(),
+
+                /**
+                 * MÃ SKU (maSku)
+                 * Status: Không bắt buộc, tự động sinh
+                 * Rules:
+                 *  - Hệ thống tự động ghép mã: [mã sản phẩm] + [màu] + [size] + [chất liệu]
+                 *  - Ví dụ: AT260331-CL001-S-M002
+                 */
+                maSku: yup.string().nullable(),
+
+                /**
+                 * MÃ VẠCH SKU (maVachSku)
+                 * Status: Không bắt buộc
+                 * Rules: Giống như mã vạch sản phẩm
+                 *  1. Không bắt buộc
+                 *  2. Nếu nhập: trim khoảng trắng
+                 *  3. Định dạng: chỉ chữ, số, -, _
+                 *  4. Độ dài: 8-50 ký tự
+                 */
+                maVachSku: yup
+                    .string()
+                    .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
+                    .nullable()
+                    .test("barcode-sku-format", "Mã vạch SKU không đúng định dạng", (value) => {
+                        if (!value) return true;
+                        return barcodeRegex.test(value) && value.length >= 8 && value.length <= 50;
+                    }),
+
+                /**
+                 * GIÁ VỐN BIẾN THỂ (giaVon)
+                 * Status: Không bắt buộc
+                 * Rules: Giống như giá vốn mặc định
+                 *  1. Không bắt buộc
+                 *  2. Nếu để trống → null
+                 *  3. Nếu nhập: >= 0
+                 *  4. Nếu nhập: tối đa 2 chữ số thập phân
+                 */
+                giaVon: yup
+                    .number()
+                    .transform(emptyToNull)
+                    .nullable()
+                    .test("variant-cost-format", "Giá vốn phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+                    .test(
+                        "variant-cost-decimal",
+                        "Giá vốn chỉ được tối đa 2 chữ số thập phân",
+                        (value) => value == null || decimal2Regex.test(String(value))
+                    ),
+
+                /**
+                 * GIÁ BÁN BIẾN THỂ (giaBan)
+                 * Status: Không bắt buộc
+                 * Rules: Giống như giá bán mặc định
+                 *  1. Không bắt buộc
+                 *  2. Nếu để trống → null
+                 *  3. Nếu nhập: >= 0
+                 *  4. Nếu nhập: tối đa 2 chữ số thập phân
+                 */
+                giaBan: yup
+                    .number()
+                    .transform(emptyToNull)
+                    .nullable()
+                    .test("variant-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+                    .test(
+                        "variant-price-decimal",
+                        "Giá bán chỉ được tối đa 2 chữ số thập phân",
+                        (value) => value == null || decimal2Regex.test(String(value))
+                    ),
+
+                /**
+                 * TRẠNG THÁI BIẾN THỂ (trangThai)
+                 * Status: Bắt buộc chọn
+                 * Rules:
+                 *  - Bắt buộc chọn (1 = Hoạt động, 0 = Tạm ngừng)
+                 */
+                trangThai: yup.number().required(),
+            })
+        )
+        .min(1, "Phải có ít nhất 1 biến thể"),
 });
 
 export default function AddProductModal({ isOpen, onClose, onSuccess }) {
@@ -427,38 +458,6 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
         name: "bienTheSanPhams"
     });
 
-    // ===== CẢNH BÁO MỀM: GIÁ BÁN < GIÁ VỐN =====
-    /**
-     * Watch giá vốn và giá bán mặc định
-     * - Mỗi khi giá trị thay đổi → tự động chạy useEffect dưới
-     * - watch() không trigger re-render toàn component, chỉ cập nhật giá trị
-     */
-    const giaVonMacDinh = watch("giaVonMacDinh");
-    const giaBanMacDinh = watch("giaBanMacDinh");
-
-    /**
-     * useEffect kiểm tra logic giá bán < giá vốn
-     * Nếu điều kiện đúng → hiển thị warning toast (không chặn submit)
-     *
-     * Điều kiện:
-     *  1. giá vốn không rỗng
-     *  2. giá bán không rỗng
-     *  3. giá bán < giá vốn
-     *  4. giá bán > 0 (để tránh warning lúc chưa nhập giá bán)
-     */
-    useEffect(() => {
-        if (
-            giaVonMacDinh !== null &&
-            giaVonMacDinh !== undefined &&
-            giaBanMacDinh !== null &&
-            giaBanMacDinh !== undefined &&
-            Number(giaBanMacDinh) < Number(giaVonMacDinh) &&
-            Number(giaBanMacDinh) > 0
-        ) {
-            // Hiển thị warning (không chặn submit, người dùng vẫn có thể lưu)
-            toast.warning("Giá bán đang nhỏ hơn giá vốn");
-        }
-    }, [giaVonMacDinh, giaBanMacDinh]);
 
     const handleResetForm = useCallback(() => {
         // Reset ve state ban dau sau khi tao thanh cong hoac khi dong modal.
@@ -737,7 +736,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }) {
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto overflow-x-visible px-1 min-h-0">
-                  
+
                     <form   /* Form nhập thông tin thêm sản phẩm mới*/
                         onSubmit={handleSubmit(onSubmit)}
                         className="space-y-6 py-1 [&_[data-slot=input]]:bg-white [&_[data-slot=input]]:text-amber-950 [&_[data-slot=textarea]]:bg-white [&_[data-slot=textarea]]:text-amber-950 [&_[data-slot=select-trigger]]:bg-white [&_[data-slot=select-trigger]]:text-amber-950 [&_[data-slot=select-content]]:bg-white [&_[data-slot=select-content]]:text-amber-950 dark:[&_[data-slot=input]]:bg-white dark:[&_[data-slot=textarea]]:bg-white dark:[&_[data-slot=select-trigger]]:bg-white dark:[&_[data-slot=select-content]]:bg-white"
