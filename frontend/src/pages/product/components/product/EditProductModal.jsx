@@ -34,14 +34,14 @@ const PRODUCT_STATUS_LABELS = {
  * - Thay 2 hoặc nhiều khoảng trắng liên tiếp thành 1 khoảng trắng
  */
 const normalizeSpaces = (value) =>
-  typeof value === "string" ? value.trim().replace(/\s{2,}/g, " ") : value;
+    typeof value === "string" ? value.trim().replace(/\s{2,}/g, " ") : value;
 
 /**
  * Chuyển chuỗi rỗng thành null
  */
 const emptyToNull = (value, originalValue) => {
-  if (typeof originalValue === "string" && originalValue.trim() === "") return null;
-  return value;
+    if (typeof originalValue === "string" && originalValue.trim() === "") return null;
+    return value;
 };
 
 // Regex kiểm tra số thập phân tối đa 2 chữ số
@@ -57,155 +57,177 @@ const barcodeRegex = /^[A-Za-z0-9_-]+$/;
  * Áp dụng tất cả các rule validate giống AddProductModal
  */
 const editProductSchema = yup.object({
-  // ===== THÔNG TIN CƠ BẢN =====
-  /**
-   * TÊN SẢN PHẨM (tenSanPham) - Bắt buộc
-   * Rules: Bắt buộc, 3-150 ký tự, chuẩn hóa khoảng trắng
-   */
-  tenSanPham: yup
-    .string()
-    .transform((_, originalValue) => normalizeSpaces(originalValue))
-    .required("Vui lòng nhập tên sản phẩm")
-    .test("not-blank", "Vui lòng nhập tên sản phẩm", (value) => !!value && value.trim().length > 0)
-    .min(3, "Tên sản phẩm phải từ 3 ký tự trở lên")
-    .max(150, "Tên sản phẩm không được vượt quá 150 ký tự")
-    .test("no-double-space", "Tên sản phẩm không được chứa 2 khoảng trắng liên tiếp", (value) =>
-      value ? !/\s{2,}/.test(value) : true
-    ),
+    // ===== THÔNG TIN CƠ BẢN =====
+    /**
+     * TÊN SẢN PHẨM (tenSanPham) - Bắt buộc
+     * Rules: Bắt buộc, 3-150 ký tự, chuẩn hóa khoảng trắng
+     */
+    tenSanPham: yup
+        .string()
+        .transform((_, originalValue) => normalizeSpaces(originalValue))
+        .required("Vui lòng nhập tên sản phẩm")
+        .test("not-blank", "Vui lòng nhập tên sản phẩm", (value) => !!value && value.trim().length > 0)
+        .min(3, "Tên sản phẩm phải từ 3 ký tự trở lên")
+        .max(150, "Tên sản phẩm không được vượt quá 150 ký tự")
+        .test("no-double-space", "Tên sản phẩm không được chứa 2 khoảng trắng liên tiếp", (value) =>
+            value ? !/\s{2,}/.test(value) : true
+        ),
 
-  /**
-   * MÃ SẢN PHẨM (maSanPham) - Không bắt buộc, chỉ đọc (hệ thống sinh)
-   */
-  maSanPham: yup.string().nullable(),
+    /**
+     * MÃ SẢN PHẨM (maSanPham) - Không bắt buộc, chỉ đọc (hệ thống sinh)
+     */
+    maSanPham: yup.string().nullable(),
 
-  /**
-   * MÃ VẠCH (maVach) - Không bắt buộc
-   * Rules: Trim, định dạng chữ/số/-, _, độ dài 8-50 ký tự
-   */
-  maVach: yup
-    .string()
-    .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
-    .nullable()
-    .test("barcode-format", "Mã vạch không đúng định dạng", (value) => {
-      if (!value) return true;
-      return barcodeRegex.test(value) && value.length >= 8 && value.length <= 50;
-    }),
+    /**
+     * MÃ VẠCH (maVach) - Không bắt buộc
+     * Rules: Trim, định dạng chữ/số/-, _, độ dài 8-50 ký tự
+     */
+    maVach: yup
+        .string()
+        .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
+        .nullable()
+        .test("barcode-format", "Mã vạch không đúng định dạng", (value) => {
+            if (!value) return true;
+            return barcodeRegex.test(value) && value.length >= 8 && value.length <= 50;
+        }),
 
-  /**
-   * DANH MỤC (danhMucId) - Bắt buộc
-   */
-  danhMucId: yup.number().required("Danh mục là bắt buộc").typeError("Vui lòng chọn danh mục"),
+    /**
+     * DANH MỤC (danhMucId) - Bắt buộc
+     */
+    danhMucId: yup.number().required("Danh mục là bắt buộc").typeError("Vui lòng chọn danh mục"),
 
-  /**
-   * MÔ TẢ (moTa) - Không bắt buộc
-   * Rules: Trim, tối đa 1000 ký tự
-   */
-  moTa: yup
-    .string()
-    .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
-    .nullable()
-    .max(1000, "Mô tả không được vượt quá 1000 ký tự"),
+    /**
+     * MÔ TẢ (moTa) - Không bắt buộc
+     * Rules: Trim, tối đa 1000 ký tự
+     */
+    moTa: yup
+        .string()
+        .transform((_, originalValue) => (typeof originalValue === "string" ? originalValue.trim() : originalValue))
+        .nullable()
+        .max(1000, "Mô tả không được vượt quá 1000 ký tự"),
 
-  /**
-   * GIÁ VỐN MẶC ĐỊNH (giaVonMacDinh) - Bắt buộc
-   * Rules: >= 0, tối đa 2 chữ số thập phân
-   */
-  giaVonMacDinh: yup
-    .number()
-    .transform(emptyToNull)
-    .nullable()
-    .required("Vui lòng nhập giá vốn")
-    .test("default-cost-format", "Giá vốn phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
-    .test(
-      "default-cost-decimal",
-      "Giá vốn chỉ được tối đa 2 chữ số thập phân",
-      (value) => value == null || decimal2Regex.test(String(value))
-    ),
+    /**
+     * GIÁ VỐN MẶC ĐỊNH (giaVonMacDinh) - Read-only
+     * Rules: Không thể sửa, chỉ hiển thị giá vốn hiện tại
+     */
+    giaVonMacDinh: yup
+        .number()
+        .transform(emptyToNull)
+        .nullable(),
 
-  /**
-   * GIÁ BÁN MẶC ĐỊNH (giaBanMacDinh) - Bắt buộc
-   * Rules: >= 0, tối đa 2 chữ số thập phân
-   */
-  giaBanMacDinh: yup
-    .number()
-    .transform(emptyToNull)
-    .nullable()
-    .required("Vui lòng nhập giá bán")
-    .test("default-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
-    .test(
-      "default-price-decimal",
-      "Giá bán chỉ được tối đa 2 chữ số thập phân",
-      (value) => value == null || decimal2Regex.test(String(value))
-    ),
-
-  /**
-   * MỨC TỒN TỐI THIỂU (mucTonToiThieu) - Không bắt buộc
-   * Rules: Số nguyên, >= 0, tối đa 999999
-   */
-  mucTonToiThieu: yup
-    .number()
-    .typeError("Mức tồn tối thiểu phải là số nguyên")
-    .integer("Mức tồn tối thiểu phải là số nguyên")
-    .min(0, "Mức tồn tối thiểu không được nhỏ hơn 0")
-    .max(999999, "Mức tồn tối thiểu không được vượt quá 999999"),
-
-  /**
-   * TRẠNG THÁI (trangThai) - Bắt buộc
-   */
-  trangThai: yup.number().required(),
-
-  // ===== BIẾN THỂ =====
-  /**
-   * DANH SÁCH BIẾN THỂ (bienTheSanPhams) - Bắt buộc có ít nhất 1
-   */
-  bienTheSanPhams: yup
-    .array()
-    .of(
-      yup.object({
-        /**
-         * ID BIẾN THỂ (id) - Bắt buộc (ID từ database)
-         */
-        id: yup.number().required(),
-
-        /**
-         * GIÁ VỐN BIẾN THỂ (giaVon) - Bắt buộc
-         * Rules: >= 0, tối đa 2 chữ số thập phân
-         */
-        giaVon: yup
-          .number()
-          .transform(emptyToNull)
-          .nullable()
-          .required("Vui lòng nhập giá vốn")
-          .test("variant-cost-format", "Giá vốn phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
-          .test(
-            "variant-cost-decimal",
-            "Giá vốn chỉ được tối đa 2 chữ số thập phân",
-            (value) => value == null || decimal2Regex.test(String(value))
-          ),
-
-        /**
-         * GIÁ BÁN BIẾN THỂ (giaBan) - Bắt buộc
-         * Rules: >= 0, tối đa 2 chữ số thập phân
-         */
-        giaBan: yup
-          .number()
-          .transform(emptyToNull)
-          .nullable()
-          .required("Vui lòng nhập giá bán")
-          .test("variant-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
-          .test(
-            "variant-price-decimal",
+    /**
+     * GIÁ BÁN MẶC ĐỊNH (giaBanMacDinh) - Bắt buộc
+     * Rules: >= 0, tối đa 2 chữ số thập phân
+     */
+    giaBanMacDinh: yup
+        .number()
+        .transform(emptyToNull)
+        .nullable()
+        .required("Vui lòng nhập giá bán")
+        .test("default-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+        .test(
+            "default-price-decimal",
             "Giá bán chỉ được tối đa 2 chữ số thập phân",
             (value) => value == null || decimal2Regex.test(String(value))
-          ),
+        )
+        .test(
+            "price-range-validation",
+            function(value) {
+                // Kiểm tra: Giá bán phải trong khoảng (giá vốn, giá vốn * 1.7]
+                // Tức là: Giá vốn < Giá bán <= Giá vốn * 1.7 (+ 70%)
+                const { giaVonMacDinh } = this.parent;
 
-        /**
-         * TRẠNG THÁI BIẾN THỂ (trangThai) - Bắt buộc
-         */
-        trangThai: yup.number().required(),
-      })
-    )
-    .min(1, "Phải có ít nhất 1 biến thể"),
+                if (value != null && giaVonMacDinh != null && giaVonMacDinh > 0) {
+                    const minPrice = giaVonMacDinh; // Tối thiểu phải > giá vốn
+                    const maxPrice = giaVonMacDinh * 1.7; // Tối đa không vượt quá giá vốn + 70%
+
+                    // Kiểm tra giá bán < giá vốn
+                    if (value <= minPrice) {
+                        return this.createError({
+                            message: `Giá bán phải cao hơn giá vốn (${minPrice.toFixed(2)}đ)`,
+                        });
+                    }
+
+                    // Kiểm tra giá bán > giá vốn + 70%
+                    if (value > maxPrice) {
+                        return this.createError({
+                            message: `Giá bán không được vượt quá 70% so với giá vốn (${maxPrice.toFixed(2)}đ)`,
+                        });
+                    }
+                }
+
+                return true;
+            }
+        ),
+
+    /**
+     * MỨC TỒN TỐI THIỂU (mucTonToiThieu) - Không bắt buộc
+     * Rules: Số nguyên, >= 0, tối đa 999999
+     */
+    mucTonToiThieu: yup
+        .number()
+        .typeError("Mức tồn tối thiểu phải là số nguyên")
+        .integer("Mức tồn tối thiểu phải là số nguyên")
+        .min(0, "Mức tồn tối thiểu không được nhỏ hơn 0")
+        .max(999999, "Mức tồn tối thiểu không được vượt quá 999999"),
+
+    /**
+     * TRẠNG THÁI (trangThai) - Bắt buộc
+     */
+    trangThai: yup.number().required(),
+
+    // ===== BIẾN THỂ =====
+    /**
+     * DANH SÁCH BIẾN THỂ (bienTheSanPhams) - Bắt buộc có ít nhất 1
+     */
+    bienTheSanPhams: yup
+        .array()
+        .of(
+            yup.object({
+                /**
+                 * ID BIẾN THỂ (id) - Bắt buộc (ID từ database)
+                 */
+                id: yup.number().required(),
+
+                /**
+                 * GIÁ VỐN BIẾN THỂ (giaVon) - Bắt buộc
+                 * Rules: >= 0, tối đa 2 chữ số thập phân
+                 */
+                giaVon: yup
+                    .number()
+                    .transform(emptyToNull)
+                    .nullable()
+                    .required("Vui lòng nhập giá vốn")
+                    .test("variant-cost-format", "Giá vốn phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+                    .test(
+                        "variant-cost-decimal",
+                        "Giá vốn chỉ được tối đa 2 chữ số thập phân",
+                        (value) => value == null || decimal2Regex.test(String(value))
+                    ),
+
+                /**
+                 * GIÁ BÁN BIẾN THỂ (giaBan) - Bắt buộc
+                 * Rules: >= 0, tối đa 2 chữ số thập phân
+                 */
+                giaBan: yup
+                    .number()
+                    .transform(emptyToNull)
+                    .nullable()
+                    .required("Vui lòng nhập giá bán")
+                    .test("variant-price-format", "Giá bán phải là số lớn hơn hoặc bằng 0", (value) => value == null || value >= 0)
+                    .test(
+                        "variant-price-decimal",
+                        "Giá bán chỉ được tối đa 2 chữ số thập phân",
+                        (value) => value == null || decimal2Regex.test(String(value))
+                    ),
+
+                /**
+                 * TRẠNG THÁI BIẾN THỂ (trangThai) - Bắt buộc
+                 */
+                trangThai: yup.number().required(),
+            })
+        )
+        .min(1, "Phải có ít nhất 1 biến thể"),
 });
 
 export default function EditProductModal({ isOpen, onClose, onSuccess, productId }) {
@@ -273,67 +295,67 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
      * useEffect kiểm tra logic giá bán < giá vốn
      * Nếu điều kiện đúng → hiển thị warning toast (không chặn submit)
      */
-    useEffect(() => {
-        if (
-            giaVonMacDinh !== null &&
-            giaVonMacDinh !== undefined &&
-            giaBanMacDinh !== null &&
-            giaBanMacDinh !== undefined &&
-            Number(giaBanMacDinh) < Number(giaVonMacDinh) &&
-            Number(giaBanMacDinh) > 0
-        ) {
-            toast.warning("Giá bán đang nhỏ hơn giá vốn");
-        }
-    }, [giaVonMacDinh, giaBanMacDinh]);
+        // useEffect(() => {
+        //     if (
+        //         giaVonMacDinh !== null &&
+        //         giaVonMacDinh !== undefined &&
+        //         giaBanMacDinh !== null &&
+        //         giaBanMacDinh !== undefined &&
+        //         Number(giaBanMacDinh) < Number(giaVonMacDinh) &&
+        //         Number(giaBanMacDinh) > 0
+        //     ) {
+        //         toast.warning("Giá bán đang nhỏ hơn giá vốn");
+        //     }
+        // }, [giaVonMacDinh, giaBanMacDinh]);
 
     const fetchProductDetails = useCallback(async (id) => {
-        try {
-            setIsLoadingProduct(true);
-            const res = await productService.getProductById(id);
+            try {
+                setIsLoadingProduct(true);
+                const res = await productService.getProductById(id);
 
-            if (res.data?.status === 200) {
-                const product = res.data.data;
-                reset({
-                    tenSanPham: product.tenSanPham || "",
-                    maSanPham: product.maSanPham || "",
-                    maVach: product.maVach || "",
-                    danhMucId: product.danhMuc?.id || 1,
-                    moTa: product.moTa || "",
-                    giaVonMacDinh: product.giaVonMacDinh || 0,
-                    giaBanMacDinh: product.giaBanMacDinh || 0,
-                    mucTonToiThieu: product.mucTonToiThieu || 0,
-                    trangThai: product.trangThai ?? 1,
-                    bienTheSanPhams: product.bienTheSanPhams?.length > 0
-                        ? product.bienTheSanPhams.map(variant => ({
-                            id: variant.id,
-                            giaVon: variant.giaVon || 0,
-                            giaBan: variant.giaBan || 0,
-                            trangThai: variant.trangThai ?? 1,
-                        }))
-                        : []
-                });
-
-                setExistingProductImages(product.anhQuanAos || []);
-                
-                // Map variant images by variant ID for easier access
-                const variantImageMap = {};
-                if (product.bienTheSanPhams) {
-                    product.bienTheSanPhams.forEach((variant, index) => {
-                        if (variant.anhBienThe) {
-                            variantImageMap[index] = variant.anhBienThe;
-                        }
+                if (res.data?.status === 200) {
+                    const product = res.data.data;
+                    reset({
+                        tenSanPham: product.tenSanPham || "",
+                        maSanPham: product.maSanPham || "",
+                        maVach: product.maVach || "",
+                        danhMucId: product.danhMuc?.id || 1,
+                        moTa: product.moTa || "",
+                        giaVonMacDinh: product.giaVonMacDinh || 0,
+                        giaBanMacDinh: product.giaBanMacDinh || 0,
+                        mucTonToiThieu: product.mucTonToiThieu || 0,
+                        trangThai: product.trangThai ?? 1,
+                        bienTheSanPhams: product.bienTheSanPhams?.length > 0
+                            ? product.bienTheSanPhams.map(variant => ({
+                                id: variant.id,
+                                giaVon: variant.giaVon || 0,
+                                giaBan: variant.giaBan || 0,
+                                trangThai: variant.trangThai ?? 1,
+                            }))
+                            : []
                     });
+
+                    setExistingProductImages(product.anhQuanAos || []);
+
+                    // Map variant images by variant ID for easier access
+                    const variantImageMap = {};
+                    if (product.bienTheSanPhams) {
+                        product.bienTheSanPhams.forEach((variant, index) => {
+                            if (variant.anhBienThe) {
+                                variantImageMap[index] = variant.anhBienThe;
+                            }
+                        });
+                    }
+                    setExistingVariantImages(variantImageMap);
                 }
-                setExistingVariantImages(variantImageMap);
+            } catch (error) {
+                console.error("Lỗi khi tải chi tiết sản phẩm:", error);
+                toast.error(error.response?.data?.message || "Không thể tải thông tin sản phẩm");
+                onClose();
+            } finally {
+                setIsLoadingProduct(false);
             }
-        } catch (error) {
-            console.error("Lỗi khi tải chi tiết sản phẩm:", error);
-            toast.error(error.response?.data?.message || "Không thể tải thông tin sản phẩm");
-            onClose();
-        } finally {
-            setIsLoadingProduct(false);
-        }
-    }, [reset, onClose]);
+        }, [reset, onClose]);
 
     const handleResetForm = useCallback(() => {
         reset({
@@ -419,10 +441,14 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
          * - Normalize tên sản phẩm: trim + gộp khoảng trắng
          * - Trim mô tả, mã vạch
          * - Trim mã vạch SKU của từng biến thể
+         * - Đảm bảo giá bán được lưu chính xác
          */
         data.tenSanPham = normalizeSpaces(data.tenSanPham);
         data.moTa = data.moTa ? data.moTa.trim() : "";
         data.maVach = data.maVach ? data.maVach.trim() : "";
+
+        // ✅ Đảm bảo giá bán được cập nhật
+        const giaBanMacDinhValue = Number(data.giaBanMacDinh) || 0;
 
         data.bienTheSanPhams = data.bienTheSanPhams.map((v) => ({
             ...v,
@@ -441,7 +467,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                 moTa: data.moTa || "",
                 danhMucId: Number(data.danhMucId),
                 giaVonMacDinh: Number(data.giaVonMacDinh),
-                giaBanMacDinh: Number(data.giaBanMacDinh),
+                giaBanMacDinh: giaBanMacDinhValue,  // ✅ Sử dụng giá bán mới
                 trangThai: Number(data.trangThai),
                 imageUpdated: productImageUpdated,
                 bienTheSanPhams: data.bienTheSanPhams.map((variant, index) => ({
@@ -452,6 +478,8 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                     imageUpdated: !!variantImages[index], // Check if this variant has a new image
                 })),
             };
+
+            console.log("ProductData gửi lên:", productData);  // ✅ Debug log
 
             const jsonBlob = new Blob([JSON.stringify(productData)], { type: 'application/json' });
             formData.append('updating', jsonBlob);
@@ -635,7 +663,12 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                                                 name="maSanPham"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Input {...field} placeholder="Mã sản phẩm" disabled={isSubmitting} />
+                                                    <div className="flex items-center gap-2 rounded-xl border border-amber-300 px-3 py-2 bg-amber-100">
+                                                        <span className="text-sm text-amber-900 font-medium">
+                                                            {field.value || "—"}
+                                                        </span>
+                                                        <input type="hidden" {...field} />
+                                                    </div>
                                                 )}
                                             />
                                         </div>
@@ -689,19 +722,14 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                                                 name="giaVonMacDinh"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Input
-                                                        {...field}
-                                                        type="number"
-                                                        min="0"
-                                                        placeholder="0"
-                                                        disabled={isSubmitting}
-                                                        className={`${errors.giaVonMacDinh ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
-                                                    />
+                                                    <div className="flex items-center gap-2 rounded-xl border border-amber-300 px-3 py-2 bg-amber-100">
+                                                        <span className="text-sm text-amber-900 font-medium">
+                                                            {field.value || "0"}đ
+                                                        </span>
+                                                        <input type="hidden" {...field} />
+                                                    </div>
                                                 )}
                                             />
-                                            {errors.giaVonMacDinh && (
-                                                <p className="text-xs text-red-500 font-medium">{errors.giaVonMacDinh.message}</p>
-                                            )}
                                         </div>
 
                                         <div className="space-y-2">
@@ -836,167 +864,162 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, productId
                             </div>
 
                             <div className="space-y-4 overflow-visible rounded-2xl border border-amber-200 bg-amber-50/70 p-4 xl:sticky xl:top-0">
-                            <div className="border-b border-amber-200 pb-2">
-                                <h3 className="font-semibold text-sm text-amber-900">
-                                    Biến thể sản phẩm
-                                </h3>
-                                <p className="text-xs text-amber-800/80 mt-1">Chỉ có thể cập nhật giá và trạng thái của biến thể</p>
-                            </div>
+                                <div className="border-b border-amber-200 pb-2">
+                                    <h3 className="font-semibold text-sm text-amber-900">
+                                        Biến thể sản phẩm
+                                    </h3>
+                                    <p className="text-xs text-amber-800/80 mt-1">Chỉ có thể cập nhật giá và trạng thái của biến thể</p>
+                                </div>
 
-                            {fields.map((field, index) => (
-                                <div key={field.id} className="p-4 border border-amber-200 rounded-xl space-y-3 bg-white relative overflow-visible shadow-sm">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-semibold text-amber-900">Biến thể #{index + 1}</span>
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-3">
-                                        {/* Giá vốn */}
-                                        <div className="space-y-2">
-                                            <Label>Giá vốn <span className="text-red-500">*</span></Label>
-                                            <Controller
-                                                name={`bienTheSanPhams.${index}.giaVon`}
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Input
-                                                        {...field}
-                                                        type="number"
-                                                        min="0"
-                                                        placeholder="0"
-                                                        disabled={isSubmitting}
-                                                        className={`${errors.bienTheSanPhams?.[index]?.giaVon ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
-                                                    />
-                                                )}
-                                            />
-                                            {errors.bienTheSanPhams?.[index]?.giaVon && (
-                                                <p className="text-xs text-red-500 font-medium">{errors.bienTheSanPhams[index].giaVon.message}</p>
-                                            )}
+                                {fields.map((field, index) => (
+                                    <div key={field.id} className="p-4 border border-amber-200 rounded-xl space-y-3 bg-white relative overflow-visible shadow-sm">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-semibold text-amber-900">Biến thể #{index + 1}</span>
                                         </div>
 
-                                        {/* Giá bán */}
-                                        <div className="space-y-2">
-                                            <Label>Giá bán <span className="text-red-500">*</span></Label>
-                                            <Controller
-                                                name={`bienTheSanPhams.${index}.giaBan`}
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Input
-                                                        {...field}
-                                                        type="number"
-                                                        min="0"
-                                                        placeholder="0"
-                                                        disabled={isSubmitting}
-                                                        className={`${errors.bienTheSanPhams?.[index]?.giaBan ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
-                                                    />
-                                                )}
-                                            />
-                                            {errors.bienTheSanPhams?.[index]?.giaBan && (
-                                                <p className="text-xs text-red-500 font-medium">{errors.bienTheSanPhams[index].giaBan.message}</p>
-                                            )}
-                                        </div>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {/* Giá vốn */}
+                                            <div className="space-y-2">
+                                                <Label>Giá vốn <span className="text-red-500">*</span></Label>
+                                                <Controller
+                                                    name={`bienTheSanPhams.${index}.giaVon`}
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <div className="flex items-center gap-2 rounded-xl border border-amber-300 px-3 py-2 bg-amber-100">
+                                                        <span className="text-sm text-amber-900 font-medium">
+                                                            {field.value || "0"}đ
+                                                        </span>
+                                                            <input type="hidden" {...field} />
+                                                        </div>
+                                                    )}
+                                                />
+                                            </div>
 
-                                        {/* Trạng thái */}
-                                        <div className="space-y-2">
-                                            <Label>Trạng thái</Label>
-                                            <Controller
-                                                name={`bienTheSanPhams.${index}.trangThai`}
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Select
-                                                        value={field.value?.toString()}
-                                                        onValueChange={(value) => field.onChange(Number(value))}
-                                                        disabled={isSubmitting}
-                                                    >
-                                                        <SelectTrigger className="w-full h-10">
-                                                            <SelectValue placeholder="Chọn trạng thái" />
-                                                        </SelectTrigger>
-                                                        <SelectContent
-                                                            position="popper"
-                                                            side="bottom"
-                                                            align="start"
-                                                            sideOffset={4}
-                                                            className="z-50 bg-white border border-gray-200 shadow-lg rounded-md"
-                                                        >
-                                                            <SelectItem value="1">Hoạt động</SelectItem>
-                                                            <SelectItem value="0">Tạm ngừng</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                )}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Variant Image */}
-                                    <div className="space-y-2">
-                                        <Label>Ảnh biến thể</Label>
-                                        <div className="border-2 border-dashed border-amber-300 rounded-lg p-3 space-y-2 bg-amber-50/40">
-                                            {/* Existing variant image */}
-                                            {existingVariantImages[index] && !variantImages[index] && (
-                                                <div className="mb-2">
-                                                    <p className="text-xs text-gray-500 mb-2">Ảnh hiện tại:</p>
-                                                    <div className="relative inline-block">
-                                                        <img
-                                                            src={existingVariantImages[index].tepTin?.duongDan || existingVariantImages[index].urlAnh}
-                                                            alt="Variant"
-                                                            className="w-24 h-24 object-cover rounded"
+                                            {/* Giá bán */}
+                                            <div className="space-y-2">
+                                                <Label>Giá bán <span className="text-red-500">*</span></Label>
+                                                <Controller
+                                                    name={`bienTheSanPhams.${index}.giaBan`}
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Input
+                                                            {...field}
+                                                            type="number"
+                                                            min="0"
+                                                            placeholder="0"
+                                                            disabled={isSubmitting}
+                                                            className={`${errors.bienTheSanPhams?.[index]?.giaBan ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""}`}
                                                         />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleRemoveExistingVariantImage(index)}
-                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-                                                        >
-                                                            <X className="h-3 w-3" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
+                                                    )}
+                                                />
+                                                {errors.bienTheSanPhams?.[index]?.giaBan && (
+                                                    <p className="text-xs text-red-500 font-medium">{errors.bienTheSanPhams[index].giaBan.message}</p>
+                                                )}
+                                            </div>
 
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => handleVariantImageChange(index, e)}
-                                                className="hidden"
-                                                id={`variant-image-${index}`}
-                                                disabled={isSubmitting}
-                                            />
-                                            <label
-                                                htmlFor={`variant-image-${index}`}
-                                                className="flex items-center justify-center gap-2 p-2 border border-amber-300 rounded-lg cursor-pointer hover:bg-amber-100 text-amber-900"
-                                            >
-                                                <Upload className="h-4 w-4" />
-                                                <span className="text-sm">
+                                            {/* Trạng thái */}
+                                            <div className="space-y-2">
+                                                <Label>Trạng thái</Label>
+                                                <Controller
+                                                    name={`bienTheSanPhams.${index}.trangThai`}
+                                                    control={control}
+                                                    render={({ field }) => (
+                                                        <Select
+                                                            value={field.value?.toString()}
+                                                            onValueChange={(value) => field.onChange(Number(value))}
+                                                            disabled={isSubmitting}
+                                                        >
+                                                            <SelectTrigger className="w-full h-10">
+                                                                <SelectValue placeholder="Chọn trạng thái" />
+                                                            </SelectTrigger>
+                                                            <SelectContent
+                                                                position="popper"
+                                                                side="bottom"
+                                                                align="start"
+                                                                sideOffset={4}
+                                                                className="z-50 bg-white border border-gray-200 shadow-lg rounded-md"
+                                                            >
+                                                                <SelectItem value="1">Hoạt động</SelectItem>
+                                                                <SelectItem value="0">Tạm ngừng</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Variant Image */}
+                                        <div className="space-y-2">
+                                            <Label>Ảnh biến thể</Label>
+                                            <div className="border-2 border-dashed border-amber-300 rounded-lg p-3 space-y-2 bg-amber-50/40">
+                                                {/* Existing variant image */}
+                                                {existingVariantImages[index] && !variantImages[index] && (
+                                                    <div className="mb-2">
+                                                        <p className="text-xs text-gray-500 mb-2">Ảnh hiện tại:</p>
+                                                        <div className="relative inline-block">
+                                                            <img
+                                                                src={existingVariantImages[index].tepTin?.duongDan || existingVariantImages[index].urlAnh}
+                                                                alt="Variant"
+                                                                className="w-24 h-24 object-cover rounded"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveExistingVariantImage(index)}
+                                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleVariantImageChange(index, e)}
+                                                    className="hidden"
+                                                    id={`variant-image-${index}`}
+                                                    disabled={isSubmitting}
+                                                />
+                                                <label
+                                                    htmlFor={`variant-image-${index}`}
+                                                    className="flex items-center justify-center gap-2 p-2 border border-amber-300 rounded-lg cursor-pointer hover:bg-amber-100 text-amber-900"
+                                                >
+                                                    <Upload className="h-4 w-4" />
+                                                    <span className="text-sm">
                                                     {variantImages[index] || existingVariantImages[index] ? "Thay đổi ảnh" : "Thêm ảnh mới"}
                                                 </span>
-                                            </label>
-                                            
-                                            {variantImages[index] && (
-                                                <div>
-                                                    <p className="text-xs text-gray-500 mb-2">Ảnh mới:</p>
-                                                    <div className="relative inline-block">
-                                                        <img
-                                                            src={URL.createObjectURL(variantImages[index])}
-                                                            alt="New Variant"
-                                                            className="w-24 h-24 object-cover rounded"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleRemoveVariantImage(index)}
-                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-                                                        >
-                                                            <X className="h-3 w-3" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                                </label>
 
-                                    {errors.bienTheSanPhams?.[index] && (
-                                        <p className="text-xs text-red-500">
-                                            {Object.values(errors.bienTheSanPhams[index]).map(err => err.message).join(', ')}
-                                        </p>
-                                    )}
-                                </div>
-                            ))}
+                                                {variantImages[index] && (
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 mb-2">Ảnh mới:</p>
+                                                        <div className="relative inline-block">
+                                                            <img
+                                                                src={URL.createObjectURL(variantImages[index])}
+                                                                alt="New Variant"
+                                                                className="w-24 h-24 object-cover rounded"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveVariantImage(index)}
+                                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {errors.bienTheSanPhams?.[index] && (
+                                            <p className="text-xs text-red-500">
+                                                {Object.values(errors.bienTheSanPhams[index]).map(err => err.message).join(', ')}
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </form>
