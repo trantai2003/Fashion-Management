@@ -212,6 +212,8 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
                 String prefixMaSp = maVietTatDM + datePart; // VD: AT260331
 
+                // Query: Đếm có bao nhiêu SP bắt đầu với "ASM260405"
+                // VD: Đã có 5 cái → stt = 6 
                 long stt = repository.countByMaSanPhamStartingWith(prefixMaSp) + 1;
                 String maSanPhamAuto = prefixMaSp + stt; // VD: AT2603311
 
@@ -227,7 +229,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 sanPhamQuanAo.setNguoiTao(nguoiTao);
                 sanPhamQuanAo.setNgayTao(instantNow);
 
-                // BƯỚC 3: LƯU SẢN PHẨM CHA
+                // BƯỚC 3: LƯU SẢN PHẨM CHA TRƯỚC (ĐỂ có ID cho bước upload ảnh và tạo biến thể)
                 sanPhamQuanAo = create(sanPhamQuanAo);
 
                 // BƯỚC 4: UPLOAD ẢNH SẢN PHẨM CHÍNH
@@ -251,18 +253,18 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                                                         .trangThai(1)
                                                         .ngayTao(instantNow)
                                                         .build()
-                                        );
+                                        ); // → TepTin.id = 1001 (auto increment)
 
                                         // Liên kết ảnh với sản phẩm
                                         anhQuanAoService.create(
                                                 AnhQuanAo.builder()
-                                                        .quanAo(sanPhamQuanAo)
-                                                        .tepTin(tepTin)
+                                                        .quanAo(sanPhamQuanAo)    // Reference: Product ID 123
+                                                        .tepTin(tepTin)           // Reference: File ID 1001
                                                         .anhChinh(i == 1 ? 1 : 0) // Ảnh đầu tiên là ảnh chính
                                                         .trangThai(1)
                                                         .ngayTao(instantNow)
                                                         .build()
-                                        );
+                                        ); // → AnhQuanAo.id = 5001 (auto increment), có quanAo_id = 123, tepTin_id = 1001
                                 }
                         } catch (Exception e) {
                                 log.error("Lỗi tạo tệp tin cho quần áo: {}", creating.getTenSanPham(), e);
@@ -544,7 +546,7 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
                 return ResponseEntity.ok(
                         ResponseData.<SanPhamQuanAoDto>builder()
                                 .status(HttpStatus.OK.value())
-                                .data(sanPhamQuanAoMapper.toDto(sanPhamQuanAo))
+                                .data(sanPhamQuanAoMapper.toDto(sanPhamQuanAo))  // Convert Entity → DTO
                                 .message("Success")
                                 .build());
         }
@@ -611,9 +613,10 @@ public class SanPhamQuanAoService extends BaseServiceImpl<SanPhamQuanAo, Integer
         // HÀM HỖ TRỢ: Lấy chi tiết sản phẩm (kèm toàn bộ biến thể)
         @Transactional(readOnly = true)
         public SanPhamQuanAoDto getDetail(Integer id) {
+                // Bước 1: Query DB lấy entity
                 SanPhamQuanAo sp = repository.findDetailById(id)
                         .orElseThrow(() -> new CommonException("Không tìm thấy sản phẩm id: " + id));
-
+                 // Bước 2: Map Entity → DTO 
                 return sanPhamQuanAoMapper.toDto(sp);
         }
 
