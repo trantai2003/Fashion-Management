@@ -9,7 +9,7 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
     expose:
       - "8080"
-    port:
+    ports:
       - "8080:8088"
     networks:
       - app-network
@@ -20,7 +20,7 @@ services:
     restart: always
     expose:
       - "3000"
-    port:
+    ports:
       - "3000:3002"
     networks:
       - app-network
