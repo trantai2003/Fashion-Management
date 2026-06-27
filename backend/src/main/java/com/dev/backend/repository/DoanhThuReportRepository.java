@@ -39,7 +39,7 @@ public interface DoanhThuReportRepository extends JpaRepository<DonBanHang, Inte
             WHERE pxk.trang_thai = 1
             GROUP BY pxk.don_ban_hang_id
         ) gv ON gv.don_ban_hang_id = dbh.id
-        WHERE dbh.trang_thai    = 3
+        WHERE dbh.trang_thai    = 6
           AND dbh.ngay_giao_hang BETWEEN :tuNgay AND :denNgay
           AND (:khoId IS NULL OR dbh.kho_xuat_id = :khoId)
         GROUP BY YEAR(dbh.ngay_giao_hang), MONTH(dbh.ngay_giao_hang), DAY(dbh.ngay_giao_hang)
@@ -80,7 +80,7 @@ public interface DoanhThuReportRepository extends JpaRepository<DonBanHang, Inte
             WHERE pxk.trang_thai = 1
             GROUP BY pxk.don_ban_hang_id
         ) gv ON gv.don_ban_hang_id = dbh.id
-        WHERE dbh.trang_thai    = 3
+        WHERE dbh.trang_thai    = 6
           AND YEAR(dbh.ngay_giao_hang) = :nam
           AND (:khoId IS NULL OR dbh.kho_xuat_id = :khoId)
         GROUP BY YEAR(dbh.ngay_giao_hang), WEEK(dbh.ngay_giao_hang, 3)
@@ -120,7 +120,7 @@ public interface DoanhThuReportRepository extends JpaRepository<DonBanHang, Inte
             WHERE pxk.trang_thai = 1
             GROUP BY pxk.don_ban_hang_id
         ) gv ON gv.don_ban_hang_id = dbh.id
-        WHERE dbh.trang_thai    = 3
+        WHERE dbh.trang_thai    = 6
           AND YEAR(dbh.ngay_giao_hang) = :nam
           AND (:khoId IS NULL OR dbh.kho_xuat_id = :khoId)
         GROUP BY YEAR(dbh.ngay_giao_hang), MONTH(dbh.ngay_giao_hang)
@@ -160,7 +160,7 @@ public interface DoanhThuReportRepository extends JpaRepository<DonBanHang, Inte
             WHERE pxk.trang_thai = 1
             GROUP BY pxk.don_ban_hang_id
         ) gv ON gv.don_ban_hang_id = dbh.id
-        WHERE dbh.trang_thai    = 3
+        WHERE dbh.trang_thai    = 6
           AND YEAR(dbh.ngay_giao_hang) BETWEEN :tuNam AND :denNam
           AND (:khoId IS NULL OR dbh.kho_xuat_id = :khoId)
         GROUP BY YEAR(dbh.ngay_giao_hang)
