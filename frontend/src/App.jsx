@@ -87,6 +87,7 @@ import SendQuotationRequestPage from "./pages/order/SendQuotationRequestPage";
 import PurchaseRequestDetail from "./pages/order/PurchaseRequestDetail";
 import QuotationRequestDetail from "./pages/order/QuotationRequestDetail";
 import QuotationDetail from "./pages/order/QuotationDetail";
+import HomePageUser from "./pages/user/HomePageUser";
 
 export default function App() {
   return (
@@ -102,6 +103,7 @@ export default function App() {
         <Route path="/quote-success" element={<QuoteSuccess />} />
         <Route path="/supplier/login" element={<SupplierLogin />} />
         <Route path="/user/:id" element={<UserDetail />} />
+        <Route path="/home-user" element={<HomePageUser />} />
 
         {/* ========== STOREFRONT ROUTES (CÓ NAVBAR + FOOTER CỦA KHÁCH) ========== */}
         <Route element={<StoreLayout />}>
@@ -167,7 +169,7 @@ export default function App() {
           <Route path="/quotation/:id" element={<QuotationDetail />} />
           <Route path="/purchase-orders/create" element={<PurchaseOrderCreateManual />} />
           <Route path="/purchase-requests/:id" element={<PurchaseRequestDetail />} />
-          
+
 
           {/* Supplier */}
           <Route path="/supplier" element={<SupplierList />} />

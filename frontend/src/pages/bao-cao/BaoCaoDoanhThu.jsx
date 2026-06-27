@@ -12,27 +12,38 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import apiClient from "@/services/apiClient";
 
 // ─── API ───
-const API_BASE = "http://localhost:8080/api/v1";
-const getAuthHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("access_token") ?? ""}` });
-
 async function fetchKhoList() {
-  const res = await fetch(`${API_BASE}/kho/filter`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...getAuthHeader() },
-    body: JSON.stringify({ filters: [], sorts: [], page: 0, size: 100 }),
-  });
-  const json = await res.json();
-  return json?.data?.content ?? [];
+  try {
+    const res = await apiClient.post("/api/v1/kho/filter", {
+      filters: [],
+      sorts: [],
+      page: 0,
+      size: 100,
+    });
+    return res.data?.data?.content ?? [];
+  } catch (error) {
+    console.error("Lỗi lấy danh sách kho:", error);
+    return [];
+  }
 }
 
 async function fetchDoanhThu(params) {
-  const query = new URLSearchParams();
-  Object.entries(params).forEach(([k, v]) => { if (v !== null && v !== undefined && v !== "") query.set(k, v); });
-  const res = await fetch(`${API_BASE}/admin/dashboard/bao-cao/doanh-thu?${query}`, { headers: getAuthHeader() });
-  const json = await res.json();
-  return json?.data ?? [];
+  try {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== null && v !== undefined && v !== "") {
+        query.set(k, v);
+      }
+    });
+    const res = await apiClient.get(`/api/v1/admin/dashboard/bao-cao/doanh-thu?${query.toString()}`);
+    return res.data?.data ?? [];
+  } catch (error) {
+    console.error("Lỗi lấy báo cáo doanh thu:", error);
+    return [];
+  }
 }
 
 // ─── HELPERS ───

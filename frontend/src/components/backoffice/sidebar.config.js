@@ -154,6 +154,15 @@ export const SIDEBAR_MENU = [
     ],
     children: [
       {
+        label: "Báo cáo doanh thu",
+        to: "/bao-cao/doanh-thu",
+        roles: [
+          "quan_tri_vien",
+          "quan_ly_kho",
+          "nhan_vien_ban_hang",
+        ],
+      },
+      {
         label: "Báo cáo tồn kho",
         to: "/bao-cao/ton-kho",
         roles: [
