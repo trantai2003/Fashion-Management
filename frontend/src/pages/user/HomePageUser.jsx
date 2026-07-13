@@ -989,7 +989,7 @@ function RegisterPage({ setPage, showToast }) {
         if (Object.keys(e).length) { setErrors(e); return; }
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/nguoi-dung/register`, {
+            const res = await fetch(`${API_BASE}/nguoi-dung/normal-register`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(form),
             });

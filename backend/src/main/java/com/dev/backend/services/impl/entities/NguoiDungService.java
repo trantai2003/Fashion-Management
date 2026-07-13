@@ -126,6 +126,39 @@ public class NguoiDungService extends BaseServiceImpl<NguoiDung, Integer> {
         );
     }
 
+
+    @Transactional
+    public ResponseEntity<ResponseData<String>> normalRegister(RegisterRequest registerRequest) {
+        //Lấy thông tin người dùng
+        Optional<NguoiDung> findingNguoiDung = nguoiDungRepository.findByTenDangNhapOrEmailOrSoDienThoai(
+                registerRequest.getTenDangNhap(),
+                registerRequest.getEmail(),
+                registerRequest.getSoDienThoai());
+
+        if (findingNguoiDung.isPresent()) {
+            throw new CommonException("Thông tin đăng nhập đã tồn tại");
+        }
+
+        NguoiDung nguoiDung = new NguoiDung();
+        nguoiDung.setTenDangNhap(registerRequest.getTenDangNhap());
+        nguoiDung.setMatKhauHash(passwordEncoder.encode(registerRequest.getMatKhau()));
+        nguoiDung.setEmail(registerRequest.getEmail());
+        nguoiDung.setHoTen(registerRequest.getHoTen());
+        nguoiDung.setSoDienThoai(registerRequest.getSoDienThoai());
+        nguoiDung.setVaiTro(RoleType.khach_hang.toString());
+        nguoiDung.setTrangThai(1);
+        nguoiDung = create(nguoiDung);
+
+        return ResponseEntity.ok(
+                ResponseData.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .data("Đăng ký tài khoản " + nguoiDung.getVaiTro() + " thành công")
+                        .message("Đăng ký tài khoản " + nguoiDung.getVaiTro() + " thành công")
+                        .error(null)
+                        .build()
+        );
+    }
+
     @Transactional
     public ResponseEntity<ResponseData<String>> activeAccount(VerifyAccount verifyDto) {
         OtpScheduleObj findingRegisterOtp = GlobalCache.OTP_SCHEDULE_OBJS.stream().filter(otpScheduleObj ->

@@ -52,6 +52,12 @@ public class NguoiDungController {
         return nguoiDungService.register(registerRequest);
     }
 
+
+    @PostMapping("/normal-register")
+    public ResponseEntity<ResponseData<String>> normalRegister(@Valid @RequestBody RegisterRequest registerRequest) {
+        return nguoiDungService.normalRegister(registerRequest);
+    }
+
     //sau khi đăng ký thì active account
     @PostMapping("/active-account")
     public ResponseEntity<ResponseData<String>> activeAccount(@RequestBody VerifyAccount verifyDto) {
