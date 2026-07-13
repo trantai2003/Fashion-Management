@@ -169,7 +169,7 @@ details > summary::-webkit-details-marker { display: none; }
 /* ══════════════════════════════════════════════
    DATA
 ══════════════════════════════════════════════ */
-const API_BASE = "http://localhost:8080/api/v1";
+const API_BASE = "https://fs-wms.io.vn/api/v1";
 
 const PLANS = [
     {
