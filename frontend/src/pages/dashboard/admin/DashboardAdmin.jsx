@@ -130,6 +130,24 @@ const STYLES = `
   color: #16a34a; padding: 6px 14px; border-radius: 99px;
   font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em;
 }
+.dash-header-right { display: flex; align-items: center; gap: 12px; }
+.fs-analytics-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: 99px;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, #b8860b, #e8b923);
+  color: #fff; text-decoration: none;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(184,134,11,0.30);
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+.fs-analytics-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: 0 8px 22px rgba(184,134,11,0.40);
+}
+
 .dash-live-dot {
   width: 7px; height: 7px; border-radius: 50%;
   background: #22c55e;
@@ -535,9 +553,20 @@ export default function DashboardByAdmin() {
                                 Theo dõi hiệu suất và hoạt động toàn bộ nền tảng FS WMS
                             </p>
                         </div>
-                        <div className="dash-live-badge">
-                            <span className="dash-live-dot" />
-                            Dữ liệu thời gian thực
+                        <div className="dash-header-right">
+                            <a
+                                href="https://finstyle-analytics.vercel.app/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="fs-analytics-btn"
+                            >
+                                <BarChart2 size={14} />
+                                FS Analytics
+                            </a>
+                            <div className="dash-live-badge">
+                                <span className="dash-live-dot" />
+                                Dữ liệu thời gian thực
+                            </div>
                         </div>
                     </div>
 
